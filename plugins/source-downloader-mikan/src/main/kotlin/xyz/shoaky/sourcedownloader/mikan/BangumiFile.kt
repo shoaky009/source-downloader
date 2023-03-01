@@ -10,7 +10,7 @@ import kotlin.io.path.name
 class BangumiFile(
     private val torrentFilePath: Path,
     private val bangumiVars: PatternVars,
-    private val mainName: SubjectContent
+    private val subject: SubjectContent
 ) : SourceFile {
     override fun downloadSavePath(downloadRootPath: Path): Path {
         return downloadRootPath.resolve(torrentFilePath)
@@ -21,7 +21,7 @@ class BangumiFile(
         val filename = torrentFilePath.last().name
 
         val parseChain = ParseChain()
-        val apply = parseChain.apply(mainName, filename)
+        val apply = parseChain.apply(subject, filename)
         apply.episode?.run { patternVars.addVar("episode", this) }
 
         if ("1" == patternVars.getVar("season")) {

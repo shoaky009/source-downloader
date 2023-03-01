@@ -1,0 +1,63 @@
+components:
+  downloader:
+    - name: qbittorrent
+      type: qbittorrent
+      props:
+        url: http://truenas:20095
+        username: shoaky
+        password: 123456z
+    - name: http
+      type: http
+      props:
+        download-path: /downloads
+    - name: mock
+      type: mock
+      props:
+        download-path: /Users/shoaky/temp/downloads
+  source:
+    - name: mikan
+      type: rss
+      props:
+        url: https://mikanani.me/RSS/Bangumi?bangumiId=2946&subgroupid=21
+  source-content-creator:
+    - name: mikan
+      type: mikan
+  file-mover:
+    - name: qbittorrent
+      type: qbittorrent
+    - name: general
+      type: general
+  run-after-completion:
+    - name: n8n-webhook-send-message
+      type: script
+      props:
+        path: /app/data/script.sh
+  trigger:
+    - name: 20min
+      type: fixed
+      props:
+        interval: PT20M
+        on-start-run-tasks: true
+
+processors:
+  - name: mikan-bangumi
+    trigger: fixed:20min
+    source: rss:mikan
+    creator: mikan
+    downloader: mock
+    mover: general
+    save-path: /Users/shoaky/temp/save
+    options:
+      #完成后运行
+      run-after-completion:
+        - script:n8n-webhook-send-message
+      #可用变量具体看creator能提供什么
+      file-save-path-pattern: "{name}/Season {season}/"
+      #可用变量具体看creator能提供什么
+      filename-pattern: "{name} - S{season}E{episode}"
+      #全局过滤非必填
+      blacklist-regex:
+        - 720P
+        - 中文配音
+      #重命名间隔时间,参考java.time.Duration的格式
+      rename-task-interval: PT1M

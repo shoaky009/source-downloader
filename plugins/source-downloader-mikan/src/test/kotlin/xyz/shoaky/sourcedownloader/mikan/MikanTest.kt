@@ -19,9 +19,9 @@ class MikanTest {
             URL("https://mikanani.me/Download/20221214/324b70bd8a170bcf13d7f5bdf9d3e8df4065f682.torrent")
         )
         val sourceGroup = mikan.createSourceGroup(sourceItem)
-        val sourceFiles = sourceGroup.sourceFiles()
+        val sourceFiles = sourceGroup.sourceFiles(listOf(Path("[ANi] 前進吧！登山少女  Next Summit（僅限港澳台地區） - 11 [1080P][Bilibili][WEB-DL][AAC AVC][CHT CHS].mp4")))
         assertEquals(1, sourceFiles.size)
-        val sourceFile = sourceGroup.sourceFiles().first()
+        val sourceFile = sourceGroup.sourceFiles(listOf(Path("[ANi] 前進吧！登山少女  Next Summit（僅限港澳台地區） - 11 [1080P][Bilibili][WEB-DL][AAC AVC][CHT CHS].mp4"))).first()
 
         val downloadPath = Path("/downloads")
         val downloadSavePath = sourceFile.downloadSavePath(downloadPath)

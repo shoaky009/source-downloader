@@ -1,0 +1,33 @@
+spring:
+  config:
+    import:
+      - ${SOURCE_DOWNLOADER_DATA_LOCATION:}config.yaml
+  main:
+    banner-mode: off
+    allow-bean-definition-overriding: true
+  datasource:
+    username: sd
+    password: sd
+    url: jdbc:h2:file:${SOURCE_DOWNLOADER_DATA_LOCATION:./}source-downloader
+    driver-class-name: org.h2.Driver
+  jpa:
+    database: h2
+    open-in-view: false
+  flyway:
+    locations:
+      - classpath:/db/migration
+    user: ${spring.datasource.username}
+    password: ${spring.datasource.password}
+
+---
+spring:
+  config:
+    activate:
+      on-profile: debug
+  h2:
+    console:
+      enabled: true
+
+logging:
+  level:
+    xyz.shoaky.sourcedownloader: debug

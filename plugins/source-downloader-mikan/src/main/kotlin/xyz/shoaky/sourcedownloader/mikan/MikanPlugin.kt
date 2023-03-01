@@ -7,7 +7,7 @@ class MikanPlugin : Plugin {
         pluginContext.registerSupplier(MikanCreatorSupplier)
 
         val patternVarsDescription = PatternVarsDescription(
-            MikanCreatorSupplier.availableTypes().first(),
+            MikanCreatorSupplier.supplyTypes().first(),
             listOf(
                 VarDescription("mikan-title", true, "Mikan的标题，中文的"),
                 VarDescription("name", true, "番剧原标题多数为日文，bgm.tv上的"),

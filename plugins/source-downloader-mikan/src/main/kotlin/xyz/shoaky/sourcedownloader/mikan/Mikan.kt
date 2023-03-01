@@ -1,37 +1,29 @@
 package xyz.shoaky.sourcedownloader.mikan
 
-import bt.metainfo.MetadataService
 import com.google.common.cache.CacheBuilder
 import com.google.common.cache.CacheLoader
 import org.jsoup.Jsoup
 import org.slf4j.LoggerFactory
 import org.springframework.web.util.UriComponentsBuilder
-import xyz.shoaky.sourcedownloader.mikan.Mikan.Companion.metadataService
 import xyz.shoaky.sourcedownloader.mikan.parse.ParseChain
 import xyz.shoaky.sourcedownloader.mikan.parse.SubjectContent
 import xyz.shoaky.sourcedownloader.sdk.*
 import xyz.shoaky.sourcedownloader.sdk.api.bangumi.BangumiApiClient
 import xyz.shoaky.sourcedownloader.sdk.api.bangumi.GetSubjectRequest
 import xyz.shoaky.sourcedownloader.sdk.api.bangumi.Subject
-import xyz.shoaky.sourcedownloader.sdk.component.ComponentProps
-import xyz.shoaky.sourcedownloader.sdk.component.ComponentSupplier
-import xyz.shoaky.sourcedownloader.sdk.component.ComponentType
-import xyz.shoaky.sourcedownloader.sdk.component.SourceContentCreator
+import xyz.shoaky.sourcedownloader.sdk.component.*
 import java.nio.file.Path
-import kotlin.io.path.Path
+import kotlin.io.path.name
 
 class Mikan : SourceContentCreator {
 
     companion object {
         internal val log = LoggerFactory.getLogger(Mikan::class.java)
-        internal val metadataService: MetadataService = MetadataService()
-        internal val bangumiCache = CacheBuilder.newBuilder()
-            .maximumSize(500)
-            .build(object : CacheLoader<String, Subject>() {
-                override fun load(key: String): Subject {
-                    return getBangumiSubject(key)
-                }
-            })
+        internal val bangumiCache = CacheBuilder.newBuilder().maximumSize(500).build(object : CacheLoader<String, Subject>() {
+            override fun load(key: String): Subject {
+                return getBangumiSubject(key)
+            }
+        })
 
         private fun getBangumiSubject(mikanBangumiHref: String): Subject {
             val page = Jsoup.newSession().url(mikanBangumiHref).get().body()
@@ -52,16 +44,15 @@ class Mikan : SourceContentCreator {
         val mikanTitle = titleElement?.text()
         if (mikanTitle == null) {
             log.error("mikanTitle is null,sourceItem:{}", sourceItem)
-            throw RuntimeException("no mikanTitle found")
+            throw RuntimeException("mikanTitle not found")
         }
-        val mikanHref = titleElement.attr("href")
-            .let {
-                if (it.startsWith("https://mikanani.me").not()) {
-                    "https://mikanani.me$it"
-                } else {
-                    it
-                }
+        val mikanHref = titleElement.attr("href").let {
+            if (it.startsWith("https://mikanani.me").not()) {
+                "https://mikanani.me$it"
+            } else {
+                it
             }
+        }
         val subject = bangumiCache.get(mikanHref)
         val patternVars = PatternVars()
 
@@ -98,41 +89,40 @@ class Mikan : SourceContentCreator {
 private class MikanSourceGroup(
     private val sourceItem: SourceItem,
     private val patternVars: PatternVars,
-    private val mainName: SubjectContent,
+    private val subject: SubjectContent,
 ) : SourceGroup {
 
-    private val torrent by lazy { metadataService.fromUrl(sourceItem.downloadUrl) }
-    override fun sourceFiles(): List<SourceFile> {
-        val files = torrent.files
-        return files.filter { it.size > 0 }.map {
-            val torrentFilePath = Path(it.pathElements.joinToString("/"))
-            BangumiFile(
-                torrentFilePath,
-                patternVars,
-                mainName
-            )
+    override fun sourceFiles(paths: List<Path>): List<SourceFile> {
+        return paths.map { path ->
+            val parseChain = ParseChain()
+            val result = parseChain.apply(subject, path.last().name)
+            val vars = PatternVars(patternVars.getVars())
+            result.episode?.also {
+                vars.addVar("episode", it)
+            }
+            BangumiFile(path, vars, subject)
         }
     }
 
     override fun createDownloadTask(downloadPath: Path, options: DownloadOptions): DownloadTask {
-        return DownloadTask.createTorrentTask(
-            sourceItem.downloadUrl,
-            torrent.torrentId.toString(),
-            downloadPath,
-            options.category ?: "Bangumi"
-        )
+        //在downloader中做
+        val link = sourceItem.link.toString()
+        val torrentHash = link.substring(link.lastIndexOf('/') + 1)
+        return DownloadTask.createTorrentTask(sourceItem, torrentHash, downloadPath, options.category
+            ?: "Bangumi")
     }
 }
 
-object MikanCreatorSupplier : ComponentSupplier<Mikan> {
+object MikanCreatorSupplier : SdComponentSupplier<Mikan> {
     override fun apply(props: ComponentProps): Mikan {
         return Mikan()
     }
 
-    override fun availableTypes(): List<ComponentType> {
-        return listOf(
-            ComponentType.creator("mikan")
-        )
+    override fun supplyTypes(): List<ComponentType> {
+        return listOf(ComponentType.creator("mikan"))
     }
 
+    override fun rules(): List<ComponentRule> {
+        return listOf(ComponentRule.allowDownloader(TorrentDownloader::class))
+    }
 }
