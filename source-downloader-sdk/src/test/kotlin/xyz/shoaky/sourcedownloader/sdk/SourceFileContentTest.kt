@@ -39,7 +39,7 @@ class SourceFileContentTest {
     @Test
     fun given_empty_should_target_expected() {
         val content = createFileContent()
-        val targetFilePath = content.targetFilePath()
+        val targetFilePath = content.targetPath()
         assertEquals(sourceSavePath.resolve("1.txt"), targetFilePath)
     }
 
@@ -49,7 +49,7 @@ class SourceFileContentTest {
             savePathPattern = PathPattern("2"),
             filenamePathPattern = PathPattern("3")
         )
-        val targetFilePath = fileContent.targetFilePath()
+        val targetFilePath = fileContent.targetPath()
         assertEquals(sourceSavePath.resolve("2/3.txt"), targetFilePath)
     }
 
@@ -60,22 +60,30 @@ class SourceFileContentTest {
             savePathPattern = PathPattern("{year}/{work}"),
             filenamePathPattern = PathPattern("{date} - {title}")
         )
-        val targetFilePath = fileContent.targetFilePath()
+        val targetFilePath = fileContent.targetPath()
         val expected = sourceSavePath.resolve("2022/test/2022-01-01 - 123.txt")
         assertEquals(expected, targetFilePath)
     }
 
     @Test
-    fun test() {
-        val fileContent = createFileContent(
-            patternVars = PatternVars(mapOf("work" to "test", "year" to "2022", "title" to "123")),
-            savePathPattern = PathPattern("{year}/{work}"),
-            filenamePathPattern = PathPattern("{date} - {title}")
+    fun given_2depth_should_equals() {
+        val createFileContent = createFileContent(
+            savePathPattern = PathPattern("{name}/S{season}"),
+            patternVars = PatternVars(mapOf("name" to "test", "season" to "01"))
         )
-        val targetFilePath = fileContent.targetFilePath()
-        val expected = sourceSavePath.resolve("2022/test/2022-01-01 - 123.txt")
-        println(targetFilePath)
-//        assertEquals(expected, targetFilePath)
+        assertEquals(sourceSavePath.resolve("test"), createFileContent.itemFileRootDirectory())
+    }
+
+    @Test
+    fun given_1depth_or_empty_should_null() {
+        val content1 = createFileContent(
+            savePathPattern = PathPattern("{name}"),
+            patternVars = PatternVars(mapOf("name" to "test", "season" to "01"))
+        )
+        assertEquals(null, content1.itemFileRootDirectory())
+
+        val content2 = content1.copy(fileSavePathPattern = PathPattern.ORIGIN)
+        assertEquals(null, content2.itemFileRootDirectory())
     }
 
 }

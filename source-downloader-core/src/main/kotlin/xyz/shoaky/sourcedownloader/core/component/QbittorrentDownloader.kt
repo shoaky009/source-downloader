@@ -5,12 +5,12 @@ import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import xyz.shoaky.sourcedownloader.api.qbittorrent.*
 import xyz.shoaky.sourcedownloader.sdk.DownloadTask
-import xyz.shoaky.sourcedownloader.sdk.SourceFileContent
+import xyz.shoaky.sourcedownloader.sdk.SourceContent
 import xyz.shoaky.sourcedownloader.sdk.SourceItem
-import xyz.shoaky.sourcedownloader.sdk.TorrentDownloader
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentProps
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentType
 import xyz.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
+import xyz.shoaky.sourcedownloader.sdk.component.TorrentDownloader
 import java.nio.file.Path
 import kotlin.io.path.exists
 import kotlin.io.path.name
@@ -20,7 +20,11 @@ class QbittorrentDownloader(private val client: QbittorrentClient) : TorrentDown
     private val metadataService = MetadataService()
 
     override fun submit(task: DownloadTask) {
-        val torrentsAddRequest = TorrentsAddRequest(listOf(task.downloadURL()), task.downloadPath.toString(), task.category)
+        val torrentsAddRequest = TorrentsAddRequest(
+            listOf(task.downloadURL()),
+            task.downloadPath.toString(),
+            task.category
+        )
         val response = client.execute(torrentsAddRequest)
         if (QbittorrentClient.successResponse != response.body()) {
             log.error("qbittorrent submit task failed,code:${response.statusCode()} body:${response.body()}")
@@ -43,17 +47,25 @@ class QbittorrentDownloader(private val client: QbittorrentClient) : TorrentDown
     }
 
     override fun isFinished(task: DownloadTask): Boolean {
-        //TODO
-        return true
+        val sourceItem = task.sourceItem
+        val torrentHash = getTorrentHash(sourceItem)
+        val torrent = client.execute(TorrentInfoRequest(hashes = torrentHash))
+        val torrents = torrent.body()
+        return torrents.map { it.progress >= 0.99f }.firstOrNull() ?: false
     }
 
-    override fun rename(sourceFiles: List<SourceFileContent>, torrentHash: String?): Boolean {
-        if (torrentHash == null) {
-            log.error("torrentHash is null")
-            return false
-        }
+    private fun getTorrentHash(sourceItem: SourceItem): String {
+        return parseTorrentHash(sourceItem) ?: metadataService.fromUrl(sourceItem.downloadUrl).torrentId.toString()
+    }
 
-        val result = sourceFiles.groupBy { it.targetFilePath().parent }
+    override fun rename(sourceContent: SourceContent): Boolean {
+        val sourceItem = sourceContent.sourceItem
+        //优化
+        val torrent = metadataService.fromUrl(sourceItem.downloadUrl)
+        val torrentHash = torrent.torrentId.toString()
+        val sourceFiles = sourceContent.sourceFiles
+
+        val result = sourceFiles.groupBy { it.targetPath().parent }
             .map { (path, files) ->
                 val setLocation = client.execute(
                     TorrentsSetLocationRequest(
@@ -63,10 +75,10 @@ class QbittorrentDownloader(private val client: QbittorrentClient) : TorrentDown
                 val movingResult = files
                     .map {
                         val sourceFileName = it.fileDownloadPath.last().name
-                        val targetFileName = it.targetFilePath().last().name
+                        val targetFileName = it.targetPath().last().name
                         val renameFile =
                             client.execute(TorrentsRenameFileRequest(torrentHash, sourceFileName, targetFileName))
-                        renameFile.statusCode() == HttpStatus.OK.value() && it.targetFilePath().exists()
+                        renameFile.statusCode() == HttpStatus.OK.value() && it.targetPath().exists()
                     }
                 setLocation.statusCode() == HttpStatus.OK.value() && movingResult.all { it }
             }

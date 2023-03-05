@@ -4,13 +4,18 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import xyz.shoaky.sourcedownloader.sdk.PathPattern
 import xyz.shoaky.sourcedownloader.sdk.PatternVars
+import xyz.shoaky.sourcedownloader.sdk.SourceContent
 import xyz.shoaky.sourcedownloader.sdk.SourceFileContent
+import xyz.shoaky.sourcedownloader.sdk.component.ComponentProps
+import xyz.shoaky.sourcedownloader.sourceItem
 import java.nio.file.Files
 import kotlin.io.path.Path
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.notExists
 
 class GeneralFileMoverTest {
+
+    private val mover = GeneralFileMoverSupplier.apply(ComponentProps.fromMap(emptyMap()))
 
     private val testFilePaths = listOf(
         Path("src/test/resources/downloads/1.txt"),
@@ -44,10 +49,12 @@ class GeneralFileMoverTest {
             PathPattern.ORIGIN,
             PathPattern.ORIGIN,
         )
-        val result = GeneralFileMover.rename(listOf(file1, file2))
+
+        val sourceContent = SourceContent(sourceItem(), listOf(file1, file2))
+        val result = mover.rename(sourceContent)
         assert(result)
-        Files.deleteIfExists(file1.targetFilePath())
-        Files.deleteIfExists(file2.targetFilePath())
+        Files.deleteIfExists(file1.targetPath())
+        Files.deleteIfExists(file2.targetPath())
     }
 
 }

@@ -12,9 +12,6 @@ internal class BangumiFile(
     private val bangumiVars: PatternVars,
     private val subject: SubjectContent
 ) : SourceFile {
-    override fun downloadSavePath(downloadRootPath: Path): Path {
-        return downloadRootPath.resolve(torrentFilePath)
-    }
 
     override fun patternVars(): PatternVars {
         val patternVars = PatternVars(bangumiVars.getVars())
@@ -24,7 +21,7 @@ internal class BangumiFile(
         val episodeChain = ParserChain.episodeChain()
         val result = episodeChain.apply(subject, filename)
 
-        result.padValue(subject.episodeLength())?.run {
+        result.padNumber(subject.episodeLength())?.run {
             patternVars.addVar("episode", this)
         }
         return patternVars

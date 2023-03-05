@@ -15,8 +15,8 @@ class MikanPlugin : Plugin {
                 VarDescription("date", true, "番剧开播日期，yyyy-MM-dd"),
                 VarDescription("year", true, "番剧开播年份"),
                 VarDescription("month", true, "番剧开播月份"),
-                VarDescription("season", true, "季数字"),
-                VarDescription("episode", true, "集数字"),
+                VarDescription("season", true, "季e.g. 01"),
+                VarDescription("episode", true, "集e.g. 01 08.5"),
                 VarDescription("origin-filename", true, "原文件名"),
             )
         )

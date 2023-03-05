@@ -70,10 +70,13 @@ interface SourceContentCreator : SdComponent {
 
 interface FileMover : SdComponent {
 
-    fun rename(sourceFiles: List<SourceFileContent>, torrentHash: String? = null): Boolean
+    fun rename(sourceContent: SourceContent): Boolean
 }
 
 @FunctionalInterface
 interface RunAfterCompletion : SdComponent, Consumer<SourceContent>
 
+/**
+ * @return true if the item should be processed
+ */
 interface SourceFilter : SdComponent, Predicate<SourceItem>

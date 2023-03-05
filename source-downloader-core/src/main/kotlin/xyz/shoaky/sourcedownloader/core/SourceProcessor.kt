@@ -1,9 +1,12 @@
 package xyz.shoaky.sourcedownloader.core
 
+import org.springframework.retry.support.RetryTemplateBuilder
 import xyz.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
 import xyz.shoaky.sourcedownloader.sdk.*
 import xyz.shoaky.sourcedownloader.sdk.component.*
 import xyz.shoaky.sourcedownloader.sdk.util.Jackson
+import xyz.shoaky.sourcedownloader.util.Events
+import java.net.ConnectException
 import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Duration
@@ -13,6 +16,8 @@ import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 import java.util.function.Predicate
 import kotlin.io.path.exists
+import kotlin.time.ExperimentalTime
+import kotlin.time.measureTime
 
 /**
  * 拉在这里，后面看情况重构
@@ -41,6 +46,15 @@ class SourceProcessor(
 
     private var renameTaskFuture: ScheduledFuture<*>? = null
 
+    private val downloadOptions = DownloadOptions(
+        options.downloadCategory
+    )
+
+    private val retry = RetryTemplateBuilder()
+        .maxAttempts(3)
+        .fixedBackoff(Duration.ofSeconds(5L).toMillis())
+        .build()
+
     init {
         addItemFilter(SourceHashingFilter(name, processingStorage))
     }
@@ -53,15 +67,23 @@ class SourceProcessor(
         }
     }
 
+    @OptIn(ExperimentalTime::class)
     fun scheduleRenameTask(interval: Duration) {
         if (downloader !is AsyncDownloader) {
             return
         }
         renameTaskFuture?.cancel(false)
         renameTaskFuture = scheduledExecutor.scheduleAtFixedRate({
-            log.debug("processor:${name} 开始重命名任务...")
-            runRenameTask()
-            log.debug("processor:${name} 重命名任务完成...")
+            log.debug("Processor:${name} 开始重命名任务...")
+            val measureTime = measureTime {
+                try {
+                    runRenameTask()
+                } catch (e: Exception) {
+                    log.error("Processor:${name} 重命名任务出错", e)
+                }
+                System.currentTimeMillis()
+            }
+            log.info("Processor:${name} 重命名任务完成 took:${measureTime.inWholeMilliseconds}ms")
         }, 5L, interval.seconds, TimeUnit.SECONDS)
     }
 
@@ -82,88 +104,92 @@ class SourceProcessor(
     }
 
     override fun run() {
-        source.fetch()
-            .filter { item -> sourceFilters.all { it.test(item) } }
-            .map {
-                it to sourceContentCreator.createSourceGroup(it)
-            }.forEach { pair ->
-                val sourceGroup = pair.second
-                val sourceItem = pair.first
-                kotlin.runCatching {
-                    process(sourceItem, sourceGroup)
-                }.onFailure {
-                    log.error("Source:${source}文件处理失败, content:$sourceGroup", it)
-                }
+        val items = retry.execute<List<SourceItem>, ConnectException> {
+            source.fetch()
+        }
+
+        for (item in items) {
+            if (sourceFilters.all { it.test(item) }.not()) {
+                log.debug("Filtered item:$item")
+                continue
             }
+            kotlin.runCatching {
+                val sourceGroup = sourceContentCreator.createSourceGroup(item)
+                process(item, sourceGroup)
+            }
+                .onFailure { log.error("Processor:${name}处理失败, item:$item", it) }
+        }
     }
 
     private fun process(sourceItem: SourceItem, sourceGroup: SourceGroup) {
         val resolveFiles = downloader.resolveFiles(sourceItem)
         val contents = sourceGroup.sourceFiles(resolveFiles)
-            .map {
+            .mapIndexed { index, sourceFile ->
                 SourceFileContent(
-                    it.downloadSavePath(downloadPath),
+                    downloadPath.resolve(resolveFiles[index]),
                     sourceSavePath,
-                    it.patternVars(),
+                    sourceFile.patternVars(),
                     fileSavePathPattern,
-                    filenamePattern)
+                    filenamePattern
+                )
             }
-
-        val downloadOptions = DownloadOptions(options.downloadCategory)
-        val downloadTask: DownloadTask = sourceGroup.createDownloadTask(downloadPath, downloadOptions)
-        val needDownload = needDownload(contents)
-        if (needDownload) {
-            this.downloader.submit(downloadTask)
-            log.debug(" 提交下载任务成功, content:$sourceGroup")
-        }
-
         val sourceContent = SourceContent(sourceItem, contents)
-        if (downloader is AsyncDownloader) {
-            saveRenameTask(sourceContent, downloadTask)
-        } else {
-            val success = rename(sourceContent, downloadTask.torrentHash)
-            if (success) {
-                runDownloadCompleted(sourceContent)
-            } else {
-                log.warn("Processor:${name}文件命名失败, content:$sourceGroup")
-            }
+
+        val downloadTask: DownloadTask = createDownloadTask(sourceItem)
+        val needDownload = needDownload(sourceContent)
+        if (needDownload) {
+            //NOTE 非异步下载会阻塞
+            this.downloader.submit(downloadTask)
+            log.info("提交下载任务成功, Processor:${name} sourceItem:${sourceItem.title}")
+            processingStorage.saveTargetPath(sourceContent.allTargetPaths())
+            Events.post(ProcessorSubmitDownloadEvent(name, sourceItem))
         }
+        saveProcessingContent(sourceContent)
     }
 
-    private fun needDownload(contents: List<SourceFileContent>): Boolean {
-        val target = contents.map { it.targetFilePath().exists() }
-        if (target.all { it }) {
+    private fun needDownload(sc: SourceContent): Boolean {
+        val files = sc.sourceFiles
+        val targetPaths = files.map { it.targetPath() }
+        if (targetPaths.map { it.exists() }.all { it }) {
             return false
         }
-        val current = contents.map { it.fileDownloadPath.exists() }
+        if (processingStorage.targetPathExists(targetPaths)) {
+            return false
+        }
+
+        val current = files.map { it.fileDownloadPath.exists() }
         if (current.all { it }) {
             return false
         }
-
         return current.any { it.not() }
     }
 
-    private fun runDownloadCompleted(taskContent: SourceContent) {
+    private fun runAfterCompletions(taskContent: SourceContent) {
         for (task in runAfterCompletion) {
             task.runCatching {
                 this.accept(taskContent)
             }.onFailure {
-                log.error("", it)
+                log.error("${task::class.simpleName}发生错误", it)
             }
         }
     }
 
-    private fun saveRenameTask(
-        content: SourceContent,
-        task: DownloadTask,
-    ) {
-        val renameTaskRecord = ProcessingContent(
+    private fun createProcessingContent(sc: SourceContent): ProcessingContent {
+        return ProcessingContent(
             name,
-            content.sourceItem.hashing(),
-            content,
-            task,
+            sc.sourceItem.hashing(),
+            sc,
         )
-        processingStorage.saveRenameTask(renameTaskRecord)
+    }
+
+    private fun saveProcessingContent(sc: SourceContent) {
+        val pc = createProcessingContent(sc)
+        try {
+            processingStorage.save(pc)
+        } catch (e: Exception) {
+            log.error("save processing content failed, content:$pc")
+            throw RuntimeException(e)
+        }
     }
 
     private fun runRenameTask() {
@@ -172,40 +198,50 @@ class SourceProcessor(
             log.debug("Processor:${name} 非异步下载器不执行重命名任务")
             return
         }
-        processingStorage.findRenameContent(name, 3)
+        processingStorage.findRenameContent(name, options.renameTimesThreshold)
             .filter {
-                asyncDownloader.isFinished(it.downloadTask)
+                val downloadTask = createDownloadTask(it.sourceContent.sourceItem)
+                asyncDownloader.isFinished(downloadTask)
             }
-            .forEach {
-                processRenameTask(it)
+            .forEach { pc ->
+                kotlin.runCatching {
+                    processRenameTask(pc)
+                }.onFailure {
+                    log.error("Processing重命名任务出错, record:${Jackson.toJsonString(pc)}", it)
+                }
             }
     }
 
     private fun processRenameTask(record: ProcessingContent) {
         val processingContent = record.sourceContent
         val sourceFiles = processingContent.sourceFiles
-        if (sourceFiles.all { it.targetFilePath().exists() }) {
+        if (sourceFiles.all { it.targetPath().exists() }) {
             log.debug("全部目标文件已存在，无需重命名，record:${Jackson.toJsonString(record)}")
             return
         }
 
-        val allSuccess = rename(processingContent, record.downloadTask.torrentHash)
+        val allSuccess = rename(processingContent)
         if (allSuccess) {
-            runDownloadCompleted(processingContent)
+            val paths = processingContent.sourceFiles.map { it.targetPath() }
+            //如果失败了, 一些成功一些失败??
+            processingStorage.saveTargetPath(paths)
+            runAfterCompletions(processingContent)
         } else {
             log.warn("有部分文件重命名失败record:${Jackson.toJsonString(record)}")
         }
 
-        if (record.renameTimes == 3) {
-            log.error("重命名3次重试失败record:${Jackson.toJsonString(record)}")
+        val renameTimesThreshold = options.renameTimesThreshold
+        if (record.renameTimes == renameTimesThreshold) {
+            log.error("重命名${renameTimesThreshold}次重试失败record:${Jackson.toJsonString(record)}")
         }
 
         val toUpdate = record.copy(
             renameTimes = record.renameTimes.inc(),
+            status = ProcessingContent.Status.RENAMED,
             modifyTime = LocalDateTime.now()
         )
         toUpdate.id = record.id
-        processingStorage.saveRenameTask(toUpdate)
+        processingStorage.save(toUpdate)
     }
 
     fun addItemFilter(vararg filters: Predicate<SourceItem>) {
@@ -216,7 +252,11 @@ class SourceProcessor(
         return SafeRunner(this)
     }
 
-    private fun rename(content: SourceContent, torrentHash: String?): Boolean {
+    private fun createDownloadTask(sourceItem: SourceItem): DownloadTask {
+        return DownloadTask.create(sourceItem, downloadPath = downloadPath, category = downloadOptions.category)
+    }
+
+    private fun rename(content: SourceContent): Boolean {
         val sourceFiles = content.canRenameFiles()
         sourceFiles.forEach {
             it.createSaveDirectories()
@@ -224,11 +264,12 @@ class SourceProcessor(
 
         if (renameMode == RenameMode.HARD_LINK) {
             sourceFiles.forEach {
-                Files.createLink(it.fileDownloadPath, it.targetFilePath())
+                val targetFilePath = it.targetPath()
+                Files.createLink(it.fileDownloadPath, targetFilePath)
             }
             return true
         }
-        return fileMover.rename(sourceFiles, torrentHash)
+        return fileMover.rename(content)
     }
 
     fun addRunAfterCompletion(vararg completion: RunAfterCompletion) {
@@ -245,7 +286,7 @@ class SourceProcessor(
         private var running = false
         override fun run() {
             val name = processor.name
-            log.debug("Processor:${name}处理器触发...")
+            log.info("Processor:${name} 处理器触发获取源信息")
             if (running) {
                 log.info("Processor:${name}上一次任务还未完成，跳过本次任务")
                 return

@@ -7,7 +7,6 @@ data class DownloadTask(
     val sourceItem: SourceItem,
     val downloadPath: Path?,
     val category: String? = null,
-    val torrentHash: String? = null,
 ) {
 
     fun downloadURL(): URL {
@@ -16,18 +15,12 @@ data class DownloadTask(
 
     companion object {
 
-        fun createTorrentTask(sourceItem: SourceItem, torrentHash: String,
-                              downloadPath: Path? = null, category: String? = null): DownloadTask {
-            return create(sourceItem, category, torrentHash, downloadPath)
-        }
-
         fun create(
             sourceItem: SourceItem,
             category: String? = null,
-            torrentHash: String? = null,
             downloadPath: Path? = null,
         ): DownloadTask {
-            return DownloadTask(sourceItem, downloadPath, category, torrentHash)
+            return DownloadTask(sourceItem, downloadPath, category)
         }
     }
 }

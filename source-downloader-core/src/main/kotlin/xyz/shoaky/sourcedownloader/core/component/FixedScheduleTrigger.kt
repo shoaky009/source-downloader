@@ -12,10 +12,9 @@ import kotlin.concurrent.timerTask
 class FixedScheduleTrigger(
     private val interval: Duration,
     private val onStartRunTasks: Boolean = false,
-) : Trigger {
+) : TaskHolderTrigger() {
 
     private val timer = Timer("FixedScheduleTrigger")
-    private val tasks: MutableList<Runnable> = mutableListOf()
 
     override fun stop() {
         timer.cancel()
@@ -31,20 +30,13 @@ class FixedScheduleTrigger(
         }
     }
 
-    override fun addTask(runnable: Runnable) {
-        if (tasks.contains(runnable)) {
-            return
-        }
-        tasks.add(runnable)
-    }
-
     private fun timerTask() = timerTask {
-        kotlin.runCatching {
-            tasks.forEach {
-                it.run()
+        tasks.forEach { task ->
+            kotlin.runCatching {
+                task.run()
+            }.onFailure {
+                log.error("任务处理发生异常:{}", task, it)
             }
-        }.onFailure {
-            log.error("FixedScheduleTrigger处理发生异常", it)
         }
     }
 

@@ -1,16 +1,18 @@
 package xyz.shoaky.sourcedownloader
 
 import com.google.common.base.CaseFormat
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.springframework.util.StreamUtils
 import xyz.shoaky.sourcedownloader.core.component.QbittorrentDownloader
 import xyz.shoaky.sourcedownloader.sdk.component.SdComponent
+import java.nio.file.attribute.FileTime
 import kotlin.io.path.Path
-import kotlin.io.path.exists
+import kotlin.io.path.setLastModifiedTime
 import kotlin.reflect.full.allSuperclasses
 
-@Disabled("实验")
+/**
+ * 实验
+ */
 class CommonTest {
 
     @Test
@@ -51,10 +53,9 @@ class CommonTest {
     }
 
     @Test
-    fun dsa() {
-        val path =
-            Path("file:///Users/shoaky/temp/downloads/%5BANi%5D%20%E5%89%8D%E9%80%B2%E5%90%A7%EF%BC%81%E7%99%BB%E5%B1%B1%E5%B0%91%E5%A5%B3%20%20Next%20Summit%EF%BC%88%E5%83%85%E9%99%90%E6%B8%AF%E6%BE%B3%E5%8F%B0%E5%9C%B0%E5%8D%80%EF%BC%89%20-%2001%20%5B1080P%5D%5BBilibili%5D%5BWEB-DL%5D%5BAAC%20AVC%5D%5BCHT%20CHS%5D.mp4")
-        println(path.exists())
-        println(path)
+    fun test1() {
+        val path = Path("/Users/shoaky/temp/save")
+        path.setLastModifiedTime(FileTime.fromMillis(System.currentTimeMillis()))
     }
+
 }

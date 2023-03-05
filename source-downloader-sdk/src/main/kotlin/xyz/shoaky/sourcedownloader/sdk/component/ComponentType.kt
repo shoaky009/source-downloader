@@ -13,6 +13,7 @@ data class ComponentType(val typeName: String,
         fun creator(type: String) = ComponentType(type, SourceContentCreator::class)
         fun filter(type: String) = ComponentType(type, SourceFilter::class)
         fun trigger(type: String) = ComponentType(type, Trigger::class)
+        fun run(type: String) = ComponentType(type, RunAfterCompletion::class)
     }
 
     fun fullName() = "${klass.simpleName}:$typeName"

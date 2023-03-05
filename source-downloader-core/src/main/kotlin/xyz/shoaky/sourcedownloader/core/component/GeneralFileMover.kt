@@ -1,6 +1,6 @@
 package xyz.shoaky.sourcedownloader.core.component
 
-import xyz.shoaky.sourcedownloader.sdk.SourceFileContent
+import xyz.shoaky.sourcedownloader.sdk.SourceContent
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentProps
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentType
 import xyz.shoaky.sourcedownloader.sdk.component.FileMover
@@ -9,16 +9,17 @@ import kotlin.io.path.exists
 import kotlin.io.path.moveTo
 
 object GeneralFileMover : FileMover {
-    override fun rename(sourceFiles: List<SourceFileContent>, torrentHash: String?): Boolean {
+    override fun rename(sourceContent: SourceContent): Boolean {
+        val sourceFiles = sourceContent.sourceFiles
         sourceFiles
             .forEach {
-                it.fileDownloadPath.moveTo(it.targetFilePath())
+                it.fileDownloadPath.moveTo(it.targetPath())
             }
-        return sourceFiles.all { it.targetFilePath().exists() }
+        return sourceFiles.all { it.targetPath().exists() }
     }
 }
 
-object MoveFileSupplier : SdComponentSupplier<GeneralFileMover> {
+object GeneralFileMoverSupplier : SdComponentSupplier<GeneralFileMover> {
     override fun apply(props: ComponentProps): GeneralFileMover {
         return GeneralFileMover
     }

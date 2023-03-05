@@ -8,9 +8,10 @@ internal object SeasonParser : ValueParser {
     override val name: String = "SeasonFromSubject"
 
     override fun apply(subjectContent: SubjectContent, filename: String): Result {
-        val mikanTitle = subjectContent.mikanTitle.trim()
+        val subjectName = subjectContent.nonEmptyName().trim()
         for (rule in rules) {
-            val res = rule.ifMatchConvert(mikanTitle)
+            val res = rule.ifMatchConvert(subjectName)
+                ?: rule.ifMatchConvert(filename)
             if (res != null) {
                 return Result(res, accuracy = Result.Accuracy.ACCURATE)
             }
@@ -20,12 +21,7 @@ internal object SeasonParser : ValueParser {
         if (season != null) {
             return Result(season, accuracy = Result.Accuracy.ACCURATE)
         }
-
-        if (mikanTitle.contains(numberRegex)) {
-            return Result()
-        }
-
-        return Result(1)
+        return Result()
     }
 
     internal data class SeasonRule(private val pattern: Pattern, val convert: Function<String, Int>) {
@@ -38,36 +34,32 @@ internal object SeasonParser : ValueParser {
         }
     }
 
+    private val lastMatchPattern = Pattern.compile("(?:\\d+|二|三|四|五|六|七|八|九|十|II|III|IV|V|VI|VII|VIII|IX|X|Ⅱ|Ⅲ|Ⅳ)\$")
 
     //标题最后是数字的
     private val last =
-        SeasonRule(Pattern.compile("(?:\\d+|二|三|四|五|六|七|八|九|十|II|III|IV|V|VI|VII|VIII|IX|X|Ⅱ|Ⅲ|Ⅳ)\$")) {
+        SeasonRule(lastMatchPattern) {
             it.toIntOrNull() ?: seasonNumberMapping[it]
             ?: throw RuntimeException("can't parse season number from $it")
         }
 
     //常见的比如第X季 第X期 S Season
-    private val general = SeasonRule(Pattern.compile("S\\d{1,2}|Season \\d{1,2}|第.[季期]")) {
+    private val general = SeasonRule(Pattern.compile("S\\d{1,2}|Season \\d{1,2}|第.[季期]|\\d+(?i)nd")) {
         val s = it.replace("S", "", true)
             .replace("Season", "", true)
             .replace("第", "")
             .replace("季", "")
             .replace("期", "")
+            .replace("nd", "", true)
             .trim()
         seasonNumberMapping[s] ?: s.toInt()
     }
-
 
     //99%是季度命名的规则
     private val rules = listOf(
         general,
         last,
     )
-
-    private val numberRegex: Regex = Pattern.compile(
-        "\\d+|二|三|四|五|六|七|八|九|十|II|III|IV|V|VI|VII|VIII|IX|X|Ⅱ|Ⅲ|Ⅳ"
-    ).toRegex()
-
 
     private val seasonNumberMapping: Map<String, Int> = mapOf(
         "一" to 1,

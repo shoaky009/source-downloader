@@ -26,15 +26,20 @@ class Mikan : SourceContentCreator {
             })
 
         private fun getBangumiSubject(mikanBangumiHref: String): Subject {
-            val page = Jsoup.newSession().url(mikanBangumiHref).get().body()
-            val subjectId = page.select(".bangumi-info a").filter { ele ->
-                ele.hasText() && ele.text().contains("/subject/")
-            }.map {
-                val text = it.text()
-                val build = UriComponentsBuilder.fromHttpUrl(text).build()
-                build.pathSegments.last()
-            }.first()
-            return BangumiApiClient.execute(GetSubjectRequest(subjectId)).body()
+            kotlin.runCatching {
+                val page = Jsoup.newSession().url(mikanBangumiHref).get().body()
+                val subjectId = page.select(".bangumi-info a").filter { ele ->
+                    ele.hasText() && ele.text().contains("/subject/")
+                }.map {
+                    val text = it.text()
+                    val build = UriComponentsBuilder.fromHttpUrl(text).build()
+                    build.pathSegments.last()
+                }.first()
+                return BangumiApiClient.execute(GetSubjectRequest(subjectId)).body()
+            }.onFailure {
+                log.error("获取Bangumi Subject失败", it)
+            }
+            throw RuntimeException("获取Bangumi Subject失败")
         }
     }
 
@@ -58,19 +63,20 @@ class Mikan : SourceContentCreator {
 
         mainPatternVars.addVar("mikan-title", mikanTitle)
         mainPatternVars.addVar("name", subject.name)
-        mainPatternVars.addVar("name-cn", subject.nameCn)
         mainPatternVars.addVar("date", subject.date.toString())
         mainPatternVars.addVar("year", subject.date.year)
         mainPatternVars.addVar("month", subject.date.monthValue)
 
-        val mainName = SubjectContent(subject, mikanTitle)
+        val subjectContent = SubjectContent(subject, mikanTitle)
+        //有些纯字母的没有中文名
+        mainPatternVars.addVar("name-cn", subjectContent.nonEmptyName())
         //暂时没看到文件跨季度的情况
         val parserChain = ParserChain.seasonChain()
-        val result = parserChain.apply(mainName, sourceItem.title)
+        val result = parserChain.apply(subjectContent, sourceItem.title)
 
-        val season = result.value?.toString() ?: "01"
+        val season = result.padValue() ?: "01"
         mainPatternVars.addVar("season", season)
-        return MikanSourceGroup(sourceItem, mainPatternVars, mainName)
+        return MikanSourceGroup(sourceItem, mainPatternVars, subjectContent)
     }
 
     override fun defaultSavePathPattern(): PathPattern {
@@ -95,14 +101,6 @@ private class MikanSourceGroup(
         }
     }
 
-    override fun createDownloadTask(downloadPath: Path, options: DownloadOptions): DownloadTask {
-        //在downloader中做
-        val link = sourceItem.link.toString()
-        val torrentHash = link.substring(link.lastIndexOf('/') + 1)
-        return DownloadTask.createTorrentTask(
-            sourceItem, torrentHash, downloadPath, options.category ?: "Bangumi"
-        )
-    }
 }
 
 object MikanCreatorSupplier : SdComponentSupplier<Mikan> {

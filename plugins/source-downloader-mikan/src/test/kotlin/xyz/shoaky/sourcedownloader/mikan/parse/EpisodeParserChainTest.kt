@@ -13,12 +13,12 @@ class EpisodeParserChainTest {
             .filter { it.isNullOrBlank().not() }
             .map {
                 val split = it.split("|")
-                Triple(split[0].toInt(), split[1], split[1])
+                Triple(split[0], split[1], split[1])
             }
             .forEach {
                 val name = it.second
-                val res = episodeChain.apply(create(name), it.third).intValue()
-                assertEquals(it.first, res, "name:${name}")
+                val res = episodeChain.apply(create(name), it.third)
+                assertEquals(it.first, res.padNumber(), "name:${name}")
             }
     }
 }

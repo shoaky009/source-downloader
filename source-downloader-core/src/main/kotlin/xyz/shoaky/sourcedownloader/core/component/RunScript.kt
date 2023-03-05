@@ -11,8 +11,9 @@ import java.nio.file.Path
 
 class RunScript(private val scriptPath: Path) : RunAfterCompletion {
 
-    private fun scriptCommand() = if (System.getProperty("os.name").contains("windows", true))
-        "powershell.exe" else "/bin/sh"
+    private val scriptCommand: String =
+        if (System.getProperty("os.name").contains("windows", true))
+            "powershell.exe" else "/bin/sh"
 
     override fun accept(sourceContent: SourceContent) {
         val process = run(sourceContent)
@@ -27,9 +28,8 @@ class RunScript(private val scriptPath: Path) : RunAfterCompletion {
     }
 
     private fun process(sourceContent: SourceContent): Process {
-        //TODO key相同合并成范围值
         val values = sourceContent.attributes().values.flatten()
-        val processBuilder = ProcessBuilder(scriptCommand(), scriptPath.toString(), *values.toTypedArray())
+        val processBuilder = ProcessBuilder(scriptCommand, scriptPath.toString(), *values.toTypedArray())
         return processBuilder.start()
     }
 

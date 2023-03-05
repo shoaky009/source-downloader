@@ -45,7 +45,13 @@ data class ProcessorConfig(
         val filenamePattern: PathPattern? = null,
         val runAfterCompletion: List<ComponentId> = emptyList(),
         val renameTaskInterval: Duration = Duration.ofMinutes(5),
-        val downloadCategory: String? = null
+        val downloadCategory: String? = null,
+        //0 以历史处理状态为准（处理过一次,目标文件不存在不会再次下载处理）
+        //1 始终以文件最终路径存在为准（目标文件不存在就下载处理）
+        val mode: Int = 0,
+        //修改文件夹创建时间
+        val touchItemDirectory: Boolean = true,
+        val renameTimesThreshold: Int = 3
     )
 
     data class ComponentId(

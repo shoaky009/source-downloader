@@ -1,21 +1,40 @@
 package xyz.shoaky.sourcedownloader.core
 
+import java.nio.file.Path
+import java.time.LocalDateTime
+
 object MemProcessingStorage : ProcessingStorage {
 
-    private val list = mutableListOf<ProcessingContent>()
-    override fun saveRenameTask(content: ProcessingContent) {
-        list.add(content)
+    private val contents = mutableListOf<ProcessingContent>()
+    private val targetPaths = mutableSetOf<Path>()
+    override fun save(content: ProcessingContent) {
+        contents.add(content)
     }
 
     override fun findRenameContent(name: String, renameTimesThreshold: Int): List<ProcessingContent> {
-        return list.filter { it.processorName == name && it.renameTimes < renameTimesThreshold }
+        return contents.filter {
+            it.processorName == name && it.renameTimes < renameTimesThreshold
+                    && it.status == ProcessingContent.Status.WAITING_TO_RENAME
+        }
     }
 
     override fun deleteById(id: Long) {
-        list.removeIf { it.id == id }
+        contents.removeIf { it.id == id }
     }
 
     override fun findByNameAndHash(processorName: String, itemHashing: String): ProcessingContent? {
-        return list.firstOrNull { it.processorName == processorName && it.sourceHash == itemHashing }
+        return contents.firstOrNull { it.processorName == processorName && it.sourceHash == itemHashing }
+    }
+
+    override fun saveTargetPath(paths: List<Path>) {
+        targetPaths.addAll(paths)
+    }
+
+    override fun targetPathExists(paths: List<Path>): Boolean {
+        return paths.all { targetPaths.contains(it) }
+    }
+
+    override fun clean(date: LocalDateTime) {
+        TODO("Not yet implemented")
     }
 }

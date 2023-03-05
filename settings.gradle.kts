@@ -1,7 +1,7 @@
 rootProject.name = "source-downloader"
 
-include(":source-downloader-core")
 include(":source-downloader-sdk")
+include(":source-downloader-core")
 
 pluginManagement {
     val kotlinVersion: String by settings

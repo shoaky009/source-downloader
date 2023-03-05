@@ -34,6 +34,7 @@ class SourceDownloaderApplication(
     private val applicationContext: ApplicationContext,
     private val processorStorages: List<ProcessorConfigStorage>,
     private val componentStorages: List<ComponentConfigStorage>,
+    private val componentSupplier: List<SdComponentSupplier<*>>
 ) {
 
     private val componentTypeMapping = SdComponent::class.sealedSubclasses
@@ -44,7 +45,6 @@ class SourceDownloaderApplication(
 
     @EventListener(ApplicationReadyEvent::class)
     fun initApplication() {
-        log.info("Config file located:${environment.getProperty("spring.config.import")}")
         log.info("Database file located:${
             environment.getProperty("spring.datasource.url")
                 ?.removePrefix("jdbc:h2:file:")
@@ -53,6 +53,7 @@ class SourceDownloaderApplication(
         loadAndInitPlugins()
 
         log.info("支持的组件类型:${componentTypeMapping.keys}")
+        //TODO 组件创建放在应用启动时
         registerComponentSuppliers()
         createComponents()
         val processorConfigs = processorStorages.flatMap { it.getAllProcessor() }
@@ -68,6 +69,10 @@ class SourceDownloaderApplication(
     @PreDestroy
     fun stopApplication() {
         pluginManager.destroyPlugins()
+        applicationContext.getBeansOfType(Trigger::class.java).values
+            .forEach {
+                it.stop()
+            }
     }
 
     private fun loadAndInitPlugins() {
@@ -84,6 +89,9 @@ class SourceDownloaderApplication(
     private fun registerComponentSuppliers() {
         componentManager.registerSupplier(
             *getDefaultComponentSuppliers().toTypedArray()
+        )
+        componentManager.registerSupplier(
+            *componentSupplier.toTypedArray()
         )
         val types = componentManager.getSuppliers()
             .map { it.supplyTypes() }
@@ -147,12 +155,15 @@ fun getDefaultComponentSuppliers(): List<SdComponentSupplier<*>> {
     return listOf(
         QbittorrentSupplier,
         RssSourceSupplier,
-        MoveFileSupplier,
+        GeneralFileMoverSupplier,
         RunScriptSupplier,
         RegexSourceItemFilterSupplier,
         FixedScheduleTriggerSupplier,
         WatchFileSourceSupplier,
         UrlDownloaderSupplier,
-        MockDownloaderSupplier
+        MockDownloaderSupplier,
+        TouchItemDirectorySupplier,
+        ScriptContentCreatorSupplier,
+        DynamicTriggerSupplier
     )
 }

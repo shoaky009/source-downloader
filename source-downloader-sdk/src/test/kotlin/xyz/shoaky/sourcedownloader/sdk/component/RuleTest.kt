@@ -4,9 +4,8 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import xyz.shoaky.sourcedownloader.sdk.DownloadTask
-import xyz.shoaky.sourcedownloader.sdk.SourceFileContent
+import xyz.shoaky.sourcedownloader.sdk.SourceContent
 import xyz.shoaky.sourcedownloader.sdk.SourceItem
-import xyz.shoaky.sourcedownloader.sdk.TorrentDownloader
 import java.nio.file.Path
 
 class RuleTest {
@@ -42,45 +41,44 @@ class RuleTest {
 }
 
 object Mover : FileMover {
-    override fun rename(sourceFiles: List<SourceFileContent>, torrentHash: String?): Boolean {
-        TODO("Not yet implemented")
+    override fun rename(sourceContent: SourceContent): Boolean {
+        return true
     }
 }
 
 object TestDownloader : Downloader {
     override fun submit(task: DownloadTask) {
-        TODO("Not yet implemented")
+
     }
 
     override fun defaultDownloadPath(): Path {
-        TODO("Not yet implemented")
+        return Path.of("test")
     }
 
     override fun resolveFiles(sourceItem: SourceItem): List<Path> {
-        TODO("Not yet implemented")
+        return listOf()
     }
 
 }
 
 object TestTorrentDownloader : TorrentDownloader {
     override fun isFinished(task: DownloadTask): Boolean {
-        TODO("Not yet implemented")
+        return true
     }
 
     override fun submit(task: DownloadTask) {
-        TODO("Not yet implemented")
     }
 
     override fun defaultDownloadPath(): Path {
-        TODO("Not yet implemented")
+        return Path.of("test")
     }
 
     override fun resolveFiles(sourceItem: SourceItem): List<Path> {
-        TODO("Not yet implemented")
+        return listOf()
     }
 
-    override fun rename(sourceFiles: List<SourceFileContent>, torrentHash: String?): Boolean {
-        TODO("Not yet implemented")
+    override fun rename(sourceContent: SourceContent): Boolean {
+        return true
     }
 
 }

@@ -38,16 +38,9 @@ interface SourceGroup {
      */
     fun sourceFiles(paths: List<Path>): List<SourceFile>
 
-    fun createDownloadTask(downloadPath: Path, options: DownloadOptions): DownloadTask
 }
 
 interface SourceFile {
-
-    /**
-     * @param downloadRootPath 下载路径，取决于下载器的设置
-     * @return 文件在下载目录的路径
-     */
-    fun downloadSavePath(downloadRootPath: Path): Path
 
     /**
      * @return 模版变量

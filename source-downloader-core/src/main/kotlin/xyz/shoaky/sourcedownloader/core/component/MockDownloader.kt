@@ -1,13 +1,14 @@
 package xyz.shoaky.sourcedownloader.core.component
 
 import bt.metainfo.MetadataService
+import org.springframework.core.io.UrlResource
 import xyz.shoaky.sourcedownloader.sdk.DownloadTask
-import xyz.shoaky.sourcedownloader.sdk.SourceFileContent
+import xyz.shoaky.sourcedownloader.sdk.SourceContent
 import xyz.shoaky.sourcedownloader.sdk.SourceItem
-import xyz.shoaky.sourcedownloader.sdk.TorrentDownloader
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentProps
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentType
 import xyz.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
+import xyz.shoaky.sourcedownloader.sdk.component.TorrentDownloader
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.Path
@@ -16,13 +17,14 @@ import kotlin.io.path.name
 import kotlin.io.path.notExists
 
 class MockDownloader(private val downloadPath: Path) : TorrentDownloader {
+
+    private val metadataService = MetadataService()
+
     override fun isFinished(task: DownloadTask): Boolean {
         return true
     }
 
     override fun submit(task: DownloadTask) {
-//        val filename = UrlResource(task.downloadURL()).filename
-//            ?: task.sourceItem.hashing()
         val last = resolveFiles(task.sourceItem).first()
         val path = task.downloadPath ?: downloadPath
         val resolve = path.resolve(last.name)
@@ -35,23 +37,25 @@ class MockDownloader(private val downloadPath: Path) : TorrentDownloader {
         return downloadPath
     }
 
-    private val metadataService = MetadataService()
-
     override fun resolveFiles(sourceItem: SourceItem): List<Path> {
+        val contentType = sourceItem.contentType
         val downloadUrl = sourceItem.downloadUrl
-        return metadataService.fromUrl(downloadUrl).files
-            .filter { it.size > 0 }
-            .map { it.pathElements.joinToString("/") }
-            .map { Path(it) }
+        if (contentType.contains("torrent")) {
+            return metadataService.fromUrl(downloadUrl).files
+                .filter { it.size > 0 }
+                .map { it.pathElements.joinToString("/") }
+                .map { Path(it) }
+        }
 
-//        val filename = UrlResource(downloadUrl).filename.takeIf { it.isNullOrBlank().not() }
-//            ?: sourceItem.hashing()
-//        return listOf(Path(filename))
+        val filename = UrlResource(downloadUrl).filename.takeIf { it.isNullOrBlank().not() }
+            ?: sourceItem.hashing()
+        return listOf(Path(filename))
     }
 
-    override fun rename(sourceFiles: List<SourceFileContent>, torrentHash: String?): Boolean {
+    override fun rename(sourceContent: SourceContent): Boolean {
+        val sourceFiles = sourceContent.sourceFiles
         for (sourceFile in sourceFiles) {
-            sourceFile.fileDownloadPath.moveTo(sourceFile.targetFilePath())
+            sourceFile.fileDownloadPath.moveTo(sourceFile.targetPath())
         }
         return true
     }

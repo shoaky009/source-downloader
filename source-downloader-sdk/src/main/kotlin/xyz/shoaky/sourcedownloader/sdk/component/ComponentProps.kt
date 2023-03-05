@@ -34,9 +34,10 @@ interface SdComponentSupplier<R : SdComponent> {
     fun rules(): List<ComponentRule> = emptyList()
 }
 
-data class ComponentRule internal constructor(val isAllow: Boolean,
-                                              val type: Components,
-                                              val value: KClass<out SdComponent>) {
+data class ComponentRule internal constructor(
+    val isAllow: Boolean,
+    val type: Components,
+    val value: KClass<out SdComponent>) {
 
     fun isSameType(klass: KClass<out SdComponent>): Boolean {
         return type.klass.isSuperclassOf(klass)

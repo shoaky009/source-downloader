@@ -27,13 +27,14 @@ abstract class HookedApiClient : ApiClient {
         val uriBuilder = UriComponentsBuilder.fromUri(endpoint).path(request.path)
 
         if (request.httpMethod === HttpMethod.GET) {
-            Jackson.convertToMap(this)
+            Jackson.convertToMap(request)
                 .forEach {
                     uriBuilder.queryParam(it.key, it.value)
                 }
-        }
-        request.queryString.forEach { (k, v) ->
-            uriBuilder.queryParam(k, v)
+        } else {
+            request.queryString.forEach { (k, v) ->
+                uriBuilder.queryParam(k, v)
+            }
         }
 
         val requestBuilder = HttpRequest.newBuilder(uriBuilder.build().toUri())

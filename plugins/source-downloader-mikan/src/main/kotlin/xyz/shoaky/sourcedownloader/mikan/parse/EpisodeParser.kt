@@ -5,20 +5,33 @@ import org.apache.commons.lang3.math.NumberUtils
 object EpisodeParser : ValueParser {
     override val name: String = "EpisodeParser"
 
+    private val pattern = Regex("(\\[?[^\\[\\]]*]?)")
+
+    private val replaces = mapOf(
+        Regex("【") to "[",
+        Regex("】") to "]",
+        Regex("\\(") to "[",
+        Regex("\\)") to "]",
+        Regex("(?<=\\d)集") to "",
+        //匹配[any]但是除了纯数字的内容
+        Regex("\\[(?!\\d+])[^\\[\\]]*?(.*?)]") to ""
+    )
+
     override fun apply(subjectContent: SubjectContent, filename: String): Result {
-        val idk = replace(filename)
-        val episode = idk.split(" ")
+        val replace = pattern.replace(replace(filename)) { "${it.value.trim()} " }
+        val episode = replace.split(" ")
             .filter { it.isNotBlank() }
+            .map { it.removePrefix("[").removeSuffix("]") }
             .filter { NumberUtils.isParsable(it) }
-            .map {
+            .maxByOrNull { it.length }
+            ?.let {
                 if (it.contains(".")) {
                     it.toFloat()
                 } else {
                     it.toInt()
                 }
             }
-            .firstOrNull { subjectContent.subject.totalEpisodes >= it.toFloat() }
-        return Result(episode)
+        return Result(episode, Result.Accuracy.ACCURATE)
     }
 
     private fun replace(filename: String): String {
@@ -29,12 +42,4 @@ object EpisodeParser : ValueParser {
         return res
     }
 
-    private val replaces = mapOf(
-        Regex("【") to "[",
-        Regex("】") to "]",
-        Regex("\\(") to "[",
-        Regex("\\)") to "]",
-        //匹配[any]但是除了纯数字的内容
-        Regex("\\[(?!\\d+])[^\\[\\]]*?(.*?)]") to ""
-    )
 }

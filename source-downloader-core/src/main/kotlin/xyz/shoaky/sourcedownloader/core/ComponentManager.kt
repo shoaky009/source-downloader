@@ -6,6 +6,7 @@ import xyz.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
 import xyz.shoaky.sourcedownloader.core.component.RegexSourceItemFilter
 import xyz.shoaky.sourcedownloader.sdk.component.*
 import xyz.shoaky.sourcedownloader.sdk.util.Jackson
+import xyz.shoaky.sourcedownloader.util.Events
 import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Predicate
 
@@ -95,6 +96,7 @@ class ComponentManager(
         val component = supplier.apply(ComponentProps.fromMap(props))
         if (applicationContext.containsBean(beanName).not()) {
             applicationContext.registerSingleton(beanName, component)
+            Events.register(component)
         }
     }
 

@@ -31,20 +31,33 @@ internal class ParserChain(private val parsers: List<ValueParser>, private val a
                 log.error("${parse.name} 发生异常,name:$subject filename:$filename {}", it)
             }
         }
+
         //暂时先这样后面根据情况调整
-        val value = results.values.mapNotNull { it.value }
+        val value = results.values
+            .filter { it.value != null }
             .groupingBy { it }
             .eachCount()
-            .maxByOrNull { it.value }?.key
-        return Result(value)
+            .maxByOrNull {
+                CmpValue(it.key, it.value)
+            }?.key
+        return Result(value?.value)
     }
 
+    private data class CmpValue(val result: Result, val count: Int) : Comparable<CmpValue> {
+        override fun compareTo(other: CmpValue): Int {
+            val compareTo = result.compareTo(other.result)
+            if (compareTo != 0) {
+                return compareTo
+            }
+            return count.compareTo(other.count)
+        }
+    }
 
     companion object {
 
         private val episodeParsers: List<ValueParser> =
             listOf(
-                AnitomEpisodeParser,EpisodeParser
+                AnitomEpisodeParser, EpisodeParser
             )
 
         fun seasonChain(
@@ -52,9 +65,12 @@ internal class ParserChain(private val parsers: List<ValueParser>, private val a
             //单独的账号无信息
                 ?: "7d82a6a830d5f4458f42929f73878195"
         ): ParserChain {
-            return ParserChain(listOf(SeasonParser, TmdbSeasonParser(tmdbApiKey)), true)
+            return ParserChain(listOf(
+                SeasonParser,
+                TmdbSeasonParser(tmdbApiKey),
+                DefaultSeasonParser
+            ), true)
         }
-
 
         fun episodeChain(): ParserChain {
             return ParserChain(episodeParsers)
@@ -68,5 +84,9 @@ data class SubjectContent(val subject: Subject, val mikanTitle: String) {
 
     fun episodeLength(): Int {
         return subject.totalEpisodes.toString().length
+    }
+
+    fun nonEmptyName(): String {
+        return subject.nameCn.takeIf { it.isNotBlank() } ?: subject.name
     }
 }

@@ -18,8 +18,12 @@ data class SourceContent(
 
     fun canRenameFiles(): List<SourceFileContent> {
         return sourceFiles
-            .filter { it.targetFilePath().notExists() }
+            .filter { it.targetPath().notExists() }
             .filter { it.fileDownloadPath.exists() }
+    }
+
+    fun allTargetPaths(): List<Path> {
+        return sourceFiles.map { it.targetPath() }
     }
 
 }
@@ -32,8 +36,12 @@ data class SourceFileContent(
     val filenamePattern: PathPattern
 ) {
 
-    fun targetFilePath(): Path {
-        return saveDirectoryPath().resolve(targetFilename())
+    private val targetPath: Path by lazy {
+        saveDirectoryPath().resolve(targetFilename())
+    }
+
+    fun targetPath(): Path {
+        return targetPath
     }
 
     fun saveDirectoryPath(): Path {
@@ -57,6 +65,26 @@ data class SourceFileContent(
         if (targetSaveDirectoryPath.notExists()) {
             targetSaveDirectoryPath.createDirectories(fileAttribute)
         }
+    }
+
+    /**
+     * 获取item文件对应的顶级目录e.g. 文件保存在下/mnt/bangumi/FATE/Season 01 返回 /mnt/bangumi/FATE
+     * @return null如果item的文件是保存在saveRootPath下
+     */
+    fun itemFileRootDirectory(): Path? {
+        val saveDirectoryPath = saveDirectoryPath()
+        if (sourceSavePath == saveDirectoryPath) {
+            return null
+        }
+        val depth = fileSavePathPattern.depth()
+        var res = saveDirectoryPath
+        for (i in 0..depth) {
+            res = saveDirectoryPath.parent
+        }
+        if (sourceSavePath == res) {
+            return null
+        }
+        return res
     }
 
     companion object {
@@ -88,6 +116,10 @@ data class PathPattern(val pattern: String) {
         }
         matcher.appendTail(result)
         return result.toString()
+    }
+
+    fun depth(): Int {
+        return pattern.split("/").size
     }
 
     companion object {

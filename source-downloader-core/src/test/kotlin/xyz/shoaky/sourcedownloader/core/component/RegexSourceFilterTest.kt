@@ -1,18 +1,19 @@
 package xyz.shoaky.sourcedownloader.core.component
 
 import org.junit.jupiter.api.Test
-import xyz.shoaky.sourcedownloader.sdk.SourceItem
-import java.net.URL
+import xyz.shoaky.sourcedownloader.sdk.component.ComponentProps
+import xyz.shoaky.sourcedownloader.sourceItem
 
 class RegexSourceFilterTest {
 
-    private val sourceItem = SourceItem("dsadas test", URL("http://localhost"), "", URL("http://localhost"))
 
     @Test
     fun normal() {
-        val filter = RegexSourceItemFilter(listOf(Regex("test"), Regex("a.c")))
-        assert(!filter.test(sourceItem))
-        assert(!filter.test(sourceItem.copy("abc")))
-        assert(filter.test(sourceItem.copy("12346,!.")))
+        val props = ComponentProps.fromJson("""{"regexes":["test", "a.c"]}""")
+
+        val filter = RegexSourceItemFilterSupplier.apply(props)
+        assert(!filter.test(sourceItem("dsadas test")))
+        assert(!filter.test(sourceItem("abc")))
+        assert(filter.test(sourceItem("12346,!.")))
     }
 }

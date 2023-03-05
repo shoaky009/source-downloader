@@ -1,21 +1,26 @@
 package xyz.shoaky.sourcedownloader.core.component
 
 import org.junit.jupiter.api.Test
-import xyz.shoaky.sourcedownloader.sdk.*
-import java.net.URL
+import xyz.shoaky.sourcedownloader.sdk.PathPattern
+import xyz.shoaky.sourcedownloader.sdk.PatternVars
+import xyz.shoaky.sourcedownloader.sdk.SourceContent
+import xyz.shoaky.sourcedownloader.sdk.SourceFileContent
+import xyz.shoaky.sourcedownloader.sdk.component.ComponentProps
+import xyz.shoaky.sourcedownloader.sourceItem
 import kotlin.io.path.Path
 import kotlin.test.assertEquals
 
 class RunScriptTest {
+    private val scriptPath = if (System.getProperty("os.name").contains("windows", true))
+        Path("src/test/resources/script/test.ps1") else
+        Path("src/test/resources/script/test.sh")
+
+    private val runScript = RunScriptSupplier.apply(
+        ComponentProps.fromMap(mapOf("path" to scriptPath))
+    )
+
     @Test
     fun run_script() {
-        val os = System.getProperty("os.name")
-        val scriptPath = if (os.contains("windows", true))
-            Path("src/test/resources/script/test.ps1") else
-            Path("src/test/resources/script/test.sh")
-        val runScript = RunScript(scriptPath)
-
-        val item = SourceItem("1", URL("http://localhost"), "", URL("http://localhost"))
         val content = SourceFileContent(
             Path(""),
             Path(""),
@@ -24,7 +29,7 @@ class RunScriptTest {
             PathPattern.ORIGIN,
         )
 
-        val process = runScript.run(SourceContent(item, listOf(content)))
+        val process = runScript.run(SourceContent(sourceItem("1"), listOf(content)))
         assertEquals(0, process.waitFor())
         val result = process.inputStream.bufferedReader().readText()
         assertEquals("2022-01-01 test", result)

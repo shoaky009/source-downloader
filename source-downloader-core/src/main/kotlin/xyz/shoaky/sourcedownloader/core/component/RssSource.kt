@@ -8,6 +8,8 @@ import xyz.shoaky.sourcedownloader.sdk.component.ComponentType
 import xyz.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
 import xyz.shoaky.sourcedownloader.sdk.component.Source
 import java.net.URL
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 class RssSource(private val url: String) : Source {
 
@@ -17,7 +19,11 @@ class RssSource(private val url: String) : Source {
             .map {
                 kotlin.runCatching {
                     val enclosure = it.enclosure.get()
-                    SourceItem(it.title.get(), URL(it.link.get()), enclosure.type, URL(enclosure.url))
+                    SourceItem(it.title.get(),
+                        URL(it.link.get()),
+                        parseTime(it.pubDate.get()),
+                        enclosure.type,
+                        URL(enclosure.url))
                 }.onFailure {
                     log.error("获取RssItem字段发生错误", it)
                 }
@@ -27,6 +33,23 @@ class RssSource(private val url: String) : Source {
             .toList()
     }
 
+    companion object {
+        private val patterns = listOf(
+            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+        )
+
+        private fun parseTime(pubDateText: String): LocalDateTime {
+
+            return try {
+                LocalDateTime.parse(pubDateText)
+            } catch (e: Exception) {
+                for (pattern in patterns) {
+                    return LocalDateTime.parse(pubDateText, pattern)
+                }
+                throw RuntimeException("解析日期$pubDateText 失败")
+            }
+        }
+    }
 }
 
 object RssSourceSupplier : SdComponentSupplier<RssSource> {

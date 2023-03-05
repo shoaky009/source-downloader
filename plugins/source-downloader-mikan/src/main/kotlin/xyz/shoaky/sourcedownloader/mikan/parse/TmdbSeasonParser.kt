@@ -12,6 +12,7 @@ import java.net.URLEncoder
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 
+//TODO 请求tmdb部分封装client
 /**
  * 从奇葩的季度命名中获取季度
  */
@@ -19,18 +20,18 @@ internal class TmdbSeasonParser(private val apiKey: String) : ValueParser {
 
     override val name: String = "TmdbParser"
 
-
     override fun apply(subjectContent: SubjectContent, filename: String): Result {
-        val nameCn = subjectContent.subject.nameCn
-        val season = tmdbCache.get(Content(nameCn, apiKey))
+        //TODO 如果用的name api语言要更改
+        val subjectName = subjectContent.nonEmptyName()
+        val season = tmdbCache.get(Content(subjectName, apiKey))
         if (season < 1) {
-            log.info("从TMDB获取季度失败name:$nameCn")
+            log.info("从TMDB获取季度失败name:$subjectName")
             return Result()
         }
         return Result(season, accuracy = Result.Accuracy.ACCURATE)
     }
 
-    private data class Content(val nameCn: String, val apiKey: String)
+    private data class Content(val subjectName: String, val apiKey: String)
 
     private data class TmdbResult(
         val results: List<PageResult>
@@ -59,11 +60,15 @@ internal class TmdbSeasonParser(private val apiKey: String) : ValueParser {
         private val tmdbCache =
             CacheBuilder.newBuilder().maximumSize(500).build(object : CacheLoader<Content, Int>() {
                 override fun load(content: Content): Int {
-                    val nameCn = content.nameCn
+                    val subjectName = content.subjectName
                     val apiKey = content.apiKey
-                    val tvId = getTvShowId(nameCn, apiKey) ?: return -1
+                    val tvId = getTvShowId(subjectName, apiKey) ?: return -1
                     val tvShow = getTvShow(tvId, apiKey) ?: return -1
-                    return tvShow.seasons.filter { it.name == nameCn }.map { it.seasonNumber }.firstOrNull() ?: -1
+
+                    if (tvShow.numberOfSeasons == 1) {
+                        return 1
+                    }
+                    return tvShow.seasons.filter { it.name == subjectName }.map { it.seasonNumber }.firstOrNull() ?: -1
                 }
             })
 
@@ -80,8 +85,8 @@ internal class TmdbSeasonParser(private val apiKey: String) : ValueParser {
             return response.body()
         }
 
-        private fun getTvShowId(nameCn: String, apiKey: String): Long? {
-            val encode = URLEncoder.encode(nameCn, Charsets.UTF_8)
+        private fun getTvShowId(subjectName: String, apiKey: String): Long? {
+            val encode = URLEncoder.encode(subjectName, Charsets.UTF_8)
             val uri =
                 URI("https://api.themoviedb.org/3/search/tv?api_key=$apiKey&language=zh-CN&page=1&query=$encode&include_adult=true")
             val request = HttpRequest.newBuilder()
@@ -89,10 +94,8 @@ internal class TmdbSeasonParser(private val apiKey: String) : ValueParser {
                 .uri(uri)
                 .build()
             val body = newHttpClient.send(request, Http.JsonBodyHandler(object : TypeReference<TmdbResult>() {})).body()
-            return body.results.filter { nameCn.contains(it.name) }
-                .map { it.id }.firstOrNull()
+            return body.results.map { it.id }.firstOrNull()
         }
-
 
         private val newHttpClient = createHttpClient()
 
@@ -100,7 +103,6 @@ internal class TmdbSeasonParser(private val apiKey: String) : ValueParser {
             val proxy = ProxySelector.getDefault()
             return HttpClient.newBuilder().proxy(proxy).build()
         }
-
 
     }
 
