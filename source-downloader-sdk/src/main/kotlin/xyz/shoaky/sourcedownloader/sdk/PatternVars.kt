@@ -25,6 +25,10 @@ class PatternVars {
     fun getVars(): Map<String, String> {
         return vars
     }
+
+    fun copy(): PatternVars {
+        return PatternVars(HashMap(vars))
+    }
 }
 
 interface SourceGroup {

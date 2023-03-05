@@ -6,6 +6,7 @@ import java.net.URI
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 
+//TODO 没有token有些结果获取不到
 object BangumiApiClient : HookedApiClient() {
 
     private val endpoint by lazy {

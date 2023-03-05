@@ -6,8 +6,8 @@ import com.google.common.net.MediaType
 import org.slf4j.LoggerFactory
 import org.springframework.web.util.UriComponentsBuilder
 import xyz.shoaky.sourcedownloader.sdk.api.BaseRequest.Companion.stringTypeReference
+import xyz.shoaky.sourcedownloader.sdk.util.Http
 import xyz.shoaky.sourcedownloader.sdk.util.Jackson
-import java.io.InputStream
 import java.net.CookieManager
 import java.net.URI
 import java.net.URLEncoder
@@ -64,13 +64,13 @@ abstract class HookedApiClient : ApiClient {
 
     private fun <R : BaseRequest<T>, T : Any> bodyHandler(request: BaseRequest<T>): HttpResponse.BodyHandler<T> {
         if (request.mediaType == MediaType.JSON_UTF_8) {
-            return JsonBodyHandler(request.responseBodyType)
+            return Http.JsonBodyHandler(request.responseBodyType)
         }
         if (request.responseBodyType == stringTypeReference) {
             @Suppress("UNCHECKED_CAST")
             return stringBodyHandler as HttpResponse.BodyHandler<T>
         }
-        return JsonBodyHandler(request.responseBodyType)
+        return Http.JsonBodyHandler(request.responseBodyType)
     }
 
     private fun <R : BaseRequest<T>, T : Any> bodyPublisher(request: BaseRequest<T>): HttpRequest.BodyPublisher {
@@ -100,14 +100,4 @@ abstract class HookedApiClient : ApiClient {
         private val log = LoggerFactory.getLogger(BaseRequest::class.java)
     }
 
-    class JsonBodyHandler<T : Any>(private val type: TypeReference<T>) : HttpResponse.BodyHandler<T> {
-        override fun apply(responseInfo: HttpResponse.ResponseInfo): HttpResponse.BodySubscriber<T> {
-            val upstream = HttpResponse.BodySubscribers.ofInputStream()
-            return HttpResponse.BodySubscribers.mapping(upstream)
-            { inputStream: InputStream ->
-                val string = String(inputStream.readAllBytes(), Charsets.UTF_8)
-                Jackson.fromJson(string, type)
-            }
-        }
-    }
 }

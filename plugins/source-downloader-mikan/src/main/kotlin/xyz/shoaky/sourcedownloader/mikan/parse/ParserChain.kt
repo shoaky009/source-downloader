@@ -1,0 +1,72 @@
+package xyz.shoaky.sourcedownloader.mikan.parse
+
+import org.slf4j.LoggerFactory
+import xyz.shoaky.sourcedownloader.sdk.api.bangumi.Subject
+
+internal class ParserChain(private val parsers: List<ValueParser>, private val any: Boolean = false) {
+    fun apply(subject: SubjectContent, filename: String): Result {
+        return if (any) {
+            anyValue(subject, filename)
+        } else {
+            voteValue(subject, filename)
+        }
+    }
+
+    private fun anyValue(subject: SubjectContent, filename: String): Result {
+        for (parser in parsers) {
+            val res = parser.apply(subject, filename)
+            if (res.value != null) {
+                return res
+            }
+        }
+        return Result()
+    }
+
+    private fun voteValue(subject: SubjectContent, filename: String): Result {
+        val results = mutableMapOf<String, Result>()
+        for (parse in parsers) {
+            parse.runCatching {
+                results[parse.name] = parse.apply(subject, filename)
+            }.onFailure {
+                log.error("${parse.name} 发生异常,name:$subject filename:$filename {}", it)
+            }
+        }
+        //暂时先这样后面根据情况调整
+        val value = results.values.mapNotNull { it.value }
+            .groupingBy { it }
+            .eachCount()
+            .maxByOrNull { it.value }?.key
+        return Result(value)
+    }
+
+
+    companion object {
+
+        private val episodeParsers: List<ValueParser> =
+            listOf(
+                AnitomEpisodeParser,EpisodeParser
+            )
+
+        fun seasonChain(
+            tmdbApiKey: String = System.getenv("TMDB_APIKEY_V3_AUTH")
+            //单独的账号无信息
+                ?: "7d82a6a830d5f4458f42929f73878195"
+        ): ParserChain {
+            return ParserChain(listOf(SeasonParser, TmdbSeasonParser(tmdbApiKey)), true)
+        }
+
+
+        fun episodeChain(): ParserChain {
+            return ParserChain(episodeParsers)
+        }
+
+        private val log = LoggerFactory.getLogger(ParserChain::class.java)
+    }
+}
+
+data class SubjectContent(val subject: Subject, val mikanTitle: String) {
+
+    fun episodeLength(): Int {
+        return subject.totalEpisodes.toString().length
+    }
+}
