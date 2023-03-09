@@ -25,6 +25,7 @@ class YamlConfigStorage(
         val bindType = Bindable.of<Map<String, List<ComponentConfig>>>(
             ResolvableType.forType(object : ParameterizedTypeReference<Map<String, List<ComponentConfig>>>() {})
         )
+
         val componentConfigBinder = Binder.get(environment)
             .bind("components", bindType)
 

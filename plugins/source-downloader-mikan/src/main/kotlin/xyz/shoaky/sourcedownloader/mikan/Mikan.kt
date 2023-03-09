@@ -28,13 +28,14 @@ class Mikan : SourceContentCreator {
         private fun getBangumiSubject(mikanBangumiHref: String): Subject {
             kotlin.runCatching {
                 val page = Jsoup.newSession().url(mikanBangumiHref).get().body()
-                val subjectId = page.select(".bangumi-info a").filter { ele ->
-                    ele.hasText() && ele.text().contains("/subject/")
-                }.map {
-                    val text = it.text()
-                    val build = UriComponentsBuilder.fromHttpUrl(text).build()
-                    build.pathSegments.last()
-                }.first()
+                val subjectId = page.select(".bangumi-info a")
+                    .filter { ele ->
+                        ele.hasText() && ele.text().contains("/subject/")
+                    }.map {
+                        val text = it.text()
+                        val build = UriComponentsBuilder.fromHttpUrl(text).build()
+                        build.pathSegments.last()
+                    }.first()
                 return BangumiApiClient.execute(GetSubjectRequest(subjectId)).body()
             }.onFailure {
                 log.error("获取Bangumi Subject失败", it)

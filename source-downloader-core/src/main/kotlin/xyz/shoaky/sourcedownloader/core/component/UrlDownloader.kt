@@ -50,8 +50,6 @@ object UrlDownloaderSupplier : SdComponentSupplier<UrlDownloader> {
     override fun supplyTypes(): List<ComponentType> {
         return listOf(
             ComponentType.downloader("url"),
-            ComponentType.downloader("http"),
-            ComponentType.downloader("https")
         )
     }
 }

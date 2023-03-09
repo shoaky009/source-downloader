@@ -1,34 +1,36 @@
 components:
-  downloader:
-    - name: qbittorrent
-      type: qbittorrent
-      props:
-        url: http://truenas:20095
-        username: shoaky
-        password: 123456z
   source:
-    - name: mikan
-      type: rss
+    - name: test1
+      type: test1
+  downloader:
+    - name: test
+      type: url
       props:
-        url: https://mikanani.me/RSS/MyBangumi?token=L962oV%2bLsiabC6ZmTK4rOg%3d%3d
+        download-path: src/test/resources/downloads
+  source-content-creator:
+    - name: javascript
+      type: javascript
+      props:
+        script: |
+          vars["title"] = item.title;
+          vars["path"] = path;
   file-mover:
-    - name: qbittorrent
-      type: qbittorrent
-  run-after-completion:
-    - name: n8n-webhook-send-message
-      type: command
+  trigger:
+    - name: 1s
+      type: fixed
       props:
-        command:
-          - /app/data/script.sh
+        interval: PT1S
+        run-on-startup: true
+  run-after-completion:
 
 processors:
-  - name: mikan-bangumi
-    trigger: fixed:30min
-    source: rss:mikan
-    creator: mikan
-    downloader: mock
+  - name: test-normal-case
+    trigger: fixed:1s
+    source: test1
+    creator: javascript
+    downloader: url:test
     mover: general
-    save-path: /Users/shoaky/temp/save
+    save-path: src/test/resources/target
     options:
       #完成后运行
       run-after-completion:

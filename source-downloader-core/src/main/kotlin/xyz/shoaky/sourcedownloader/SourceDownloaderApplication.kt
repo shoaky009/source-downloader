@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.aot.hint.MemberCategory
 import org.springframework.aot.hint.RuntimeHints
 import org.springframework.aot.hint.RuntimeHintsRegistrar
+import org.springframework.beans.factory.InitializingBean
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.context.event.ApplicationReadyEvent
@@ -35,12 +36,12 @@ class SourceDownloaderApplication(
     private val processorStorages: List<ProcessorConfigStorage>,
     private val componentStorages: List<ComponentConfigStorage>,
     private val componentSupplier: List<SdComponentSupplier<*>>
-) {
+) : InitializingBean {
 
     private val componentTypeMapping = SdComponent::class.sealedSubclasses
         .associateBy {
-            val simpleName = it.simpleName
-            CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_HYPHEN, simpleName!!)
+            val simpleName = it.simpleName!!
+            CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_HYPHEN, simpleName)
         }
 
     @EventListener(ApplicationReadyEvent::class)
@@ -50,12 +51,7 @@ class SourceDownloaderApplication(
                 ?.removePrefix("jdbc:h2:file:")
         }")
 
-        loadAndInitPlugins()
 
-        log.info("支持的组件类型:${componentTypeMapping.keys}")
-        //TODO 组件创建放在应用启动时
-        registerComponentSuppliers()
-        createComponents()
         val processorConfigs = processorStorages.flatMap { it.getAllProcessor() }
         for (processorConfig in processorConfigs) {
             componentManager.fullyCreateSourceProcessor(processorConfig)
@@ -149,9 +145,17 @@ class SourceDownloaderApplication(
 
     }
 
+    override fun afterPropertiesSet() {
+        //加载出现异常不让应用完成启动
+        loadAndInitPlugins()
+        log.info("支持的组件类型:${componentTypeMapping.keys}")
+        registerComponentSuppliers()
+        createComponents()
+    }
+
 }
 
-fun getDefaultComponentSuppliers(): List<SdComponentSupplier<*>> {
+private fun getDefaultComponentSuppliers(): List<SdComponentSupplier<*>> {
     return listOf(
         QbittorrentSupplier,
         RssSourceSupplier,

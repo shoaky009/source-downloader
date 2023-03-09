@@ -50,6 +50,10 @@ class SourceProcessor(
         options.downloadCategory
     )
 
+    private val safeRunner by lazy {
+        SafeRunner(this)
+    }
+
     private val retry = RetryTemplateBuilder()
         .maxAttempts(3)
         .fixedBackoff(Duration.ofSeconds(5L).toMillis())
@@ -104,6 +108,7 @@ class SourceProcessor(
     }
 
     override fun run() {
+        // TODO 其他异常会被吞掉，打印下日志
         val items = retry.execute<List<SourceItem>, ConnectException> {
             source.fetch()
         }
@@ -135,16 +140,23 @@ class SourceProcessor(
             }
         val sourceContent = SourceContent(sourceItem, contents)
 
-        val downloadTask: DownloadTask = createDownloadTask(sourceItem)
+        val downloadTask = createDownloadTask(sourceItem)
         val needDownload = needDownload(sourceContent)
         if (needDownload) {
-            //NOTE 非异步下载会阻塞
+            // NOTE 非异步下载会阻塞
             this.downloader.submit(downloadTask)
             log.info("提交下载任务成功, Processor:${name} sourceItem:${sourceItem.title}")
             processingStorage.saveTargetPath(sourceContent.allTargetPaths())
             Events.post(ProcessorSubmitDownloadEvent(name, sourceItem))
         }
-        saveProcessingContent(sourceContent)
+
+        var pc = ProcessingContent(name, sourceContent)
+        if (downloader !is AsyncDownloader) {
+            rename(sourceContent)
+            pc = ProcessingContent(name, sourceContent)
+                .copy(status = ProcessingContent.Status.RENAMED)
+        }
+        processingStorage.save(pc)
     }
 
     private fun needDownload(sc: SourceContent): Boolean {
@@ -171,24 +183,6 @@ class SourceProcessor(
             }.onFailure {
                 log.error("${task::class.simpleName}发生错误", it)
             }
-        }
-    }
-
-    private fun createProcessingContent(sc: SourceContent): ProcessingContent {
-        return ProcessingContent(
-            name,
-            sc.sourceItem.hashing(),
-            sc,
-        )
-    }
-
-    private fun saveProcessingContent(sc: SourceContent) {
-        val pc = createProcessingContent(sc)
-        try {
-            processingStorage.save(pc)
-        } catch (e: Exception) {
-            log.error("save processing content failed, content:$pc")
-            throw RuntimeException(e)
         }
     }
 
@@ -223,7 +217,7 @@ class SourceProcessor(
         val allSuccess = rename(processingContent)
         if (allSuccess) {
             val paths = processingContent.sourceFiles.map { it.targetPath() }
-            //如果失败了, 一些成功一些失败??
+            // 如果失败了, 一些成功一些失败??
             processingStorage.saveTargetPath(paths)
             runAfterCompletions(processingContent)
         } else {
@@ -249,7 +243,7 @@ class SourceProcessor(
     }
 
     fun safeTask(): Runnable {
-        return SafeRunner(this)
+        return safeRunner
     }
 
     private fun createDownloadTask(sourceItem: SourceItem): DownloadTask {

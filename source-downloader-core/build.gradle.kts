@@ -36,17 +36,13 @@ dependencies {
     implementation("com.github.atomashpolskiy:bt-core:1.10")
     implementation("com.dgtlrepublic:anitomyJ:0.0.7")
 
+    implementation("org.graalvm.js:js:22.3.1")
+    implementation("org.graalvm.js:js-scriptengine:22.3.1")
+
     //内置插件
     implementation("xyz.shoaky:source-downloader-mikan:1.0.0")
 }
 
 tasks.named<BootBuildImage>("bootBuildImage") {
     imageName.set("source-downloader")
-}
-
-tasks.withType<Test> {
-    filter {
-        excludeTestsMatching("*CommonTest*")
-        excludeTestsMatching("xyz.shoaky.sourcedownloader.api.*")
-    }
 }
