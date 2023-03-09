@@ -12,7 +12,6 @@ import xyz.shoaky.sourcedownloader.sdk.component.ComponentType
 import xyz.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
 import xyz.shoaky.sourcedownloader.sdk.component.TorrentDownloader
 import java.nio.file.Path
-import kotlin.io.path.exists
 import kotlin.io.path.name
 
 class QbittorrentDownloader(private val client: QbittorrentClient) : TorrentDownloader {
@@ -78,7 +77,7 @@ class QbittorrentDownloader(private val client: QbittorrentClient) : TorrentDown
                         val targetFileName = it.targetPath().last().name
                         val renameFile =
                             client.execute(TorrentsRenameFileRequest(torrentHash, sourceFileName, targetFileName))
-                        renameFile.statusCode() == HttpStatus.OK.value() && it.targetPath().exists()
+                        renameFile.statusCode() == HttpStatus.OK.value()
                     }
                 setLocation.statusCode() == HttpStatus.OK.value() && movingResult.all { it }
             }
@@ -102,5 +101,9 @@ object QbittorrentSupplier : SdComponentSupplier<QbittorrentDownloader> {
             ComponentType.downloader("qbittorrent"),
             ComponentType.fileMover("qbittorrent")
         )
+    }
+
+    override fun getComponentClass(): Class<QbittorrentDownloader> {
+        return QbittorrentDownloader::class.java
     }
 }

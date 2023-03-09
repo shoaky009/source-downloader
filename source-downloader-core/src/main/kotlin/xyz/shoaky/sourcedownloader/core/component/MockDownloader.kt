@@ -76,4 +76,8 @@ object MockDownloaderSupplier : SdComponentSupplier<MockDownloader> {
         )
     }
 
+    override fun getComponentClass(): Class<MockDownloader> {
+        return MockDownloader::class.java
+    }
+
 }

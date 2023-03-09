@@ -58,4 +58,8 @@ object FixedScheduleTriggerSupplier : SdComponentSupplier<FixedScheduleTrigger> 
         return listOf(ComponentType("fixed", Trigger::class))
     }
 
+    override fun getComponentClass(): Class<FixedScheduleTrigger> {
+        return FixedScheduleTrigger::class.java
+    }
+
 }

@@ -1,0 +1,48 @@
+components:
+  source:
+    - name: test1
+      type: test1
+  downloader:
+    - name: test
+      type: url
+      props:
+        download-path: src/test/resources/downloads
+  source-content-creator:
+    - name: javascript
+      type: javascript
+      props:
+        script: |
+          vars["title"] = item.title;
+          vars["path"] = path;
+  file-mover:
+  trigger:
+    - name: 1s
+      type: fixed
+      props:
+        interval: PT1S
+        run-on-startup: true
+  run-after-completion:
+
+processors:
+  - name: test-normal-case
+    trigger: fixed:1s
+    source: test1
+    creator: javascript
+    downloader: url:test
+    mover: general
+    save-path: src/test/resources/target
+    options:
+      #完成后运行
+      run-after-completion:
+        - touchItemDirectory
+      #        - script:n8n-webhook-send-message
+      #可用变量具体看creator能提供什么
+      file-save-path-pattern: "{name}/Season {season}/"
+      #可用变量具体看creator能提供什么
+      filename-pattern: "{name-cn} - S{season}E{episode}"
+      #全局过滤非必填
+      blacklist-regex:
+        - '720(?i)P'
+        - '中文配音'
+      #重命名间隔时间,参考java.time.Duration的格式
+      rename-task-interval: PT1M

@@ -1,12 +1,12 @@
 package xyz.shoaky.sourcedownloader
 
-import com.google.common.base.CaseFormat
 import com.vladmihalcea.hibernate.type.json.JsonType
 import jakarta.annotation.PreDestroy
 import org.slf4j.LoggerFactory
 import org.springframework.aot.hint.MemberCategory
 import org.springframework.aot.hint.RuntimeHints
 import org.springframework.aot.hint.RuntimeHintsRegistrar
+import org.springframework.beans.factory.InitializingBean
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.context.event.ApplicationReadyEvent
@@ -21,7 +21,6 @@ import xyz.shoaky.sourcedownloader.core.config.ComponentConfig
 import xyz.shoaky.sourcedownloader.core.config.ProcessorConfigs
 import xyz.shoaky.sourcedownloader.sdk.PathPattern
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentType
-import xyz.shoaky.sourcedownloader.sdk.component.SdComponent
 import xyz.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
 import xyz.shoaky.sourcedownloader.sdk.component.Trigger
 
@@ -35,13 +34,7 @@ class SourceDownloaderApplication(
     private val processorStorages: List<ProcessorConfigStorage>,
     private val componentStorages: List<ComponentConfigStorage>,
     private val componentSupplier: List<SdComponentSupplier<*>>
-) {
-
-    private val componentTypeMapping = SdComponent::class.sealedSubclasses
-        .associateBy {
-            val simpleName = it.simpleName
-            CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_HYPHEN, simpleName!!)
-        }
+) : InitializingBean {
 
     @EventListener(ApplicationReadyEvent::class)
     fun initApplication() {
@@ -50,12 +43,6 @@ class SourceDownloaderApplication(
                 ?.removePrefix("jdbc:h2:file:")
         }")
 
-        loadAndInitPlugins()
-
-        log.info("支持的组件类型:${componentTypeMapping.keys}")
-        //TODO 组件创建放在应用启动时
-        registerComponentSuppliers()
-        createComponents()
         val processorConfigs = processorStorages.flatMap { it.getAllProcessor() }
         for (processorConfig in processorConfigs) {
             componentManager.fullyCreateSourceProcessor(processorConfig)
@@ -110,7 +97,7 @@ class SourceDownloaderApplication(
     }
 
     private fun createFromConfigs(keyType: String, configs: List<ComponentConfig>) {
-        val componentKClass = componentTypeMapping[keyType]
+        val componentKClass = ComponentType.typeOf(keyType)
         if (componentKClass == null) {
             log.warn("未知组件类型:$keyType")
             return
@@ -149,6 +136,14 @@ class SourceDownloaderApplication(
 
     }
 
+    override fun afterPropertiesSet() {
+        // 加载出现异常不让应用完成启动
+        loadAndInitPlugins()
+        log.info("支持的组件类型:${ComponentType.types()}")
+        registerComponentSuppliers()
+        createComponents()
+    }
+
 }
 
 fun getDefaultComponentSuppliers(): List<SdComponentSupplier<*>> {
@@ -156,7 +151,7 @@ fun getDefaultComponentSuppliers(): List<SdComponentSupplier<*>> {
         QbittorrentSupplier,
         RssSourceSupplier,
         GeneralFileMoverSupplier,
-        RunScriptSupplier,
+        RunCommandSupplier,
         RegexSourceItemFilterSupplier,
         FixedScheduleTriggerSupplier,
         WatchFileSourceSupplier,

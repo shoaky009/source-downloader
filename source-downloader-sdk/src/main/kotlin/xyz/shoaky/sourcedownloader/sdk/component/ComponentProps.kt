@@ -32,6 +32,8 @@ interface SdComponentSupplier<R : SdComponent> {
     fun supplyTypes(): List<ComponentType>
 
     fun rules(): List<ComponentRule> = emptyList()
+
+    fun getComponentClass(): Class<R>
 }
 
 data class ComponentRule internal constructor(

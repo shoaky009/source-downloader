@@ -30,4 +30,8 @@ object GeneralFileMoverSupplier : SdComponentSupplier<GeneralFileMover> {
         )
     }
 
+    override fun getComponentClass(): Class<GeneralFileMover> {
+        return GeneralFileMover::class.java
+    }
+
 }

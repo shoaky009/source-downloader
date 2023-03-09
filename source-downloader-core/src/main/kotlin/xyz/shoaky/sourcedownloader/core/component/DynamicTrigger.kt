@@ -204,4 +204,8 @@ object DynamicTriggerSupplier : SdComponentSupplier<DynamicTrigger> {
         return listOf(ComponentType.trigger("dynamic"))
     }
 
+    override fun getComponentClass(): Class<DynamicTrigger> {
+        return DynamicTrigger::class.java
+    }
+
 }

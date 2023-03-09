@@ -41,4 +41,8 @@ object RegexSourceItemFilterSupplier : SdComponentSupplier<RegexSourceItemFilter
         return listOf(ComponentType("regex", SourceFilter::class))
     }
 
+    override fun getComponentClass(): Class<RegexSourceItemFilter> {
+        return RegexSourceItemFilter::class.java
+    }
+
 }

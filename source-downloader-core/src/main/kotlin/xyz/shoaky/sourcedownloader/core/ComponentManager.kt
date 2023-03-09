@@ -16,7 +16,7 @@ class ComponentManager(
     private val applicationContext: ConfigurableBeanFactory,
 ) {
 
-    private val sdComponentSuppliers: MutableMap<ComponentType, SdComponentSupplier<*>> = ConcurrentHashMap()
+    val sdComponentSuppliers: MutableMap<ComponentType, SdComponentSupplier<*>> = ConcurrentHashMap()
 
     fun fullyCreateSourceProcessor(config: ProcessorConfig): SourceProcessor {
         val source = applicationContext.getBean(config.getSourceInstanceName(), Source::class.java)

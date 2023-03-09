@@ -10,17 +10,19 @@ import xyz.shoaky.sourcedownloader.sourceItem
 import kotlin.io.path.Path
 import kotlin.test.assertEquals
 
-class RunScriptTest {
-    private val scriptPath = if (System.getProperty("os.name").contains("windows", true))
-        Path("src/test/resources/script/test.ps1") else
-        Path("src/test/resources/script/test.sh")
+class RunCommandTest {
+    private val command = if (System.getProperty("os.name").contains("windows", true))
 
-    private val runScript = RunScriptSupplier.apply(
-        ComponentProps.fromMap(mapOf("path" to scriptPath))
+        listOf("powershell.exe", Path("src/test/resources/script/test.ps1").toAbsolutePath().toString())
+    else
+        listOf(Path("src/test/resources/script/test.sh").toAbsolutePath().toString())
+
+    private val runCommand = RunCommandSupplier.apply(
+        ComponentProps.fromMap(mapOf("command" to command))
     )
 
     @Test
-    fun run_script() {
+    fun run_command() {
         val content = SourceFileContent(
             Path(""),
             Path(""),
@@ -29,7 +31,7 @@ class RunScriptTest {
             PathPattern.ORIGIN,
         )
 
-        val process = runScript.run(SourceContent(sourceItem("1"), listOf(content)))
+        val process = runCommand.run(SourceContent(sourceItem("1"), listOf(content)))
         assertEquals(0, process.waitFor())
         val result = process.inputStream.bufferedReader().readText()
         assertEquals("2022-01-01 test", result)

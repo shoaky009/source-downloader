@@ -1,5 +1,6 @@
 package xyz.shoaky.sourcedownloader.core.component
 
+import com.fasterxml.jackson.core.type.TypeReference
 import org.springframework.util.StreamUtils
 import xyz.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
 import xyz.shoaky.sourcedownloader.sdk.SourceContent
@@ -7,13 +8,9 @@ import xyz.shoaky.sourcedownloader.sdk.component.ComponentProps
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentType
 import xyz.shoaky.sourcedownloader.sdk.component.RunAfterCompletion
 import xyz.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
-import java.nio.file.Path
+import xyz.shoaky.sourcedownloader.sdk.util.Jackson
 
-class RunScript(private val scriptPath: Path) : RunAfterCompletion {
-
-    private val scriptCommand: String =
-        if (System.getProperty("os.name").contains("windows", true))
-            "powershell.exe" else "/bin/sh"
+class RunCommand(private val command: List<String>) : RunAfterCompletion {
 
     override fun accept(sourceContent: SourceContent) {
         val process = run(sourceContent)
@@ -28,8 +25,7 @@ class RunScript(private val scriptPath: Path) : RunAfterCompletion {
     }
 
     private fun process(sourceContent: SourceContent): Process {
-        val values = sourceContent.attributes().values.flatten()
-        val processBuilder = ProcessBuilder(scriptCommand, scriptPath.toString(), *values.toTypedArray())
+        val processBuilder = ProcessBuilder(*command.toTypedArray())
         return processBuilder.start()
     }
 
@@ -38,16 +34,24 @@ class RunScript(private val scriptPath: Path) : RunAfterCompletion {
     }
 }
 
-object RunScriptSupplier : SdComponentSupplier<RunScript> {
-    override fun apply(props: ComponentProps): RunScript {
-        val path = props.properties["path"]?.toString() ?: throw RuntimeException("path is null")
-        return RunScript(Path.of(path))
+object RunCommandSupplier : SdComponentSupplier<RunCommand> {
+    override fun apply(props: ComponentProps): RunCommand {
+        val command = props.properties["command"] ?: throw RuntimeException("command is null")
+        if (command is List<*>) {
+            return RunCommand(command.map { it.toString() })
+        }
+        val convert = Jackson.convert(command, object : TypeReference<Map<String, String>>() {}).values.toList()
+        return RunCommand(convert)
     }
 
     override fun supplyTypes(): List<ComponentType> {
         return listOf(
-            ComponentType("script", RunAfterCompletion::class)
+            ComponentType("command", RunAfterCompletion::class)
         )
+    }
+
+    override fun getComponentClass(): Class<RunCommand> {
+        return RunCommand::class.java
     }
 
 }

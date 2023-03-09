@@ -1,14 +1,11 @@
 package xyz.shoaky.sourcedownloader.core.component
 
-import com.oracle.truffle.js.scriptengine.GraalJSScriptEngine
-import org.graalvm.polyglot.Context
-import org.graalvm.polyglot.Engine
-import org.graalvm.polyglot.HostAccess
 import xyz.shoaky.sourcedownloader.sdk.*
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentProps
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentType
 import xyz.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
 import xyz.shoaky.sourcedownloader.sdk.component.SourceContentCreator
+import xyz.shoaky.sourcedownloader.util.ScriptEngine
 import java.nio.file.Path
 import javax.script.SimpleBindings
 
@@ -58,20 +55,8 @@ class ScriptFile(
         bindings["item"] = sourceItem
         val vars = mutableMapOf<String, String>()
         bindings["vars"] = vars
-        engine.eval(script, bindings)
+        ScriptEngine.jsEngine.eval(script, bindings)
         return PatternVars(vars)
-    }
-
-    companion object {
-        private val engine = GraalJSScriptEngine.create(
-            Engine.newBuilder()
-                .option("engine.WarnInterpreterOnly", "false")
-                .build(),
-            Context.newBuilder("js")
-                .allowHostAccess(HostAccess.ALL)
-                .allowExperimentalOptions(true)
-                .option("js.nashorn-compat", "true")
-        )
     }
 }
 
@@ -88,6 +73,10 @@ object ScriptContentCreatorSupplier : SdComponentSupplier<JavaScriptContentCreat
             ComponentType.creator("js"),
             ComponentType.creator("javascript"),
         )
+    }
+
+    override fun getComponentClass(): Class<JavaScriptContentCreator> {
+        return JavaScriptContentCreator::class.java
     }
 
 }

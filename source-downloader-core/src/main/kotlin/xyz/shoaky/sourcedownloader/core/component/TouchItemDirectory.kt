@@ -33,4 +33,8 @@ object TouchItemDirectorySupplier : SdComponentSupplier<TouchItemDirectory> {
         return listOf(ComponentType.run("touchItemDirectory"))
     }
 
+    override fun getComponentClass(): Class<TouchItemDirectory> {
+        return TouchItemDirectory::class.java
+    }
+
 }

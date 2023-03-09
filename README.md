@@ -59,23 +59,24 @@ trigger
 
 - fixed: 定时触发
 - cron: cron表达式触发
-- webhook: webhook触发
-- dynamic: 动态自适应触发
+- webhook: webhook触发 (在路上了.jpg)
+- dynamic: 动态自适应触发 (在路上了.jpg)
 
 source
 
 - rss: rss源
-- watch: 监听文件路径
+- watch: 监听文件路径 (在路上了.jpg)
+- files: 文件列表 (在路上了.jpg)
 
 creator
 
-- mikan: Mikan番剧相关（需安装插件）
+- mikan: Mikan番剧相关（已内置mikan插件）
 
 downloader
 
 - qbittorrent: qBittorrent
-- aria2: aria2
-- transmission: transmission
+- aria2: aria2 (在路上了.jpg)
+- transmission: transmission (在路上了.jpg)
 
 file-mover
 
@@ -138,7 +139,7 @@ TODO
 - [ ] 增加常用的内置组件aria2, transmission等等...
 - [ ] 组件文档自动生成
 - [ ] 当Processor命名规则变化了，旧文件更新为新的规则(只有可用变量都适配时)
-- [ ] webui, 模板功能
+- [ ] webui, 模板功能和helm一样的概念
 
 小需求
 

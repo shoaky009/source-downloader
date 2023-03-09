@@ -1,36 +1,32 @@
 #放置常见没什么个性化配置的组件
-components:
-  downloader:
-    - name: url
-      type: url
-      props:
-        download-path: ~/Downloads
-    - name: mock
-      type: mock
-      props:
-        download-path: ~/Downloads
-  source-content-creator:
-    - name: mikan
-      type: mikan
-  file-mover:
-    - name: general
-      type: general
-  run-after-completion:
-    - name: touchItemDirectory
-      type: touchItemDirectory
-  trigger:
-    - name: 30min
-      type: fixed
-      props:
-        interval: PT30M
-        on-start-run-tasks: true
-    - name: 1hour
-      type: fixed
-      props:
-        interval: PT1H
-        on-start-run-tasks: true
-    - name: 1day
-      type: fixed
-      props:
-        interval: P1D
-        on-start-run-tasks: true
+downloader:
+  - name: url
+    type: url
+    props:
+      download-path: ~/Downloads
+  - name: mock
+    type: mock
+    props:
+      download-path: ~/Downloads
+file-mover:
+  - name: general
+    type: general
+run-after-completion:
+  - name: touchItemDirectory
+    type: touchItemDirectory
+trigger:
+  - name: 30min
+    type: fixed
+    props:
+      interval: PT30M
+      on-start-run-tasks: true
+  - name: 1hour
+    type: fixed
+    props:
+      interval: PT1H
+      on-start-run-tasks: true
+  - name: 1day
+    type: fixed
+    props:
+      interval: P1D
+      on-start-run-tasks: true

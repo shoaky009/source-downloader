@@ -13,7 +13,6 @@ ENV SOURCE_DOWNLOADER_DATA_LOCATION=/app/data/
 ENV SOURCE_DOWNLOADER_PLUGIN_LOCATION=/app/plugins/
 
 RUN mkdir -p /app/data /app/plugins /app/lib
-RUN touch /app/data/config.yaml
 
 WORKDIR /app
 

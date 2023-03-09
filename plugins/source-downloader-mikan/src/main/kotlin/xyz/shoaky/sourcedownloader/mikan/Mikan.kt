@@ -14,37 +14,47 @@ import xyz.shoaky.sourcedownloader.sdk.api.bangumi.Subject
 import xyz.shoaky.sourcedownloader.sdk.component.*
 import java.nio.file.Path
 
-class Mikan : SourceContentCreator {
+class Mikan(
+    private val mikanToken: String? = null
+) : SourceContentCreator {
+
+    init {
+        log.info("Mikan初始化,token:{}", mikanToken)
+    }
 
     companion object {
         internal val log = LoggerFactory.getLogger(Mikan::class.java)
-        internal val bangumiCache =
-            CacheBuilder.newBuilder().maximumSize(500).build(object : CacheLoader<String, Subject>() {
-                override fun load(key: String): Subject {
-                    return getBangumiSubject(key)
-                }
-            })
+    }
 
-        private fun getBangumiSubject(mikanBangumiHref: String): Subject {
-            kotlin.runCatching {
-                val page = Jsoup.newSession().url(mikanBangumiHref).get().body()
-                val subjectId = page.select(".bangumi-info a").filter { ele ->
+    private val bangumiCache =
+        CacheBuilder.newBuilder().maximumSize(500).build(object : CacheLoader<String, Subject>() {
+            override fun load(key: String): Subject {
+                return getBangumiSubject(key)
+            }
+        })
+
+    private fun getBangumiSubject(mikanBangumiHref: String): Subject {
+        kotlin.runCatching {
+            val page = Jsoup.newSession().cookie(".AspNetCore.Identity.Application", mikanToken
+                ?: "").url(mikanBangumiHref).get().body()
+            val subjectId = page.select(".bangumi-info a")
+                .filter { ele ->
                     ele.hasText() && ele.text().contains("/subject/")
                 }.map {
                     val text = it.text()
                     val build = UriComponentsBuilder.fromHttpUrl(text).build()
                     build.pathSegments.last()
                 }.first()
-                return BangumiApiClient.execute(GetSubjectRequest(subjectId)).body()
-            }.onFailure {
-                log.error("获取Bangumi Subject失败", it)
-            }
-            throw RuntimeException("获取Bangumi Subject失败")
+            return BangumiApiClient.execute(GetSubjectRequest(subjectId)).body()
+        }.onFailure {
+            log.error("获取Bangumi Subject失败 $mikanBangumiHref", it)
         }
+        throw RuntimeException("获取Bangumi Subject失败")
     }
 
     override fun createSourceGroup(sourceItem: SourceItem): SourceGroup {
-        val body = Jsoup.newSession().url(sourceItem.link).get().body()
+        val connection = Jsoup.newSession().cookie(".AspNetCore.Identity.Application", mikanToken ?: "")
+        val body = connection.url(sourceItem.link).get().body()
         val titleElement = body.select(".bangumi-title a").first()
         val mikanTitle = titleElement?.text()?.trim()
         if (mikanTitle == null) {
@@ -68,9 +78,9 @@ class Mikan : SourceContentCreator {
         mainPatternVars.addVar("month", subject.date.monthValue)
 
         val subjectContent = SubjectContent(subject, mikanTitle)
-        //有些纯字母的没有中文名
+        // 有些纯字母的没有中文名
         mainPatternVars.addVar("name-cn", subjectContent.nonEmptyName())
-        //暂时没看到文件跨季度的情况
+        // 暂时没看到文件跨季度的情况
         val parserChain = ParserChain.seasonChain()
         val result = parserChain.apply(subjectContent, sourceItem.title)
 
@@ -105,7 +115,12 @@ private class MikanSourceGroup(
 
 object MikanCreatorSupplier : SdComponentSupplier<Mikan> {
     override fun apply(props: ComponentProps): Mikan {
-        return Mikan()
+        val token = props.properties["token"]?.toString()
+        return Mikan(token)
+    }
+
+    override fun getComponentClass(): Class<Mikan> {
+        return Mikan::class.java
     }
 
     override fun supplyTypes(): List<ComponentType> {

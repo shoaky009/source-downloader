@@ -27,4 +27,8 @@ object WatchFileSourceSupplier : SdComponentSupplier<WatchFileSource> {
         )
     }
 
+    override fun getComponentClass(): Class<WatchFileSource> {
+        return WatchFileSource::class.java
+    }
+
 }

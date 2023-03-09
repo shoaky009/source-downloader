@@ -13,6 +13,12 @@ data class ProcessingContent(
     val modifyTime: LocalDateTime? = null,
     val createTime: LocalDateTime = LocalDateTime.now()
 ) {
+    constructor(processorName: String, sourceContent: SourceContent) : this(
+        processorName = processorName,
+        sourceHash = sourceContent.sourceItem.hashing(),
+        sourceContent = sourceContent
+    )
+
     var id: Long? = null
 
     enum class Status(val value: Int) : EnumValue<Int> {
@@ -25,4 +31,5 @@ data class ProcessingContent(
             return value
         }
     }
+
 }
