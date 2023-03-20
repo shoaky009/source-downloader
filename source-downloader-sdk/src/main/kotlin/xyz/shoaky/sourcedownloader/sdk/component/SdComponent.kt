@@ -9,7 +9,7 @@ import kotlin.reflect.full.allSuperclasses
 
 sealed interface SdComponent
 
-fun <T : SdComponent> KClass<T>.componentClasses(): List<KClass<out SdComponent>> {
+fun <T : SdComponent> KClass<T>.componentSuperClasses(): List<KClass<out SdComponent>> {
     val result = mutableListOf(this)
     this.allSuperclasses
         .filter { it != SdComponent::class && it != Any::class }

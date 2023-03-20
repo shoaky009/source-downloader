@@ -54,7 +54,7 @@ data class ComponentRule internal constructor(
             return
         }
 
-        val componentClasses = component::class.componentClasses()
+        val componentClasses = component::class.componentSuperClasses()
         if (isAllow) {
             if (componentClasses.contains(value).not()) {
                 val classes = componentClasses.map { it.simpleName }.joinToString(",")

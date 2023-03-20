@@ -13,6 +13,6 @@ class BangumiTest {
     fun searchSubject() {
         val request = SearchSubjectRequest("机动战士高达 水星的魔女")
         val execute = client.execute(request)
-        println(Jackson.toJsonString(execute.body().list))
+        println(Jackson.toJsonString(execute.body()))
     }
 }

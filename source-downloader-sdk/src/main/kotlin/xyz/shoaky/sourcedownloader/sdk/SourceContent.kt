@@ -26,6 +26,12 @@ data class SourceContent(
         return sourceFiles.map { it.targetPath() }
     }
 
+    fun summarySubject(): String {
+        if (sourceFiles.size == 1) {
+            return sourceFiles.first().targetPath().name
+        }
+        return "${sourceItem.title}内的${sourceFiles.size}个文件"
+    }
 }
 
 data class SourceFileContent(

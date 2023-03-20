@@ -10,7 +10,10 @@ import xyz.shoaky.sourcedownloader.sdk.component.RunAfterCompletion
 import xyz.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
 import xyz.shoaky.sourcedownloader.sdk.util.Jackson
 
-class RunCommand(private val command: List<String>) : RunAfterCompletion {
+class RunCommand(
+    private val command: List<String>,
+    private val withSubjectSummary: Boolean = false
+) : RunAfterCompletion {
 
     override fun accept(sourceContent: SourceContent) {
         val process = run(sourceContent)
@@ -25,7 +28,11 @@ class RunCommand(private val command: List<String>) : RunAfterCompletion {
     }
 
     private fun process(sourceContent: SourceContent): Process {
-        val processBuilder = ProcessBuilder(*command.toTypedArray())
+        val cmds = command.toMutableList()
+        if (withSubjectSummary) {
+            cmds.add(sourceContent.summarySubject())
+        }
+        val processBuilder = ProcessBuilder(*cmds.toTypedArray())
         return processBuilder.start()
     }
 
@@ -37,11 +44,12 @@ class RunCommand(private val command: List<String>) : RunAfterCompletion {
 object RunCommandSupplier : SdComponentSupplier<RunCommand> {
     override fun apply(props: ComponentProps): RunCommand {
         val command = props.properties["command"] ?: throw RuntimeException("command is null")
+        val enableSummary = props.properties["withSubjectSummary"] as Boolean? ?: false
         if (command is List<*>) {
-            return RunCommand(command.map { it.toString() })
+            return RunCommand(command.map { it.toString() }, enableSummary)
         }
         val convert = Jackson.convert(command, object : TypeReference<Map<String, String>>() {}).values.toList()
-        return RunCommand(convert)
+        return RunCommand(convert, enableSummary)
     }
 
     override fun supplyTypes(): List<ComponentType> {

@@ -127,6 +127,7 @@ class ComponentManager(
         return sdComponentSuppliers.values.filter { filter.test(it) }.toList()
     }
 
+    // TODO 第二个参数应该给组件的描述对象
     fun check(componentType: ComponentType, components: List<SdComponent>) {
         val supplier = getSupplierByType(componentType)
         val rules = supplier.rules()

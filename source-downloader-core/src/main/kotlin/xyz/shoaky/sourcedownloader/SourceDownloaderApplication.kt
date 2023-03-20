@@ -159,6 +159,7 @@ fun getDefaultComponentSuppliers(): List<SdComponentSupplier<*>> {
         MockDownloaderSupplier,
         TouchItemDirectorySupplier,
         ScriptContentCreatorSupplier,
-        DynamicTriggerSupplier
+        DynamicTriggerSupplier,
+        SendHttpRequestSupplier
     )
 }

@@ -129,21 +129,3 @@ processors:
 - 7.重启应用
 
 > 如果是使用镜像`/app/plugins`已经是内置的classpath目录直接放入即可，如果是自己使用java命令启动自行加-cp参数，注意-jar启动不能生效.
-
-TODO
-
-- [x] 插件化，提供Source,Grouping,Creator,Downloader的注册方式
-- [x] 支持SourceItem包含多个文件, 但下载任务只有一个
-- [x] 初步完成mikan插件
-- [x] 组件之间的适配性表达(比如Source选了Mikan,那其他几个组件自动填写Downloader一定是某个TorrentDownloader)
-- [ ] 增加常用的内置组件aria2, transmission等等...
-- [ ] 组件文档自动生成
-- [ ] 当Processor命名规则变化了，旧文件更新为新的规则(只有可用变量都适配时)
-- [ ] webui, 模板功能和helm一样的概念
-
-小需求
-
-- [x] 修改文件夹创建时间
-- [ ] 处理器模式
-- [ ] sourceItem日期过滤
-- [ ] windows下路径特殊字符处理

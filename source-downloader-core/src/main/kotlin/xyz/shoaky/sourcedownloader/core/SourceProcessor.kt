@@ -6,7 +6,7 @@ import xyz.shoaky.sourcedownloader.sdk.*
 import xyz.shoaky.sourcedownloader.sdk.component.*
 import xyz.shoaky.sourcedownloader.sdk.util.Jackson
 import xyz.shoaky.sourcedownloader.util.Events
-import java.net.ConnectException
+import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Duration
@@ -109,7 +109,7 @@ class SourceProcessor(
 
     override fun run() {
         // TODO 其他异常会被吞掉，打印下日志
-        val items = retry.execute<List<SourceItem>, ConnectException> {
+        val items = retry.execute<List<SourceItem>, IOException> {
             source.fetch()
         }
 
@@ -119,10 +119,11 @@ class SourceProcessor(
                 continue
             }
             kotlin.runCatching {
-                val sourceGroup = sourceContentCreator.createSourceGroup(item)
-                process(item, sourceGroup)
-            }
-                .onFailure { log.error("Processor:${name}处理失败, item:$item", it) }
+                retry.execute<Unit, IOException> {
+                    val sourceGroup = sourceContentCreator.createSourceGroup(item)
+                    process(item, sourceGroup)
+                }
+            }.onFailure { log.error("Processor:${name}处理失败, item:$item", it) }
         }
     }
 
@@ -282,14 +283,14 @@ class SourceProcessor(
             val name = processor.name
             log.info("Processor:${name} 处理器触发获取源信息")
             if (running) {
-                log.info("Processor:${name}上一次任务还未完成，跳过本次任务")
+                log.info("Processor:${name} 上一次任务还未完成，跳过本次任务")
                 return
             }
             running = true
             try {
                 processor.run()
             } catch (e: Exception) {
-                log.error("Processor:${name}处理器执行失败", e)
+                log.error("Processor:${name} 处理器执行失败", e)
             } finally {
                 running = false
             }
