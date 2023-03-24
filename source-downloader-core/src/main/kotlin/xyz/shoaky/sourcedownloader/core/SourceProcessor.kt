@@ -98,10 +98,11 @@ class SourceProcessor(
             "Creator" to sourceContentCreator::class.java.simpleName,
             "Downloader" to downloader::class.java.simpleName,
             "Mover" to fileMover::class.java.simpleName,
+            "SourceFilter" to sourceFilters.map { it::class.simpleName },
+            "RunAfterCompletion" to runAfterCompletion.map { it::class.simpleName },
             "RenameMode" to renameMode,
             "DownloadPath" to downloadPath,
             "SourceSavePath" to sourceSavePath,
-            "SourceFilter" to sourceFilters.map { it::class.simpleName },
             "FileSavePathPattern" to fileSavePathPattern.pattern,
             "FilenamePattern" to filenamePattern.pattern,
         )
@@ -187,31 +188,68 @@ class SourceProcessor(
         }
     }
 
+    private enum class DownloadStatus {
+        FINISHED,
+        NOT_FINISHED,
+        NOT_FOUND;
+
+        companion object {
+            fun from(boolean: Boolean?): DownloadStatus {
+                return when (boolean) {
+                    true -> FINISHED
+                    false -> NOT_FINISHED
+                    null -> NOT_FOUND
+                }
+            }
+        }
+    }
+
     private fun runRenameTask() {
         val asyncDownloader = downloader as? AsyncDownloader
         if (asyncDownloader == null) {
             log.debug("Processor:${name} 非异步下载器不执行重命名任务")
             return
         }
-        processingStorage.findRenameContent(name, options.renameTimesThreshold)
-            .filter {
-                val downloadTask = createDownloadTask(it.sourceContent.sourceItem)
-                asyncDownloader.isFinished(downloadTask)
+        val contentGrouping = processingStorage.findRenameContent(name, options.renameTimesThreshold)
+            .groupBy(
+                {
+                    val downloadTask = createDownloadTask(it.sourceContent.sourceItem)
+                    DownloadStatus.from(asyncDownloader.isFinished(downloadTask))
+                }, { it }
+            )
+
+        contentGrouping[DownloadStatus.NOT_FOUND]?.forEach { pc ->
+            kotlin.runCatching {
+                log.info("Processing下载任务不存在, record:${Jackson.toJsonString(pc)}")
+                processingStorage.save(pc.copy(
+                    status = ProcessingContent.Status.DOWNLOAD_FAILED,
+                    modifyTime = LocalDateTime.now(),
+                ))
+            }.onFailure {
+                log.error("Processing更新状态出错, record:${Jackson.toJsonString(pc)}", it)
             }
-            .forEach { pc ->
-                kotlin.runCatching {
-                    processRenameTask(pc)
-                }.onFailure {
-                    log.error("Processing重命名任务出错, record:${Jackson.toJsonString(pc)}", it)
-                }
+        }
+
+        contentGrouping[DownloadStatus.FINISHED]?.forEach { pc ->
+            kotlin.runCatching {
+                processRenameTask(pc)
+            }.onFailure {
+                log.error("Processing重命名任务出错, record:${Jackson.toJsonString(pc)}", it)
             }
+        }
     }
 
-    private fun processRenameTask(record: ProcessingContent) {
-        val processingContent = record.sourceContent
+    private fun processRenameTask(content: ProcessingContent) {
+        val processingContent = content.sourceContent
         val sourceFiles = processingContent.sourceFiles
         if (sourceFiles.all { it.targetPath().exists() }) {
-            log.debug("全部目标文件已存在，无需重命名，record:${Jackson.toJsonString(record)}")
+            val toUpdate = content.copy(
+                renameTimes = content.renameTimes.inc(),
+                status = ProcessingContent.Status.TARGET_ALREADY_EXISTS,
+                modifyTime = LocalDateTime.now(),
+            )
+            processingStorage.save(toUpdate)
+            log.info("全部目标文件已存在，无需重命名，record:${Jackson.toJsonString(content)}")
             return
         }
 
@@ -222,20 +260,19 @@ class SourceProcessor(
             processingStorage.saveTargetPath(paths)
             runAfterCompletions(processingContent)
         } else {
-            log.warn("有部分文件重命名失败record:${Jackson.toJsonString(record)}")
+            log.warn("有部分文件重命名失败record:${Jackson.toJsonString(content)}")
         }
 
         val renameTimesThreshold = options.renameTimesThreshold
-        if (record.renameTimes == renameTimesThreshold) {
-            log.error("重命名${renameTimesThreshold}次重试失败record:${Jackson.toJsonString(record)}")
+        if (content.renameTimes == renameTimesThreshold) {
+            log.error("重命名${renameTimesThreshold}次重试失败record:${Jackson.toJsonString(content)}")
         }
 
-        val toUpdate = record.copy(
-            renameTimes = record.renameTimes.inc(),
+        val toUpdate = content.copy(
+            renameTimes = content.renameTimes.inc(),
             status = ProcessingContent.Status.RENAMED,
             modifyTime = LocalDateTime.now()
         )
-        toUpdate.id = record.id
         processingStorage.save(toUpdate)
     }
 

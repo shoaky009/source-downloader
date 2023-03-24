@@ -5,6 +5,7 @@ import xyz.shoaky.sourcedownloader.util.EnumValue
 import java.time.LocalDateTime
 
 data class ProcessingContent(
+    var id: Long? = null,
     val processorName: String,
     val sourceHash: String,
     val sourceContent: SourceContent,
@@ -19,11 +20,10 @@ data class ProcessingContent(
         sourceContent = sourceContent
     )
 
-    var id: Long? = null
-
     enum class Status(val value: Int) : EnumValue<Int> {
 
         WAITING_TO_RENAME(0),
+        DOWNLOAD_FAILED(3),
         TARGET_ALREADY_EXISTS(4),
         RENAMED(5);
 

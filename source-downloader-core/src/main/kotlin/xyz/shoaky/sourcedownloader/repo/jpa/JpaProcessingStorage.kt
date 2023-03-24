@@ -29,6 +29,7 @@ class JpaProcessingStorage(
         return repository.findByProcessorNameAndRenameTimesLessThan(name, renameTimesThreshold)
             .map { record ->
                 val processingContent = ProcessingContent(
+                    record.id,
                     record.processorName,
                     record.sourceItemHashing,
                     record.sourceContent,
@@ -50,6 +51,7 @@ class JpaProcessingStorage(
         val record = repository.findByProcessorNameAndSourceItemHashing(processorName, itemHashing)
         return record?.let {
             val processingContent = ProcessingContent(
+                record.id,
                 record.processorName,
                 record.sourceItemHashing,
                 record.sourceContent,

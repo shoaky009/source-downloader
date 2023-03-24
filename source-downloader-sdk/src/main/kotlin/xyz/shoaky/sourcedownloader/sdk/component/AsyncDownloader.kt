@@ -9,7 +9,10 @@ import xyz.shoaky.sourcedownloader.sdk.SourceItem
  */
 interface AsyncDownloader : Downloader {
 
-    fun isFinished(task: DownloadTask): Boolean
+    /**
+     * @return null当下载器不存在该任务时
+     */
+    fun isFinished(task: DownloadTask): Boolean?
 
 }
 

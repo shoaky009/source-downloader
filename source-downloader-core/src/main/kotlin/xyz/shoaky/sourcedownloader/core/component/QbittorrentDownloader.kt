@@ -45,12 +45,12 @@ class QbittorrentDownloader(private val client: QbittorrentClient) : TorrentDown
             .map { Path.of(it.pathElements.joinToString("/")) }
     }
 
-    override fun isFinished(task: DownloadTask): Boolean {
+    override fun isFinished(task: DownloadTask): Boolean? {
         val sourceItem = task.sourceItem
         val torrentHash = getTorrentHash(sourceItem)
         val torrent = client.execute(TorrentInfoRequest(hashes = torrentHash))
         val torrents = torrent.body()
-        return torrents.map { it.progress >= 0.99f }.firstOrNull() ?: false
+        return torrents.map { it.progress >= 0.99f }.firstOrNull()
     }
 
     private fun getTorrentHash(sourceItem: SourceItem): String {
@@ -59,7 +59,7 @@ class QbittorrentDownloader(private val client: QbittorrentClient) : TorrentDown
 
     override fun rename(sourceContent: SourceContent): Boolean {
         val sourceItem = sourceContent.sourceItem
-        //优化
+        // 优化
         val torrent = metadataService.fromUrl(sourceItem.downloadUrl)
         val torrentHash = torrent.torrentId.toString()
         val sourceFiles = sourceContent.sourceFiles

@@ -25,10 +25,6 @@ class QbittorrentDownloaderTest {
     private val mockClient = Mockito.mock(QbittorrentClient::class.java)
     private val downloader = QbittorrentDownloader(mockClient)
 
-    init {
-
-    }
-
     @Test
     fun should_finished() {
         val torrentHash = "f3bcd4831746caac97212896caa41f4e24d0ae88"
@@ -47,7 +43,7 @@ class QbittorrentDownloaderTest {
             URL("https://mikanani.me/Download/20230308/f3bcd4831746caac97212896caa41f4e24d0ae88.torrent")
         )
         val downloadTask = DownloadTask(sourceItem, Path(""))
-        val finished = downloader.isFinished(downloadTask)
+        val finished = downloader.isFinished(downloadTask) ?: false
         assert(finished)
     }
 
@@ -65,7 +61,7 @@ class QbittorrentDownloaderTest {
         val sourceItem = sourceItem(link = "https://mikanani.me/Download/20230308/$torrentHash",
             downloadUrl = "https://mikanani.me/Download/20230308/$torrentHash.torrent")
         val downloadTask = DownloadTask(sourceItem, Path(""))
-        val finished = downloader.isFinished(downloadTask)
+        val finished = downloader.isFinished(downloadTask) ?: false
         assert(!finished)
     }
 

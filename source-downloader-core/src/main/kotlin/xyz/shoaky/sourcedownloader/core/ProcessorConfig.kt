@@ -50,7 +50,8 @@ data class ProcessorConfig(
         // val mode: Int = 0,
         // 修改文件夹创建时间
         val touchItemDirectory: Boolean = true,
-        val renameTimesThreshold: Int = 3
+        val renameTimesThreshold: Int = 3,
+        val abortProcessingContentIn: Int = 1,
     )
 
     data class ComponentId(
@@ -58,8 +59,6 @@ data class ProcessorConfig(
         val id: String,
     ) {
         fun <T : SdComponent> getInstanceName(klass: KClass<T>): String {
-            Options(renameTimesThreshold = 4)
-
             val split = id.split(":")
             return getComponentType(klass).instanceName(split.last())
         }

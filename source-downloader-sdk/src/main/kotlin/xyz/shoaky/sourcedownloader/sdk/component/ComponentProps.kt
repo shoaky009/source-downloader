@@ -33,6 +33,9 @@ interface SdComponentSupplier<R : SdComponent> {
 
     fun rules(): List<ComponentRule> = emptyList()
 
+    /**
+     * 后面反射用
+     */
     fun getComponentClass(): Class<R>
 }
 
