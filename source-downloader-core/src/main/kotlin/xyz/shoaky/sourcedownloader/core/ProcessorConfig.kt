@@ -51,7 +51,6 @@ data class ProcessorConfig(
         // 修改文件夹创建时间
         val touchItemDirectory: Boolean = true,
         val renameTimesThreshold: Int = 3,
-        val abortProcessingContentIn: Int = 1,
     )
 
     data class ComponentId(

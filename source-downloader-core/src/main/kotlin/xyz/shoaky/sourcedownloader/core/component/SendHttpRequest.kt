@@ -19,7 +19,7 @@ class SendHttpRequest(
     override fun accept(t: SourceContent) {
         val url = props.url
         var uriComponents = UriComponentsBuilder.fromHttpUrl(url)
-            .build()
+            .encode().build()
         uriComponents = uriComponents.expand(mapOf("summary" to t.summarySubject()))
 
         val client = Http.client
