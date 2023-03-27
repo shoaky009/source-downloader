@@ -16,6 +16,8 @@ import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 import java.util.function.Predicate
 import kotlin.io.path.exists
+import kotlin.io.path.extension
+import kotlin.io.path.name
 import kotlin.time.ExperimentalTime
 import kotlin.time.measureTime
 
@@ -128,17 +130,18 @@ class SourceProcessor(
         }
     }
 
-    private fun process(sourceItem: SourceItem, sourceGroup: SourceGroup) {
+    private fun process(sourceItem: SourceItem, sourceGroup: SourceItemGroup) {
         val resolveFiles = downloader.resolveFiles(sourceItem)
         val contents = sourceGroup.sourceFiles(resolveFiles)
             .mapIndexed { index, sourceFile ->
-                SourceFileContent(
+                val sourceFileContent = SourceFileContent(
                     downloadPath.resolve(resolveFiles[index]),
                     sourceSavePath,
                     MapPatternVariables(sourceFile.patternVariables().getVariables()),
                     fileSavePathPattern,
-                    filenamePattern
+                    filenamePattern,
                 )
+                sourceFileContent
             }
         val sourceContent = SourceContent(sourceItem, contents)
 
@@ -289,7 +292,8 @@ class SourceProcessor(
     }
 
     private fun rename(content: SourceContent): Boolean {
-        val sourceFiles = content.canRenameFiles()
+        val enhancedContent = addAdditionalVariables(content)
+        val sourceFiles = enhancedContent.canRenameFiles()
         sourceFiles.forEach {
             it.createSaveDirectories()
         }
@@ -301,7 +305,23 @@ class SourceProcessor(
             }
             return true
         }
-        return fileMover.rename(content)
+        return fileMover.rename(enhancedContent)
+    }
+
+    private fun addAdditionalVariables(content: SourceContent): SourceContent {
+        val externalFiles = content.sourceFiles.map {
+            val patternVariables = MapPatternVariables(it.patternVariables.getVariables())
+            val sourceItem = content.sourceItem
+            patternVariables.addVariable("filename", it.fileDownloadPath.name)
+            patternVariables.addVariable("extension", it.fileDownloadPath.extension)
+            patternVariables.addVariable("sourceItemTitle", sourceItem.title)
+            patternVariables.addVariable("sourceItemDate", sourceItem.date.toLocalDate().toString())
+            it.copy(patternVariables = patternVariables)
+        }
+        return SourceContent(
+            content.sourceItem,
+            externalFiles
+        )
     }
 
     fun addRunAfterCompletion(vararg completion: RunAfterCompletion) {

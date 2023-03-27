@@ -10,7 +10,7 @@ import java.nio.file.Path
 import javax.script.SimpleBindings
 
 class JavaScriptContentCreator(private val script: String) : SourceContentCreator {
-    override fun createSourceGroup(sourceItem: SourceItem): SourceGroup {
+    override fun createSourceGroup(sourceItem: SourceItem): SourceItemGroup {
         return ScriptFileGroup(sourceItem, script)
     }
 
@@ -27,7 +27,7 @@ class JavaScriptContentCreator(private val script: String) : SourceContentCreato
 private class ScriptFileGroup(
     val sourceItem: SourceItem,
     val script: String
-) : SourceGroup {
+) : SourceItemGroup {
     override fun sourceFiles(paths: List<Path>): List<SourceFile> {
         return paths.map {
             ScriptFile(it, sourceItem, script)

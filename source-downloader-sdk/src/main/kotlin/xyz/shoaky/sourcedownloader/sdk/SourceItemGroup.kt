@@ -2,7 +2,7 @@ package xyz.shoaky.sourcedownloader.sdk
 
 import java.nio.file.Path
 
-interface SourceGroup {
+interface SourceItemGroup {
 
     /**
      * @return 源文件列表

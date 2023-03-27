@@ -61,7 +61,7 @@ interface Downloader : SdComponent {
 
 interface SourceContentCreator : SdComponent {
 
-    fun createSourceGroup(sourceItem: SourceItem): SourceGroup
+    fun createSourceGroup(sourceItem: SourceItem): SourceItemGroup
 
     fun defaultSavePathPattern(): PathPattern
     fun defaultFilenamePattern(): PathPattern

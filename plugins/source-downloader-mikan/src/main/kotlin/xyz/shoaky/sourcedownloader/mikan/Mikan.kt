@@ -52,7 +52,7 @@ class Mikan(
         throw RuntimeException("获取Bangumi Subject失败")
     }
 
-    override fun createSourceGroup(sourceItem: SourceItem): SourceGroup {
+    override fun createSourceGroup(sourceItem: SourceItem): SourceItemGroup {
         val connection = Jsoup.newSession().cookie(".AspNetCore.Identity.Application", mikanToken ?: "")
         val body = connection.url(sourceItem.link).get().body()
         val titleElement = body.select(".bangumi-title a").first()
@@ -103,7 +103,7 @@ class Mikan(
 private class MikanSourceGroup(
     private val mainPatternVars: BangumiInfo,
     private val subject: SubjectContent,
-) : SourceGroup {
+) : SourceItemGroup {
 
     override fun sourceFiles(paths: List<Path>): List<SourceFile> {
         return paths.map { path ->
