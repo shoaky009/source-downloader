@@ -2,29 +2,28 @@ package xyz.shoaky.sourcedownloader.mikan
 
 import xyz.shoaky.sourcedownloader.mikan.parse.ParserChain
 import xyz.shoaky.sourcedownloader.mikan.parse.SubjectContent
-import xyz.shoaky.sourcedownloader.sdk.PatternVars
+import xyz.shoaky.sourcedownloader.sdk.PatternVariables
 import xyz.shoaky.sourcedownloader.sdk.SourceFile
 import java.nio.file.Path
 import kotlin.io.path.name
 
 internal class BangumiFile(
     private val torrentFilePath: Path,
-    private val bangumiVars: PatternVars,
+    private val bangumiInfo: BangumiInfo,
     private val subject: SubjectContent
 ) : SourceFile {
 
-    override fun patternVars(): PatternVars {
-        val patternVars = PatternVars(bangumiVars.getVars())
+    override fun patternVariables(): PatternVariables {
         val filename = torrentFilePath.last().name
-        patternVars.addVar("origin-filename", filename)
 
         val episodeChain = ParserChain.episodeChain()
         val result = episodeChain.apply(subject, filename)
 
+        val copy = bangumiInfo.copy()
         result.padNumber(subject.episodeLength())?.run {
-            patternVars.addVar("episode", this)
+            copy.episode = this
         }
-        return patternVars
+        return copy
     }
 
 }

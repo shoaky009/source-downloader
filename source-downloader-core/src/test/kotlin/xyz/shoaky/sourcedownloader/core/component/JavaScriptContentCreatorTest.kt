@@ -24,8 +24,9 @@ class JavaScriptContentCreatorTest {
         val path = listOf(Path("test"))
         group.sourceFiles(path)
             .forEach {
-                assertEquals("source-test-title", it.patternVars().getVar("title"))
-                assertEquals("test", it.patternVars().getVar("path"))
+                val variables = it.patternVariables().getVariables()
+                assertEquals("source-test-title", variables["title"])
+                assertEquals("test", variables["path"])
             }
     }
 }

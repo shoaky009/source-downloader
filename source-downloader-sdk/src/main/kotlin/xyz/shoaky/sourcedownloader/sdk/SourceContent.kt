@@ -10,11 +10,6 @@ data class SourceContent(
     val sourceItem: SourceItem,
     val sourceFiles: List<SourceFileContent>,
 ) {
-    fun attributes(): Map<String, List<String>> {
-        return sourceFiles.map { it.patternVars.getVars().entries }
-            .flatten()
-            .groupBy({ it.key }, { it.value })
-    }
 
     fun canRenameFiles(): List<SourceFileContent> {
         return sourceFiles
@@ -37,7 +32,7 @@ data class SourceContent(
 data class SourceFileContent(
     val fileDownloadPath: Path,
     val sourceSavePath: Path,
-    val patternVars: PatternVars,
+    val patternVariables: MapPatternVariables,
     val fileSavePathPattern: PathPattern,
     val filenamePattern: PathPattern
 ) {
@@ -51,11 +46,11 @@ data class SourceFileContent(
     }
 
     fun saveDirectoryPath(): Path {
-        return sourceSavePath.resolve(fileSavePathPattern.resolve(patternVars))
+        return sourceSavePath.resolve(fileSavePathPattern.resolve(patternVariables))
     }
 
     fun targetFilename(): String {
-        val targetFilename = filenamePattern.resolve(patternVars)
+        val targetFilename = filenamePattern.resolve(patternVariables)
         if (targetFilename.isBlank()) {
             return fileDownloadPath.name
         }
@@ -111,10 +106,10 @@ data class SourceFileContent(
 
 data class PathPattern(val pattern: String) {
 
-    fun resolve(vars: PatternVars): String {
-        val matcher = PATTERN.matcher(pattern)
+    fun resolve(provider: PatternVariables): String {
+        val matcher = VARIABLE_PATTERN.matcher(pattern)
         val result = StringBuilder()
-        val variables = vars.getVars()
+        val variables = provider.getVariables()
         while (matcher.find()) {
             val variableName = matcher.group(1)
             val variableValue = variables.getOrDefault(variableName, "")
@@ -129,7 +124,7 @@ data class PathPattern(val pattern: String) {
     }
 
     companion object {
-        var PATTERN: Pattern = Pattern.compile("\\{(.+?)}")
+        var VARIABLE_PATTERN: Pattern = Pattern.compile("\\{(.+?)}")
         val ORIGIN = PathPattern("")
     }
 }

@@ -41,22 +41,22 @@ class ScriptFile(
     private val script: String
 ) : SourceFile {
 
-    private val vars: PatternVars by lazy {
+    private val vars: PatternVariables by lazy {
         eval()
     }
 
-    override fun patternVars(): PatternVars {
+    override fun patternVariables(): PatternVariables {
         return vars
     }
 
-    private fun eval(): PatternVars {
+    private fun eval(): PatternVariables {
         val bindings = SimpleBindings()
         bindings["path"] = path.toString()
         bindings["item"] = sourceItem
         val vars = mutableMapOf<String, String>()
         bindings["vars"] = vars
         ScriptEngine.jsEngine.eval(script, bindings)
-        return PatternVars(vars)
+        return MapPatternVariables(vars)
     }
 }
 

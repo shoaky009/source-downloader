@@ -29,7 +29,7 @@ class SourceFileContentTest {
     @Test
     fun given_vars_pattern_should_filename_expected() {
         val content = createFileContent(
-            patternVars = PatternVars(mapOf("date" to "2022-01-01", "name" to "2")),
+            patternVars = MapPatternVariables(mapOf("date" to "2022-01-01", "name" to "2")),
             filenamePathPattern = PathPattern("{date} - {name}")
         )
         val targetFilename = content.targetFilename()
@@ -56,7 +56,7 @@ class SourceFileContentTest {
     @Test
     fun given_vars_pattern_should_target_expected() {
         val fileContent = createFileContent(
-            patternVars = PatternVars(mapOf("date" to "2022-01-01", "work" to "test", "year" to "2022", "title" to "123")),
+            patternVars = MapPatternVariables(mapOf("date" to "2022-01-01", "work" to "test", "year" to "2022", "title" to "123")),
             savePathPattern = PathPattern("{year}/{work}"),
             filenamePathPattern = PathPattern("{date} - {title}")
         )
@@ -69,7 +69,7 @@ class SourceFileContentTest {
     fun given_2depth_should_equals() {
         val createFileContent = createFileContent(
             savePathPattern = PathPattern("{name}/S{season}"),
-            patternVars = PatternVars(mapOf("name" to "test", "season" to "01"))
+            patternVars = MapPatternVariables(mapOf("name" to "test", "season" to "01"))
         )
         assertEquals(sourceSavePath.resolve("test"), createFileContent.itemFileRootDirectory())
     }
@@ -78,7 +78,7 @@ class SourceFileContentTest {
     fun given_1depth_or_empty_should_null() {
         val content1 = createFileContent(
             savePathPattern = PathPattern("{name}"),
-            patternVars = PatternVars(mapOf("name" to "test", "season" to "01"))
+            patternVars = MapPatternVariables(mapOf("name" to "test", "season" to "01"))
         )
         assertEquals(null, content1.itemFileRootDirectory())
 
@@ -91,7 +91,7 @@ class SourceFileContentTest {
 private fun createFileContent(
     fileDownloadPath: Path = Path("src/test/resources/downloads/1.txt"),
     sourceSavePath: Path = Path("src/test/resources/target"),
-    patternVars: PatternVars = PatternVars(),
+    patternVars: MapPatternVariables = MapPatternVariables(),
     savePathPattern: PathPattern = PathPattern.ORIGIN,
     filenamePathPattern: PathPattern = PathPattern.ORIGIN): SourceFileContent {
     return SourceFileContent(

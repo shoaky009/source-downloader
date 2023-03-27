@@ -24,8 +24,8 @@ class MikanTest {
         assertEquals(1, sourceFiles.size)
         val sourceFile = sourceGroup.sourceFiles(listOf(Path("[ANi] 前進吧！登山少女  Next Summit（僅限港澳台地區） - 11 [1080P][Bilibili][WEB-DL][AAC AVC][CHT CHS].mp4"))).first()
 
-        val patternVars = sourceFile.patternVars()
-        assertEquals(patternVars.getVar("episode"), "11")
-        assertEquals(patternVars.getVar("season"), "01")
+        val bangumiInfo = sourceFile.patternVariables() as BangumiInfo
+        assertEquals(bangumiInfo.episode, "11")
+        assertEquals(bangumiInfo.season, "01")
     }
 }

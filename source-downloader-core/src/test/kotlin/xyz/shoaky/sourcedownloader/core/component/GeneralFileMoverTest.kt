@@ -2,8 +2,8 @@ package xyz.shoaky.sourcedownloader.core.component
 
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import xyz.shoaky.sourcedownloader.sdk.MapPatternVariables
 import xyz.shoaky.sourcedownloader.sdk.PathPattern
-import xyz.shoaky.sourcedownloader.sdk.PatternVars
 import xyz.shoaky.sourcedownloader.sdk.SourceContent
 import xyz.shoaky.sourcedownloader.sdk.SourceFileContent
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentProps
@@ -38,14 +38,14 @@ class GeneralFileMoverTest {
         val file1 = SourceFileContent(
             Path("src/test/resources/downloads/1.txt"),
             Path("src/test/resources/target"),
-            PatternVars(),
+            MapPatternVariables(),
             PathPattern.ORIGIN,
             PathPattern.ORIGIN,
         )
         val file2 = SourceFileContent(
             Path("src/test/resources/downloads/2.txt"),
             Path("src/test/resources/target"),
-            PatternVars(),
+            MapPatternVariables(),
             PathPattern.ORIGIN,
             PathPattern.ORIGIN,
         )

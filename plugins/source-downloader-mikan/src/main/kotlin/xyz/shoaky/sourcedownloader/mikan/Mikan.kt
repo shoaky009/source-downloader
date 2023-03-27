@@ -19,7 +19,7 @@ class Mikan(
 ) : SourceContentCreator {
 
     init {
-        log.info("Mikan初始化,token:{}", mikanToken)
+        log.debug("Mikan初始化,token:{}", mikanToken)
     }
 
     companion object {
@@ -69,24 +69,25 @@ class Mikan(
             }
         }
         val subject = bangumiCache.get(mikanHref)
-        val mainPatternVars = PatternVars()
-
-        mainPatternVars.addVar("mikan-title", mikanTitle)
-        mainPatternVars.addVar("name", subject.name)
-        mainPatternVars.addVar("date", subject.date.toString())
-        mainPatternVars.addVar("year", subject.date.year)
-        mainPatternVars.addVar("month", subject.date.monthValue)
 
         val subjectContent = SubjectContent(subject, mikanTitle)
-        // 有些纯字母的没有中文名
-        mainPatternVars.addVar("name-cn", subjectContent.nonEmptyName())
+
         // 暂时没看到文件跨季度的情况
         val parserChain = ParserChain.seasonChain()
         val result = parserChain.apply(subjectContent, sourceItem.title)
 
         val season = result.padValue() ?: "01"
-        mainPatternVars.addVar("season", season)
-        return MikanSourceGroup(sourceItem, mainPatternVars, subjectContent)
+        val bangumiInfo = BangumiInfo(
+            subject.name,
+            // 有些纯字母的没有中文名
+            subjectContent.nonEmptyName(),
+            mikanTitle,
+            subject.date.toString(),
+            subject.date.year,
+            subject.date.monthValue,
+            season
+        )
+        return MikanSourceGroup(bangumiInfo, subjectContent)
     }
 
     override fun defaultSavePathPattern(): PathPattern {
@@ -100,8 +101,7 @@ class Mikan(
 }
 
 private class MikanSourceGroup(
-    private val sourceItem: SourceItem,
-    private val mainPatternVars: PatternVars,
+    private val mainPatternVars: BangumiInfo,
     private val subject: SubjectContent,
 ) : SourceGroup {
 
@@ -131,3 +131,14 @@ object MikanCreatorSupplier : SdComponentSupplier<Mikan> {
         return listOf(ComponentRule.allowDownloader(TorrentDownloader::class))
     }
 }
+
+data class BangumiInfo(
+    val name: String? = null,
+    val nameCn: String? = null,
+    val mikanTitle: String? = null,
+    val date: String? = null,
+    val year: Int? = null,
+    val month: Int? = null,
+    val season: String? = null,
+    var episode: String? = null,
+) : PatternVariables

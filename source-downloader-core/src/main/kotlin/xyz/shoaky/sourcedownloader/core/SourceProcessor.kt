@@ -135,7 +135,7 @@ class SourceProcessor(
                 SourceFileContent(
                     downloadPath.resolve(resolveFiles[index]),
                     sourceSavePath,
-                    sourceFile.patternVars(),
+                    MapPatternVariables(sourceFile.patternVariables().getVariables()),
                     fileSavePathPattern,
                     filenamePattern
                 )
