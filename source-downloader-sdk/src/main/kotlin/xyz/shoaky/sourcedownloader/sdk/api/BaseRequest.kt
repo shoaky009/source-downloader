@@ -2,6 +2,7 @@ package xyz.shoaky.sourcedownloader.sdk.api
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.core.type.TypeReference
+import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import com.google.common.net.MediaType
 
 abstract class BaseRequest<T : Any> {
@@ -37,7 +38,7 @@ abstract class BaseRequest<T : Any> {
     }
 
     companion object {
-        val stringTypeReference = object : TypeReference<String>() {}
+        val stringTypeReference = jacksonTypeRef<String>()
     }
 
 }

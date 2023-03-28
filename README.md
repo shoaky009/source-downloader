@@ -98,18 +98,26 @@ processors:
     trigger: fixed:20min #触发器使用fixed类型名字为20min
     source: rss:mikan #源使用rss类型名字为mikan
     creator: mikan #创建器为mikan类型名字为mikan
-    downloader: qbittorrent:truenas #下载器为qbittorrent类型名字为truenas
-    mover: qbittorrent:truenas #移动器为qbittorrent类型名字为truenas
-    save-path: /mnt/bangumi #保存路径
+    downloader: qbittorrent #下载器为qbittorrent类型名字为qbittorrent
+    mover: qbittorrent #移动器为qbittorrent类型名字为qbittorrent
+    save-path: /mnt/bangumi #最终保存路径
     options: #处理器选项
+      #完成后运行
       run-after-completion: #命名完成后执行的任务
-        - script:n8n-webhook-send-message #组件类型为script(执行脚本)
-      file-save-path-pattern: "{origin-name}/Season {season}/" #文件路径保存路径模板
-      filename-pattern: "S{season}E{episode} - {version}-{resolution}" #文件名模板
+        - touchItemDirectory #touchItemDirectory为内置的任务
+        - http:telegram-message-webhook #http为内置的任务类型，telegram-message-webhook为任务名字
+      #可用变量具体看creator能提供什么
+      file-save-path-pattern: "{name}/Season {season}/" #文件路径保存路径模板
+      #可用变量具体看creator能提供什么
+      filename-pattern: "{name-cn} - S{season}E{episode}" #文件名模板
+      #全局过滤非必填
       blacklist-regex: #SourceItem过滤的正则列表
-        - 720P
-        - 中文配音
-      rename-task-interval: PT1M #每1分钟检查一次是否有需要重命名的任务
+        - '720(?i)P'
+        - '中文配音'
+      #重命名间隔时间,参考java.time.Duration的格式
+      rename-task-interval: PT2M #每1分钟检查一次是否有需要重命名的任务
+      renameTimesThreshold: 2 #重命名次数阈值，超过阈值的任务将不再执行重命名
+      downloadCategory: Bangumi
 ```
 
 如上配置能够已有的组件实现订阅mikan的rss源，用qbittorrent下载完成后移动到指定模板路径，然后执行脚本
@@ -129,3 +137,5 @@ processors:
 - 7.重启应用
 
 > 如果是使用镜像`/app/plugins`已经是内置的classpath目录直接放入即可，如果是自己使用java命令启动自行加-cp参数，注意-jar启动不能生效.
+
+尽可能让程序启动时就暴露出处理器组件兼容性的错误，而不是在运行时才暴露出来

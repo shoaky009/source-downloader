@@ -14,14 +14,6 @@ class JavaScriptContentCreator(private val script: String) : SourceContentCreato
         return ScriptFileGroup(sourceItem, script)
     }
 
-    override fun defaultSavePathPattern(): PathPattern {
-        return PathPattern.ORIGIN
-    }
-
-    override fun defaultFilenamePattern(): PathPattern {
-        return PathPattern.ORIGIN
-    }
-
 }
 
 private class ScriptFileGroup(
@@ -62,9 +54,7 @@ class ScriptFile(
 
 object ScriptContentCreatorSupplier : SdComponentSupplier<JavaScriptContentCreator> {
     override fun apply(props: ComponentProps): JavaScriptContentCreator {
-        val script = props.properties["script"]?.toString()
-            ?: throw RuntimeException("script is null")
-        return JavaScriptContentCreator(script)
+        return JavaScriptContentCreator(props.get("script"))
     }
 
     override fun supplyTypes(): List<ComponentType> {

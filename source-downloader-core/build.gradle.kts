@@ -39,7 +39,10 @@ dependencies {
     implementation("org.graalvm.js:js:22.3.1")
     implementation("org.graalvm.js:js-scriptengine:22.3.1")
 
-    //内置插件
+    // 可能会插件化
+    implementation("com.github.plexpt:chatgpt:4.0.5")
+
+    // 内置插件
     implementation("xyz.shoaky:source-downloader-mikan:1.0.0")
 }
 

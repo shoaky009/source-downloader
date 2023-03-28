@@ -1,6 +1,6 @@
 package xyz.shoaky.sourcedownloader.core.component
 
-import com.fasterxml.jackson.core.type.TypeReference
+import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import org.springframework.util.StreamUtils
 import xyz.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
 import xyz.shoaky.sourcedownloader.sdk.SourceContent
@@ -48,7 +48,7 @@ object RunCommandSupplier : SdComponentSupplier<RunCommand> {
         if (command is List<*>) {
             return RunCommand(command.map { it.toString() }, enableSummary)
         }
-        val convert = Jackson.convert(command, object : TypeReference<Map<String, String>>() {}).values.toList()
+        val convert = Jackson.convert(command, jacksonTypeRef<Map<String, String>>()).values.toList()
         return RunCommand(convert, enableSummary)
     }
 

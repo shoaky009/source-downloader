@@ -1,7 +1,7 @@
 package xyz.shoaky.sourcedownloader.mikan.parse
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.core.type.TypeReference
+import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import com.google.common.cache.CacheBuilder
 import com.google.common.cache.CacheLoader
 import xyz.shoaky.sourcedownloader.mikan.Mikan.Companion.log
@@ -11,8 +11,9 @@ import java.net.URI
 import java.net.URLEncoder
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
+import java.net.http.HttpResponse
 
-//TODO 请求tmdb部分封装client
+// TODO 请求tmdb部分封装client
 /**
  * 从奇葩的季度命名中获取季度
  */
@@ -21,7 +22,7 @@ internal class TmdbSeasonParser(private val apiKey: String) : ValueParser {
     override val name: String = "TmdbParser"
 
     override fun apply(subjectContent: SubjectContent, filename: String): Result {
-        //TODO 如果用的name api语言要更改
+        // TODO 如果用的name api语言要更改
         val subjectName = subjectContent.nonEmptyName()
         val season = tmdbCache.get(Content(subjectName, apiKey))
         if (season < 1) {
@@ -77,7 +78,7 @@ internal class TmdbSeasonParser(private val apiKey: String) : ValueParser {
                 .GET()
                 .uri(URI("https://api.themoviedb.org/3/tv/$tvId?api_key=${apiKey}&language=zh-CN"))
                 .build()
-            val response = newHttpClient.send(request, Http.JsonBodyHandler(object : TypeReference<TvShow>() {}))
+            val response: HttpResponse<TvShow> = newHttpClient.send(request, Http.JsonBodyHandler(jacksonTypeRef()))
             if (response.statusCode() != 200) {
                 log.error("获取TVShow失败,code:${response.statusCode()} body:${response.body()} request:$request")
                 return null
@@ -93,7 +94,7 @@ internal class TmdbSeasonParser(private val apiKey: String) : ValueParser {
                 .GET()
                 .uri(uri)
                 .build()
-            val body = newHttpClient.send(request, Http.JsonBodyHandler(object : TypeReference<TmdbResult>() {})).body()
+            val body = newHttpClient.send(request, Http.JsonBodyHandler(jacksonTypeRef<TmdbResult>())).body()
             return body.results.map { it.id }.firstOrNull()
         }
 

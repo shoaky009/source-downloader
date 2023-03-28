@@ -23,6 +23,7 @@ import xyz.shoaky.sourcedownloader.sdk.PathPattern
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentType
 import xyz.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
 import xyz.shoaky.sourcedownloader.sdk.component.Trigger
+import java.net.URL
 
 @SpringBootApplication
 @ImportRuntimeHints(SourceDownloaderApplication.ApplicationRuntimeHints::class)
@@ -115,9 +116,21 @@ class SourceDownloaderApplication(
 
         @JvmStatic
         fun main(args: Array<String>) {
+            setUpProxy()
+
             val springApplication = SpringApplication(SourceDownloaderApplication::class.java)
             springApplication.mainApplicationClass = SourceDownloaderApplication::class.java
             springApplication.run(*args)
+        }
+
+        private fun setUpProxy() {
+            val sysenv = System.getenv()
+            val urlStr = sysenv["http_proxy"] ?: sysenv["HTTP_PROXY"]
+            urlStr?.also {
+                val url = URL(it)
+                System.setProperty("http.proxyHost", url.host)
+                System.setProperty("http.proxyPort", url.port.toString())
+            }
         }
     }
 
@@ -160,6 +173,8 @@ fun getDefaultComponentSuppliers(): List<SdComponentSupplier<*>> {
         TouchItemDirectorySupplier,
         ScriptContentCreatorSupplier,
         DynamicTriggerSupplier,
-        SendHttpRequestSupplier
+        SendHttpRequestSupplier,
+        AiContentCreatorSupplier,
+        SystemFileSourceSupplier
     )
 }

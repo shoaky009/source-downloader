@@ -1,6 +1,7 @@
 package xyz.shoaky.sourcedownloader.sdk.api.bangumi
 
 import com.fasterxml.jackson.core.type.TypeReference
+import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import xyz.shoaky.sourcedownloader.sdk.api.HttpMethod
 
 /**
@@ -18,7 +19,7 @@ class SearchSubjectV0Request(
     )
 
     override val path: String = "/v0/search/subjects"
-    override val responseBodyType: TypeReference<SearchSubjectV0Body> = object : TypeReference<SearchSubjectV0Body>() {}
+    override val responseBodyType: TypeReference<SearchSubjectV0Body> = jacksonTypeRef()
     override val httpMethod: HttpMethod = HttpMethod.POST
 
 }

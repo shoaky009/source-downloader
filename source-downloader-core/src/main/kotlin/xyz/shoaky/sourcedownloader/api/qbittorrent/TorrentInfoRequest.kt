@@ -1,6 +1,7 @@
 package xyz.shoaky.sourcedownloader.api.qbittorrent
 
 import com.fasterxml.jackson.core.type.TypeReference
+import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import xyz.shoaky.sourcedownloader.sdk.api.HttpMethod
 
 /**
@@ -19,7 +20,7 @@ class TorrentInfoRequest(
 
     override val path: String = "/api/v2/torrents/info"
 
-    override val responseBodyType: TypeReference<List<TorrentInfo>> = object : TypeReference<List<TorrentInfo>>() {}
+    override val responseBodyType: TypeReference<List<TorrentInfo>> = jacksonTypeRef()
 
     override val httpMethod: HttpMethod = HttpMethod.GET
 

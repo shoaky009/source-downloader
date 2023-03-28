@@ -14,4 +14,8 @@ class MapPatternVariables() : PatternVariables {
     fun addVariable(name: String, value: String) {
         vars[name] = value
     }
+
+    override fun toString(): String {
+        return vars.toString()
+    }
 }

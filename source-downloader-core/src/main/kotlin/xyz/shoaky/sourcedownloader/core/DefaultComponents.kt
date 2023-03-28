@@ -1,6 +1,6 @@
 package xyz.shoaky.sourcedownloader.core
 
-import com.fasterxml.jackson.core.type.TypeReference
+import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import org.springframework.core.io.ClassPathResource
 import org.springframework.stereotype.Component
 import org.yaml.snakeyaml.Yaml
@@ -12,6 +12,6 @@ class DefaultComponents : ComponentConfigStorage {
     override fun getAllComponents(): Map<String, List<ComponentConfig>> {
         val yaml = ClassPathResource("default-component.yaml")
         val load = Yaml().load<Map<Any, Any>>(yaml.inputStream)
-        return Jackson.convert(load, object : TypeReference<Map<String, List<ComponentConfig>>>() {})
+        return Jackson.convert(load, jacksonTypeRef())
     }
 }

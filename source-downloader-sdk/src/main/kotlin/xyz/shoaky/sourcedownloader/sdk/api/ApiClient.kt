@@ -1,6 +1,6 @@
 package xyz.shoaky.sourcedownloader.sdk.api
 
-import com.fasterxml.jackson.core.type.TypeReference
+import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import com.google.common.net.HttpHeaders
 import com.google.common.net.MediaType
 import org.slf4j.LoggerFactory
@@ -77,7 +77,7 @@ abstract class HookedApiClient : ApiClient {
     private fun <R : BaseRequest<T>, T : Any> bodyPublisher(request: BaseRequest<T>): HttpRequest.BodyPublisher {
         val mediaType = request.mediaType
         if (mediaType == MediaType.FORM_DATA || mediaType == MediaType.PLAIN_TEXT_UTF_8) {
-            val data = Jackson.convert(request, object : TypeReference<Map<String, Any?>>() {})
+            val data = Jackson.convert(request, jacksonTypeRef<Map<String, Any?>>())
             val query = data.entries.stream()
                 .filter { (_, v) -> v != null }
                 .map { (k, v) ->

@@ -1,6 +1,6 @@
 package xyz.shoaky.sourcedownloader.core.component
 
-import com.fasterxml.jackson.core.type.TypeReference
+import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import xyz.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
 import xyz.shoaky.sourcedownloader.sdk.SourceItem
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentProps
@@ -32,8 +32,8 @@ class RegexSourceItemFilter(private val regexes: List<Regex>) : SourceFilter {
 object RegexSourceItemFilterSupplier : SdComponentSupplier<RegexSourceItemFilter> {
 
     override fun apply(props: ComponentProps): RegexSourceItemFilter {
-        val regexes = props.properties["regexes"] ?: listOf<String>()
-        val convert = Jackson.convert(regexes, object : TypeReference<List<Regex>>() {})
+        val regexes = props.getOrDefault("regexes", listOf<String>())
+        val convert: List<Regex> = Jackson.convert(regexes, jacksonTypeRef())
         return RegexSourceItemFilter(convert)
     }
 

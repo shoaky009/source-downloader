@@ -63,8 +63,8 @@ interface SourceContentCreator : SdComponent {
 
     fun createSourceGroup(sourceItem: SourceItem): SourceItemGroup
 
-    fun defaultSavePathPattern(): PathPattern
-    fun defaultFilenamePattern(): PathPattern
+    fun defaultSavePathPattern() = PathPattern.ORIGIN
+    fun defaultFilenamePattern() = PathPattern.ORIGIN
 
 }
 

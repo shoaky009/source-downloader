@@ -1,6 +1,6 @@
 package xyz.shoaky.sourcedownloader.sdk.component
 
-import com.fasterxml.jackson.core.type.TypeReference
+import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import xyz.shoaky.sourcedownloader.sdk.util.Jackson
 import kotlin.reflect.KClass
 import kotlin.reflect.full.isSuperclassOf
@@ -9,7 +9,25 @@ class ComponentProps
 private constructor(val properties: MutableMap<String, Any>) {
 
     inline fun <reified T> parse(): T {
-        return Jackson.convert(properties, object : TypeReference<T>() {})
+        return Jackson.convert(properties, jacksonTypeRef())
+    }
+
+    inline fun <reified T> get(key: String): T {
+        val any = properties[key] ?: throw ComponentException("属性不存在: $key")
+        try {
+            return Jackson.convert(any, jacksonTypeRef())
+        } catch (e: Exception) {
+            throw RuntimeException("组件属性解析异常: $key", e)
+        }
+    }
+
+    inline fun <reified T> getOrDefault(key: String, default: T): T {
+        val any = properties[key] ?: return default
+        try {
+            return Jackson.convert(any, jacksonTypeRef())
+        } catch (e: Exception) {
+            throw RuntimeException("组件属性解析异常: $key", e)
+        }
     }
 
     companion object {
@@ -19,7 +37,7 @@ private constructor(val properties: MutableMap<String, Any>) {
         }
 
         fun fromJson(json: String): ComponentProps {
-            val typeReference = object : TypeReference<MutableMap<String, Any>>() {}
+            val typeReference = jacksonTypeRef<MutableMap<String, Any>>()
             return ComponentProps(Jackson.fromJson(json, typeReference))
         }
 

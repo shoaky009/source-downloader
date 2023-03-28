@@ -35,8 +35,8 @@ class Mikan(
 
     private fun getBangumiSubject(mikanBangumiHref: String): Subject {
         kotlin.runCatching {
-            val page = Jsoup.newSession().cookie(".AspNetCore.Identity.Application", mikanToken
-                ?: "").url(mikanBangumiHref).get().body()
+            val page = Jsoup.newSession().cookie(".AspNetCore.Identity.Application", mikanToken ?: "")
+                .url(mikanBangumiHref).get().body()
             val subjectId = page.select(".bangumi-info a")
                 .filter { ele ->
                     ele.hasText() && ele.text().contains("/subject/")

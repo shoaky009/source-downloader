@@ -6,13 +6,14 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import java.io.InputStream
 import kotlin.reflect.KClass
 
 object Jackson {
 
     private val objectMapper: ObjectMapper = ObjectMapper()
-    private val mapRef = object : TypeReference<Map<String, Any>>() {}
+    private val mapRef = jacksonTypeRef<Map<String, Any>>()
 
     init {
         objectMapper.registerModule(KotlinModule.Builder().build())
