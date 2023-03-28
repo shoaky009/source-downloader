@@ -15,7 +15,7 @@ import kotlin.io.path.Path
 class UrlDownloader(private val downloadPath: Path) : Downloader {
 
     override fun submit(task: DownloadTask) {
-        val urlResource = UrlResource(task.downloadURL())
+        val urlResource = UrlResource(task.downloadUri())
         val filename = urlResource.filename.takeIf { it.isNullOrBlank().not() }
             ?: task.sourceItem.hashing()
         val dp = task.downloadPath ?: downloadPath
@@ -32,7 +32,7 @@ class UrlDownloader(private val downloadPath: Path) : Downloader {
     }
 
     override fun resolveFiles(sourceItem: SourceItem): List<Path> {
-        val filename = UrlResource(sourceItem.downloadUrl).filename
+        val filename = UrlResource(sourceItem.downloadUri).filename
             ?: sourceItem.hashing()
         return listOf(Path(filename))
     }

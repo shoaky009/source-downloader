@@ -13,7 +13,7 @@
 - Trigger: 触发器，触发处理器执行
 - Source: 从源转换成SourceItem
 - SourceFilter: 过滤SourceItem标题的规则
-- Creator: 从SourceItem创建下载任务，放置路径变量
+- Provider: 根据sourceItem提供对应路径上的变量
 - Downloader: 下载任务
 - FileMover: 从下载路径移动文件到目标路径
 - RunAfterCompletion: 移动文件完成后执行的任务
@@ -34,7 +34,7 @@ components:
       type: rss
       props:
         url: https://mikanani.me/RSS/Bangumi?bangumiId=2852&subgroupid=583
-  source-content-creator:
+  variable-provider:
     - name: mikan
       type: mikan
   file-mover:
@@ -68,7 +68,7 @@ source
 - watch: 监听文件路径 (在路上了.jpg)
 - files: 文件列表 (在路上了.jpg)
 
-creator
+provider
 
 - mikan: Mikan番剧相关（已内置mikan插件）
 
@@ -97,7 +97,8 @@ processors:
   - name: mikan-bangumi #处理器名字
     trigger: fixed:20min #触发器使用fixed类型名字为20min
     source: rss:mikan #源使用rss类型名字为mikan
-    creator: mikan #创建器为mikan类型名字为mikan
+    providers:
+      - mikan #创建器为mikan类型名字为mikan
     downloader: qbittorrent #下载器为qbittorrent类型名字为qbittorrent
     mover: qbittorrent #移动器为qbittorrent类型名字为qbittorrent
     save-path: /mnt/bangumi #最终保存路径
@@ -106,9 +107,9 @@ processors:
       run-after-completion: #命名完成后执行的任务
         - touchItemDirectory #touchItemDirectory为内置的任务
         - http:telegram-message-webhook #http为内置的任务类型，telegram-message-webhook为任务名字
-      #可用变量具体看creator能提供什么
+      #可用变量具体看provider能提供什么
       file-save-path-pattern: "{name}/Season {season}/" #文件路径保存路径模板
-      #可用变量具体看creator能提供什么
+      #可用变量具体看provider能提供什么
       filename-pattern: "{name-cn} - S{season}E{episode}" #文件名模板
       #全局过滤非必填
       blacklist-regex: #SourceItem过滤的正则列表

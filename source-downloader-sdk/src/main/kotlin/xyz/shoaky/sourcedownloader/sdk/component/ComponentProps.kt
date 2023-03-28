@@ -33,7 +33,17 @@ private constructor(val properties: MutableMap<String, Any>) {
     companion object {
 
         fun fromMap(map: Map<String, Any>): ComponentProps {
-            return ComponentProps(HashMap(map))
+            val mutableMapOf = mutableMapOf<String, Any>()
+            mutableMapOf.putAll(map)
+            for (entry in map) {
+                val value = entry.value
+                if (value is Map<*, *> && value["0"] != null) {
+                    // yaml中的数组会被解析成map
+                    mutableMapOf[entry.key] = value.values
+                }
+            }
+
+            return ComponentProps(mutableMapOf)
         }
 
         fun fromJson(json: String): ComponentProps {
@@ -97,9 +107,9 @@ data class ComponentRule internal constructor(
         fun notAllowSource(value: KClass<out SdComponent>) = ComponentRule(false, Components.SOURCE, value)
         fun allowDownloader(value: KClass<out SdComponent>) = ComponentRule(true, Components.DOWNLOADER, value)
         fun notAllowDownloader(value: KClass<out SdComponent>) = ComponentRule(false, Components.DOWNLOADER, value)
-        fun allowCreator(value: KClass<out SdComponent>) = ComponentRule(true, Components.SOURCE_CONTENT_CREATOR, value)
-        fun notAllowCreator(value: KClass<out SdComponent>) =
-            ComponentRule(false, Components.SOURCE_CONTENT_CREATOR, value)
+        fun allowProvider(value: KClass<out SdComponent>) = ComponentRule(true, Components.VARIABLE_PROVIDER, value)
+        fun notAllowProvider(value: KClass<out SdComponent>) =
+            ComponentRule(false, Components.VARIABLE_PROVIDER, value)
 
         fun allowTrigger(value: KClass<out SdComponent>) = ComponentRule(true, Components.TRIGGER, value)
         fun notAllowTrigger(value: KClass<out SdComponent>) = ComponentRule(false, Components.TRIGGER, value)

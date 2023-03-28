@@ -3,9 +3,9 @@ package xyz.shoaky.sourcedownloader.core
 import org.springframework.beans.factory.config.ConfigurableBeanFactory
 import org.springframework.stereotype.Component
 import xyz.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
-import xyz.shoaky.sourcedownloader.core.component.RegexSourceItemFilter
+import xyz.shoaky.sourcedownloader.core.component.ExpressionFileFilterSupplier
+import xyz.shoaky.sourcedownloader.core.component.ExpressionItemFilterSupplier
 import xyz.shoaky.sourcedownloader.sdk.component.*
-import xyz.shoaky.sourcedownloader.sdk.util.Jackson
 import xyz.shoaky.sourcedownloader.util.Events
 import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Predicate
@@ -21,35 +21,55 @@ class ComponentManager(
     fun fullyCreateSourceProcessor(config: ProcessorConfig): SourceProcessor {
         val source = applicationContext.getBean(config.getSourceInstanceName(), Source::class.java)
         val downloader = applicationContext.getBean(config.getDownloaderInstanceName(), Downloader::class.java)
-        val creator = applicationContext.getBean(config.getCreatorInstanceName(), SourceContentCreator::class.java)
+
+        val providers = config.getProviderInstanceNames().map {
+            applicationContext.getBean(it, VariableProvider::class.java)
+        }
         val mover = applicationContext.getBean(config.getMoverInstanceName(), FileMover::class.java)
         val processor = SourceProcessor(
             config.name,
             source,
-            creator,
+            providers,
             downloader,
             mover,
-            config.fileMode,
             config.savePath,
             config.options,
             processingStorage,
         )
 
-        listOf(
+        val mutableListOf = mutableListOf(
             config.source.getComponentType(Source::class),
             config.downloader.getComponentType(Downloader::class),
             config.mover.getComponentType(FileMover::class),
-            config.creator.getComponentType(SourceContentCreator::class)
-        ).forEach {
-            check(it, listOf(source, creator, downloader, mover))
-        }
+        )
+        mutableListOf.addAll(
+            config.providers.map { it.getComponentType(VariableProvider::class) }
+        )
+
+        val cps = mutableListOf(source, downloader, mover)
+        cps.addAll(providers)
+        mutableListOf
+            .forEach {
+                check(it, cps)
+            }
+
+        val fileFilters = config.sourceFileFilters.map {
+            val instanceName = it.getInstanceName(SourceFileFilter::class)
+            applicationContext.getBean(instanceName, SourceFileFilter::class.java)
+        }.toTypedArray()
+        processor.addFileFilter(*fileFilters)
+
+        val itemFilters = config.sourceItemFilters.map {
+            val instanceName = it.getInstanceName(SourceFileFilter::class)
+            applicationContext.getBean(instanceName, SourceFileFilter::class.java)
+        }.toTypedArray()
+        processor.addFileFilter(*itemFilters)
 
         initOptions(config.options, processor)
 
         val name = "Processor-${config.name}"
         applicationContext.registerSingleton(name, processor)
-        log.info("处理器创建成功:${Jackson.toJsonString(config)}")
-        processor.printProcessorInfo()
+        log.info("处理器${config.name}初始化完成:$processor")
 
         val trigger = applicationContext.getBean(config.getTriggerInstanceName(), Trigger::class.java)
         trigger.addTask(processor.safeTask())
@@ -57,10 +77,15 @@ class ComponentManager(
     }
 
     private fun initOptions(options: ProcessorConfig.Options, processor: SourceProcessor) {
-        val filterWords = options.blacklistRegex
-        if (filterWords.isNotEmpty()) {
-            processor.addItemFilter(RegexSourceItemFilter(filterWords))
-        }
+        processor.addItemFilter(ExpressionItemFilterSupplier.expressions(
+            options.itemExpressionExclusions,
+            options.itemExpressionInclusions
+        ))
+
+        processor.addFileFilter(ExpressionFileFilterSupplier.expressions(
+            options.fileExpressionExclusions,
+            options.fileExpressionInclusions
+        ))
 
         val runAfterCompletion = options.runAfterCompletion
         runAfterCompletion.forEach {
@@ -81,7 +106,7 @@ class ComponentManager(
 
         val supplier = getSupplierByType(componentType)
 
-        //TODO 创建顺序问题
+        // TODO 创建顺序问题
         val otherTypes = supplier.supplyTypes().filter { it != componentType }
         val singletonNames = applicationContext.singletonNames.toSet()
         for (otherType in otherTypes) {
@@ -123,7 +148,7 @@ class ComponentManager(
     }
 
     fun getSuppliers(filter: Predicate<SdComponentSupplier<*>> = Predicate<SdComponentSupplier<*>> { true })
-            : List<SdComponentSupplier<*>> {
+        : List<SdComponentSupplier<*>> {
         return sdComponentSuppliers.values.filter { filter.test(it) }.toList()
     }
 

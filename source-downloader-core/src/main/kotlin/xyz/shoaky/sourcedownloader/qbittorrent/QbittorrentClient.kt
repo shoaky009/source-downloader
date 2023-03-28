@@ -1,4 +1,4 @@
-package xyz.shoaky.sourcedownloader.api.qbittorrent
+package xyz.shoaky.sourcedownloader.qbittorrent
 
 import org.slf4j.LoggerFactory
 import xyz.shoaky.sourcedownloader.sdk.api.BaseRequest

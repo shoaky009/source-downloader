@@ -2,6 +2,7 @@ package xyz.shoaky.sourcedownloader.core.component
 
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
+import org.springframework.stereotype.Component
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping
@@ -45,9 +46,12 @@ class WebhookTrigger(
 
 }
 
-object WebhookTriggerSupplier : SdComponentSupplier<WebhookTrigger> {
+@Component
+class WebhookTriggerSupplier(
+    private val requestMapping: RequestMappingHandlerMapping
+) : SdComponentSupplier<WebhookTrigger> {
     override fun apply(props: ComponentProps): WebhookTrigger {
-        TODO()
+        return WebhookTrigger(props.get("path"), props.getOrDefault("method", "GET"), requestMapping)
     }
 
     override fun supplyTypes(): List<ComponentType> {

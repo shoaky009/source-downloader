@@ -19,7 +19,7 @@ interface AsyncDownloader : Downloader {
 interface TorrentDownloader : AsyncDownloader, FileMover {
 
     fun parseTorrentHash(sourceItem: SourceItem): String? {
-        val find = torrentHashRegex.find(sourceItem.downloadUrl.toString())
+        val find = torrentHashRegex.find(sourceItem.downloadUri.toString())
             ?: torrentHashRegex.find(sourceItem.link.toString()) ?: torrentHashRegex.find(sourceItem.title)
         return find?.value
     }

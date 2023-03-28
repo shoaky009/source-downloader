@@ -3,11 +3,10 @@ package xyz.shoaky.sourcedownloader.core.component
 import xyz.shoaky.sourcedownloader.sdk.DownloadTask
 import xyz.shoaky.sourcedownloader.sdk.SourceItem
 import xyz.shoaky.sourcedownloader.sdk.component.*
+import xyz.shoaky.sourcedownloader.util.creationTime
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.attribute.BasicFileAttributes
 import java.time.LocalDateTime
-import java.time.ZoneId
 import kotlin.io.path.*
 
 class SystemFileSource(
@@ -16,7 +15,7 @@ class SystemFileSource(
      * 0: 把路径下的文件(包括文件夹 文件夹下的作为item下的子文件)作为一个SourceItem
      * 1: 把路径下的所有文件(不包括文件夹，包括子路径下的文件)作为一个SourceItem
      */
-    private val mode: Int = 1
+    private val mode: Int = 0
 ) : Source, Downloader {
 
     override fun fetch(): List<SourceItem> {
@@ -46,12 +45,10 @@ class SystemFileSource(
     }
 
     private fun fromPath(it: Path): SourceItem {
-        val attrs = it.readAttributes<BasicFileAttributes>()
-        val creationTime = attrs.creationTime()
-        val dateTime = LocalDateTime.ofInstant(creationTime.toInstant(), ZoneId.systemDefault())
-        val url = it.toUri().toURL()
+        val creationTime = it.creationTime() ?: LocalDateTime.now()
+        val url = it.toUri()
         val type = if (it.isDirectory()) "directory" else "system-file"
-        return SourceItem(it.nameWithoutExtension, url, dateTime, type, url)
+        return SourceItem(it.nameWithoutExtension, url, creationTime, type, url)
     }
 
     override fun submit(task: DownloadTask) {
@@ -63,9 +60,9 @@ class SystemFileSource(
     }
 
     override fun resolveFiles(sourceItem: SourceItem): List<Path> {
-        val path = sourceItem.downloadUrl.toURI().toPath()
+        val path = sourceItem.downloadUri.toPath()
         if (path.isDirectory()) {
-            return Files.list(path).toList()
+            return Files.list(path).sorted().toList()
         }
         return listOf(path)
     }

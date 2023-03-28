@@ -3,7 +3,7 @@ package xyz.shoaky.sourcedownloader.core.component
 import bt.metainfo.MetadataService
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
-import xyz.shoaky.sourcedownloader.api.qbittorrent.*
+import xyz.shoaky.sourcedownloader.qbittorrent.*
 import xyz.shoaky.sourcedownloader.sdk.DownloadTask
 import xyz.shoaky.sourcedownloader.sdk.SourceContent
 import xyz.shoaky.sourcedownloader.sdk.SourceItem
@@ -20,7 +20,7 @@ class QbittorrentDownloader(private val client: QbittorrentClient) : TorrentDown
 
     override fun submit(task: DownloadTask) {
         val torrentsAddRequest = TorrentsAddRequest(
-            listOf(task.downloadURL()),
+            listOf(task.downloadUri().toURL()),
             task.downloadPath.toString(),
             task.category
         )
@@ -39,7 +39,7 @@ class QbittorrentDownloader(private val client: QbittorrentClient) : TorrentDown
     }
 
     override fun resolveFiles(sourceItem: SourceItem): List<Path> {
-        val torrent = metadataService.fromUrl(sourceItem.downloadUrl)
+        val torrent = metadataService.fromUrl(sourceItem.downloadUri.toURL())
         return torrent.files
             .filter { it.size > 0 }
             .map { Path.of(it.pathElements.joinToString("/")) }
@@ -54,13 +54,14 @@ class QbittorrentDownloader(private val client: QbittorrentClient) : TorrentDown
     }
 
     private fun getTorrentHash(sourceItem: SourceItem): String {
-        return parseTorrentHash(sourceItem) ?: metadataService.fromUrl(sourceItem.downloadUrl).torrentId.toString()
+        return parseTorrentHash(sourceItem)
+            ?: metadataService.fromUrl(sourceItem.downloadUri.toURL()).torrentId.toString()
     }
 
     override fun rename(sourceContent: SourceContent): Boolean {
         val sourceItem = sourceContent.sourceItem
         // 优化
-        val torrent = metadataService.fromUrl(sourceItem.downloadUrl)
+        val torrent = metadataService.fromUrl(sourceItem.downloadUri.toURL())
         val torrentHash = torrent.torrentId.toString()
         val sourceFiles = sourceContent.sourceFiles
 

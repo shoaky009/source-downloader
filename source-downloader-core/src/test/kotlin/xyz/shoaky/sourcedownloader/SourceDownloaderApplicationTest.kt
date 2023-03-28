@@ -5,8 +5,10 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.ApplicationContext
+import org.springframework.core.convert.ConversionService
 import org.springframework.stereotype.Component
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.util.unit.DataSize
 import xyz.shoaky.sourcedownloader.core.ProcessingStorage
 import xyz.shoaky.sourcedownloader.sdk.SourceItem
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentProps
@@ -28,6 +30,9 @@ class SourceDownloaderApplicationTest {
     @Autowired
     lateinit var applicationContext: ApplicationContext
 
+    @Autowired
+    lateinit var conversionService: ConversionService
+
     @BeforeEach
     fun initSourceFiles() {
         val path = Path("src/test/resources/sources/test1.jpg")
@@ -45,9 +50,15 @@ class SourceDownloaderApplicationTest {
 
     @Test
     fun normal() {
+        // TODO 跑个流程
         println(processingStorage)
-
         // Thread.sleep(10000L)
+    }
+
+
+    @Test
+    fun name() {
+        println(conversionService.convert("1MB", DataSize::class.java))
     }
 }
 
@@ -68,7 +79,7 @@ class TestSourceSupplier : SdComponentSupplier<TestSource> {
     }
 
     override fun supplyTypes(): List<ComponentType> {
-        return listOf(ComponentType.source("test1"))
+        return listOf(ComponentType.source("test"))
     }
 
     override fun getComponentClass(): Class<TestSource> {

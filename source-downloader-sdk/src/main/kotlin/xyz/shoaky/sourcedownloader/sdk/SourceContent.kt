@@ -50,6 +50,9 @@ data class SourceFileContent(
     }
 
     fun targetFilename(): String {
+        if (filenamePattern == PathPattern.ORIGIN) {
+            return fileDownloadPath.name
+        }
         val targetFilename = filenamePattern.resolve(patternVariables)
         if (targetFilename.isBlank()) {
             return fileDownloadPath.name
@@ -109,7 +112,7 @@ data class PathPattern(val pattern: String) {
     fun resolve(provider: PatternVariables): String {
         val matcher = VARIABLE_PATTERN.matcher(pattern)
         val result = StringBuilder()
-        val variables = provider.getVariables()
+        val variables = provider.variables()
         while (matcher.find()) {
             val variableName = matcher.group(1)
             val variableValue = variables.getOrDefault(variableName, "")

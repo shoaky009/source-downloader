@@ -14,11 +14,11 @@ import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.ImportRuntimeHints
 import org.springframework.context.event.EventListener
 import org.springframework.core.env.Environment
-import xyz.shoaky.sourcedownloader.api.qbittorrent.QbittorrentConfig
 import xyz.shoaky.sourcedownloader.core.*
 import xyz.shoaky.sourcedownloader.core.component.*
 import xyz.shoaky.sourcedownloader.core.config.ComponentConfig
 import xyz.shoaky.sourcedownloader.core.config.ProcessorConfigs
+import xyz.shoaky.sourcedownloader.qbittorrent.QbittorrentConfig
 import xyz.shoaky.sourcedownloader.sdk.PathPattern
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentType
 import xyz.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
@@ -165,16 +165,18 @@ fun getDefaultComponentSuppliers(): List<SdComponentSupplier<*>> {
         RssSourceSupplier,
         GeneralFileMoverSupplier,
         RunCommandSupplier,
-        RegexSourceItemFilterSupplier,
+        ExpressionItemFilterSupplier,
         FixedScheduleTriggerSupplier,
         WatchFileSourceSupplier,
         UrlDownloaderSupplier,
         MockDownloaderSupplier,
         TouchItemDirectorySupplier,
-        ScriptContentCreatorSupplier,
+        // ScriptVariableProviderSupplier,
         DynamicTriggerSupplier,
         SendHttpRequestSupplier,
-        AiContentCreatorSupplier,
-        SystemFileSourceSupplier
+        AiVariableProviderSupplier,
+        SystemFileSourceSupplier,
+        MetadataVariableProviderSupplier,
+        JackettSourceSupplier
     )
 }

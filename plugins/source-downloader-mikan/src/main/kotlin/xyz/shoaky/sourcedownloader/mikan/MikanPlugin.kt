@@ -4,10 +4,10 @@ import xyz.shoaky.sourcedownloader.sdk.*
 
 class MikanPlugin : Plugin {
     override fun init(pluginContext: PluginContext) {
-        pluginContext.registerSupplier(MikanCreatorSupplier)
+        pluginContext.registerSupplier(MikanProviderSupplier)
 
         val patternVarsDescription = PatternVarsDescription(
-            MikanCreatorSupplier.supplyTypes().first(),
+            MikanProviderSupplier.supplyTypes().first(),
             listOf(
                 VarDescription("mikan-title", true, "Mikan的标题，中文的"),
                 VarDescription("name", true, "番剧原标题多数为日文，bgm.tv上的"),

@@ -2,20 +2,24 @@ package xyz.shoaky.sourcedownloader.sdk
 
 class MapPatternVariables() : PatternVariables {
     constructor(variables: Map<String, String>) : this() {
-        this.vars.putAll(variables)
+        this.variables.putAll(variables)
     }
 
-    private val vars: MutableMap<String, String> = mutableMapOf()
+    private val variables: MutableMap<String, String> = mutableMapOf()
 
-    override fun getVariables(): Map<String, String> {
-        return vars
+    override fun variables(): Map<String, String> {
+        return variables
     }
 
     fun addVariable(name: String, value: String) {
-        vars[name] = value
+        variables[name] = value
+    }
+
+    fun getVariables(): Map<String, String> {
+        return variables
     }
 
     override fun toString(): String {
-        return vars.toString()
+        return variables.toString()
     }
 }

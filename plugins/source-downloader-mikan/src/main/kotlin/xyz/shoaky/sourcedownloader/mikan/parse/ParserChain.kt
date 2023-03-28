@@ -3,7 +3,10 @@ package xyz.shoaky.sourcedownloader.mikan.parse
 import org.slf4j.LoggerFactory
 import xyz.shoaky.sourcedownloader.sdk.api.bangumi.Subject
 
-internal class ParserChain(private val parsers: List<ValueParser>, private val any: Boolean = false) {
+internal class ParserChain(
+    private val parsers: List<ValueParser>,
+    private val any: Boolean = false
+) {
     fun apply(subject: SubjectContent, filename: String): Result {
         return if (any) {
             anyValue(subject, filename)
@@ -32,7 +35,7 @@ internal class ParserChain(private val parsers: List<ValueParser>, private val a
             }
         }
 
-        //暂时先这样后面根据情况调整
+        // 暂时先这样后面根据情况调整
         val value = results.values
             .filter { it.value != null }
             .groupingBy { it }
@@ -62,7 +65,7 @@ internal class ParserChain(private val parsers: List<ValueParser>, private val a
 
         fun seasonChain(
             tmdbApiKey: String = System.getenv("TMDB_APIKEY_V3_AUTH")
-            //单独的账号无信息
+            // 单独的账号无信息
                 ?: "7d82a6a830d5f4458f42929f73878195"
         ): ParserChain {
             return ParserChain(listOf(

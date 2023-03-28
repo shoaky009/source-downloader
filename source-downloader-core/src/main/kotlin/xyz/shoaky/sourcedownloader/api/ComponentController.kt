@@ -1,4 +1,4 @@
-package xyz.shoaky.sourcedownloader.contorller
+package xyz.shoaky.sourcedownloader.api
 
 import org.springframework.context.ApplicationContext
 import org.springframework.web.bind.annotation.RequestMapping

@@ -1,7 +1,6 @@
 package xyz.shoaky.sourcedownloader.core.component
 
 import com.apptasticsoftware.rssreader.RssReader
-import xyz.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
 import xyz.shoaky.sourcedownloader.sdk.SourceItem
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentProps
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentType
@@ -10,8 +9,11 @@ import xyz.shoaky.sourcedownloader.sdk.component.Source
 import java.net.URI
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.*
 
-class RssSource(private val url: String) : Source {
+class JackettSource(
+    private val url: String
+) : Source {
 
     private val rssReader = RssReader()
     override fun fetch(): List<SourceItem> {
@@ -20,12 +22,11 @@ class RssSource(private val url: String) : Source {
                 kotlin.runCatching {
                     val enclosure = it.enclosure.get()
                     SourceItem(it.title.get(),
-                        URI(it.link.get()),
+                        URI(it.comments.get()),
                         parseTime(it.pubDate.get()),
                         enclosure.type,
-                        URI(enclosure.url))
-                }.onFailure {
-                    log.error("获取RssItem字段发生错误", it)
+                        URI(enclosure.url)
+                    )
                 }
             }
             .filter { it.isSuccess }
@@ -34,27 +35,20 @@ class RssSource(private val url: String) : Source {
     }
 
     companion object {
-        private val patterns = listOf(
-            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-        )
-
+        private val formatter = DateTimeFormatter.ofPattern("EEE, d MMM yyyy HH:mm:ss Z", Locale.ENGLISH)
         private fun parseTime(pubDateText: String): LocalDateTime {
-
             return try {
-                LocalDateTime.parse(pubDateText)
+                LocalDateTime.parse(pubDateText, formatter)
             } catch (e: Exception) {
-                for (pattern in patterns) {
-                    return LocalDateTime.parse(pubDateText, pattern)
-                }
                 throw RuntimeException("解析日期$pubDateText 失败")
             }
         }
     }
 }
 
-object RssSourceSupplier : SdComponentSupplier<RssSource> {
-    override fun apply(props: ComponentProps): RssSource {
-        return RssSource(props.get("url"))
+object JackettSourceSupplier : SdComponentSupplier<JackettSource> {
+    override fun apply(props: ComponentProps): JackettSource {
+        return JackettSource(props.get("url"))
     }
 
     override fun supplyTypes(): List<ComponentType> {
@@ -63,8 +57,8 @@ object RssSourceSupplier : SdComponentSupplier<RssSource> {
         )
     }
 
-    override fun getComponentClass(): Class<RssSource> {
-        return RssSource::class.java
+    override fun getComponentClass(): Class<JackettSource> {
+        return JackettSource::class.java
     }
 
 }

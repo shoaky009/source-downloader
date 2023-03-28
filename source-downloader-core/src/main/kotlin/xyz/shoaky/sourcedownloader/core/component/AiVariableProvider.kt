@@ -8,15 +8,15 @@ import xyz.shoaky.sourcedownloader.sdk.*
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentProps
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentType
 import xyz.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
-import xyz.shoaky.sourcedownloader.sdk.component.SourceContentCreator
+import xyz.shoaky.sourcedownloader.sdk.component.VariableProvider
 import xyz.shoaky.sourcedownloader.sdk.util.Jackson
 import java.nio.file.Path
 import kotlin.io.path.name
 
 // NOTE 先这样简单写后面如果有更好的ai再支持多个
-class AiContentCreator(
+class AiVariableProvider(
     val config: Config
-) : SourceContentCreator {
+) : VariableProvider {
 
     private val chatGPT: ChatGPT = ChatGPT.builder()
         .apiKeyList(config.apiKeys)
@@ -35,6 +35,8 @@ class AiContentCreator(
 
         return AiSourceGroup(chatGPT, role, sourceItem)
     }
+
+    override fun support(item: SourceItem): Boolean = true
 
     data class Config(
         val apiKeys: List<String>,
@@ -67,20 +69,20 @@ private class AiSourceGroup(
     }
 }
 
-object AiContentCreatorSupplier : SdComponentSupplier<AiContentCreator> {
-    override fun apply(props: ComponentProps): AiContentCreator {
-        return AiContentCreator(props.parse())
+object AiVariableProviderSupplier : SdComponentSupplier<AiVariableProvider> {
+    override fun apply(props: ComponentProps): AiVariableProvider {
+        return AiVariableProvider(props.parse())
     }
 
     override fun supplyTypes(): List<ComponentType> {
         return listOf(
-            ComponentType.creator("ai"),
-            ComponentType.creator("gpt")
+            ComponentType.provider("ai"),
+            ComponentType.provider("gpt")
         )
     }
 
-    override fun getComponentClass(): Class<AiContentCreator> {
-        return AiContentCreator::class.java
+    override fun getComponentClass(): Class<AiVariableProvider> {
+        return AiVariableProvider::class.java
     }
 
 }

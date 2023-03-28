@@ -2,6 +2,7 @@ package xyz.shoaky.sourcedownloader.core
 
 import org.springframework.retry.support.RetryTemplateBuilder
 import xyz.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
+import xyz.shoaky.sourcedownloader.core.component.MetadataVariableProvider
 import xyz.shoaky.sourcedownloader.sdk.*
 import xyz.shoaky.sourcedownloader.sdk.component.*
 import xyz.shoaky.sourcedownloader.sdk.util.Jackson
@@ -14,10 +15,7 @@ import java.time.LocalDateTime
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
-import java.util.function.Predicate
 import kotlin.io.path.exists
-import kotlin.io.path.extension
-import kotlin.io.path.name
 import kotlin.time.ExperimentalTime
 import kotlin.time.measureTime
 
@@ -27,10 +25,9 @@ import kotlin.time.measureTime
 class SourceProcessor(
     val name: String,
     private val source: Source,
-    private val sourceContentCreator: SourceContentCreator,
+    variableProviders: List<VariableProvider>,
     private val downloader: Downloader,
     private val fileMover: FileMover,
-    private val renameMode: RenameMode = RenameMode.MOVE,
     private val sourceSavePath: Path,
     private val options: ProcessorConfig.Options = ProcessorConfig.Options(),
     private val processingStorage: ProcessingStorage,
@@ -38,13 +35,15 @@ class SourceProcessor(
 
     private val downloadPath by lazy { downloader.defaultDownloadPath() }
 
-    private val sourceFilters: MutableList<Predicate<SourceItem>> = mutableListOf()
+    private val sourceItemFilters: MutableList<SourceItemFilter> = mutableListOf()
+    private val sourceFileFilters: MutableList<SourceFileFilter> = mutableListOf()
+    private val variableProviders = variableProviders.toMutableList()
     private val runAfterCompletion: MutableList<RunAfterCompletion> = mutableListOf()
 
     private val fileSavePathPattern: PathPattern = options.fileSavePathPattern
-        ?: sourceContentCreator.defaultSavePathPattern()
+        ?: PathPattern.ORIGIN
     private val filenamePattern: PathPattern = options.filenamePattern
-        ?: sourceContentCreator.defaultFilenamePattern()
+        ?: PathPattern.ORIGIN
 
     private var renameTaskFuture: ScheduledFuture<*>? = null
 
@@ -62,15 +61,29 @@ class SourceProcessor(
         .build()
 
     init {
-        addItemFilter(SourceHashingFilter(name, processingStorage))
+        addItemFilter(SourceHashingItemFilter(name, processingStorage))
+
+        if (options.provideMetadataVariables) {
+            if (this.variableProviders.contains(MetadataVariableProvider).not()) {
+                this.variableProviders.add(MetadataVariableProvider)
+            }
+        }
     }
 
-    fun printProcessorInfo() {
-        info().map {
-            "${it.key}: ${it.value}"
-        }.joinToString("\n").let {
-            log.info("\n初始化完成\n$it")
-        }
+    private fun info(): Map<String, Any> {
+        return mapOf(
+            "Processor" to name,
+            "Source" to source::class.java.simpleName,
+            "Providers" to variableProviders.map { it::class.simpleName },
+            "Downloader" to downloader::class.java.simpleName,
+            "Mover" to fileMover::class.java.simpleName,
+            "SourceFilter" to sourceItemFilters.map { it::class.simpleName },
+            "RunAfterCompletion" to runAfterCompletion.map { it::class.simpleName },
+            "DownloadPath" to downloadPath,
+            "SourceSavePath" to sourceSavePath,
+            "Options" to options,
+            "SourceFileFilter" to options,
+        )
     }
 
     @OptIn(ExperimentalTime::class)
@@ -93,51 +106,61 @@ class SourceProcessor(
         }, 5L, interval.seconds, TimeUnit.SECONDS)
     }
 
-    private fun info(): Map<String, Any> {
-        return mapOf(
-            "Processor" to name,
-            "Source" to source::class.java.simpleName,
-            "Creator" to sourceContentCreator::class.java.simpleName,
-            "Downloader" to downloader::class.java.simpleName,
-            "Mover" to fileMover::class.java.simpleName,
-            "SourceFilter" to sourceFilters.map { it::class.simpleName },
-            "RunAfterCompletion" to runAfterCompletion.map { it::class.simpleName },
-            "RenameMode" to renameMode,
-            "DownloadPath" to downloadPath,
-            "SourceSavePath" to sourceSavePath,
-            "FileSavePathPattern" to fileSavePathPattern.pattern,
-            "FilenamePattern" to filenamePattern.pattern,
-        )
+    override fun run() {
+        process()
     }
 
-    override fun run() {
+    fun dryRun(): List<ProcessingContent> {
+        return process(true)
+    }
+
+    private fun process(dryRun: Boolean = false): List<ProcessingContent> {
         // TODO 其他异常会被吞掉，打印下日志
         val items = retry.execute<List<SourceItem>, IOException> {
             source.fetch()
         }
 
+        val result = mutableListOf<ProcessingContent>()
         for (item in items) {
-            if (sourceFilters.all { it.test(item) }.not()) {
-                log.debug("Filtered item:$item")
+            if (sourceItemFilters.all { it.test(item) }.not()) {
+                log.debug("Filtered item:{}", item)
                 continue
             }
             kotlin.runCatching {
-                retry.execute<Unit, IOException> {
-                    val sourceGroup = sourceContentCreator.createSourceGroup(item)
-                    process(item, sourceGroup)
+                retry.execute<ProcessingContent, IOException> {
+                    val providers = variableProviders.filter { it.support(item) }.toList()
+                    // TODO 后面根据优先级选出冲突的变量用的类
+                    val idk = Idk(providers)
+                    processItem(item, idk, dryRun)
                 }
-            }.onFailure { log.error("Processor:${name}处理失败, item:$item", it) }
+            }.onFailure {
+                log.error("Processor:${name}处理失败, item:$item", it)
+            }.onSuccess {
+                if (dryRun) {
+                    result.add(it)
+                }
+            }
         }
+        return result
     }
 
-    private fun process(sourceItem: SourceItem, sourceGroup: SourceItemGroup) {
+    private fun processItem(sourceItem: SourceItem, idk: Idk, dryRun: Boolean = false): ProcessingContent {
+        val aggrSourceGroup = idk.getAggr(sourceItem)
         val resolveFiles = downloader.resolveFiles(sourceItem)
-        val contents = sourceGroup.sourceFiles(resolveFiles)
+        val filteredFiles = resolveFiles.filter { path ->
+            val res = sourceFileFilters.all { it.test(path) }
+            if (res.not()) {
+                log.debug("Filtered file:{}", path)
+            }
+            res
+        }
+
+        val contents = aggrSourceGroup.sourceFiles(filteredFiles)
             .mapIndexed { index, sourceFile ->
                 val sourceFileContent = SourceFileContent(
-                    downloadPath.resolve(resolveFiles[index]),
+                    downloadPath.resolve(filteredFiles[index]),
                     sourceSavePath,
-                    MapPatternVariables(sourceFile.patternVariables().getVariables()),
+                    MapPatternVariables(sourceFile.patternVariables().variables()),
                     fileSavePathPattern,
                     filenamePattern,
                 )
@@ -147,7 +170,7 @@ class SourceProcessor(
 
         val downloadTask = createDownloadTask(sourceItem)
         val needDownload = needDownload(sourceContent)
-        if (needDownload) {
+        if (needDownload.first && dryRun.not()) {
             // NOTE 非异步下载会阻塞
             this.downloader.submit(downloadTask)
             log.info("提交下载任务成功, Processor:${name} sourceItem:${sourceItem.title}")
@@ -156,29 +179,39 @@ class SourceProcessor(
         }
 
         var pc = ProcessingContent(name, sourceContent)
-        if (downloader !is AsyncDownloader) {
+        if (downloader !is AsyncDownloader && dryRun.not()) {
             rename(sourceContent)
-            pc = ProcessingContent(name, sourceContent)
-                .copy(status = ProcessingContent.Status.RENAMED)
+            pc = pc.copy(status = ProcessingContent.Status.RENAMED)
         }
-        processingStorage.save(pc)
+
+        if (needDownload.first.not() && downloader is AsyncDownloader) {
+            pc = pc.copy(status = needDownload.second)
+        }
+        if (options.saveContent && dryRun.not()) {
+            processingStorage.save(pc)
+        }
+        return pc
     }
 
-    private fun needDownload(sc: SourceContent): Boolean {
+    private fun needDownload(sc: SourceContent): Pair<Boolean, ProcessingContent.Status> {
         val files = sc.sourceFiles
         val targetPaths = files.map { it.targetPath() }
         if (targetPaths.map { it.exists() }.all { it }) {
-            return false
+            return false to ProcessingContent.Status.TARGET_ALREADY_EXISTS
         }
         if (processingStorage.targetPathExists(targetPaths)) {
-            return false
+            return false to ProcessingContent.Status.TARGET_ALREADY_EXISTS
         }
 
         val current = files.map { it.fileDownloadPath.exists() }
         if (current.all { it }) {
-            return false
+            return false to ProcessingContent.Status.WAITING_TO_RENAME
         }
-        return current.any { it.not() }
+        val any = current.any { it.not() }
+        if (any) {
+            return true to ProcessingContent.Status.WAITING_TO_RENAME
+        }
+        return false to ProcessingContent.Status.DOWNLOADED
     }
 
     private fun runAfterCompletions(taskContent: SourceContent) {
@@ -220,7 +253,6 @@ class SourceProcessor(
                     DownloadStatus.from(asyncDownloader.isFinished(downloadTask))
                 }, { it }
             )
-
         contentGrouping[DownloadStatus.NOT_FOUND]?.forEach { pc ->
             kotlin.runCatching {
                 log.info("Processing下载任务不存在, record:${Jackson.toJsonString(pc)}")
@@ -279,8 +311,12 @@ class SourceProcessor(
         processingStorage.save(toUpdate)
     }
 
-    fun addItemFilter(vararg filters: Predicate<SourceItem>) {
-        sourceFilters.addAll(filters)
+    fun addItemFilter(vararg filters: SourceItemFilter) {
+        sourceItemFilters.addAll(filters)
+    }
+
+    fun addFileFilter(vararg filters: SourceFileFilter) {
+        sourceFileFilters.addAll(filters)
     }
 
     fun safeTask(): Runnable {
@@ -292,36 +328,22 @@ class SourceProcessor(
     }
 
     private fun rename(content: SourceContent): Boolean {
-        val enhancedContent = addAdditionalVariables(content)
-        val sourceFiles = enhancedContent.canRenameFiles()
+        val sourceFiles = content.canRenameFiles()
         sourceFiles.forEach {
             it.createSaveDirectories()
         }
+        if (sourceFiles.isEmpty()) {
+            return true
+        }
 
-        if (renameMode == RenameMode.HARD_LINK) {
+        if (options.renameMode == RenameMode.HARD_LINK) {
             sourceFiles.forEach {
                 val targetFilePath = it.targetPath()
-                Files.createLink(it.fileDownloadPath, targetFilePath)
+                Files.createLink(targetFilePath, it.fileDownloadPath)
             }
             return true
         }
-        return fileMover.rename(enhancedContent)
-    }
-
-    private fun addAdditionalVariables(content: SourceContent): SourceContent {
-        val externalFiles = content.sourceFiles.map {
-            val patternVariables = MapPatternVariables(it.patternVariables.getVariables())
-            val sourceItem = content.sourceItem
-            patternVariables.addVariable("filename", it.fileDownloadPath.name)
-            patternVariables.addVariable("extension", it.fileDownloadPath.extension)
-            patternVariables.addVariable("sourceItemTitle", sourceItem.title)
-            patternVariables.addVariable("sourceItemDate", sourceItem.date.toLocalDate().toString())
-            it.copy(patternVariables = patternVariables)
-        }
-        return SourceContent(
-            content.sourceItem,
-            externalFiles
-        )
+        return fileMover.rename(content.copy(sourceFiles = sourceFiles))
     }
 
     fun addRunAfterCompletion(vararg completion: RunAfterCompletion) {
@@ -354,15 +376,73 @@ class SourceProcessor(
         }
     }
 
-    private class SourceHashingFilter(val sourceName: String, val processingStorage: ProcessingStorage) : SourceFilter {
+    private class SourceHashingItemFilter(val sourceName: String, val processingStorage: ProcessingStorage) : SourceItemFilter {
         override fun test(item: SourceItem): Boolean {
             val processingContent = processingStorage.findByNameAndHash(sourceName, item.hashing())
             if (processingContent != null) {
-                log.debug("Source:${sourceName}已提交过下载不做处理，item:${Jackson.toJsonString(item)}")
+                if (log.isDebugEnabled) {
+                    log.debug("Source:${sourceName}已提交过下载不做处理，item:${Jackson.toJsonString(item)}")
+                }
             }
             return processingContent == null
         }
-
     }
 
+    override fun toString(): String {
+        return info().map {
+            "${it.key}: ${it.value}"
+        }.joinToString("\n")
+    }
+
+}
+
+class Idk(
+    private val providers: List<VariableProvider>) {
+
+    fun getAggr(sourceItem: SourceItem): SourceItemGroupAggr {
+        val associateBy = providers.associateBy({
+            it::class.simpleName!!
+        }, { it.createSourceGroup(sourceItem) })
+        return SourceItemGroupAggr(associateBy)
+    }
+}
+
+class SourceItemGroupAggr(
+    private val groups: Map<String, SourceItemGroup>
+) : SourceItemGroup {
+    override fun sourceFiles(paths: List<Path>): List<SourceFile> {
+        val res = mutableListOf<List<SourceFile>>()
+        for (group in groups) {
+            val sourceFiles = group.value.sourceFiles(paths)
+            res.add(sourceFiles)
+        }
+        return List(paths.size) { index ->
+            val sourceFiles = res.map { it[index] }
+            sourceFiles.reduce(this::combine)
+        }
+    }
+
+    private fun combine(sf1: SourceFile, sf2: SourceFile): SourceFile {
+        return CombineSourceFile(sf1, sf2)
+    }
+
+    class CombineSourceFile(
+        private val first: SourceFile,
+        private val second: SourceFile
+    ) : SourceFile {
+
+        private val patternVariables = run {
+            val pv1 = first.patternVariables()
+            val pv2 = second.patternVariables()
+            val var1 = pv1.variables()
+            val var2 = pv2.variables()
+            // TODO 处理冲突的情况，优先级
+            val allVariables = var1 + var2
+            MapPatternVariables(allVariables)
+        }
+
+        override fun patternVariables(): PatternVariables {
+            return patternVariables
+        }
+    }
 }

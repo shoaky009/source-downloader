@@ -39,9 +39,9 @@ class MockDownloader(private val downloadPath: Path) : TorrentDownloader {
 
     override fun resolveFiles(sourceItem: SourceItem): List<Path> {
         val contentType = sourceItem.contentType
-        val downloadUrl = sourceItem.downloadUrl
+        val downloadUrl = sourceItem.downloadUri
         if (contentType.contains("torrent")) {
-            return metadataService.fromUrl(downloadUrl).files
+            return metadataService.fromUrl(downloadUrl.toURL()).files
                 .filter { it.size > 0 }
                 .map { it.pathElements.joinToString("/") }
                 .map { Path(it) }

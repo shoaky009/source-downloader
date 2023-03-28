@@ -14,10 +14,11 @@ data class ComponentType(val typeName: String,
         fun downloader(type: String) = ComponentType(type, Downloader::class)
         fun source(type: String) = ComponentType(type, Source::class)
         fun fileMover(type: String) = ComponentType(type, FileMover::class)
-        fun creator(type: String) = ComponentType(type, SourceContentCreator::class)
-        fun filter(type: String) = ComponentType(type, SourceFilter::class)
+        fun provider(type: String) = ComponentType(type, VariableProvider::class)
+        fun itemFilter(type: String) = ComponentType(type, SourceItemFilter::class)
         fun trigger(type: String) = ComponentType(type, Trigger::class)
         fun run(type: String) = ComponentType(type, RunAfterCompletion::class)
+        fun fileFilter(type: String) = ComponentType(type, SourceFileFilter::class)
 
         private val componentTypes = SdComponent::class.sealedSubclasses
             .associateBy {

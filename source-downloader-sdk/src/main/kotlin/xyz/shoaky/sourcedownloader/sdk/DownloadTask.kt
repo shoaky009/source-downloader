@@ -1,6 +1,6 @@
 package xyz.shoaky.sourcedownloader.sdk
 
-import java.net.URL
+import java.net.URI
 import java.nio.file.Path
 
 data class DownloadTask(
@@ -9,8 +9,8 @@ data class DownloadTask(
     val category: String? = null,
 ) {
 
-    fun downloadURL(): URL {
-        return sourceItem.downloadUrl
+    fun downloadUri(): URI {
+        return sourceItem.downloadUri
     }
 
     companion object {

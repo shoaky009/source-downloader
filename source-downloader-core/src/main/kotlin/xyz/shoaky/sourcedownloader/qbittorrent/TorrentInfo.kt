@@ -1,4 +1,4 @@
-package xyz.shoaky.sourcedownloader.api.qbittorrent
+package xyz.shoaky.sourcedownloader.qbittorrent
 
 import com.fasterxml.jackson.annotation.JsonProperty
 

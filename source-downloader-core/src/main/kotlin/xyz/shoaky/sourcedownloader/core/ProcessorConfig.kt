@@ -11,19 +11,22 @@ data class ProcessorConfig(
     val name: String,
     val trigger: ComponentId,
     val source: ComponentId,
-    val creator: ComponentId,
+    val providers: List<ComponentId> = emptyList(),
     val downloader: ComponentId = ComponentId("downloader:url"),
     val mover: ComponentId = ComponentId("mover:general"),
     val savePath: Path,
-    val fileMode: RenameMode = RenameMode.MOVE,
+    val sourceItemFilters: List<ComponentId> = emptyList(),
+    val sourceFileFilters: List<ComponentId> = emptyList(),
     val options: Options = Options(),
 ) {
     fun getSourceInstanceName(): String {
         return source.getInstanceName(Source::class)
     }
 
-    fun getCreatorInstanceName(): String {
-        return creator.getInstanceName(SourceContentCreator::class)
+    fun getProviderInstanceNames(): List<String> {
+        return providers.map {
+            it.getInstanceName(VariableProvider::class)
+        }
     }
 
     fun getDownloaderInstanceName(): String {
@@ -39,19 +42,35 @@ data class ProcessorConfig(
     }
 
     data class Options(
-        val blacklistRegex: List<Regex> = emptyList(),
+        // val blacklistRegex: List<Regex> = emptyList(),
         val fileSavePathPattern: PathPattern? = null,
         val filenamePattern: PathPattern? = null,
         val runAfterCompletion: List<ComponentId> = emptyList(),
         val renameTaskInterval: Duration = Duration.ofMinutes(5),
         val downloadCategory: String? = null,
-        // 0 以历史处理状态为准（处理过一次,目标文件不存在不会再次下载处理）
-        // 1 始终以文件最终路径存在为准（目标文件不存在就下载处理）
-        // val mode: Int = 0,
+        val variableConflictDecision: VariableConflictDecision = VariableConflictDecision.SMART,
         // 修改文件夹创建时间
         val touchItemDirectory: Boolean = true,
         val renameTimesThreshold: Int = 3,
+        val provideMetadataVariables: Boolean = true,
+        val saveContent: Boolean = true,
+        val renameMode: RenameMode = RenameMode.MOVE,
+        val itemExpressionExclusions: List<String> = emptyList(),
+        val itemExpressionInclusions: List<String> = emptyList(),
+        val fileExpressionExclusions: List<String> = emptyList(),
+        val fileExpressionInclusions: List<String> = emptyList(),
     )
+
+    enum class VariableConflictDecision {
+        ANY,
+        VOTE,
+        ACCURACY,
+
+        /**
+         * VOTE + ACCURACY
+         */
+        SMART
+    }
 
     data class ComponentId(
         @JsonValue

@@ -21,23 +21,21 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
+    // implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
 
-    //others
+    // others
     implementation("org.apache.commons:commons-collections4:4.4")
     implementation("com.google.guava:guava:31.1-jre")
     implementation("com.vladmihalcea:hibernate-types-60:2.21.1")
     implementation("com.apptasticsoftware:rssreader:3.3.0")
     implementation("org.springframework.retry:spring-retry")
 
-    implementation("org.graalvm.js:js:22.3.1")
-    implementation("org.graalvm.js:js-scriptengine:22.3.1")
+    // implementation("org.graalvm.js:js:22.3.1")
+    // implementation("org.graalvm.js:js-scriptengine:22.3.1")
 
     implementation("com.github.atomashpolskiy:bt-core:1.10")
     implementation("com.dgtlrepublic:anitomyJ:0.0.7")
-
-    implementation("org.graalvm.js:js:22.3.1")
-    implementation("org.graalvm.js:js-scriptengine:22.3.1")
 
     // 可能会插件化
     implementation("com.github.plexpt:chatgpt:4.0.5")

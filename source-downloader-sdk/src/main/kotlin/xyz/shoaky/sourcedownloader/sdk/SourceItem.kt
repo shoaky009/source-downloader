@@ -1,20 +1,20 @@
 package xyz.shoaky.sourcedownloader.sdk
 
 import com.google.common.hash.Hashing
-import java.net.URL
+import java.net.URI
 import java.time.LocalDateTime
 
-//后续还需要添加
+// 后续还需要添加
 data class SourceItem(
     val title: String,
-    val link: URL,
+    val link: URI,
     val date: LocalDateTime,
     val contentType: String,
-    val downloadUrl: URL
+    val downloadUri: URI
 ) {
     fun hashing(): String {
         return Hashing.sha256()
-            .hashString("$title-$link-$contentType-$downloadUrl", Charsets.UTF_8)
+            .hashString("$title-$link-$contentType-$downloadUri", Charsets.UTF_8)
             .toString()
     }
 }

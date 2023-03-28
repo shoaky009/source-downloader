@@ -4,7 +4,7 @@ import xyz.shoaky.sourcedownloader.sdk.PatternVarsDescription
 import xyz.shoaky.sourcedownloader.sdk.PluginContext
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentType
 import xyz.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
-import xyz.shoaky.sourcedownloader.sdk.component.SourceContentCreator
+import xyz.shoaky.sourcedownloader.sdk.component.VariableProvider
 
 class DefaultPluginContext(
     private val componentManager: ComponentManager
@@ -17,8 +17,8 @@ class DefaultPluginContext(
 
     override fun addPatternVarsDescription(vararg descriptions: PatternVarsDescription) {
         for (desc in descriptions) {
-            if (desc.componentType.klass != SourceContentCreator::class) {
-                throw IllegalArgumentException("componentType must be SourceContentCreator::class")
+            if (desc.componentType.klass != VariableProvider::class) {
+                throw IllegalArgumentException("componentType must be VariableProvider::class")
             }
             val curr = descriptionStorage[desc.componentType]
             if (curr != null) {
