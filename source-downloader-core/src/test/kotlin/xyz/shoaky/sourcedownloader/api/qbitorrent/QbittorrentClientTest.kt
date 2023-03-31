@@ -48,4 +48,21 @@ class QbittorrentClientTest {
         val execute = client.execute(request)
         println(Jackson.toJsonString(execute))
     }
+
+    @Test
+    fun torrent_get_files() {
+        val request = TorrentFilesRequest("2ae25932f3b02800f191a08f395cc7ee920ce117")
+        val execute = client.execute(request).body()
+        println(Jackson.toJsonString(execute))
+    }
+
+    @Test
+    fun torrent_set_files_prio() {
+        val request = TorrentFilePrioRequest("2ae25932f3b02800f191a08f395cc7ee920ce117",
+            listOf(0),
+            0
+        )
+        val execute = client.execute(request).body()
+        println(Jackson.toJsonString(execute))
+    }
 }

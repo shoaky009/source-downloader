@@ -1,4 +1,4 @@
-package xyz.shoaky.sourcedownloader.core.component
+package xyz.shoaky.sourcedownloader.component
 
 import com.apptasticsoftware.rssreader.RssReader
 import xyz.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log

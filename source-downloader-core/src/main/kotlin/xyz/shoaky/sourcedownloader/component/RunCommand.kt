@@ -1,4 +1,4 @@
-package xyz.shoaky.sourcedownloader.core.component
+package xyz.shoaky.sourcedownloader.component
 
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import org.springframework.util.StreamUtils

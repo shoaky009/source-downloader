@@ -1,4 +1,4 @@
-package xyz.shoaky.sourcedownloader.core.component
+package xyz.shoaky.sourcedownloader.component
 
 import org.springframework.http.HttpMethod
 import org.springframework.web.util.UriComponentsBuilder

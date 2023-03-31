@@ -1,4 +1,4 @@
-package xyz.shoaky.sourcedownloader.core.component
+package xyz.shoaky.sourcedownloader.component
 
 import bt.metainfo.MetadataService
 import org.springframework.core.io.UrlResource

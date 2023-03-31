@@ -1,4 +1,4 @@
-package xyz.shoaky.sourcedownloader.core.component
+package xyz.shoaky.sourcedownloader.component
 
 import org.slf4j.LoggerFactory
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentProps
@@ -12,7 +12,7 @@ import kotlin.concurrent.timerTask
 class FixedScheduleTrigger(
     private val interval: Duration,
     private val onStartRunTasks: Boolean = false,
-) : TaskHolderTrigger() {
+) : HoldingTaskTrigger() {
 
     private val timer = Timer("FixedScheduleTrigger")
 

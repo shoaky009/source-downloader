@@ -1,4 +1,4 @@
-package xyz.shoaky.sourcedownloader.core.component
+package xyz.shoaky.sourcedownloader.component
 
 
 // class JavaScriptVariableProvider(private val script: String) : VariableProvider {

@@ -14,8 +14,8 @@ import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.ImportRuntimeHints
 import org.springframework.context.event.EventListener
 import org.springframework.core.env.Environment
+import xyz.shoaky.sourcedownloader.component.*
 import xyz.shoaky.sourcedownloader.core.*
-import xyz.shoaky.sourcedownloader.core.component.*
 import xyz.shoaky.sourcedownloader.core.config.ComponentConfig
 import xyz.shoaky.sourcedownloader.core.config.ProcessorConfigs
 import xyz.shoaky.sourcedownloader.qbittorrent.QbittorrentConfig
@@ -174,9 +174,10 @@ fun getDefaultComponentSuppliers(): List<SdComponentSupplier<*>> {
         // ScriptVariableProviderSupplier,
         DynamicTriggerSupplier,
         SendHttpRequestSupplier,
-        AiVariableProviderSupplier,
+        xyz.shoaky.sourcedownloader.component.AiVariableProviderSupplier,
         SystemFileSourceSupplier,
         MetadataVariableProviderSupplier,
-        JackettSourceSupplier
+        JackettSourceSupplier,
+        AnitomVariableProviderSupplier
     )
 }

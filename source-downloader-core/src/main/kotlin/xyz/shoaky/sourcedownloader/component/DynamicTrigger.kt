@@ -1,4 +1,4 @@
-package xyz.shoaky.sourcedownloader.core.component
+package xyz.shoaky.sourcedownloader.component
 
 import com.google.common.eventbus.Subscribe
 import xyz.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
@@ -12,7 +12,7 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import kotlin.concurrent.thread
 
-class DynamicTrigger(config: Config) : TaskHolderTrigger() {
+class DynamicTrigger(config: Config) : HoldingTaskTrigger() {
 
     private val defaultInternal = config.defaultInternal.toMillis()
     private val bounds = config.boundProcessors

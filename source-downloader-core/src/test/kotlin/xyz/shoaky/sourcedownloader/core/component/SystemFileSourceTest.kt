@@ -1,6 +1,7 @@
 package xyz.shoaky.sourcedownloader.core.component
 
 import org.junit.jupiter.api.Test
+import xyz.shoaky.sourcedownloader.component.SystemFileSourceSupplier
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentProps
 
 class SystemFileSourceTest {
@@ -16,7 +17,6 @@ class SystemFileSourceTest {
 
         assert(source.fetch().any {
             val size = source.resolveFiles(it).size
-            println(size)
             size > 1
         })
     }

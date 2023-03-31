@@ -1,4 +1,4 @@
-package xyz.shoaky.sourcedownloader.core.component
+package xyz.shoaky.sourcedownloader.component
 
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import com.plexpt.chatgpt.ChatGPT
@@ -15,13 +15,13 @@ import kotlin.io.path.name
 
 // NOTE 先这样简单写后面如果有更好的ai再支持多个
 class AiVariableProvider(
-    val config: Config
+    val config: xyz.shoaky.sourcedownloader.component.AiVariableProvider.Config
 ) : VariableProvider {
 
     private val chatGPT: ChatGPT = ChatGPT.builder()
         .apiKeyList(config.apiKeys)
         .timeout(900)
-        .apiHost(config.apiHost) // 反向代理地址
+        .apiHost(config.apiHost)
         .build()
         .init()
 
@@ -33,7 +33,7 @@ class AiVariableProvider(
 
     override fun createSourceGroup(sourceItem: SourceItem): SourceItemGroup {
 
-        return AiSourceGroup(chatGPT, role, sourceItem)
+        return xyz.shoaky.sourcedownloader.component.AiSourceGroup(chatGPT, role, sourceItem)
     }
 
     override fun support(item: SourceItem): Boolean = true
@@ -69,9 +69,9 @@ private class AiSourceGroup(
     }
 }
 
-object AiVariableProviderSupplier : SdComponentSupplier<AiVariableProvider> {
-    override fun apply(props: ComponentProps): AiVariableProvider {
-        return AiVariableProvider(props.parse())
+object AiVariableProviderSupplier : SdComponentSupplier<xyz.shoaky.sourcedownloader.component.AiVariableProvider> {
+    override fun apply(props: ComponentProps): xyz.shoaky.sourcedownloader.component.AiVariableProvider {
+        return xyz.shoaky.sourcedownloader.component.AiVariableProvider(props.parse())
     }
 
     override fun supplyTypes(): List<ComponentType> {
@@ -81,8 +81,8 @@ object AiVariableProviderSupplier : SdComponentSupplier<AiVariableProvider> {
         )
     }
 
-    override fun getComponentClass(): Class<AiVariableProvider> {
-        return AiVariableProvider::class.java
+    override fun getComponentClass(): Class<xyz.shoaky.sourcedownloader.component.AiVariableProvider> {
+        return xyz.shoaky.sourcedownloader.component.AiVariableProvider::class.java
     }
 
 }

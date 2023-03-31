@@ -1,4 +1,4 @@
-package xyz.shoaky.sourcedownloader.core.component
+package xyz.shoaky.sourcedownloader.component
 
 import bt.metainfo.MetadataService
 import org.slf4j.LoggerFactory
@@ -14,7 +14,10 @@ import xyz.shoaky.sourcedownloader.sdk.component.TorrentDownloader
 import java.nio.file.Path
 import kotlin.io.path.name
 
-class QbittorrentDownloader(private val client: QbittorrentClient) : TorrentDownloader {
+class QbittorrentDownloader(
+    private val client: QbittorrentClient,
+    private val alwaysDownloadAll: Boolean = false
+) : TorrentDownloader {
 
     private val metadataService = MetadataService()
 
@@ -22,11 +25,31 @@ class QbittorrentDownloader(private val client: QbittorrentClient) : TorrentDown
         val torrentsAddRequest = TorrentsAddRequest(
             listOf(task.downloadUri().toURL()),
             task.downloadPath.toString(),
-            task.category
+            task.category,
+            // 看实际效果
+            false
         )
         val response = client.execute(torrentsAddRequest)
         if (QbittorrentClient.successResponse != response.body()) {
             log.error("qbittorrent submit task failed,code:${response.statusCode()} body:${response.body()}")
+        }
+
+        if (alwaysDownloadAll.not()) {
+            val torrentHash = getTorrentHash(task.sourceItem)
+            val torrentFiles = client.execute(TorrentFilesRequest(
+                torrentHash
+            )).body()
+
+            val downloadFiles = task.downloadFiles
+            val no = torrentFiles.filter {
+                downloadFiles.contains(it.name).not()
+            }
+            log.debug("torrent:{} set prio 0 files: {}", torrentHash, no)
+            client.execute(TorrentFilePrioRequest(
+                torrentHash,
+                no.map { it.index },
+                0
+            ))
         }
     }
 
@@ -94,7 +117,7 @@ class QbittorrentDownloader(private val client: QbittorrentClient) : TorrentDown
 object QbittorrentSupplier : SdComponentSupplier<QbittorrentDownloader> {
     override fun apply(props: ComponentProps): QbittorrentDownloader {
         val client = QbittorrentClient(props.parse())
-        return QbittorrentDownloader(client)
+        return QbittorrentDownloader(client, props.getOrDefault("alwaysDownloadAll", false))
     }
 
     override fun supplyTypes(): List<ComponentType> {

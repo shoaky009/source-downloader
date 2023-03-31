@@ -5,6 +5,7 @@ import java.nio.file.Path
 
 data class DownloadTask(
     val sourceItem: SourceItem,
+    val downloadFiles: List<Path>,
     val downloadPath: Path?,
     val category: String? = null,
 ) {
@@ -17,10 +18,15 @@ data class DownloadTask(
 
         fun create(
             sourceItem: SourceItem,
+            downloadFiles: List<Path>,
             category: String? = null,
             downloadPath: Path? = null,
         ): DownloadTask {
-            return DownloadTask(sourceItem, downloadPath, category)
+            return DownloadTask(
+                sourceItem,
+                downloadFiles,
+                downloadPath,
+                category)
         }
     }
 }

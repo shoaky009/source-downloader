@@ -1,8 +1,8 @@
-package xyz.shoaky.sourcedownloader.core.component
+package xyz.shoaky.sourcedownloader.component
 
 import xyz.shoaky.sourcedownloader.sdk.component.Trigger
 
-abstract class TaskHolderTrigger : Trigger {
+abstract class HoldingTaskTrigger : Trigger {
 
     protected val tasks: MutableList<Runnable> = mutableListOf()
 

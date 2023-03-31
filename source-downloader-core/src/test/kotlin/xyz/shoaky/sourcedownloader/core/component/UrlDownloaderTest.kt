@@ -1,6 +1,7 @@
 package xyz.shoaky.sourcedownloader.core.component
 
 import org.junit.jupiter.api.Test
+import xyz.shoaky.sourcedownloader.component.UrlDownloaderSupplier
 import xyz.shoaky.sourcedownloader.sdk.DownloadTask
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentProps
 import xyz.shoaky.sourcedownloader.sourceItem
@@ -24,7 +25,10 @@ class UrlDownloaderTest {
         targetPath.deleteIfExists()
 
         val url = "https://www.baidu.com"
-        val task = DownloadTask.create(sourceItem("test", link = url, downloadUrl = "https://www.baidu.com"))
+        val task = DownloadTask.create(sourceItem("test", link = url, downloadUrl = "https://www.baidu.com"),
+            listOf(
+                targetPath
+            ))
         downloader.submit(task)
         assert(targetPath.exists())
 

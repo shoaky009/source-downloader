@@ -9,6 +9,7 @@ import kotlin.io.path.*
 data class SourceContent(
     val sourceItem: SourceItem,
     val sourceFiles: List<SourceFileContent>,
+    val options: Options = Options()
 ) {
 
     fun canRenameFiles(): List<SourceFileContent> {
@@ -27,6 +28,10 @@ data class SourceContent(
         }
         return "${sourceItem.title}内的${sourceFiles.size}个文件"
     }
+
+    data class Options(
+        val parsingFailsUsingTheOriginal: Boolean = true
+    )
 }
 
 data class SourceFileContent(
@@ -34,11 +39,13 @@ data class SourceFileContent(
     val sourceSavePath: Path,
     val patternVariables: MapPatternVariables,
     val fileSavePathPattern: PathPattern,
-    val filenamePattern: PathPattern
+    val filenamePattern: PathPattern,
+    // 兼容旧数据
+    private val options: SourceContent.Options = SourceContent.Options(),
 ) {
 
     private val targetPath: Path by lazy {
-        saveDirectoryPath().resolve(targetFilename())
+        saveDirectoryPath().resolve(targetFilename(options.parsingFailsUsingTheOriginal))
     }
 
     fun targetPath(): Path {
@@ -46,22 +53,31 @@ data class SourceFileContent(
     }
 
     fun saveDirectoryPath(): Path {
-        return sourceSavePath.resolve(fileSavePathPattern.resolve(patternVariables))
+        val parse = fileSavePathPattern.parse(patternVariables)
+        return sourceSavePath.resolve(parse.path)
     }
 
-    fun targetFilename(): String {
+    fun targetFilename(parsingFailsUsingTheOriginal: Boolean = true): String {
         if (filenamePattern == PathPattern.ORIGIN) {
             return fileDownloadPath.name
         }
-        val targetFilename = filenamePattern.resolve(patternVariables)
-        if (targetFilename.isBlank()) {
-            return fileDownloadPath.name
+        val parse = filenamePattern.parse(patternVariables)
+        val success = parse.success()
+        // TODO from processor
+        if (success || parsingFailsUsingTheOriginal.not()) {
+            val targetFilename = parse.path
+            if (targetFilename.isBlank()) {
+                return fileDownloadPath.name
+            }
+
+            val extension = fileDownloadPath.extension
+            if (targetFilename.endsWith(extension)) {
+                return targetFilename
+            }
+            return "$targetFilename.$extension"
         }
-        val extension = fileDownloadPath.extension
-        if (targetFilename.endsWith(extension)) {
-            return targetFilename
-        }
-        return "$targetFilename.$extension"
+
+        return fileDownloadPath.name
     }
 
     fun createSaveDirectories() {
@@ -93,7 +109,7 @@ data class SourceFileContent(
 
     companion object {
 
-        private val permissions = setOf(
+        private val defaultPermissions = setOf(
             PosixFilePermission.OWNER_READ,
             PosixFilePermission.OWNER_WRITE,
             PosixFilePermission.OWNER_EXECUTE,
@@ -102,24 +118,28 @@ data class SourceFileContent(
             PosixFilePermission.OTHERS_READ,
             PosixFilePermission.OTHERS_EXECUTE
         )
-        private val fileAttribute = PosixFilePermissions.asFileAttribute(permissions)
+        private val fileAttribute = PosixFilePermissions.asFileAttribute(defaultPermissions)
     }
 
 }
 
 data class PathPattern(val pattern: String) {
 
-    fun resolve(provider: PatternVariables): String {
+    fun parse(provider: PatternVariables): ParseResult {
         val matcher = VARIABLE_PATTERN.matcher(pattern)
         val result = StringBuilder()
         val variables = provider.variables()
+        val varRes = mutableListOf<VariableResult>()
         while (matcher.find()) {
             val variableName = matcher.group(1)
-            val variableValue = variables.getOrDefault(variableName, "")
-            matcher.appendReplacement(result, variableValue)
+            val variableValue = variables[variableName]
+            varRes.add(VariableResult(variableName, variableValue != null))
+            if (variableValue != null) {
+                matcher.appendReplacement(result, variableValue)
+            }
         }
         matcher.appendTail(result)
-        return result.toString()
+        return ParseResult(result.toString(), varRes)
     }
 
     fun depth(): Int {
@@ -127,7 +147,25 @@ data class PathPattern(val pattern: String) {
     }
 
     companion object {
-        var VARIABLE_PATTERN: Pattern = Pattern.compile("\\{(.+?)}")
+        val VARIABLE_PATTERN: Pattern = Pattern.compile("\\{(.+?)}")
         val ORIGIN = PathPattern("")
     }
+
+    data class ParseResult(
+        val path: String,
+        val results: List<VariableResult>
+    ) {
+        fun success(): Boolean {
+            return results.all { it.success }
+        }
+
+        fun failedVariables(): List<String> {
+            return results.filter { !it.success }.map { it.variable }
+        }
+    }
+
+    data class VariableResult(
+        val variable: String,
+        val success: Boolean = true
+    )
 }

@@ -3,8 +3,8 @@ package xyz.shoaky.sourcedownloader.core
 import org.springframework.beans.factory.config.ConfigurableBeanFactory
 import org.springframework.stereotype.Component
 import xyz.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
-import xyz.shoaky.sourcedownloader.core.component.ExpressionFileFilterSupplier
-import xyz.shoaky.sourcedownloader.core.component.ExpressionItemFilterSupplier
+import xyz.shoaky.sourcedownloader.component.ExpressionFileFilterSupplier
+import xyz.shoaky.sourcedownloader.component.ExpressionItemFilterSupplier
 import xyz.shoaky.sourcedownloader.sdk.component.*
 import xyz.shoaky.sourcedownloader.util.Events
 import java.util.concurrent.ConcurrentHashMap
@@ -19,6 +19,11 @@ class ComponentManager(
     val sdComponentSuppliers: MutableMap<ComponentType, SdComponentSupplier<*>> = ConcurrentHashMap()
 
     fun fullyCreateSourceProcessor(config: ProcessorConfig): SourceProcessor {
+        val processorBeanName = "Processor-${config.name}"
+        if (applicationContext.containsBean(processorBeanName)) {
+            throw ComponentException("processor ${config.name} already exists")
+        }
+
         val source = applicationContext.getBean(config.getSourceInstanceName(), Source::class.java)
         val downloader = applicationContext.getBean(config.getDownloaderInstanceName(), Downloader::class.java)
 
@@ -48,10 +53,9 @@ class ComponentManager(
 
         val cps = mutableListOf(source, downloader, mover)
         cps.addAll(providers)
-        mutableListOf
-            .forEach {
-                check(it, cps)
-            }
+        mutableListOf.forEach {
+            check(it, cps)
+        }
 
         val fileFilters = config.sourceFileFilters.map {
             val instanceName = it.getInstanceName(SourceFileFilter::class)
@@ -67,9 +71,8 @@ class ComponentManager(
 
         initOptions(config.options, processor)
 
-        val name = "Processor-${config.name}"
-        applicationContext.registerSingleton(name, processor)
-        log.info("处理器${config.name}初始化完成:$processor")
+        applicationContext.registerSingleton(processorBeanName, processor)
+        log.info("处理器初始化完成:$processor")
 
         val trigger = applicationContext.getBean(config.getTriggerInstanceName(), Trigger::class.java)
         trigger.addTask(processor.safeTask())

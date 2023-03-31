@@ -5,16 +5,21 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import xyz.shoaky.sourcedownloader.core.ComponentManagerV2
+import xyz.shoaky.sourcedownloader.core.ProcessorConfig
+import xyz.shoaky.sourcedownloader.core.ProcessorConfigStorage
 import xyz.shoaky.sourcedownloader.sdk.SourceItem
 
 @RestController
 @RequestMapping("/api/processor")
 class ProcessorController(
-    private val componentManager: ComponentManagerV2
+    private val componentManager: ComponentManagerV2,
+    private val configStorages: List<ProcessorConfigStorage>
 ) {
 
-    fun getProcessors() {
-
+    @GetMapping("/config/{processorName}")
+    fun getConfig(@PathVariable processorName: String): ProcessorConfig? {
+        return configStorages.flatMap { it.getAllProcessor() }
+            .firstOrNull { it.name == processorName }
     }
 
     @GetMapping("/dry-run/{processorName}")
@@ -25,13 +30,16 @@ class ProcessorController(
             .map { pc ->
                 val fileResult = pc.sourceContent.sourceFiles.map { file ->
                     mapOf(
-                        "path" to "${file.fileDownloadPath} ---> ${file.targetPath()}",
+                        "from" to "${file.fileDownloadPath}}",
+                        "to" to "${file.targetPath()}",
                         "variables" to file.patternVariables.getVariables(),
                     )
                 }
                 DryRunResult(pc.sourceContent.sourceItem, fileResult, pc.status.name)
             }
     }
+
+
 }
 
 data class DryRunResult(

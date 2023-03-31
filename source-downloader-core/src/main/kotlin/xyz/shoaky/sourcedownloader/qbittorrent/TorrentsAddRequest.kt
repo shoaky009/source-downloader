@@ -8,10 +8,13 @@ import xyz.shoaky.sourcedownloader.sdk.api.HttpMethod
 import java.net.URL
 
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
-class TorrentsAddRequest(urlList: List<URL>,
-                         @JsonProperty("savepath")
-                         val savePath: String? = null,
-                         val category: String? = null) : QbittorrentRequest<String>() {
+class TorrentsAddRequest(
+    urlList: List<URL>,
+    @JsonProperty("savepath")
+    val savePath: String? = null,
+    val category: String? = null,
+    val paused: Boolean = false,
+) : QbittorrentRequest<String>() {
 
     private val urls: String
 

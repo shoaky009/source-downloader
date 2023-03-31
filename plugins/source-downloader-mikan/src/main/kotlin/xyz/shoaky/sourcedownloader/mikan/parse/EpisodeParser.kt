@@ -13,7 +13,9 @@ object EpisodeParser : ValueParser {
         Regex("\\(") to "[",
         Regex("\\)") to "]",
         Regex("(?<=\\d)集") to "",
-        //匹配[any]但是除了纯数字的内容
+        // 匹配[12 xxx]提取[12]
+        Regex("\\[(\\d+)\\s(.*?)]") to "[$1]",
+        // 匹配[any]但是除了纯数字的内容
         Regex("\\[(?!\\d+])[^\\[\\]]*?(.*?)]") to ""
     )
 

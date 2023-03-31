@@ -42,12 +42,12 @@ data class ProcessorConfig(
     }
 
     data class Options(
-        // val blacklistRegex: List<Regex> = emptyList(),
-        val fileSavePathPattern: PathPattern? = null,
-        val filenamePattern: PathPattern? = null,
+        val fileSavePathPattern: PathPattern = PathPattern.ORIGIN,
+        val filenamePattern: PathPattern = PathPattern.ORIGIN,
         val runAfterCompletion: List<ComponentId> = emptyList(),
         val renameTaskInterval: Duration = Duration.ofMinutes(5),
         val downloadCategory: String? = null,
+        // NOT IMPLEMENTED
         val variableConflictDecision: VariableConflictDecision = VariableConflictDecision.SMART,
         // 修改文件夹创建时间
         val touchItemDirectory: Boolean = true,
@@ -59,6 +59,7 @@ data class ProcessorConfig(
         val itemExpressionInclusions: List<String> = emptyList(),
         val fileExpressionExclusions: List<String> = emptyList(),
         val fileExpressionInclusions: List<String> = emptyList(),
+        val parsingFailsUsingTheOriginal: Boolean = true
     )
 
     enum class VariableConflictDecision {

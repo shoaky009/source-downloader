@@ -2,6 +2,7 @@ package xyz.shoaky.sourcedownloader.core.component
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import xyz.shoaky.sourcedownloader.component.RssSourceSupplier
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentProps
 
 class RssSourceTest {

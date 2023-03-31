@@ -26,7 +26,9 @@ data class ProcessingContent(
         DOWNLOAD_FAILED(3),
         TARGET_ALREADY_EXISTS(4),
         RENAMED(5),
-        DOWNLOADED(6);
+        DOWNLOADED(6),
+        NO_FILES(7),
+        ;
 
         override fun getValue(): Int {
             return value

@@ -1,4 +1,4 @@
-package xyz.shoaky.sourcedownloader.core.component
+package xyz.shoaky.sourcedownloader.component
 
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -15,7 +15,7 @@ class WebhookTrigger(
     private val path: String,
     private val method: String = "GET",
     private val requestMapping: RequestMappingHandlerMapping
-) : TaskHolderTrigger() {
+) : HoldingTaskTrigger() {
     override fun start() {
         val info = requestMappingInfo()
         requestMapping.registerMapping(info, this,

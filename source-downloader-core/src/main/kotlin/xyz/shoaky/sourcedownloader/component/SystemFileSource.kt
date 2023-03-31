@@ -1,4 +1,4 @@
-package xyz.shoaky.sourcedownloader.core.component
+package xyz.shoaky.sourcedownloader.component
 
 import xyz.shoaky.sourcedownloader.sdk.DownloadTask
 import xyz.shoaky.sourcedownloader.sdk.SourceItem
@@ -78,8 +78,8 @@ object SystemFileSourceSupplier : SdComponentSupplier<SystemFileSource> {
 
     override fun supplyTypes(): List<ComponentType> {
         return listOf(
-            ComponentType.source("system-file"),
-            ComponentType.downloader("system-file"),
+            ComponentType.source("systemFile"),
+            ComponentType.downloader("systemFile"),
         )
     }
 

@@ -10,7 +10,7 @@ import java.nio.file.Path
 import java.nio.file.attribute.BasicFileAttributes
 import java.time.LocalDateTime
 import java.time.ZoneId
-import kotlin.io.path.isRegularFile
+import kotlin.io.path.notExists
 import kotlin.io.path.readAttributes
 
 
@@ -32,7 +32,7 @@ object SpringExpression {
 
 
 fun Path.creationTime(): LocalDateTime? {
-    if (this.isRegularFile().not()) {
+    if (this.notExists()) {
         return null
     }
     val attrs = this.readAttributes<BasicFileAttributes>()
@@ -41,7 +41,7 @@ fun Path.creationTime(): LocalDateTime? {
 }
 
 fun Path.lastModifiedTime(): LocalDateTime? {
-    if (this.isRegularFile().not()) {
+    if (this.notExists()) {
         return null
     }
     val attrs = this.readAttributes<BasicFileAttributes>()
@@ -50,7 +50,7 @@ fun Path.lastModifiedTime(): LocalDateTime? {
 }
 
 fun Path.fileDataSize(): DataSize? {
-    if (this.isRegularFile().not()) {
+    if (this.notExists()) {
         return null
     }
     val size = Files.size(this)

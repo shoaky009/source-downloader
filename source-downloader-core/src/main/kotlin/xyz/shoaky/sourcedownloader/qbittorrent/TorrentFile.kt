@@ -1,3 +1,17 @@
 package xyz.shoaky.sourcedownloader.qbittorrent
 
-data class TorrentFile(val name: String, val progress: Float, val size: Int)
+import java.nio.file.Path
+
+data class TorrentFile(
+    val index: Int,
+    val name: Path,
+    val progress: Float,
+    val size: Int,
+    /**
+     * 0	Do not download
+     * 1	Normal priority
+     * 6	High priority
+     * 7	Maximal priority
+     */
+    val priority: Int
+)

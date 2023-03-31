@@ -2,7 +2,7 @@ package xyz.shoaky.sourcedownloader.core
 
 import org.springframework.retry.support.RetryTemplateBuilder
 import xyz.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
-import xyz.shoaky.sourcedownloader.core.component.MetadataVariableProvider
+import xyz.shoaky.sourcedownloader.component.MetadataVariableProvider
 import xyz.shoaky.sourcedownloader.sdk.*
 import xyz.shoaky.sourcedownloader.sdk.component.*
 import xyz.shoaky.sourcedownloader.sdk.util.Jackson
@@ -33,24 +33,17 @@ class SourceProcessor(
     private val processingStorage: ProcessingStorage,
 ) : Runnable {
 
-    private val downloadPath by lazy { downloader.defaultDownloadPath() }
-
     private val sourceItemFilters: MutableList<SourceItemFilter> = mutableListOf()
     private val sourceFileFilters: MutableList<SourceFileFilter> = mutableListOf()
     private val variableProviders = variableProviders.toMutableList()
     private val runAfterCompletion: MutableList<RunAfterCompletion> = mutableListOf()
 
-    private val fileSavePathPattern: PathPattern = options.fileSavePathPattern
-        ?: PathPattern.ORIGIN
-    private val filenamePattern: PathPattern = options.filenamePattern
-        ?: PathPattern.ORIGIN
+    private val downloadPath = downloader.defaultDownloadPath()
+    private val fileSavePathPattern: PathPattern = options.fileSavePathPattern ?: PathPattern.ORIGIN
+    private val filenamePattern: PathPattern = options.filenamePattern ?: PathPattern.ORIGIN
+    private val downloadOptions = DownloadOptions(options.downloadCategory)
 
     private var renameTaskFuture: ScheduledFuture<*>? = null
-
-    private val downloadOptions = DownloadOptions(
-        options.downloadCategory
-    )
-
     private val safeRunner by lazy {
         SafeRunner(this)
     }
@@ -62,9 +55,8 @@ class SourceProcessor(
 
     init {
         addItemFilter(SourceHashingItemFilter(name, processingStorage))
-
         if (options.provideMetadataVariables) {
-            if (this.variableProviders.contains(MetadataVariableProvider).not()) {
+            if (this.variableProviders.map { it }.contains(MetadataVariableProvider).not()) {
                 this.variableProviders.add(MetadataVariableProvider)
             }
         }
@@ -168,8 +160,9 @@ class SourceProcessor(
             }
         val sourceContent = SourceContent(sourceItem, contents)
 
-        val downloadTask = createDownloadTask(sourceItem)
+        val downloadTask = createDownloadTask(sourceItem, filteredFiles)
         val needDownload = needDownload(sourceContent)
+
         if (needDownload.first && dryRun.not()) {
             // NOTE 非异步下载会阻塞
             this.downloader.submit(downloadTask)
@@ -195,6 +188,10 @@ class SourceProcessor(
 
     private fun needDownload(sc: SourceContent): Pair<Boolean, ProcessingContent.Status> {
         val files = sc.sourceFiles
+        if (files.isEmpty()) {
+            return false to ProcessingContent.Status.NO_FILES
+        }
+
         val targetPaths = files.map { it.targetPath() }
         if (targetPaths.map { it.exists() }.all { it }) {
             return false to ProcessingContent.Status.TARGET_ALREADY_EXISTS
@@ -248,8 +245,9 @@ class SourceProcessor(
         }
         val contentGrouping = processingStorage.findRenameContent(name, options.renameTimesThreshold)
             .groupBy(
-                {
-                    val downloadTask = createDownloadTask(it.sourceContent.sourceItem)
+                { pc ->
+                    val files = pc.sourceContent.sourceFiles.map { it.fileDownloadPath }
+                    val downloadTask = createDownloadTask(pc.sourceContent.sourceItem, files)
                     DownloadStatus.from(asyncDownloader.isFinished(downloadTask))
                 }, { it }
             )
@@ -323,8 +321,8 @@ class SourceProcessor(
         return safeRunner
     }
 
-    private fun createDownloadTask(sourceItem: SourceItem): DownloadTask {
-        return DownloadTask.create(sourceItem, downloadPath = downloadPath, category = downloadOptions.category)
+    private fun createDownloadTask(sourceItem: SourceItem, downloadFiles: List<Path>): DownloadTask {
+        return DownloadTask.create(sourceItem, downloadFiles, downloadPath = downloadPath, category = downloadOptions.category)
     }
 
     private fun rename(content: SourceContent): Boolean {

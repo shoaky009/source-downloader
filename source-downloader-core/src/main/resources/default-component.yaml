@@ -17,6 +17,8 @@ run-after-completion:
 variable-provider:
   - name: metadata
     type: metadata
+  - name: anitom
+    type: anitom
 trigger:
   - name: 30min
     type: fixed
@@ -33,3 +35,7 @@ trigger:
     props:
       interval: P1D
       on-start-run-tasks: true
+  - name: webhook
+    type: webhook
+    props:
+      path: default

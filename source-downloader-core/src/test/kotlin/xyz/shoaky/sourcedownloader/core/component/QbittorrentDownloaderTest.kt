@@ -3,6 +3,7 @@ package xyz.shoaky.sourcedownloader.core.component
 import org.apache.commons.lang3.NotImplementedException
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
+import xyz.shoaky.sourcedownloader.component.QbittorrentDownloader
 import xyz.shoaky.sourcedownloader.qbittorrent.QbittorrentClient
 import xyz.shoaky.sourcedownloader.qbittorrent.TorrentInfo
 import xyz.shoaky.sourcedownloader.qbittorrent.TorrentInfoRequest
@@ -41,7 +42,7 @@ class QbittorrentDownloaderTest {
             LocalDateTime.now(), "torrent",
             URI("https://mikanani.me/Download/20230308/f3bcd4831746caac97212896caa41f4e24d0ae88.torrent")
         )
-        val downloadTask = DownloadTask(sourceItem, Path(""))
+        val downloadTask = DownloadTask(sourceItem, emptyList(), Path(""))
         val finished = downloader.isFinished(downloadTask) ?: false
         assert(finished)
     }
@@ -59,7 +60,7 @@ class QbittorrentDownloaderTest {
 
         val sourceItem = sourceItem(link = "https://mikanani.me/Download/20230308/$torrentHash",
             downloadUrl = "https://mikanani.me/Download/20230308/$torrentHash.torrent")
-        val downloadTask = DownloadTask(sourceItem, Path(""))
+        val downloadTask = DownloadTask(sourceItem, emptyList(), Path(""))
         val finished = downloader.isFinished(downloadTask) ?: false
         assert(!finished)
     }
