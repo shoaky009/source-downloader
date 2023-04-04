@@ -32,7 +32,7 @@ class ProcessorController(
                     mapOf(
                         "from" to "${file.fileDownloadPath}}",
                         "to" to "${file.targetPath()}",
-                        "variables" to file.patternVariables.getVariables(),
+                        "variables" to file.patternVariables.variables(),
                     )
                 }
                 DryRunResult(pc.sourceContent.sourceItem, fileResult, pc.status.name)

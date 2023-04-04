@@ -18,7 +18,7 @@ object TouchItemDirectory : RunAfterCompletion {
             .groupBy { it.itemFileRootDirectory() }
             .mapNotNull { it.key }
             .forEach {
-                log.debug("item:${t.sourceItem.title} Touching directory: $it")
+                log.debug("item:{} Touching directory: {}", t.sourceItem.title, it)
                 it.setLastModifiedTime(filetime)
             }
     }

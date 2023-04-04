@@ -1,18 +1,18 @@
 package xyz.shoaky.sourcedownloader.sdk
 
 import java.nio.file.Path
-import java.nio.file.attribute.PosixFilePermission
-import java.nio.file.attribute.PosixFilePermissions
 import java.util.regex.Pattern
-import kotlin.io.path.*
+import kotlin.io.path.exists
+import kotlin.io.path.name
+import kotlin.io.path.notExists
 
-data class SourceContent(
-    val sourceItem: SourceItem,
-    val sourceFiles: List<SourceFileContent>,
-    val options: Options = Options()
-) {
-
-    fun canRenameFiles(): List<SourceFileContent> {
+/**
+ * 后面抽象这个类 option不写在这里
+ */
+interface SourceContent {
+    val sourceFiles: List<FileContent>
+    val sourceItem: SourceItem
+    fun canRenameFiles(): List<FileContent> {
         return sourceFiles
             .filter { it.targetPath().notExists() }
             .filter { it.fileDownloadPath.exists() }
@@ -28,103 +28,11 @@ data class SourceContent(
         }
         return "${sourceItem.title}内的${sourceFiles.size}个文件"
     }
-
-    data class Options(
-        val parsingFailsUsingTheOriginal: Boolean = true
-    )
 }
 
-data class SourceFileContent(
-    val fileDownloadPath: Path,
-    val sourceSavePath: Path,
-    val patternVariables: MapPatternVariables,
-    val fileSavePathPattern: PathPattern,
-    val filenamePattern: PathPattern,
-    // 兼容旧数据
-    private val options: SourceContent.Options = SourceContent.Options(),
+data class PathPattern(
+    val pattern: String
 ) {
-
-    private val targetPath: Path by lazy {
-        saveDirectoryPath().resolve(targetFilename(options.parsingFailsUsingTheOriginal))
-    }
-
-    fun targetPath(): Path {
-        return targetPath
-    }
-
-    fun saveDirectoryPath(): Path {
-        val parse = fileSavePathPattern.parse(patternVariables)
-        return sourceSavePath.resolve(parse.path)
-    }
-
-    fun targetFilename(parsingFailsUsingTheOriginal: Boolean = true): String {
-        if (filenamePattern == PathPattern.ORIGIN) {
-            return fileDownloadPath.name
-        }
-        val parse = filenamePattern.parse(patternVariables)
-        val success = parse.success()
-        // TODO from processor
-        if (success || parsingFailsUsingTheOriginal.not()) {
-            val targetFilename = parse.path
-            if (targetFilename.isBlank()) {
-                return fileDownloadPath.name
-            }
-
-            val extension = fileDownloadPath.extension
-            if (targetFilename.endsWith(extension)) {
-                return targetFilename
-            }
-            return "$targetFilename.$extension"
-        }
-
-        return fileDownloadPath.name
-    }
-
-    fun createSaveDirectories() {
-        val targetSaveDirectoryPath = saveDirectoryPath()
-        if (targetSaveDirectoryPath.notExists()) {
-            targetSaveDirectoryPath.createDirectories(fileAttribute)
-        }
-    }
-
-    /**
-     * 获取item文件对应的顶级目录e.g. 文件保存在下/mnt/bangumi/FATE/Season 01 返回 /mnt/bangumi/FATE
-     * @return null如果item的文件是保存在saveRootPath下
-     */
-    fun itemFileRootDirectory(): Path? {
-        val saveDirectoryPath = saveDirectoryPath()
-        if (sourceSavePath == saveDirectoryPath) {
-            return null
-        }
-        val depth = fileSavePathPattern.depth()
-        var res = saveDirectoryPath
-        for (i in 0..depth) {
-            res = saveDirectoryPath.parent
-        }
-        if (sourceSavePath == res) {
-            return null
-        }
-        return res
-    }
-
-    companion object {
-
-        private val defaultPermissions = setOf(
-            PosixFilePermission.OWNER_READ,
-            PosixFilePermission.OWNER_WRITE,
-            PosixFilePermission.OWNER_EXECUTE,
-            PosixFilePermission.GROUP_READ,
-            PosixFilePermission.GROUP_EXECUTE,
-            PosixFilePermission.OTHERS_READ,
-            PosixFilePermission.OTHERS_EXECUTE
-        )
-        private val fileAttribute = PosixFilePermissions.asFileAttribute(defaultPermissions)
-    }
-
-}
-
-data class PathPattern(val pattern: String) {
-
     fun parse(provider: PatternVariables): ParseResult {
         val matcher = VARIABLE_PATTERN.matcher(pattern)
         val result = StringBuilder()

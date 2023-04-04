@@ -1,7 +1,7 @@
-package xyz.shoaky.sourcedownloader.core
+package xyz.shoaky.sourcedownloader.core.idk
 
 enum class ParsingFailedStrategy {
     USE_ORIGINAL_FILENAME,
-    USE_VARIABLE,
+    USE_PATTERN,
     STAY
 }

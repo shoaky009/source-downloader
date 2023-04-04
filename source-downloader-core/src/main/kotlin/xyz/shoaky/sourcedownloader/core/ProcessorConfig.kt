@@ -1,6 +1,7 @@
 package xyz.shoaky.sourcedownloader.core
 
 import com.fasterxml.jackson.annotation.JsonValue
+import xyz.shoaky.sourcedownloader.core.idk.ParsingFailedStrategy
 import xyz.shoaky.sourcedownloader.sdk.PathPattern
 import xyz.shoaky.sourcedownloader.sdk.component.*
 import java.nio.file.Path
@@ -59,7 +60,8 @@ data class ProcessorConfig(
         val itemExpressionInclusions: List<String> = emptyList(),
         val fileExpressionExclusions: List<String> = emptyList(),
         val fileExpressionInclusions: List<String> = emptyList(),
-        val parsingFailsUsingTheOriginal: Boolean = true
+        val parsingFailsUsingTheOriginal: Boolean = true,
+        val parsingFailedStrategy: ParsingFailedStrategy = ParsingFailedStrategy.USE_ORIGINAL_FILENAME
     )
 
     enum class VariableConflictDecision {

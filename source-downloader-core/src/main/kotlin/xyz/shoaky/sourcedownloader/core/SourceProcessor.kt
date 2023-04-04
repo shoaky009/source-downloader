@@ -3,6 +3,9 @@ package xyz.shoaky.sourcedownloader.core
 import org.springframework.retry.support.RetryTemplateBuilder
 import xyz.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
 import xyz.shoaky.sourcedownloader.component.MetadataVariableProvider
+import xyz.shoaky.sourcedownloader.core.idk.IdkSourceContent
+import xyz.shoaky.sourcedownloader.core.idk.PersistentFileContent
+import xyz.shoaky.sourcedownloader.core.idk.PersistentSourceContent
 import xyz.shoaky.sourcedownloader.sdk.*
 import xyz.shoaky.sourcedownloader.sdk.component.*
 import xyz.shoaky.sourcedownloader.sdk.util.Jackson
@@ -15,6 +18,7 @@ import java.time.LocalDateTime
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
+import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
 import kotlin.time.ExperimentalTime
 import kotlin.time.measureTime
@@ -39,8 +43,8 @@ class SourceProcessor(
     private val runAfterCompletion: MutableList<RunAfterCompletion> = mutableListOf()
 
     private val downloadPath = downloader.defaultDownloadPath()
-    private val fileSavePathPattern: PathPattern = options.fileSavePathPattern ?: PathPattern.ORIGIN
-    private val filenamePattern: PathPattern = options.filenamePattern ?: PathPattern.ORIGIN
+    private val fileSavePathPattern: PathPattern = options.fileSavePathPattern
+    private val filenamePattern: PathPattern = options.filenamePattern
     private val downloadOptions = DownloadOptions(options.downloadCategory)
 
     private var renameTaskFuture: ScheduledFuture<*>? = null
@@ -107,7 +111,6 @@ class SourceProcessor(
     }
 
     private fun process(dryRun: Boolean = false): List<ProcessingContent> {
-        // TODO 其他异常会被吞掉，打印下日志
         val items = retry.execute<List<SourceItem>, IOException> {
             source.fetch()
         }
@@ -149,7 +152,7 @@ class SourceProcessor(
 
         val contents = aggrSourceGroup.sourceFiles(filteredFiles)
             .mapIndexed { index, sourceFile ->
-                val sourceFileContent = SourceFileContent(
+                val sourceFileContent = PersistentFileContent(
                     downloadPath.resolve(filteredFiles[index]),
                     sourceSavePath,
                     MapPatternVariables(sourceFile.patternVariables().variables()),
@@ -158,7 +161,7 @@ class SourceProcessor(
                 )
                 sourceFileContent
             }
-        val sourceContent = SourceContent(sourceItem, contents)
+        val sourceContent = PersistentSourceContent(sourceItem, contents)
 
         val downloadTask = createDownloadTask(sourceItem, filteredFiles)
         val needDownload = needDownload(sourceContent)
@@ -171,22 +174,36 @@ class SourceProcessor(
             Events.post(ProcessorSubmitDownloadEvent(name, sourceItem))
         }
 
-        var pc = ProcessingContent(name, sourceContent)
+        var status = ProcessingContent.Status.WAITING_TO_RENAME
         if (downloader !is AsyncDownloader && dryRun.not()) {
             rename(sourceContent)
-            pc = pc.copy(status = ProcessingContent.Status.RENAMED)
+            status = ProcessingContent.Status.RENAMED
         }
 
         if (needDownload.first.not() && downloader is AsyncDownloader) {
-            pc = pc.copy(status = needDownload.second)
+            status = needDownload.second
         }
+
+        val pc = ProcessingContent(name,
+            PersistentSourceContent(
+                sourceItem,
+                sourceContent.sourceFiles.map {
+                    PersistentFileContent(
+                        it.fileDownloadPath,
+                        sourceSavePath,
+                        MapPatternVariables(it.patternVariables.variables()),
+                        fileSavePathPattern,
+                        filenamePattern,
+                    )
+                }
+            )).copy(status = status)
         if (options.saveContent && dryRun.not()) {
             processingStorage.save(pc)
         }
         return pc
     }
 
-    private fun needDownload(sc: SourceContent): Pair<Boolean, ProcessingContent.Status> {
+    private fun needDownload(sc: PersistentSourceContent): Pair<Boolean, ProcessingContent.Status> {
         val files = sc.sourceFiles
         if (files.isEmpty()) {
             return false to ProcessingContent.Status.NO_FILES
@@ -196,6 +213,7 @@ class SourceProcessor(
         if (targetPaths.map { it.exists() }.all { it }) {
             return false to ProcessingContent.Status.TARGET_ALREADY_EXISTS
         }
+        // 预防这一批次的Item有相同的目标，并且是AsyncDownloader的情况下会重复下载
         if (processingStorage.targetPathExists(targetPaths)) {
             return false to ProcessingContent.Status.TARGET_ALREADY_EXISTS
         }
@@ -217,22 +235,6 @@ class SourceProcessor(
                 this.accept(taskContent)
             }.onFailure {
                 log.error("${task::class.simpleName}发生错误", it)
-            }
-        }
-    }
-
-    private enum class DownloadStatus {
-        FINISHED,
-        NOT_FINISHED,
-        NOT_FOUND;
-
-        companion object {
-            fun from(boolean: Boolean?): DownloadStatus {
-                return when (boolean) {
-                    true -> FINISHED
-                    false -> NOT_FINISHED
-                    null -> NOT_FOUND
-                }
             }
         }
     }
@@ -272,37 +274,37 @@ class SourceProcessor(
         }
     }
 
-    private fun processRenameTask(content: ProcessingContent) {
-        val processingContent = content.sourceContent
-        val sourceFiles = processingContent.sourceFiles
+    private fun processRenameTask(pc: ProcessingContent) {
+        val sourceContent = pc.sourceContent
+        val sourceFiles = sourceContent.sourceFiles
         if (sourceFiles.all { it.targetPath().exists() }) {
-            val toUpdate = content.copy(
-                renameTimes = content.renameTimes.inc(),
+            val toUpdate = pc.copy(
+                renameTimes = pc.renameTimes.inc(),
                 status = ProcessingContent.Status.TARGET_ALREADY_EXISTS,
                 modifyTime = LocalDateTime.now(),
             )
             processingStorage.save(toUpdate)
-            log.info("全部目标文件已存在，无需重命名，record:${Jackson.toJsonString(content)}")
+            log.info("全部目标文件已存在，无需重命名，record:${Jackson.toJsonString(pc)}")
             return
         }
 
-        val allSuccess = rename(processingContent)
+        val allSuccess = rename(sourceContent)
         if (allSuccess) {
-            val paths = processingContent.sourceFiles.map { it.targetPath() }
+            val paths = sourceContent.sourceFiles.map { it.targetPath() }
             // 如果失败了, 一些成功一些失败??
             processingStorage.saveTargetPath(paths)
-            runAfterCompletions(processingContent)
+            runAfterCompletions(sourceContent)
         } else {
-            log.warn("有部分文件重命名失败record:${Jackson.toJsonString(content)}")
+            log.warn("有部分文件重命名失败record:${Jackson.toJsonString(pc)}")
         }
 
         val renameTimesThreshold = options.renameTimesThreshold
-        if (content.renameTimes == renameTimesThreshold) {
-            log.error("重命名${renameTimesThreshold}次重试失败record:${Jackson.toJsonString(content)}")
+        if (pc.renameTimes == renameTimesThreshold) {
+            log.error("重命名${renameTimesThreshold}次重试失败record:${Jackson.toJsonString(pc)}")
         }
 
-        val toUpdate = content.copy(
-            renameTimes = content.renameTimes.inc(),
+        val toUpdate = pc.copy(
+            renameTimes = pc.renameTimes.inc(),
             status = ProcessingContent.Status.RENAMED,
             modifyTime = LocalDateTime.now()
         )
@@ -325,10 +327,10 @@ class SourceProcessor(
         return DownloadTask.create(sourceItem, downloadFiles, downloadPath = downloadPath, category = downloadOptions.category)
     }
 
-    private fun rename(content: SourceContent): Boolean {
+    private fun rename(content: PersistentSourceContent): Boolean {
         val sourceFiles = content.canRenameFiles()
         sourceFiles.forEach {
-            it.createSaveDirectories()
+            it.saveDirectoryPath().createDirectories()
         }
         if (sourceFiles.isEmpty()) {
             return true
@@ -341,7 +343,16 @@ class SourceProcessor(
             }
             return true
         }
-        return fileMover.rename(content.copy(sourceFiles = sourceFiles))
+
+        return fileMover.rename(
+            IdkSourceContent(
+                content.copy(sourceFiles = sourceFiles.map {
+                    PersistentFileContent(it,
+                        sourceSavePath,
+                        fileSavePathPattern,
+                        filenamePattern)
+                }))
+        )
     }
 
     fun addRunAfterCompletion(vararg completion: RunAfterCompletion) {
@@ -395,18 +406,18 @@ class SourceProcessor(
 }
 
 class Idk(
-    private val providers: List<VariableProvider>) {
-
-    fun getAggr(sourceItem: SourceItem): SourceItemGroupAggr {
+    private val providers: List<VariableProvider>
+) {
+    fun getAggr(sourceItem: SourceItem): SourceItemGroup {
         val associateBy = providers.associateBy({
-            it::class.simpleName!!
+            it
         }, { it.createSourceGroup(sourceItem) })
         return SourceItemGroupAggr(associateBy)
     }
 }
 
-class SourceItemGroupAggr(
-    private val groups: Map<String, SourceItemGroup>
+private class SourceItemGroupAggr(
+    private val groups: Map<VariableProvider, SourceItemGroup>
 ) : SourceItemGroup {
     override fun sourceFiles(paths: List<Path>): List<SourceFile> {
         val res = mutableListOf<List<SourceFile>>()
@@ -441,6 +452,22 @@ class SourceItemGroupAggr(
 
         override fun patternVariables(): PatternVariables {
             return patternVariables
+        }
+    }
+}
+
+private enum class DownloadStatus {
+    FINISHED,
+    NOT_FINISHED,
+    NOT_FOUND;
+
+    companion object {
+        fun from(boolean: Boolean?): DownloadStatus {
+            return when (boolean) {
+                true -> FINISHED
+                false -> NOT_FINISHED
+                null -> NOT_FOUND
+            }
         }
     }
 }

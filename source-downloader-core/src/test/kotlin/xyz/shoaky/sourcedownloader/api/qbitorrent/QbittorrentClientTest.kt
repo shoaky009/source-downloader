@@ -1,12 +1,13 @@
 package xyz.shoaky.sourcedownloader.api.qbitorrent
 
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import xyz.shoaky.sourcedownloader.qbittorrent.*
 import xyz.shoaky.sourcedownloader.sdk.util.Jackson
 import java.net.URL
 import java.nio.file.Path
 
-// @Disabled("依赖于qBittorrent应用测试才有意义")
+@Disabled("依赖于qBittorrent应用测试才有意义")
 class QbittorrentClientTest {
 
     private val config = QbittorrentConfig(URL("http://truenas:10095"), "admin", "adminadmin")

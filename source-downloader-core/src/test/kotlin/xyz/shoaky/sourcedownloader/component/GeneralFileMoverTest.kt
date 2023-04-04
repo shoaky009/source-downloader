@@ -1,12 +1,11 @@
-package xyz.shoaky.sourcedownloader.core.component
+package xyz.shoaky.sourcedownloader.component
 
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import xyz.shoaky.sourcedownloader.component.GeneralFileMoverSupplier
+import xyz.shoaky.sourcedownloader.core.idk.PersistentFileContent
+import xyz.shoaky.sourcedownloader.core.idk.PersistentSourceContent
 import xyz.shoaky.sourcedownloader.sdk.MapPatternVariables
 import xyz.shoaky.sourcedownloader.sdk.PathPattern
-import xyz.shoaky.sourcedownloader.sdk.SourceContent
-import xyz.shoaky.sourcedownloader.sdk.SourceFileContent
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentProps
 import xyz.shoaky.sourcedownloader.sourceItem
 import java.nio.file.Files
@@ -36,14 +35,14 @@ class GeneralFileMoverTest {
 
     @Test
     fun rename() {
-        val file1 = SourceFileContent(
+        val file1 = PersistentFileContent(
             Path("src/test/resources/downloads/1.txt"),
             Path("src/test/resources/target"),
             MapPatternVariables(),
             PathPattern.ORIGIN,
             PathPattern.ORIGIN,
         )
-        val file2 = SourceFileContent(
+        val file2 = PersistentFileContent(
             Path("src/test/resources/downloads/2.txt"),
             Path("src/test/resources/target"),
             MapPatternVariables(),
@@ -51,7 +50,7 @@ class GeneralFileMoverTest {
             PathPattern.ORIGIN,
         )
 
-        val sourceContent = SourceContent(sourceItem(), listOf(file1, file2))
+        val sourceContent = PersistentSourceContent(sourceItem(), listOf(file1, file2))
         val result = mover.rename(sourceContent)
         assert(result)
         Files.deleteIfExists(file1.targetPath())

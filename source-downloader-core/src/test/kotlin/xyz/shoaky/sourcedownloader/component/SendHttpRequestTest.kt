@@ -1,9 +1,8 @@
-package xyz.shoaky.sourcedownloader.core.component
+package xyz.shoaky.sourcedownloader.component
 
 import com.sun.net.httpserver.HttpServer
 import org.junit.jupiter.api.Test
-import xyz.shoaky.sourcedownloader.component.SendHttpRequestSupplier
-import xyz.shoaky.sourcedownloader.sdk.SourceContent
+import xyz.shoaky.sourcedownloader.core.idk.PersistentSourceContent
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentProps
 import xyz.shoaky.sourcedownloader.sourceItem
 import java.net.InetSocketAddress
@@ -42,7 +41,7 @@ class SendHttpRequestTest {
             )
         )
 
-        apply.accept(SourceContent(
+        apply.accept(PersistentSourceContent(
             sourceItem("test"),
             listOf()
         ))

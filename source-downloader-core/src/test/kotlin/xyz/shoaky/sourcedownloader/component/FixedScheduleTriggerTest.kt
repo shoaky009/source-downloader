@@ -1,7 +1,6 @@
-package xyz.shoaky.sourcedownloader.core.component
+package xyz.shoaky.sourcedownloader.component
 
 import org.junit.jupiter.api.Test
-import xyz.shoaky.sourcedownloader.component.FixedScheduleTriggerSupplier
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentProps
 
 class FixedScheduleTriggerTest {

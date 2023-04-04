@@ -10,8 +10,6 @@ object Http {
 
     class JsonBodyHandler<T : Any>(private val type: TypeReference<T>) : HttpResponse.BodyHandler<T> {
 
-        constructor(type: Class<T>) : this(object : TypeReference<T>() {})
-
         override fun apply(responseInfo: HttpResponse.ResponseInfo): HttpResponse.BodySubscriber<T> {
             val upstream = HttpResponse.BodySubscribers.ofInputStream()
             return HttpResponse.BodySubscribers.mapping(upstream)

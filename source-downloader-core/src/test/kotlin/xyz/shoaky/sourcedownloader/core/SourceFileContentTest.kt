@@ -1,6 +1,9 @@
-package xyz.shoaky.sourcedownloader.sdk
+package xyz.shoaky.sourcedownloader.core
 
 import org.junit.jupiter.api.Test
+import xyz.shoaky.sourcedownloader.core.idk.PersistentFileContent
+import xyz.shoaky.sourcedownloader.sdk.MapPatternVariables
+import xyz.shoaky.sourcedownloader.sdk.PathPattern
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.test.assertEquals
@@ -93,8 +96,8 @@ private fun createFileContent(
     sourceSavePath: Path = Path("src/test/resources/target"),
     patternVars: MapPatternVariables = MapPatternVariables(),
     savePathPattern: PathPattern = PathPattern.ORIGIN,
-    filenamePathPattern: PathPattern = PathPattern.ORIGIN): SourceFileContent {
-    return SourceFileContent(
+    filenamePathPattern: PathPattern = PathPattern.ORIGIN): PersistentFileContent {
+    return PersistentFileContent(
         fileDownloadPath,
         sourceSavePath,
         patternVars,

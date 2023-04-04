@@ -1,7 +1,6 @@
-package xyz.shoaky.sourcedownloader.core.component
+package xyz.shoaky.sourcedownloader.component
 
 import org.junit.jupiter.api.Test
-import xyz.shoaky.sourcedownloader.component.UrlDownloaderSupplier
 import xyz.shoaky.sourcedownloader.sdk.DownloadTask
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentProps
 import xyz.shoaky.sourcedownloader.sourceItem
