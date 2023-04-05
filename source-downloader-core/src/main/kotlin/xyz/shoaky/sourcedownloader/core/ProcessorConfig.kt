@@ -10,7 +10,7 @@ import kotlin.reflect.KClass
 
 data class ProcessorConfig(
     val name: String,
-    val trigger: ComponentId,
+    val triggers: List<ComponentId>,
     val source: ComponentId,
     val providers: List<ComponentId> = emptyList(),
     val downloader: ComponentId = ComponentId("downloader:url"),
@@ -38,8 +38,10 @@ data class ProcessorConfig(
         return mover.getInstanceName(FileMover::class)
     }
 
-    fun getTriggerInstanceName(): String {
-        return trigger.getInstanceName(Trigger::class)
+    fun getTriggerInstanceNames(): List<String> {
+        return triggers.map {
+            it.getInstanceName(Trigger::class)
+        }
     }
 
     data class Options(
@@ -60,7 +62,6 @@ data class ProcessorConfig(
         val itemExpressionInclusions: List<String> = emptyList(),
         val fileExpressionExclusions: List<String> = emptyList(),
         val fileExpressionInclusions: List<String> = emptyList(),
-        val parsingFailsUsingTheOriginal: Boolean = true,
         val parsingFailedStrategy: ParsingFailedStrategy = ParsingFailedStrategy.USE_ORIGINAL_FILENAME
     )
 

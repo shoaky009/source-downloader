@@ -3,9 +3,6 @@ package xyz.shoaky.sourcedownloader.component
 import com.apptasticsoftware.rssreader.RssReader
 import xyz.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
 import xyz.shoaky.sourcedownloader.sdk.SourceItem
-import xyz.shoaky.sourcedownloader.sdk.component.ComponentProps
-import xyz.shoaky.sourcedownloader.sdk.component.ComponentType
-import xyz.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
 import xyz.shoaky.sourcedownloader.sdk.component.Source
 import java.net.URI
 import java.time.LocalDateTime
@@ -52,19 +49,3 @@ class RssSource(private val url: String) : Source {
     }
 }
 
-object RssSourceSupplier : SdComponentSupplier<RssSource> {
-    override fun apply(props: ComponentProps): RssSource {
-        return RssSource(props.get("url"))
-    }
-
-    override fun supplyTypes(): List<ComponentType> {
-        return listOf(
-            ComponentType("rss", Source::class)
-        )
-    }
-
-    override fun getComponentClass(): Class<RssSource> {
-        return RssSource::class.java
-    }
-
-}

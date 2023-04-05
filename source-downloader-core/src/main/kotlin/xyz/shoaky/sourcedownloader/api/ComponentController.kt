@@ -1,22 +1,19 @@
 package xyz.shoaky.sourcedownloader.api
 
-import org.springframework.context.ApplicationContext
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import xyz.shoaky.sourcedownloader.core.ComponentConfigStorage
-import xyz.shoaky.sourcedownloader.core.ComponentManager
-import xyz.shoaky.sourcedownloader.sdk.component.SdComponent
+import xyz.shoaky.sourcedownloader.core.SdComponentManager
 
 @RestController
 @RequestMapping("/api/component")
 class ComponentController(
-    private val componentManager: ComponentManager,
-    private val applicationContext: ApplicationContext,
+    private val componentManager: SdComponentManager,
     private val ccs: List<ComponentConfigStorage>
 ) {
 
     fun getComponents() {
-        val components = applicationContext.getBeansOfType(SdComponent::class.java)
+
     }
 
     fun createComponent() {

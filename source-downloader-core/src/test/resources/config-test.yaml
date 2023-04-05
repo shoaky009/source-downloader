@@ -19,7 +19,8 @@ components:
 
 processors:
   - name: test-normal-case
-    trigger: fixed:1s
+    triggers:
+      - fixed:1s
     source: test
     providers:
     downloader: url:test

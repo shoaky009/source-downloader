@@ -5,9 +5,6 @@ import org.springframework.core.io.UrlResource
 import xyz.shoaky.sourcedownloader.sdk.DownloadTask
 import xyz.shoaky.sourcedownloader.sdk.SourceContent
 import xyz.shoaky.sourcedownloader.sdk.SourceItem
-import xyz.shoaky.sourcedownloader.sdk.component.ComponentProps
-import xyz.shoaky.sourcedownloader.sdk.component.ComponentType
-import xyz.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
 import xyz.shoaky.sourcedownloader.sdk.component.TorrentDownloader
 import java.nio.file.Files
 import java.nio.file.Path
@@ -62,22 +59,3 @@ class MockDownloader(private val downloadPath: Path) : TorrentDownloader {
 
 }
 
-object MockDownloaderSupplier : SdComponentSupplier<MockDownloader> {
-    override fun apply(props: ComponentProps): MockDownloader {
-        val path = props.properties["download-path"]?.let {
-            Path(it.toString())
-        } ?: throw RuntimeException("download-path is null")
-        return MockDownloader(path)
-    }
-
-    override fun supplyTypes(): List<ComponentType> {
-        return listOf(
-            ComponentType.downloader("mock")
-        )
-    }
-
-    override fun getComponentClass(): Class<MockDownloader> {
-        return MockDownloader::class.java
-    }
-
-}

@@ -36,14 +36,14 @@ internal object SeasonParser : ValueParser {
 
     private val lastMatchPattern = Pattern.compile("(?:\\d+|二|三|四|五|六|七|八|九|十|II|III|IV|V|VI|VII|VIII|IX|X|Ⅱ|Ⅲ|Ⅳ)\$")
 
-    //标题最后是数字的
+    // 标题最后是数字的
     private val last =
         SeasonRule(lastMatchPattern) {
             it.toIntOrNull() ?: seasonNumberMapping[it]
             ?: throw RuntimeException("can't parse season number from $it")
         }
 
-    //常见的比如第X季 第X期 S Season
+    // 常见的比如第X季 第X期 S Season
     private val general = SeasonRule(Pattern.compile("S\\d{1,2}|Season \\d{1,2}|第.[季期]|\\d+(?i)nd")) {
         val s = it.replace("S", "", true)
             .replace("Season", "", true)
@@ -55,7 +55,7 @@ internal object SeasonParser : ValueParser {
         seasonNumberMapping[s] ?: s.toInt()
     }
 
-    //99%是季度命名的规则
+    // 99%是季度命名的规则
     private val rules = listOf(
         general,
         last,

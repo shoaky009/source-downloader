@@ -2,9 +2,6 @@ package xyz.shoaky.sourcedownloader.component
 
 import com.apptasticsoftware.rssreader.RssReader
 import xyz.shoaky.sourcedownloader.sdk.SourceItem
-import xyz.shoaky.sourcedownloader.sdk.component.ComponentProps
-import xyz.shoaky.sourcedownloader.sdk.component.ComponentType
-import xyz.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
 import xyz.shoaky.sourcedownloader.sdk.component.Source
 import java.net.URI
 import java.time.LocalDateTime
@@ -46,19 +43,3 @@ class JackettSource(
     }
 }
 
-object JackettSourceSupplier : SdComponentSupplier<JackettSource> {
-    override fun apply(props: ComponentProps): JackettSource {
-        return JackettSource(props.get("url"))
-    }
-
-    override fun supplyTypes(): List<ComponentType> {
-        return listOf(
-            ComponentType("rss", Source::class)
-        )
-    }
-
-    override fun getComponentClass(): Class<JackettSource> {
-        return JackettSource::class.java
-    }
-
-}

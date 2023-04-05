@@ -3,9 +3,6 @@ package xyz.shoaky.sourcedownloader.component
 import com.google.common.eventbus.Subscribe
 import xyz.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
 import xyz.shoaky.sourcedownloader.core.ProcessorSubmitDownloadEvent
-import xyz.shoaky.sourcedownloader.sdk.component.ComponentProps
-import xyz.shoaky.sourcedownloader.sdk.component.ComponentType
-import xyz.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
 import java.time.DayOfWeek
 import java.time.Duration
 import java.time.LocalDateTime
@@ -52,7 +49,8 @@ class DynamicTrigger(config: Config) : HoldingTaskTrigger() {
                 removeRange(now, nearest)
 
                 if (log.isDebugEnabled) {
-                    log.debug("DynamicTrigger nextInternal: $nextInternal status: $status nearest: $nearest map:${hitTimeMap[now.dayOfWeek]}")
+                    log.debug("DynamicTrigger nextInternal: {} status: {} nearest: {} map:{}", nextInternal, status,
+                        nearest, hitTimeMap[now.dayOfWeek])
                 }
                 Thread.sleep(nextInternal)
                 runTasks()
@@ -72,7 +70,7 @@ class DynamicTrigger(config: Config) : HoldingTaskTrigger() {
         val localTime = dateTime.toLocalTime()
         if (nearest.contains(localTime).not()) {
             hitTimeMap[dateTime.dayOfWeek]?.remove(nearest)
-            log.debug("DynamicTrigger remove range: $nearest, week: ${dateTime.dayOfWeek}")
+            log.debug("DynamicTrigger remove range: {}, week: {}", nearest, dateTime.dayOfWeek)
         }
         hit = false
     }
@@ -113,12 +111,12 @@ class DynamicTrigger(config: Config) : HoldingTaskTrigger() {
         thread = null
     }
 
-    fun findNearest(dayOfWeek: DayOfWeek, time: LocalTime): TriggerRange? {
+    private fun findNearest(dayOfWeek: DayOfWeek, time: LocalTime): TriggerRange? {
         return hitTimeMap[dayOfWeek]?.filter { it.start > time }
             ?.minByOrNull { Duration.between(time, it.start).toMinutes() }
     }
 
-    fun findCurrent(dayOfWeek: DayOfWeek, time: LocalTime): TriggerRange? {
+    private fun findCurrent(dayOfWeek: DayOfWeek, time: LocalTime): TriggerRange? {
         return hitTimeMap[dayOfWeek]?.filter { it.contains(time) }
             ?.minByOrNull { Duration.between(time, it.start).toMinutes() }
     }
@@ -138,7 +136,7 @@ class DynamicTrigger(config: Config) : HoldingTaskTrigger() {
             addRange(dayOfWeek, now)
         }
 
-        //代表命中
+        // 代表命中
         if (status == 1) {
             hit = true
         }
@@ -181,9 +179,7 @@ class DynamicTrigger(config: Config) : HoldingTaskTrigger() {
             other as TriggerRange
 
             if (endInclusive != other.endInclusive) return false
-            if (start != other.start) return false
-
-            return true
+            return start == other.start
         }
 
         override fun hashCode(): Int {
@@ -195,17 +191,3 @@ class DynamicTrigger(config: Config) : HoldingTaskTrigger() {
     }
 }
 
-object DynamicTriggerSupplier : SdComponentSupplier<DynamicTrigger> {
-    override fun apply(props: ComponentProps): DynamicTrigger {
-        return DynamicTrigger(props.parse())
-    }
-
-    override fun supplyTypes(): List<ComponentType> {
-        return listOf(ComponentType.trigger("dynamic"))
-    }
-
-    override fun getComponentClass(): Class<DynamicTrigger> {
-        return DynamicTrigger::class.java
-    }
-
-}

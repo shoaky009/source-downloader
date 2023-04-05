@@ -1,13 +1,4 @@
 #放置常见没什么个性化配置的组件
-downloader:
-  - name: url
-    type: url
-    props:
-      download-path: ~/Downloads
-  - name: mock
-    type: mock
-    props:
-      download-path: ~/Downloads
 file-mover:
   - name: general
     type: general
@@ -19,6 +10,8 @@ variable-provider:
     type: metadata
   - name: anitom
     type: anitom
+  - name: season
+    type: season
 trigger:
   - name: 30min
     type: fixed

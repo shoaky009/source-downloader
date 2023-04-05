@@ -2,6 +2,7 @@ package xyz.shoaky.sourcedownloader.component
 
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import xyz.shoaky.sourcedownloader.component.supplier.GeneralFileMoverSupplier
 import xyz.shoaky.sourcedownloader.core.idk.PersistentFileContent
 import xyz.shoaky.sourcedownloader.core.idk.PersistentSourceContent
 import xyz.shoaky.sourcedownloader.sdk.MapPatternVariables

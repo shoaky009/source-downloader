@@ -3,9 +3,9 @@ package xyz.shoaky.sourcedownloader.component
 import org.apache.commons.lang3.NotImplementedException
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
-import xyz.shoaky.sourcedownloader.qbittorrent.QbittorrentClient
-import xyz.shoaky.sourcedownloader.qbittorrent.TorrentInfo
-import xyz.shoaky.sourcedownloader.qbittorrent.TorrentInfoRequest
+import xyz.shoaky.sourcedownloader.external.qbittorrent.QbittorrentClient
+import xyz.shoaky.sourcedownloader.external.qbittorrent.TorrentInfo
+import xyz.shoaky.sourcedownloader.external.qbittorrent.TorrentInfoRequest
 import xyz.shoaky.sourcedownloader.sdk.DownloadTask
 import xyz.shoaky.sourcedownloader.sdk.SourceItem
 import xyz.shoaky.sourcedownloader.sourceItem

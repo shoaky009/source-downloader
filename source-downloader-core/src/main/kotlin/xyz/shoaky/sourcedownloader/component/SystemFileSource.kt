@@ -2,7 +2,8 @@ package xyz.shoaky.sourcedownloader.component
 
 import xyz.shoaky.sourcedownloader.sdk.DownloadTask
 import xyz.shoaky.sourcedownloader.sdk.SourceItem
-import xyz.shoaky.sourcedownloader.sdk.component.*
+import xyz.shoaky.sourcedownloader.sdk.component.Downloader
+import xyz.shoaky.sourcedownloader.sdk.component.Source
 import xyz.shoaky.sourcedownloader.util.creationTime
 import java.nio.file.Files
 import java.nio.file.Path
@@ -69,29 +70,3 @@ class SystemFileSource(
 
 }
 
-object SystemFileSourceSupplier : SdComponentSupplier<SystemFileSource> {
-    override fun apply(props: ComponentProps): SystemFileSource {
-        return SystemFileSource(props.get("path"),
-            props.getOrDefault("mode", 0)
-        )
-    }
-
-    override fun supplyTypes(): List<ComponentType> {
-        return listOf(
-            ComponentType.source("systemFile"),
-            ComponentType.downloader("systemFile"),
-        )
-    }
-
-    override fun getComponentClass(): Class<SystemFileSource> {
-        return SystemFileSource::class.java
-    }
-
-    override fun rules(): List<ComponentRule> {
-        return listOf(
-            ComponentRule.allowSource(SystemFileSource::class),
-            ComponentRule.allowDownloader(SystemFileSource::class),
-            ComponentRule.allowMover(GeneralFileMover::class),
-        )
-    }
-}

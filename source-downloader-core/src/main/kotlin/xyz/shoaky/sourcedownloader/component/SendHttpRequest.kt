@@ -4,10 +4,7 @@ import org.springframework.http.HttpMethod
 import org.springframework.web.util.UriComponentsBuilder
 import xyz.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
 import xyz.shoaky.sourcedownloader.sdk.SourceContent
-import xyz.shoaky.sourcedownloader.sdk.component.ComponentProps
-import xyz.shoaky.sourcedownloader.sdk.component.ComponentType
 import xyz.shoaky.sourcedownloader.sdk.component.RunAfterCompletion
-import xyz.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
 import xyz.shoaky.sourcedownloader.sdk.util.Http
 import java.net.http.HttpRequest
 import java.net.http.HttpRequest.BodyPublishers
@@ -41,19 +38,3 @@ class SendHttpRequest(
     )
 }
 
-object SendHttpRequestSupplier : SdComponentSupplier<SendHttpRequest> {
-    override fun apply(props: ComponentProps): SendHttpRequest {
-        return SendHttpRequest(props.parse())
-    }
-
-    override fun supplyTypes(): List<ComponentType> {
-        return listOf(
-            ComponentType.run("http")
-        )
-    }
-
-    override fun getComponentClass(): Class<SendHttpRequest> {
-        return SendHttpRequest::class.java
-    }
-
-}

@@ -2,6 +2,7 @@ package xyz.shoaky.sourcedownloader.component
 
 import com.sun.net.httpserver.HttpServer
 import org.junit.jupiter.api.Test
+import xyz.shoaky.sourcedownloader.component.supplier.SendHttpRequestSupplier
 import xyz.shoaky.sourcedownloader.core.idk.PersistentSourceContent
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentProps
 import xyz.shoaky.sourcedownloader.sourceItem

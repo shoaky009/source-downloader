@@ -4,15 +4,15 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import xyz.shoaky.sourcedownloader.core.ComponentManagerV2
 import xyz.shoaky.sourcedownloader.core.ProcessorConfig
 import xyz.shoaky.sourcedownloader.core.ProcessorConfigStorage
+import xyz.shoaky.sourcedownloader.core.SdComponentManager
 import xyz.shoaky.sourcedownloader.sdk.SourceItem
 
 @RestController
 @RequestMapping("/api/processor")
 class ProcessorController(
-    private val componentManager: ComponentManagerV2,
+    private val componentManager: SdComponentManager,
     private val configStorages: List<ProcessorConfigStorage>
 ) {
 

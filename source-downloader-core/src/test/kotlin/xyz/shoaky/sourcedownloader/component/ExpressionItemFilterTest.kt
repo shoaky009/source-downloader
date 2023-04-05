@@ -1,6 +1,7 @@
 package xyz.shoaky.sourcedownloader.component
 
 import org.junit.jupiter.api.Test
+import xyz.shoaky.sourcedownloader.component.supplier.ExpressionItemFilterSupplier
 import xyz.shoaky.sourcedownloader.sourceItem
 import kotlin.test.assertEquals
 

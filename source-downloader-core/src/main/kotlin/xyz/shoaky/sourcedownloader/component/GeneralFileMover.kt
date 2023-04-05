@@ -1,11 +1,7 @@
 package xyz.shoaky.sourcedownloader.component
 
 import xyz.shoaky.sourcedownloader.sdk.SourceContent
-import xyz.shoaky.sourcedownloader.sdk.component.ComponentProps
-import xyz.shoaky.sourcedownloader.sdk.component.ComponentType
 import xyz.shoaky.sourcedownloader.sdk.component.FileMover
-import xyz.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
-import kotlin.io.path.exists
 import kotlin.io.path.moveTo
 
 object GeneralFileMover : FileMover {
@@ -15,23 +11,7 @@ object GeneralFileMover : FileMover {
             .forEach {
                 it.fileDownloadPath.moveTo(it.targetPath())
             }
-        return sourceFiles.all { it.targetPath().exists() }
+        return true
     }
 }
 
-object GeneralFileMoverSupplier : SdComponentSupplier<GeneralFileMover> {
-    override fun apply(props: ComponentProps): GeneralFileMover {
-        return GeneralFileMover
-    }
-
-    override fun supplyTypes(): List<ComponentType> {
-        return listOf(
-            ComponentType("general", FileMover::class)
-        )
-    }
-
-    override fun getComponentClass(): Class<GeneralFileMover> {
-        return GeneralFileMover::class.java
-    }
-
-}

@@ -2,7 +2,7 @@ package xyz.shoaky.sourcedownloader.api.qbitorrent
 
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
-import xyz.shoaky.sourcedownloader.qbittorrent.*
+import xyz.shoaky.sourcedownloader.external.qbittorrent.*
 import xyz.shoaky.sourcedownloader.sdk.util.Jackson
 import java.net.URL
 import java.nio.file.Path

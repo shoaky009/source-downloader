@@ -2,7 +2,7 @@ package xyz.shoaky.sourcedownloader.core
 
 import org.springframework.retry.support.RetryTemplateBuilder
 import xyz.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
-import xyz.shoaky.sourcedownloader.component.MetadataVariableProvider
+import xyz.shoaky.sourcedownloader.component.provider.MetadataVariableProvider
 import xyz.shoaky.sourcedownloader.core.idk.IdkSourceContent
 import xyz.shoaky.sourcedownloader.core.idk.PersistentFileContent
 import xyz.shoaky.sourcedownloader.core.idk.PersistentSourceContent
@@ -77,8 +77,8 @@ class SourceProcessor(
             "RunAfterCompletion" to runAfterCompletion.map { it::class.simpleName },
             "DownloadPath" to downloadPath,
             "SourceSavePath" to sourceSavePath,
+            "SourceFileFilter" to sourceFileFilters.map { it::class.simpleName },
             "Options" to options,
-            "SourceFileFilter" to options,
         )
     }
 

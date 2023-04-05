@@ -13,16 +13,15 @@ import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 
-// TODO 请求tmdb部分封装client
 /**
  * 从奇葩的季度命名中获取季度
  */
+// TODO 已经在主应用中的SeasonProvider实现，但是需要用某种方式把SubjectContent传递过去(暂无头绪)，完成后该类将移除
 internal class TmdbSeasonParser(private val apiKey: String) : ValueParser {
 
     override val name: String = "TmdbParser"
 
     override fun apply(subjectContent: SubjectContent, filename: String): Result {
-        // TODO 如果用的name api语言要更改
         val subjectName = subjectContent.nonEmptyName()
         val season = tmdbCache.get(Content(subjectName, apiKey))
         if (season < 1) {

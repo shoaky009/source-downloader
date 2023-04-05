@@ -3,13 +3,10 @@ package xyz.shoaky.sourcedownloader.component
 import bt.metainfo.MetadataService
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
-import xyz.shoaky.sourcedownloader.qbittorrent.*
+import xyz.shoaky.sourcedownloader.external.qbittorrent.*
 import xyz.shoaky.sourcedownloader.sdk.DownloadTask
 import xyz.shoaky.sourcedownloader.sdk.SourceContent
 import xyz.shoaky.sourcedownloader.sdk.SourceItem
-import xyz.shoaky.sourcedownloader.sdk.component.ComponentProps
-import xyz.shoaky.sourcedownloader.sdk.component.ComponentType
-import xyz.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
 import xyz.shoaky.sourcedownloader.sdk.component.TorrentDownloader
 import java.nio.file.Path
 import kotlin.io.path.name
@@ -114,20 +111,3 @@ class QbittorrentDownloader(
 
 }
 
-object QbittorrentSupplier : SdComponentSupplier<QbittorrentDownloader> {
-    override fun apply(props: ComponentProps): QbittorrentDownloader {
-        val client = QbittorrentClient(props.parse())
-        return QbittorrentDownloader(client, props.getOrDefault("alwaysDownloadAll", false))
-    }
-
-    override fun supplyTypes(): List<ComponentType> {
-        return listOf(
-            ComponentType.downloader("qbittorrent"),
-            ComponentType.fileMover("qbittorrent")
-        )
-    }
-
-    override fun getComponentClass(): Class<QbittorrentDownloader> {
-        return QbittorrentDownloader::class.java
-    }
-}

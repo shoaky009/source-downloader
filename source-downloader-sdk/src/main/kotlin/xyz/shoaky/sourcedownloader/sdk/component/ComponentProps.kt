@@ -17,8 +17,12 @@ private constructor(val properties: MutableMap<String, Any>) {
         try {
             return Jackson.convert(any, jacksonTypeRef())
         } catch (e: Exception) {
-            throw RuntimeException("组件属性解析异常: $key", e)
+            throw RuntimeException("组件属性解析异常: $key, value:$any", e)
         }
+    }
+
+    fun getRaw(key: String): Any {
+        return properties[key] ?: throw ComponentException("属性不存在: $key")
     }
 
     inline fun <reified T> getOrDefault(key: String, default: T): T {

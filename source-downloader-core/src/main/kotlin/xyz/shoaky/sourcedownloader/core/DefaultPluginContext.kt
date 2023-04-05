@@ -7,7 +7,7 @@ import xyz.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
 import xyz.shoaky.sourcedownloader.sdk.component.VariableProvider
 
 class DefaultPluginContext(
-    private val componentManager: ComponentManager
+    private val componentManager: SdComponentManager
 ) : PluginContext {
 
     private val descriptionStorage = mutableMapOf<ComponentType, PatternVarsDescription>()

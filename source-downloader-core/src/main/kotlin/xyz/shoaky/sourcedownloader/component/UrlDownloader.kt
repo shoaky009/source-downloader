@@ -3,10 +3,7 @@ package xyz.shoaky.sourcedownloader.component
 import org.springframework.core.io.UrlResource
 import xyz.shoaky.sourcedownloader.sdk.DownloadTask
 import xyz.shoaky.sourcedownloader.sdk.SourceItem
-import xyz.shoaky.sourcedownloader.sdk.component.ComponentProps
-import xyz.shoaky.sourcedownloader.sdk.component.ComponentType
 import xyz.shoaky.sourcedownloader.sdk.component.Downloader
-import xyz.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
 import java.io.FileOutputStream
 import java.nio.channels.Channels
 import java.nio.file.Path
@@ -39,21 +36,3 @@ class UrlDownloader(private val downloadPath: Path) : Downloader {
 
 }
 
-object UrlDownloaderSupplier : SdComponentSupplier<UrlDownloader> {
-    override fun apply(props: ComponentProps): UrlDownloader {
-        val path = props.properties["download-path"]?.let {
-            Path(it.toString())
-        } ?: throw RuntimeException("download-path is null")
-        return UrlDownloader(path)
-    }
-
-    override fun supplyTypes(): List<ComponentType> {
-        return listOf(
-            ComponentType.downloader("url"),
-        )
-    }
-
-    override fun getComponentClass(): Class<UrlDownloader> {
-        return UrlDownloader::class.java
-    }
-}

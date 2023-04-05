@@ -6,7 +6,7 @@ import xyz.shoaky.sourcedownloader.sdk.Plugin
 import java.util.*
 
 @Component
-class PluginManager(componentManager: ComponentManager) {
+class PluginManager(componentManager: SdComponentManager) {
 
     private val pluginContext = DefaultPluginContext(componentManager)
     private val plugins = Collections.synchronizedList(mutableListOf<Plugin>())
