@@ -3,7 +3,7 @@ package xyz.shoaky.sourcedownloader.repo.jpa
 import com.vladmihalcea.hibernate.type.json.JsonType
 import jakarta.persistence.*
 import org.hibernate.annotations.Type
-import xyz.shoaky.sourcedownloader.core.idk.PersistentSourceContent
+import xyz.shoaky.sourcedownloader.core.file.PersistentSourceContent
 import java.time.LocalDateTime
 
 @Entity

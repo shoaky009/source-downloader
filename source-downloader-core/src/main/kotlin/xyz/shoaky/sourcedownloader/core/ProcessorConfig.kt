@@ -1,7 +1,10 @@
 package xyz.shoaky.sourcedownloader.core
 
+// import io.swagger.v3.oas.annotations.media.Schema
+// import io.swagger.v3.oas.annotations.media.SchemaProperty
 import com.fasterxml.jackson.annotation.JsonValue
-import xyz.shoaky.sourcedownloader.core.idk.ParsingFailedStrategy
+import xyz.shoaky.sourcedownloader.core.file.ParsingFailedStrategy
+import xyz.shoaky.sourcedownloader.core.file.RenameMode
 import xyz.shoaky.sourcedownloader.sdk.PathPattern
 import xyz.shoaky.sourcedownloader.sdk.component.*
 import java.nio.file.Path
@@ -9,9 +12,13 @@ import java.time.Duration
 import kotlin.reflect.KClass
 
 data class ProcessorConfig(
+    // @Schema(description = "处理器名称，定义后最好不要更改，也不要出现和其他处理器名字冲突", required = true)
     val name: String,
+    // @Schema(description = "触发器支持多种触发方式", required = true, type = "ComponentId")
     val triggers: List<ComponentId>,
+    // @Schema(description = "源数据转换为SourceItem的组件", required = true, type = "ComponentId")
     val source: ComponentId,
+    // @Schema(description = "变量名称提供者，根据SourceItem中的信息提供变量", required = true, type = "ComponentId")
     val providers: List<ComponentId> = emptyList(),
     val downloader: ComponentId = ComponentId("downloader:url"),
     val mover: ComponentId = ComponentId("mover:general"),

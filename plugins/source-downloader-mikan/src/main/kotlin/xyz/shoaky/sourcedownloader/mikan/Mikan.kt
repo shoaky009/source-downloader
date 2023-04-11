@@ -106,10 +106,13 @@ private class MikanSourceGroup(
 
     override fun sourceFiles(paths: List<Path>): List<SourceFile> {
         return paths.map { path ->
-            BangumiFile(path, bangumiInfo.copy(), subject)
+            BangumiFile(path, subject)
         }
     }
 
+    override fun sharedPatternVariables(): PatternVariables {
+        return bangumiInfo
+    }
 }
 
 object MikanProviderSupplier : SdComponentSupplier<Mikan> {
@@ -139,5 +142,4 @@ data class BangumiInfo(
     val year: Int? = null,
     val month: Int? = null,
     val season: String? = null,
-    var episode: String? = null,
 ) : PatternVariables

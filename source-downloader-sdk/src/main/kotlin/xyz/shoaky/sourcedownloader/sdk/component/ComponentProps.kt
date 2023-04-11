@@ -125,8 +125,8 @@ data class ComponentRule internal constructor(
         fun notAllowRunAfterCompletion(value: KClass<out SdComponent>) =
             ComponentRule(false, Components.RUN_AFTER_COMPLETION, value)
 
-        fun allowSourceFilter(value: KClass<out SdComponent>) = ComponentRule(true, Components.SOURCE_FILTER, value)
-        fun notAllowSourceFilter(value: KClass<out SdComponent>) = ComponentRule(false, Components.SOURCE_FILTER, value)
+        fun allowSourceFilter(value: KClass<out SdComponent>) = ComponentRule(true, Components.SOURCE_ITEM_FILTER, value)
+        fun notAllowSourceFilter(value: KClass<out SdComponent>) = ComponentRule(false, Components.SOURCE_ITEM_FILTER, value)
     }
 }
 

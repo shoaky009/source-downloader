@@ -27,7 +27,7 @@ enum class Components(val klass: KClass<out SdComponent>) {
     VARIABLE_PROVIDER(VariableProvider::class),
     FILE_MOVER(FileMover::class),
     RUN_AFTER_COMPLETION(RunAfterCompletion::class),
-    SOURCE_FILTER(SourceItemFilter::class),
+    SOURCE_ITEM_FILTER(SourceItemFilter::class),
     SOURCE_FILE_FILTER(SourceFileFilter::class)
 }
 

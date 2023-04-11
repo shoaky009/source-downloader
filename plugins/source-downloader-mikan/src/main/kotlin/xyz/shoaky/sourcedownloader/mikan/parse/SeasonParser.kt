@@ -1,5 +1,6 @@
 package xyz.shoaky.sourcedownloader.mikan.parse
 
+import org.apache.commons.lang3.math.NumberUtils
 import java.util.function.Function
 import java.util.regex.Pattern
 
@@ -24,7 +25,7 @@ internal object SeasonParser : ValueParser {
         return Result()
     }
 
-    internal data class SeasonRule(private val pattern: Pattern, val convert: Function<String, Int>) {
+    internal data class SeasonRule(private val pattern: Pattern, val convert: Function<String, Int?>) {
         fun ifMatchConvert(name: String): Int? {
             val matcher = pattern.matcher(name)
             if (matcher.find()) {
@@ -52,7 +53,11 @@ internal object SeasonParser : ValueParser {
             .replace("期", "")
             .replace("nd", "", true)
             .trim()
-        seasonNumberMapping[s] ?: s.toInt()
+        val parsable = NumberUtils.isParsable(s)
+        if (parsable) {
+            return@SeasonRule s.toInt()
+        }
+        seasonNumberMapping[s] ?: Regex("\\d+").find(s)?.value?.toInt()
     }
 
     // 99%是季度命名的规则

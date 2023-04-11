@@ -1,8 +1,9 @@
-package xyz.shoaky.sourcedownloader.core.idk
+package xyz.shoaky.sourcedownloader.core.file
 
 import xyz.shoaky.sourcedownloader.sdk.FileContent
 import xyz.shoaky.sourcedownloader.sdk.MapPatternVariables
 import xyz.shoaky.sourcedownloader.sdk.PathPattern
+import xyz.shoaky.sourcedownloader.sdk.PatternVariables
 import java.nio.file.Path
 import java.nio.file.attribute.PosixFilePermission
 import java.nio.file.attribute.PosixFilePermissions
@@ -11,13 +12,16 @@ import kotlin.io.path.extension
 import kotlin.io.path.name
 import kotlin.io.path.notExists
 
-data class PersistentFileContent(
+data class CoreFileContent(
     override val fileDownloadPath: Path,
     val sourceSavePath: Path,
     override val patternVariables: MapPatternVariables,
     val fileSavePathPattern: PathPattern,
     val filenamePattern: PathPattern,
 ) : FileContent {
+
+    @Transient
+    private val sharedVariables = SharedPatternVariables(patternVariables)
 
     constructor(
         fileContent: FileContent,
@@ -41,15 +45,19 @@ data class PersistentFileContent(
     }
 
     override fun saveDirectoryPath(): Path {
-        val parse = fileSavePathPattern.parse(patternVariables)
+        val parse = fileSavePathPattern.parse(sharedVariables)
         return sourceSavePath.resolve(parse.path)
+    }
+
+    fun addSharedVariables(patternVariables: PatternVariables) {
+        sharedVariables.addVariables(patternVariables)
     }
 
     fun targetFilename(): String {
         if (filenamePattern == PathPattern.ORIGIN) {
             return fileDownloadPath.name
         }
-        val parse = filenamePattern.parse(patternVariables)
+        val parse = filenamePattern.parse(sharedVariables)
         val success = parse.success()
         if (success) {
             val targetFilename = parse.path

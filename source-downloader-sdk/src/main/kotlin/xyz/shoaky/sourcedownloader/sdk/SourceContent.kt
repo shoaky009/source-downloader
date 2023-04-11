@@ -6,9 +6,6 @@ import kotlin.io.path.exists
 import kotlin.io.path.name
 import kotlin.io.path.notExists
 
-/**
- * 后面抽象这个类 option不写在这里
- */
 interface SourceContent {
     val sourceFiles: List<FileContent>
     val sourceItem: SourceItem

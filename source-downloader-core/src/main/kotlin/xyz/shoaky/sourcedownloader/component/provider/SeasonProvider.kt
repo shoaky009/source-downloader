@@ -1,5 +1,6 @@
 package xyz.shoaky.sourcedownloader.component.provider
 
+import org.apache.commons.lang3.math.NumberUtils
 import xyz.shoaky.sourcedownloader.sdk.*
 import xyz.shoaky.sourcedownloader.sdk.component.VariableProvider
 import java.nio.file.Path
@@ -62,7 +63,11 @@ private object GeneralSeason : Function<Pair<SourceItem, Path>, Int?> {
             .replace("nd", "", true)
             .replace("rd", "", true)
             .trim()
-        seasonNumberMapping[s] ?: s.toInt()
+        val parsable = NumberUtils.isParsable(s)
+        if (parsable) {
+            return@RegexRule s.toInt()
+        }
+        seasonNumberMapping[s] ?: Regex("\\d+").find(s)?.value?.toInt()
     }
 
     // 标题最后是数字的
@@ -102,7 +107,7 @@ private object GeneralSeason : Function<Pair<SourceItem, Path>, Int?> {
         last,
     )
 
-    private data class RegexRule(private val pattern: Pattern, val convert: Function<String, Int>) {
+    private data class RegexRule(private val pattern: Pattern, val convert: Function<String, Int?>) {
         fun ifMatchConvert(name: String): Int? {
             val matcher = pattern.matcher(name)
             if (matcher.find()) {

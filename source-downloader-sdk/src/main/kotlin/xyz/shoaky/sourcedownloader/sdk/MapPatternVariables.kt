@@ -5,6 +5,10 @@ class MapPatternVariables() : PatternVariables {
         this.variables.putAll(variables)
     }
 
+    constructor(variables: PatternVariables) : this() {
+        this.variables.putAll(variables.variables())
+    }
+
     private val variables: MutableMap<String, String> = mutableMapOf()
 
     override fun variables(): Map<String, String> {
@@ -13,6 +17,10 @@ class MapPatternVariables() : PatternVariables {
 
     fun addVariable(name: String, value: String) {
         variables[name] = value
+    }
+
+    fun addVariables(variables: PatternVariables) {
+        this.variables.putAll(variables.variables())
     }
 
     fun getVariables(): Map<String, String> {

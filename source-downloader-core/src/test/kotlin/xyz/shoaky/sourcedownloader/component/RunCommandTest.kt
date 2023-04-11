@@ -2,8 +2,8 @@ package xyz.shoaky.sourcedownloader.component
 
 import org.junit.jupiter.api.Test
 import xyz.shoaky.sourcedownloader.component.supplier.RunCommandSupplier
-import xyz.shoaky.sourcedownloader.core.idk.PersistentFileContent
-import xyz.shoaky.sourcedownloader.core.idk.PersistentSourceContent
+import xyz.shoaky.sourcedownloader.core.file.CoreFileContent
+import xyz.shoaky.sourcedownloader.core.file.PersistentSourceContent
 import xyz.shoaky.sourcedownloader.sdk.MapPatternVariables
 import xyz.shoaky.sourcedownloader.sdk.PathPattern
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentProps
@@ -21,7 +21,7 @@ class RunCommandTest {
         ComponentProps.fromMap(mapOf("command" to command))
     )
 
-    private val content = PersistentFileContent(
+    private val content = CoreFileContent(
         Path("test.txt"),
         Path("test.txt"),
         MapPatternVariables(mapOf("date" to "2022-01-01", "name" to "test")),
@@ -32,7 +32,7 @@ class RunCommandTest {
     @Test
     fun run_command() {
 
-        val process = runCommand.run(PersistentSourceContent(sourceItem("1"), listOf(content)))
+        val process = runCommand.run(PersistentSourceContent(sourceItem("1"), listOf(content), MapPatternVariables()))
         assertEquals(0, process.waitFor())
         val result = process.inputStream.bufferedReader().readText()
         assertEquals("test1", result)
@@ -47,7 +47,7 @@ class RunCommandTest {
                 ))
         )
 
-        val process = apply.run(PersistentSourceContent(sourceItem("1"), listOf(content)))
+        val process = apply.run(PersistentSourceContent(sourceItem("1"), listOf(content), MapPatternVariables()))
         assertEquals(0, process.waitFor())
         val result = process.inputStream.bufferedReader().readText()
         assertEquals("test1 test.txt", result)

@@ -1,6 +1,6 @@
 package xyz.shoaky.sourcedownloader.core
 
-import xyz.shoaky.sourcedownloader.core.idk.PersistentSourceContent
+import xyz.shoaky.sourcedownloader.core.file.PersistentSourceContent
 import xyz.shoaky.sourcedownloader.util.EnumValue
 import java.time.LocalDateTime
 

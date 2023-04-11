@@ -3,7 +3,8 @@ package xyz.shoaky.sourcedownloader.component
 import com.sun.net.httpserver.HttpServer
 import org.junit.jupiter.api.Test
 import xyz.shoaky.sourcedownloader.component.supplier.SendHttpRequestSupplier
-import xyz.shoaky.sourcedownloader.core.idk.PersistentSourceContent
+import xyz.shoaky.sourcedownloader.core.file.PersistentSourceContent
+import xyz.shoaky.sourcedownloader.sdk.MapPatternVariables
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentProps
 import xyz.shoaky.sourcedownloader.sourceItem
 import java.net.InetSocketAddress
@@ -44,7 +45,8 @@ class SendHttpRequestTest {
 
         apply.accept(PersistentSourceContent(
             sourceItem("test"),
-            listOf()
+            listOf(),
+            MapPatternVariables()
         ))
         server.stop(0)
         assertEquals("message=下载test内的0个文件", queryString)

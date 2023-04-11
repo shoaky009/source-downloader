@@ -10,4 +10,8 @@ interface PatternVariables {
     fun variables(): Map<String, String> {
         return Jackson.convert(this, object : TypeReference<Map<String, String>>() {})
     }
+
+    companion object {
+        val EMPTY = object : PatternVariables {}
+    }
 }

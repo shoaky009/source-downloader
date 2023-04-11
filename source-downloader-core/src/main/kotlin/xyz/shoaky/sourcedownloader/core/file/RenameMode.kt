@@ -1,4 +1,4 @@
-package xyz.shoaky.sourcedownloader.core
+package xyz.shoaky.sourcedownloader.core.file
 
 enum class RenameMode {
     MOVE,

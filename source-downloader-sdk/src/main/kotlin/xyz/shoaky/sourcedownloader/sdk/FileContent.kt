@@ -9,11 +9,6 @@ interface FileContent {
 
     fun targetPath(): Path
 
-    /**
-     * 这个待定,主要为了减少一些存储空间
-     */
-    fun addExternalVariables(variables: PatternVariables) {}
-
     fun saveDirectoryPath(): Path {
         return targetPath().parent
     }

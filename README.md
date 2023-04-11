@@ -1,6 +1,5 @@
 ## 主要功能
-
-    从源下载文件，然后按照自定义模板保存到指定路径，完全组件化插件化
+从源下载文件，然后按照自定义模板保存到指定路径，完全组件化
 
 ## 快速部署
 
@@ -92,36 +91,112 @@ run-after-completion
 
 #### 处理器定义
 
+指定组件`rss:mikan`其中`rss`为组件类型`mikan`为组件名称, 如果类型和名称都一样可写成`rss`来指定
+
 ```yaml
 processors:
-  - name: mikan-bangumi #处理器名字
-    trigger: fixed:20min #触发器使用fixed类型名字为20min
-    source: rss:mikan #源使用rss类型名字为mikan
-    providers:
-      - mikan #创建器为mikan类型名字为mikan
-    downloader: qbittorrent #下载器为qbittorrent类型名字为qbittorrent
-    mover: qbittorrent #移动器为qbittorrent类型名字为qbittorrent
-    save-path: /mnt/bangumi #最终保存路径
-    options: #处理器选项
-      #完成后运行
-      run-after-completion: #命名完成后执行的任务
-        - touchItemDirectory #touchItemDirectory为内置的任务
-        - http:telegram-message-webhook #http为内置的任务类型，telegram-message-webhook为任务名字
-      #可用变量具体看provider能提供什么
-      file-save-path-pattern: "{name}/Season {season}/" #文件路径保存路径模板
-      #可用变量具体看provider能提供什么
-      filename-pattern: "{name-cn} - S{season}E{episode}" #文件名模板
-      #全局过滤非必填
-      blacklist-regex: #SourceItem过滤的正则列表
-        - '720(?i)P'
-        - '中文配音'
-      #重命名间隔时间,参考java.time.Duration的格式
-      rename-task-interval: PT2M #每1分钟检查一次是否有需要重命名的任务
-      renameTimesThreshold: 2 #重命名次数阈值，超过阈值的任务将不再执行重命名
-      downloadCategory: Bangumi
+   - name: mikan-bangumi #处理器名字
+     triggers:
+        - fixed:20min #触发器使用fixed类型名字为20min
+     source: rss:mikan #源使用rss类型名字为mikan
+     providers:
+        - mikan #创建器为mikan类型名字为mikan
+     downloader: qbittorrent #下载器为qbittorrent类型名字为qbittorrent
+     mover: qbittorrent #移动器为qbittorrent类型名字为qbittorrent
+     save-path: /mnt/bangumi #最终保存路径
+     options: #处理器选项
 ```
 
-如上配置能够已有的组件实现订阅mikan的rss源，用qbittorrent下载完成后移动到指定模板路径，然后执行脚本
+## 例子说明
+
+### 例子1
+
+#### 目标自动下载mikan订阅的番剧，文件路径使用bangumi上的官方标题而不是解析文件得到的名称(因为文件名不规范会有罗马音 中文等混杂着)
+
+1. 处理器每20分钟触发一次，或`webhook`手动触发
+2. `rss:mikan`将RSS转换成`SourceItem`
+    ```json
+    {
+        "title": "【喵萌Production】★04月新番★[偶像大师 灰姑娘女孩 U149 / The iDOLM@STER Cinderella Girls U149][01][WebRip][1080p][简日双语][招募翻译]",
+        "link": "https://mikanani.me/Home/Episode/eae4f403a0cd4fdb6dad0b4dfcedd6f96b6c883d",
+        "date": "2023-04-09T00:54:00",
+        "contentType": "application/x-bittorrent",
+        "downloadUri": "https://mikanani.me/Download/20230409/eae4f403a0cd4fdb6dad0b4dfcedd6f96b6c883d.torrent"
+    }
+    ```
+3. 过滤掉标题中包含 720P 和中文配音的内容（使用 SpEl 表达式）
+4. 使用`mikan`提供的命名变量，从`link`中爬取到 bangumi 的 subject 信息。
+5. 提交下载任务到 qbittorrent。
+6. 下载完成后，重命名文件并使用 qbittorrent 的 API 将文件移动到指定的存放路径。
+7. 当上述任务完成后，执行 touchItemDirectory 和 http:telegram-message-webhook 组件中的逻辑。
+
+```yaml
+  - name: mikan-bangumi
+    triggers:
+       - fixed:20min
+       - webhook
+    source: rss:mikan
+    providers:
+       - "mikan"
+    downloader: qbittorrent
+    mover: qbittorrent
+    savePath: /mnt/bangumi
+    options:
+       runAfterCompletion:
+          - touchItemDirectory
+          - http:telegram-message-webhook
+       fileSavePathPattern: "{name}/Season {season}/"
+       filenamePattern: "{nameCn} - S{season}E{episode}"
+       #每2分钟重命名任务
+       renameTaskInterval: PT2M
+       #重命名2次失败后不会再处理
+       renameTimesThreshold: 2
+       #下载分类(具体看下载器实现)
+       downloadCategory: Bangumi
+       #关闭metadata变量（具体请看TODO link）
+       provideMetadataVariables: false
+       #SourceItem级过滤 不能包含(and的关系)
+       itemExpressionExclusions:
+          - "#title matches '.*720(?!)P.*'"
+          - "#title matches '.*中文配音.*'"
+       #SourceItem级过滤 包含(or的关系)
+       itemExpressionInclusions:
+       #SourceItem下的文件过滤 不能包含(and的关系)
+       fileExpressionExclusions:
+       #SourceItem下的文件过滤 包含(or的关系)
+       fileExpressionInclusions:
+```
+
+### 例子2
+
+#### 目标简单处理旧番
+
+1. 处理器`webhook`触发
+2. `SourceItem`为系统文件
+3. 使用`anitom`和`season`的`provider`提供的命名变量, 会从文件名中解析命名变量
+4. `systemFile`该组件同时也实现了`downloader`但是文件已经是存在的所以下载的操作实际不用做任何事情
+5. 移动文件则是常规的
+
+> 选项中关闭了处理记录的保存意味着每次都会处理，不会过滤之前已经处理过`SourceItem`
+
+```yaml
+  - name: '旧番手动整理'
+    triggers:
+       - webhook
+    source: systemFile:animeTempPath
+    downloader: systemFile:animeTempPath
+    providers:
+       - "anitom"
+       - "season"
+    mover: general
+    savePath: /mnt/temp-media/anime
+    options:
+       fileSavePathPattern: '{parent}/Season {season}'
+       filenamePattern: '{animeTitle} S{season}E{episodeNumber} - {source}'
+       saveContent: false
+       fileExpressionExclusions:
+          - "#filename matches '.*torrent.*'"
+```
 
 ## 插件
 

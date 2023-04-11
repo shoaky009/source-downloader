@@ -9,4 +9,9 @@ interface SourceItemGroup {
      */
     fun sourceFiles(paths: List<Path>): List<SourceFile>
 
+    /**
+     * @return 和SourceFile共享的变量
+     */
+    fun sharedPatternVariables() = PatternVariables.EMPTY
+
 }

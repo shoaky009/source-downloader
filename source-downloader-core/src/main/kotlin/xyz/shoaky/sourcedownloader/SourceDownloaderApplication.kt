@@ -49,6 +49,10 @@ class SourceDownloaderApplication(
         for (processorConfig in processorConfigs) {
             processorManager.createProcessor(processorConfig)
         }
+        componentManager.getAllTrigger()
+            .forEach {
+                it.start()
+            }
     }
 
     @PreDestroy
@@ -164,10 +168,6 @@ class SourceDownloaderApplication(
         log.info("支持的组件类型:${ComponentType.types()}")
         registerComponentSuppliers()
         createComponents()
-        componentManager.getAllTrigger()
-            .forEach {
-                it.start()
-            }
     }
 
     // private fun getObjectSuppliers(): List<SdComponentSupplier<*>> {

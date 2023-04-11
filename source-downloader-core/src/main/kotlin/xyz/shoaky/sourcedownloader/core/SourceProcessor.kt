@@ -3,9 +3,9 @@ package xyz.shoaky.sourcedownloader.core
 import org.springframework.retry.support.RetryTemplateBuilder
 import xyz.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
 import xyz.shoaky.sourcedownloader.component.provider.MetadataVariableProvider
-import xyz.shoaky.sourcedownloader.core.idk.IdkSourceContent
-import xyz.shoaky.sourcedownloader.core.idk.PersistentFileContent
-import xyz.shoaky.sourcedownloader.core.idk.PersistentSourceContent
+import xyz.shoaky.sourcedownloader.core.file.CoreFileContent
+import xyz.shoaky.sourcedownloader.core.file.PersistentSourceContent
+import xyz.shoaky.sourcedownloader.core.file.RenameMode
 import xyz.shoaky.sourcedownloader.sdk.*
 import xyz.shoaky.sourcedownloader.sdk.component.*
 import xyz.shoaky.sourcedownloader.sdk.util.Jackson
@@ -140,30 +140,12 @@ class SourceProcessor(
     }
 
     private fun processItem(sourceItem: SourceItem, idk: Idk, dryRun: Boolean = false): ProcessingContent {
-        val aggrSourceGroup = idk.getAggr(sourceItem)
-        val resolveFiles = downloader.resolveFiles(sourceItem)
-        val filteredFiles = resolveFiles.filter { path ->
-            val res = sourceFileFilters.all { it.test(path) }
-            if (res.not()) {
-                log.debug("Filtered file:{}", path)
-            }
-            res
-        }
+        val sourceContent = createPersistentSourceContent(idk, sourceItem)
 
-        val contents = aggrSourceGroup.sourceFiles(filteredFiles)
-            .mapIndexed { index, sourceFile ->
-                val sourceFileContent = PersistentFileContent(
-                    downloadPath.resolve(filteredFiles[index]),
-                    sourceSavePath,
-                    MapPatternVariables(sourceFile.patternVariables().variables()),
-                    fileSavePathPattern,
-                    filenamePattern,
-                )
-                sourceFileContent
-            }
-        val sourceContent = PersistentSourceContent(sourceItem, contents)
-
-        val downloadTask = createDownloadTask(sourceItem, filteredFiles)
+        val downloadTask = createDownloadTask(
+            sourceItem,
+            sourceContent.sourceFiles.map { it.fileDownloadPath }
+        )
         val needDownload = needDownload(sourceContent)
 
         if (needDownload.first && dryRun.not()) {
@@ -184,23 +166,38 @@ class SourceProcessor(
             status = needDownload.second
         }
 
-        val pc = ProcessingContent(name,
-            PersistentSourceContent(
-                sourceItem,
-                sourceContent.sourceFiles.map {
-                    PersistentFileContent(
-                        it.fileDownloadPath,
-                        sourceSavePath,
-                        MapPatternVariables(it.patternVariables.variables()),
-                        fileSavePathPattern,
-                        filenamePattern,
-                    )
-                }
-            )).copy(status = status)
+        val pc = ProcessingContent(name, sourceContent).copy(status = status)
         if (options.saveContent && dryRun.not()) {
             processingStorage.save(pc)
         }
         return pc
+    }
+
+    private fun createPersistentSourceContent(idk: Idk, sourceItem: SourceItem): PersistentSourceContent {
+        val aggrSourceGroup = idk.getAggr(sourceItem)
+        val resolveFiles = downloader.resolveFiles(sourceItem)
+        val filteredFiles = resolveFiles.filter { path ->
+            val res = sourceFileFilters.all { it.test(path) }
+            if (res.not()) {
+                log.debug("Filtered file:{}", path)
+            }
+            res
+        }
+
+        val sourceFiles = aggrSourceGroup.sourceFiles(filteredFiles)
+            .mapIndexed { index, sourceFile ->
+                val sourceFileContent = CoreFileContent(
+                    downloadPath.resolve(filteredFiles[index]),
+                    sourceSavePath,
+                    MapPatternVariables(sourceFile.patternVariables().variables()),
+                    fileSavePathPattern,
+                    filenamePattern,
+                )
+                sourceFileContent.addSharedVariables(aggrSourceGroup.sharedPatternVariables())
+                sourceFileContent
+            }
+        val variables = aggrSourceGroup.sharedPatternVariables()
+        return PersistentSourceContent(sourceItem, sourceFiles, MapPatternVariables(variables))
     }
 
     private fun needDownload(sc: PersistentSourceContent): Pair<Boolean, ProcessingContent.Status> {
@@ -277,6 +274,9 @@ class SourceProcessor(
     private fun processRenameTask(pc: ProcessingContent) {
         val sourceContent = pc.sourceContent
         val sourceFiles = sourceContent.sourceFiles
+        sourceFiles.forEach {
+            it.addSharedVariables(sourceContent.sharedPatternVariables)
+        }
         if (sourceFiles.all { it.targetPath().exists() }) {
             val toUpdate = pc.copy(
                 renameTimes = pc.renameTimes.inc(),
@@ -344,15 +344,7 @@ class SourceProcessor(
             return true
         }
 
-        return fileMover.rename(
-            IdkSourceContent(
-                content.copy(sourceFiles = sourceFiles.map {
-                    PersistentFileContent(it,
-                        sourceSavePath,
-                        fileSavePathPattern,
-                        filenamePattern)
-                }))
-        )
+        return fileMover.rename(content)
     }
 
     fun addRunAfterCompletion(vararg completion: RunAfterCompletion) {
@@ -429,6 +421,15 @@ private class SourceItemGroupAggr(
             val sourceFiles = res.map { it[index] }
             sourceFiles.reduce(this::combine)
         }
+    }
+
+    override fun sharedPatternVariables(): PatternVariables {
+        val map = groups.values.map { it.sharedPatternVariables() }
+        val mapPatternVariables = MapPatternVariables()
+        map.forEach {
+            mapPatternVariables.addVariables(it)
+        }
+        return mapPatternVariables
     }
 
     private fun combine(sf1: SourceFile, sf2: SourceFile): SourceFile {

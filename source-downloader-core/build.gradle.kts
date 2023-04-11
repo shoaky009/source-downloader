@@ -21,7 +21,6 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
-    // implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
 
     // others
@@ -35,7 +34,6 @@ dependencies {
     implementation("com.dgtlrepublic:anitomyJ:0.0.7")
 
     implementation("com.github.plexpt:chatgpt:4.0.5")
-
     // 内置插件
     implementation("xyz.shoaky:source-downloader-mikan:1.0.0")
 }

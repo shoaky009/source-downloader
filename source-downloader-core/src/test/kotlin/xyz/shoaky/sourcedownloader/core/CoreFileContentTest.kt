@@ -1,16 +1,15 @@
 package xyz.shoaky.sourcedownloader.core
 
 import org.junit.jupiter.api.Test
-import xyz.shoaky.sourcedownloader.core.idk.PersistentFileContent
+import xyz.shoaky.sourcedownloader.core.file.CoreFileContent
 import xyz.shoaky.sourcedownloader.sdk.MapPatternVariables
 import xyz.shoaky.sourcedownloader.sdk.PathPattern
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.test.assertEquals
 
-class SourceFileContentTest {
+class CoreFileContentTest {
 
-    private val testFilePath = Path("src/test/resources/downloads/1.txt")
     private val sourceSavePath = Path("src/test/resources/target")
 
     @Test
@@ -89,6 +88,16 @@ class SourceFileContentTest {
         assertEquals(null, content2.itemFileRootDirectory())
     }
 
+    @Test
+    fun given_shared_vars() {
+        val fileContent = createFileContent(
+            savePathPattern = PathPattern("{name}/S{season}"),
+            patternVars = MapPatternVariables(mapOf("name" to "test")))
+        fileContent.addSharedVariables(MapPatternVariables(mapOf("season" to "01")))
+
+        val saveDir = fileContent.saveDirectoryPath()
+        assertEquals(sourceSavePath.resolve("test/S01"), saveDir)
+    }
 }
 
 private fun createFileContent(
@@ -96,8 +105,8 @@ private fun createFileContent(
     sourceSavePath: Path = Path("src/test/resources/target"),
     patternVars: MapPatternVariables = MapPatternVariables(),
     savePathPattern: PathPattern = PathPattern.ORIGIN,
-    filenamePathPattern: PathPattern = PathPattern.ORIGIN): PersistentFileContent {
-    return PersistentFileContent(
+    filenamePathPattern: PathPattern = PathPattern.ORIGIN): CoreFileContent {
+    return CoreFileContent(
         fileDownloadPath,
         sourceSavePath,
         patternVars,
