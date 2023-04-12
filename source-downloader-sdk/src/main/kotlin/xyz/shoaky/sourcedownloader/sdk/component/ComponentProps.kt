@@ -13,16 +13,16 @@ private constructor(val properties: MutableMap<String, Any>) {
     }
 
     inline fun <reified T> get(key: String): T {
-        val any = properties[key] ?: throw ComponentException("属性不存在: $key")
+        val any = properties[key] ?: throw ComponentException.props("属性${key}不存在")
         try {
             return Jackson.convert(any, jacksonTypeRef())
         } catch (e: Exception) {
-            throw RuntimeException("组件属性解析异常: $key, value:$any", e)
+            throw RuntimeException("组件属性${key}解析异常: value:$any", e)
         }
     }
 
     fun getRaw(key: String): Any {
-        return properties[key] ?: throw ComponentException("属性不存在: $key")
+        return properties[key] ?: throw ComponentException.props("属性${key}不存在")
     }
 
     inline fun <reified T> getOrDefault(key: String, default: T): T {
@@ -93,11 +93,11 @@ data class ComponentRule internal constructor(
         if (isAllow) {
             if (componentClasses.contains(value).not()) {
                 val classes = componentClasses.map { it.simpleName }.joinToString(",")
-                throw ComponentException("组件类型不匹配, 期望:${value.simpleName}, 实际:$classes")
+                throw ComponentException.compatibility("组件类型不匹配, 期望:${value.simpleName}, 实际:$classes")
             }
         } else {
             if (componentClasses.contains(value)) {
-                throw ComponentException("组件类型不匹配, ${value.simpleName}不允许和${component::class.simpleName}组合")
+                throw ComponentException.compatibility("组件类型不匹配, ${value.simpleName}不允许和${component::class.simpleName}组合")
             }
         }
     }

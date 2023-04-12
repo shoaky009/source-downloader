@@ -1,5 +1,6 @@
 package xyz.shoaky.sourcedownloader.sdk.component
 
+import com.google.common.base.CaseFormat
 import xyz.shoaky.sourcedownloader.sdk.DownloadTask
 import xyz.shoaky.sourcedownloader.sdk.SourceContent
 import xyz.shoaky.sourcedownloader.sdk.SourceItem
@@ -10,7 +11,10 @@ import java.util.function.Predicate
 import kotlin.reflect.KClass
 import kotlin.reflect.full.allSuperclasses
 
-sealed interface SdComponent
+sealed interface SdComponent {
+
+    fun onPropsChange(props: ComponentProps) {}
+}
 
 fun <T : SdComponent> KClass<T>.componentSuperClasses(): List<KClass<out SdComponent>> {
     val result = mutableListOf(this)
@@ -20,15 +24,41 @@ fun <T : SdComponent> KClass<T>.componentSuperClasses(): List<KClass<out SdCompo
     return result.toList()
 }
 
-enum class Components(val klass: KClass<out SdComponent>) {
-    TRIGGER(Trigger::class),
-    SOURCE(Source::class),
-    DOWNLOADER(Downloader::class),
-    VARIABLE_PROVIDER(VariableProvider::class),
-    FILE_MOVER(FileMover::class),
-    RUN_AFTER_COMPLETION(RunAfterCompletion::class),
-    SOURCE_ITEM_FILTER(SourceItemFilter::class),
-    SOURCE_FILE_FILTER(SourceFileFilter::class)
+enum class Components(
+    val klass: KClass<out SdComponent>,
+    val names: List<String>
+) {
+
+    TRIGGER(Trigger::class, listOf("trigger")),
+    SOURCE(Source::class, listOf("source")),
+    DOWNLOADER(Downloader::class, listOf("downloader")),
+    VARIABLE_PROVIDER(VariableProvider::class, listOf("provider", "variable-provider", "variableProvider")),
+    FILE_MOVER(FileMover::class, listOf("mover", "file-mover")),
+    RUN_AFTER_COMPLETION(RunAfterCompletion::class, listOf("run-after-completion", "run", "runAfterCompletion")),
+    SOURCE_ITEM_FILTER(SourceItemFilter::class, listOf("source-item-filter", "item-filter", "sourceItemFilter", "itemFilter")),
+    SOURCE_FILE_FILTER(SourceFileFilter::class, listOf("source-file-filter", "file-filter", "sourceFileFilter", "fileFilter"));
+
+
+    fun lowerHyphenName(): String {
+        return CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_HYPHEN,
+            this.name
+        )
+    }
+
+    companion object {
+
+        private val nameMapping: Map<String, Components> = values().flatMap {
+            it.names.map { name -> name to it }
+        }.toMap()
+
+        fun fromClass(klass: KClass<out SdComponent>): Components? {
+            return values().firstOrNull { it.klass == klass }
+        }
+
+        fun fromName(name: String): Components? {
+            return nameMapping[name]
+        }
+    }
 }
 
 interface Trigger : SdComponent {

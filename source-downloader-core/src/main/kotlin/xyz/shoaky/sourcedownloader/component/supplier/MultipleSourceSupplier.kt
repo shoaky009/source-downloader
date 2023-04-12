@@ -14,7 +14,7 @@ class MultipleSourceSupplier(val componentManager: SdComponentManager) : SdCompo
             .map {
                 val instanceName = it.getInstanceName(Source::class)
                 val source = componentManager.getComponent(instanceName) as? Source
-                    ?: throw ComponentException("Source $instanceName not found")
+                    ?: throw ComponentException.missing("Source $instanceName not found")
                 source
             }.toTypedArray()
         return MultipleSource(*sources)

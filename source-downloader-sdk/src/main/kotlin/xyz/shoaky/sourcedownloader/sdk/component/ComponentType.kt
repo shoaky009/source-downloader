@@ -3,12 +3,20 @@ package xyz.shoaky.sourcedownloader.sdk.component
 import com.google.common.base.CaseFormat
 import kotlin.reflect.KClass
 
-data class ComponentType(val typeName: String,
+data class ComponentType(
+    val typeName: String,
     // TODO 限制密封类
-                         val klass: KClass<out SdComponent>) {
+    val klass: KClass<out SdComponent>
+) {
 
     constructor(type: String, name: String) : this(name, componentTypes[type]
-        ?: throw RuntimeException("不支持的类型$type, 支持的类型有${componentTypes.keys}"))
+        ?: throw ComponentException.unsupported("不支持的类型$type, 支持的类型有${componentTypes.keys}"))
+
+    fun type(): Components {
+        return Components.fromClass(klass)
+        // 不应该出现
+            ?: throw ComponentException.unsupported("不支持的类型${klass.simpleName}")
+    }
 
     companion object {
         fun downloader(type: String) = ComponentType(type, Downloader::class)

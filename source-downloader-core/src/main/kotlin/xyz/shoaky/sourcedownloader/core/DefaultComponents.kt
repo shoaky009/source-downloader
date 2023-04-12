@@ -9,9 +9,9 @@ import xyz.shoaky.sourcedownloader.sdk.util.Jackson
 
 @Component
 class DefaultComponents : ComponentConfigStorage {
-    override fun getAllComponents(): Map<String, List<ComponentConfig>> {
-        val yaml = ClassPathResource("default-component.yaml")
-        val load = Yaml().load<Map<Any, Any>>(yaml.inputStream)
+    override fun getAllConfig(): Map<String, List<ComponentConfig>> {
+        val config = ClassPathResource("default-component.yaml")
+        val load = Yaml().load<Map<String, Any>>(config.inputStream)
         return Jackson.convert(load, jacksonTypeRef())
     }
 }

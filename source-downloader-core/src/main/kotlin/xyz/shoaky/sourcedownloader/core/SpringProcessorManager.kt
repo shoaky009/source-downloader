@@ -17,7 +17,7 @@ class SpringProcessorManager(
     override fun createProcessor(config: ProcessorConfig): SourceProcessor {
         val processorBeanName = "Processor-${config.name}"
         if (applicationContext.containsBean(processorBeanName)) {
-            throw ComponentException("processor ${config.name} already exists")
+            throw ComponentException.processor("Processor ${config.name} already exists")
         }
 
         val source = applicationContext.getBean(config.getSourceInstanceName(), Source::class.java)

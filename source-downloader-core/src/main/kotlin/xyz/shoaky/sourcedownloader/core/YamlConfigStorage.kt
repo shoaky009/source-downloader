@@ -16,12 +16,12 @@ import xyz.shoaky.sourcedownloader.core.config.ProcessorConfigs
 class YamlConfigStorage(
     private val configs: ProcessorConfigs,
     private val environment: Environment
-) : ProcessorConfigStorage, ComponentConfigStorage {
+) : ProcessorConfigStorage, ComponentConfigStorage, ConfigOperator {
     override fun getAllProcessor(): List<ProcessorConfig> {
         return configs.processors
     }
 
-    override fun getAllComponents(): Map<String, List<ComponentConfig>> {
+    override fun getAllConfig(): Map<String, List<ComponentConfig>> {
         val bindType = Bindable.of<Map<String, List<ComponentConfig>>>(
             ResolvableType.forType(object : ParameterizedTypeReference<Map<String, List<ComponentConfig>>>() {})
         )
@@ -34,5 +34,21 @@ class YamlConfigStorage(
             return emptyMap()
         }
         return componentConfigBinder.get()
+    }
+
+    override fun save(type: String, config: ComponentConfig) {
+        TODO("Not yet implemented")
+    }
+
+    override fun save(name: String, config: ProcessorConfig) {
+        TODO("Not yet implemented")
+    }
+
+    override fun delete(type: String, config: ComponentConfig) {
+        TODO("Not yet implemented")
+    }
+
+    override fun delete(name: String, config: ProcessorConfig) {
+        TODO("Not yet implemented")
     }
 }

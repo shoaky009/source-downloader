@@ -8,10 +8,11 @@ import xyz.shoaky.sourcedownloader.core.ProcessorConfig
 import xyz.shoaky.sourcedownloader.core.ProcessorConfigStorage
 import xyz.shoaky.sourcedownloader.core.SdComponentManager
 import xyz.shoaky.sourcedownloader.sdk.SourceItem
+import xyz.shoaky.sourcedownloader.sdk.component.ComponentException
 
 @RestController
 @RequestMapping("/api/processor")
-class ProcessorController(
+private class ProcessorController(
     private val componentManager: SdComponentManager,
     private val configStorages: List<ProcessorConfigStorage>
 ) {
@@ -25,7 +26,7 @@ class ProcessorController(
     @GetMapping("/dry-run/{processorName}")
     fun dryRun(@PathVariable processorName: String): List<DryRunResult> {
         val sourceProcessor = (componentManager.getProcessor(processorName)
-            ?: throw IllegalArgumentException("processor $processorName not found"))
+            ?: throw ComponentException.processorMissing("processor $processorName not found"))
         return sourceProcessor.dryRun()
             .map { pc ->
                 val fileResult = pc.sourceContent.sourceFiles.map { file ->

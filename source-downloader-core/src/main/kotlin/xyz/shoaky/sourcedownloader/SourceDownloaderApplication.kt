@@ -21,9 +21,7 @@ import xyz.shoaky.sourcedownloader.core.config.ComponentConfig
 import xyz.shoaky.sourcedownloader.core.config.ProcessorConfigs
 import xyz.shoaky.sourcedownloader.external.qbittorrent.QbittorrentConfig
 import xyz.shoaky.sourcedownloader.sdk.PathPattern
-import xyz.shoaky.sourcedownloader.sdk.component.ComponentProps
-import xyz.shoaky.sourcedownloader.sdk.component.ComponentType
-import xyz.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
+import xyz.shoaky.sourcedownloader.sdk.component.*
 import java.net.URL
 
 @SpringBootApplication
@@ -77,10 +75,10 @@ class SourceDownloaderApplication(
 
     private fun registerComponentSuppliers() {
         componentManager.registerSupplier(
-            *getObjectSuppliers().toTypedArray()
+            *componentSupplier.toTypedArray()
         )
         componentManager.registerSupplier(
-            *componentSupplier.toTypedArray()
+            *getObjectSuppliers().toTypedArray()
         )
         val types = componentManager.getSuppliers()
             .map { it.supplyTypes() }
@@ -93,17 +91,14 @@ class SourceDownloaderApplication(
     private fun createComponents() {
         for (componentStorage in componentStorages) {
             componentStorage
-                .getAllComponents()
+                .getAllConfig()
                 .forEach(this::createFromConfigs)
         }
     }
 
-    private fun createFromConfigs(keyType: String, configs: List<ComponentConfig>) {
-        val componentKClass = ComponentType.typeOf(keyType)
-        if (componentKClass == null) {
-            log.warn("未知组件类型:$keyType")
-            return
-        }
+    private fun createFromConfigs(key: String, configs: List<ComponentConfig>) {
+        val componentKClass = Components.fromName(key)?.klass
+            ?: throw ComponentException.unsupported("未知组件类型:$key")
 
         configs.forEach {
             val type = ComponentType(it.type, componentKClass)

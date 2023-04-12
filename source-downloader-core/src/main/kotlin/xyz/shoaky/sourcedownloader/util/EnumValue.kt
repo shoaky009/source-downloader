@@ -16,3 +16,13 @@ fun <T, R> KClass<R>.fromValue(value: T): R where R : EnumValue<T>, R : Enum<R> 
     }
     throw RuntimeException("Unknown value: $this")
 }
+
+fun String.find(vararg regexes: Regex): String? {
+    for (regex in regexes) {
+        val match = regex.find(this)
+        if (match != null) {
+            return match.value
+        }
+    }
+    return null
+}

@@ -50,18 +50,18 @@ class SpringSdComponentManager(
     private val applicationContext: DefaultListableBeanFactory,
 ) : SdComponentManager {
 
-    val sdComponentSuppliers: MutableMap<ComponentType, SdComponentSupplier<*>> = ConcurrentHashMap()
+    private val sdComponentSuppliers: MutableMap<ComponentType, SdComponentSupplier<*>> = ConcurrentHashMap()
 
     @Synchronized
     override fun createComponent(name: String, componentType: ComponentType, props: ComponentProps) {
         val beanName = componentType.instanceName(name)
         val exists = applicationContext.containsSingleton(beanName)
         if (exists) {
+            log.info("组件已存在: $beanName")
             return
         }
 
         val supplier = getSupplier(componentType)
-
         // TODO 创建顺序问题
         val otherTypes = supplier.supplyTypes().filter { it != componentType }
         val singletonNames = applicationContext.singletonNames.toSet()
@@ -102,7 +102,7 @@ class SpringSdComponentManager(
 
     override fun getSupplier(type: ComponentType): SdComponentSupplier<*> {
         return sdComponentSuppliers[type]
-            ?: throw ComponentException("Supplier不存在, 组件类型:${type.klass.simpleName}:${type.typeName}")
+            ?: throw ComponentException.unsupported("Supplier不存在, 组件类型:${type.klass.simpleName}:${type.typeName}")
     }
 
     override fun getSuppliers(): List<SdComponentSupplier<*>> {
@@ -114,8 +114,7 @@ class SpringSdComponentManager(
             val types = componentSupplier.supplyTypes()
             for (type in types) {
                 if (this.sdComponentSuppliers.containsKey(type)) {
-                    log.info("组件类型已存在:{}", type)
-                    continue
+                    throw ComponentException.supplierExists("组件类型已存在:${type}")
                 }
                 this.sdComponentSuppliers[type] = componentSupplier
             }

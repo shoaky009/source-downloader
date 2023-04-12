@@ -13,7 +13,7 @@ object JackettSourceSupplier : SdComponentSupplier<JackettSource> {
 
     override fun supplyTypes(): List<ComponentType> {
         return listOf(
-            ComponentType("rss", Source::class)
+            ComponentType("jackett", Source::class)
         )
     }
 
