@@ -11,21 +11,25 @@ import org.springframework.beans.factory.InitializingBean
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.context.event.ApplicationReadyEvent
+import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.ImportRuntimeHints
 import org.springframework.context.event.EventListener
 import org.springframework.core.env.Environment
 import xyz.shoaky.sourcedownloader.component.*
 import xyz.shoaky.sourcedownloader.component.supplier.*
+import xyz.shoaky.sourcedownloader.config.SourceDownloaderProperties
 import xyz.shoaky.sourcedownloader.core.*
 import xyz.shoaky.sourcedownloader.core.config.ComponentConfig
-import xyz.shoaky.sourcedownloader.core.config.ProcessorConfigs
+import xyz.shoaky.sourcedownloader.core.config.ProcessorConfig
 import xyz.shoaky.sourcedownloader.external.qbittorrent.QbittorrentConfig
 import xyz.shoaky.sourcedownloader.sdk.PathPattern
 import xyz.shoaky.sourcedownloader.sdk.component.*
 import java.net.URL
+import kotlin.reflect.KClass
 
 @SpringBootApplication
 @ImportRuntimeHints(SourceDownloaderApplication.ApplicationRuntimeHints::class)
+@EnableConfigurationProperties(SourceDownloaderProperties::class)
 class SourceDownloaderApplication(
     private val environment: Environment,
     private val componentManager: SdComponentManager,
@@ -43,7 +47,7 @@ class SourceDownloaderApplication(
                 ?.removePrefix("jdbc:h2:file:")
         }")
 
-        val processorConfigs = processorStorages.flatMap { it.getAllProcessor() }
+        val processorConfigs = processorStorages.flatMap { it.getAllProcessorConfig() }
         for (processorConfig in processorConfigs) {
             processorManager.createProcessor(processorConfig)
         }
@@ -91,7 +95,7 @@ class SourceDownloaderApplication(
     private fun createComponents() {
         for (componentStorage in componentStorages) {
             componentStorage
-                .getAllConfig()
+                .getAllComponentConfig()
                 .forEach(this::createFromConfigs)
         }
     }
@@ -135,7 +139,6 @@ class SourceDownloaderApplication(
     class ApplicationRuntimeHints : RuntimeHintsRegistrar {
         override fun registerHints(hints: RuntimeHints, classLoader: ClassLoader?) {
             hints.reflection().registerType(JsonType::class.java, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS)
-            hints.reflection().registerType(ProcessorConfigs::class.java, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS)
             hints.reflection().registerType(ProcessorConfig::class.java, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS)
             hints.reflection().registerType(ProcessorConfig.Options::class.java, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS)
             hints.reflection().registerType(Regex::class.java, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS)
@@ -165,36 +168,38 @@ class SourceDownloaderApplication(
         createComponents()
     }
 
-    // private fun getObjectSuppliers(): List<SdComponentSupplier<*>> {
-    //     return ClassPath.from(this::class.java.classLoader)
-    //         .getTopLevelClasses("xyz.shoaky.sourcedownloader.component.supplier")
-    //         .filter { it.simpleName.contains("supplier", true) }
-    //         .map { it.load().kotlin }
-    //         .filterIsInstance<KClass<SdComponentSupplier<*>>>()
-    //         .mapNotNull {
-    //             it.objectInstance
-    //         }
-    // }
-
+    // FIXME native image会失败，后面再看
     private fun getObjectSuppliers(): List<SdComponentSupplier<*>> {
-        return listOf(
-            QbittorrentSupplier,
-            RssSourceSupplier,
-            GeneralFileMoverSupplier,
-            RunCommandSupplier,
-            ExpressionItemFilterSupplier,
-            FixedScheduleTriggerSupplier,
-            UrlDownloaderSupplier,
-            MockDownloaderSupplier,
-            TouchItemDirectorySupplier,
-            DynamicTriggerSupplier,
-            SendHttpRequestSupplier,
-            AiVariableProviderSupplier,
-            SystemFileSourceSupplier,
-            MetadataVariableProviderSupplier,
-            JackettSourceSupplier,
-            AnitomVariableProviderSupplier,
-            SeasonProviderSupplier,
-        )
+        return ClassPath.from(this::class.java.classLoader)
+            .getTopLevelClasses("xyz.shoaky.sourcedownloader.component.supplier")
+            .filter { it.simpleName.contains("supplier", true) }
+            .map { it.load().kotlin }
+            .filterIsInstance<KClass<SdComponentSupplier<*>>>()
+            .mapNotNull {
+                it.objectInstance
+            }
     }
+
+    // private fun getObjectSuppliers(): List<SdComponentSupplier<*>> {
+    //     return listOf(
+    //         QbittorrentSupplier,
+    //         RssSourceSupplier,
+    //         GeneralFileMoverSupplier,
+    //         RunCommandSupplier,
+    //         ExpressionItemFilterSupplier,
+    //         FixedScheduleTriggerSupplier,
+    //         UrlDownloaderSupplier,
+    //         MockDownloaderSupplier,
+    //         TouchItemDirectorySupplier,
+    //         DynamicTriggerSupplier,
+    //         SendHttpRequestSupplier,
+    //         AiVariableProviderSupplier,
+    //         SystemFileSourceSupplier,
+    //         MetadataVariableProviderSupplier,
+    //         JackettSourceSupplier,
+    //         AnitomVariableProviderSupplier,
+    //         SeasonProviderSupplier,
+    //         CleanEmptyDirectorySupplier,
+    //     )
+    // }
 }

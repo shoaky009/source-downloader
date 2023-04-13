@@ -1,5 +1,7 @@
 package xyz.shoaky.sourcedownloader.core
 
+import xyz.shoaky.sourcedownloader.core.config.ProcessorConfig
+
 interface ProcessorManager {
 
     fun createProcessor(config: ProcessorConfig): SourceProcessor

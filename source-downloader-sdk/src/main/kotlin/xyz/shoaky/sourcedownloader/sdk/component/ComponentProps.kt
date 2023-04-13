@@ -55,6 +55,10 @@ private constructor(val properties: MutableMap<String, Any>) {
             return ComponentProps(Jackson.fromJson(json, typeReference))
         }
 
+        fun empty(): ComponentProps {
+            return ComponentProps(mutableMapOf())
+        }
+
     }
 }
 

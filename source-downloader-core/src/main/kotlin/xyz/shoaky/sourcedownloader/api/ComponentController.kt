@@ -21,7 +21,7 @@ private class ComponentController(
     fun getComponents(): Any {
         val map = mapOf<String, List<ComponentConfig>>()
         for (cc in ccs) {
-            val allComponents = cc.getAllConfig()
+            val allComponents = cc.getAllComponentConfig()
         }
         return map
     }

@@ -7,22 +7,18 @@ components:
       type: url
       props:
         download-path: src/test/resources/downloads
-  variable-provider:
-  file-mover:
   trigger:
     - name: 1s
       type: fixed
       props:
         interval: PT1S
         run-on-startup: true
-  run-after-completion:
 
 processors:
   - name: test-normal-case
     triggers:
       - fixed:1s
     source: test
-    providers:
     downloader: url:test
     mover: general
     save-path: src/test/resources/target

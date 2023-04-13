@@ -9,8 +9,8 @@ import xyz.shoaky.sourcedownloader.sdk.component.TorrentDownloader
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.Path
+import kotlin.io.path.createDirectories
 import kotlin.io.path.moveTo
-import kotlin.io.path.name
 import kotlin.io.path.notExists
 
 class MockDownloader(private val downloadPath: Path) : TorrentDownloader {
@@ -22,12 +22,15 @@ class MockDownloader(private val downloadPath: Path) : TorrentDownloader {
     }
 
     override fun submit(task: DownloadTask) {
-        val last = resolveFiles(task.sourceItem).first()
-        val path = task.downloadPath ?: downloadPath
-        val resolve = path.resolve(last.name)
-        if (resolve.notExists()) {
-            Files.createFile(resolve)
-        }
+        val dp = task.downloadPath ?: downloadPath
+        task.downloadFiles.filter { it.notExists() }
+            .forEach {
+                val resolve = dp.resolve(it)
+                if (resolve.parent != dp && resolve.parent.notExists()) {
+                    resolve.parent.createDirectories()
+                }
+                Files.createFile(resolve)
+            }
     }
 
     override fun defaultDownloadPath(): Path {
@@ -38,10 +41,16 @@ class MockDownloader(private val downloadPath: Path) : TorrentDownloader {
         val contentType = sourceItem.contentType
         val downloadUrl = sourceItem.downloadUri
         if (contentType.contains("torrent")) {
-            return metadataService.fromUrl(downloadUrl.toURL()).files
+            val torrent = metadataService.fromUrl(downloadUrl.toURL())
+            if (torrent.files.size == 1) {
+                return torrent.files.map { it.pathElements.joinToString("/") }
+                    .map { Path(it) }
+            }
+            val parent = Path(torrent.name)
+            return torrent.files
                 .filter { it.size > 0 }
                 .map { it.pathElements.joinToString("/") }
-                .map { Path(it) }
+                .map { parent.resolve(it) }
         }
 
         val filename = UrlResource(downloadUrl).filename.takeIf { it.isNullOrBlank().not() }

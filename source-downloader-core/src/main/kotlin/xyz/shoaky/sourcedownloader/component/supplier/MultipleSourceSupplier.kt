@@ -2,8 +2,8 @@ package xyz.shoaky.sourcedownloader.component.supplier
 
 import org.springframework.stereotype.Component
 import xyz.shoaky.sourcedownloader.component.MultipleSource
-import xyz.shoaky.sourcedownloader.core.ProcessorConfig
 import xyz.shoaky.sourcedownloader.core.SdComponentManager
+import xyz.shoaky.sourcedownloader.core.config.ProcessorConfig
 import xyz.shoaky.sourcedownloader.sdk.component.*
 
 @Component

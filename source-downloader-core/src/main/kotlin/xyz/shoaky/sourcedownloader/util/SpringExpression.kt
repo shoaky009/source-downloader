@@ -1,5 +1,8 @@
 package xyz.shoaky.sourcedownloader.util
 
+import org.springframework.boot.context.properties.bind.Bindable
+import org.springframework.core.ParameterizedTypeReference
+import org.springframework.core.ResolvableType
 import org.springframework.expression.Expression
 import org.springframework.expression.ExpressionParser
 import org.springframework.expression.spel.standard.SpelExpressionParser
@@ -55,4 +58,10 @@ fun Path.fileDataSize(): DataSize? {
     }
     val size = Files.size(this)
     return DataSize.ofBytes(size)
+}
+
+inline fun <reified T> bindable(): Bindable<T> {
+    return Bindable.of(
+        ResolvableType.forType(object : ParameterizedTypeReference<T>() {})
+    )
 }

@@ -3,6 +3,7 @@ package xyz.shoaky.sourcedownloader.core
 import org.springframework.retry.support.RetryTemplateBuilder
 import xyz.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
 import xyz.shoaky.sourcedownloader.component.provider.MetadataVariableProvider
+import xyz.shoaky.sourcedownloader.core.config.ProcessorConfig
 import xyz.shoaky.sourcedownloader.core.file.CoreFileContent
 import xyz.shoaky.sourcedownloader.core.file.PersistentSourceContent
 import xyz.shoaky.sourcedownloader.core.file.RenameMode
@@ -125,8 +126,8 @@ class SourceProcessor(
                 retry.execute<ProcessingContent, IOException> {
                     val providers = variableProviders.filter { it.support(item) }.toList()
                     // TODO 后面根据优先级选出冲突的变量用的类
-                    val idk = Idk(providers)
-                    processItem(item, idk, dryRun)
+                    val providersAggregation = VariableProvidersAggregation(providers)
+                    processItem(item, providersAggregation, dryRun)
                 }
             }.onFailure {
                 log.error("Processor:${name}处理失败, item:$item", it)
@@ -139,8 +140,8 @@ class SourceProcessor(
         return result
     }
 
-    private fun processItem(sourceItem: SourceItem, idk: Idk, dryRun: Boolean = false): ProcessingContent {
-        val sourceContent = createPersistentSourceContent(idk, sourceItem)
+    private fun processItem(sourceItem: SourceItem, providersAggregation: VariableProvidersAggregation, dryRun: Boolean = false): ProcessingContent {
+        val sourceContent = createPersistentSourceContent(providersAggregation, sourceItem)
 
         val downloadTask = createDownloadTask(
             sourceItem,
@@ -173,8 +174,8 @@ class SourceProcessor(
         return pc
     }
 
-    private fun createPersistentSourceContent(idk: Idk, sourceItem: SourceItem): PersistentSourceContent {
-        val aggrSourceGroup = idk.getAggr(sourceItem)
+    private fun createPersistentSourceContent(providersAggregation: VariableProvidersAggregation, sourceItem: SourceItem): PersistentSourceContent {
+        val aggrSourceGroup = providersAggregation.aggrVariables(sourceItem)
         val resolveFiles = downloader.resolveFiles(sourceItem)
         val filteredFiles = resolveFiles.filter { path ->
             val res = sourceFileFilters.all { it.test(path) }
@@ -189,6 +190,7 @@ class SourceProcessor(
                 val sourceFileContent = CoreFileContent(
                     downloadPath.resolve(filteredFiles[index]),
                     sourceSavePath,
+                    downloadPath,
                     MapPatternVariables(sourceFile.patternVariables().variables()),
                     fileSavePathPattern,
                     filenamePattern,
@@ -397,10 +399,10 @@ class SourceProcessor(
 
 }
 
-class Idk(
+class VariableProvidersAggregation(
     private val providers: List<VariableProvider>
 ) {
-    fun getAggr(sourceItem: SourceItem): SourceItemGroup {
+    fun aggrVariables(sourceItem: SourceItem): SourceItemGroup {
         val associateBy = providers.associateBy({
             it
         }, { it.createSourceGroup(sourceItem) })

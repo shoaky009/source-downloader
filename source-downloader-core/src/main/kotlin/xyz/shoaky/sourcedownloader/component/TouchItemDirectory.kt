@@ -11,8 +11,8 @@ object TouchItemDirectory : RunAfterCompletion {
     override fun accept(t: SourceContent) {
         val filetime = FileTime.fromMillis(System.currentTimeMillis())
         t.sourceFiles
-            .filter { it.itemFileRootDirectory()?.exists() ?: false }
-            .groupBy { it.itemFileRootDirectory() }
+            .filter { it.saveItemFileRootDirectory()?.exists() ?: false }
+            .groupBy { it.saveItemFileRootDirectory() }
             .mapNotNull { it.key }
             .forEach {
                 log.debug("item:{} Touching directory: {}", t.sourceItem.title, it)

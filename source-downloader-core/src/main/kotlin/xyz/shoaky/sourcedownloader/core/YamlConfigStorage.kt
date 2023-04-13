@@ -1,54 +1,88 @@
 package xyz.shoaky.sourcedownloader.core
 
-import org.springframework.boot.context.properties.EnableConfigurationProperties
-import org.springframework.boot.context.properties.bind.Bindable
-import org.springframework.boot.context.properties.bind.Binder
-import org.springframework.core.ParameterizedTypeReference
-import org.springframework.core.ResolvableType
-import org.springframework.core.env.Environment
-import org.springframework.stereotype.Component
-import xyz.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator
+import com.fasterxml.jackson.dataformat.yaml.YAMLMapper
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import xyz.shoaky.sourcedownloader.core.config.ComponentConfig
-import xyz.shoaky.sourcedownloader.core.config.ProcessorConfigs
+import xyz.shoaky.sourcedownloader.core.config.ProcessorConfig
+import java.nio.file.Path
+import kotlin.io.path.Path
+import kotlin.io.path.inputStream
 
-@Component
-@EnableConfigurationProperties(ProcessorConfigs::class)
 class YamlConfigStorage(
-    private val configs: ProcessorConfigs,
-    private val environment: Environment
+    private val configPath: Path = Path("config.yaml")
 ) : ProcessorConfigStorage, ComponentConfigStorage, ConfigOperator {
-    override fun getAllProcessor(): List<ProcessorConfig> {
-        return configs.processors
+
+    override fun getAllProcessorConfig(): List<ProcessorConfig> {
+        val get = yamlMapper.readTree(configPath.inputStream()).get("processors")
+        return yamlMapper.convertValue(get, jacksonTypeRef())
     }
 
-    override fun getAllConfig(): Map<String, List<ComponentConfig>> {
-        val bindType = Bindable.of<Map<String, List<ComponentConfig>>>(
-            ResolvableType.forType(object : ParameterizedTypeReference<Map<String, List<ComponentConfig>>>() {})
-        )
 
-        val componentConfigBinder = Binder.get(environment)
-            .bind("components", bindType)
+    override fun getAllComponentConfig(): Map<String, List<ComponentConfig>> {
+        val get = yamlMapper.readTree(configPath.inputStream()).get("components")
+        return yamlMapper.convertValue(get, jacksonTypeRef())
+    }
 
-        if (componentConfigBinder.isBound.not()) {
-            log.info("没有组件配置在yaml中")
-            return emptyMap()
+    @Synchronized
+    override fun save(type: String, componentConfig: ComponentConfig) {
+        val config = yamlMapper.readValue(configPath.inputStream(), Config::class.java)
+        val typeConfigs = config.components[type] ?: mutableListOf()
+        val index = typeConfigs.indexOfFirst { it.name == componentConfig.name }
+        if (index < 0) {
+            typeConfigs.add(componentConfig)
+        } else {
+            typeConfigs[index] = componentConfig
         }
-        return componentConfigBinder.get()
+        yamlMapper.writeValue(configPath.toFile(), config)
     }
 
-    override fun save(type: String, config: ComponentConfig) {
+    @Synchronized
+    override fun save(name: String, processorConfig: ProcessorConfig) {
+        val config = yamlMapper.readValue(configPath.inputStream(), Config::class.java)
+        val processors = config.processors
+        val index = processors.indexOfFirst { it.name == name }
+        if (index < 0) {
+            processors.add(processorConfig)
+        } else {
+            processors[index] = processorConfig
+        }
+        yamlMapper.writeValue(configPath.toFile(), config)
+    }
+
+    @Synchronized
+    override fun delete(type: String, componentConfig: ComponentConfig) {
         TODO("Not yet implemented")
     }
 
-    override fun save(name: String, config: ProcessorConfig) {
+    @Synchronized
+    override fun delete(name: String, processorConfig: ProcessorConfig) {
         TODO("Not yet implemented")
     }
 
-    override fun delete(type: String, config: ComponentConfig) {
-        TODO("Not yet implemented")
-    }
+    companion object {
+        private val yamlMapper = YAMLMapper()
 
-    override fun delete(name: String, config: ProcessorConfig) {
-        TODO("Not yet implemented")
+        init {
+            yamlMapper
+                .registerModule(KotlinModule.Builder().build())
+                .registerModule(JavaTimeModule())
+            yamlMapper
+                .disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER)
+                .enable(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT)
+                .enable(DeserializationFeature.FAIL_ON_INVALID_SUBTYPE)
+                .enable(DeserializationFeature.FAIL_ON_MISSING_EXTERNAL_TYPE_ID_PROPERTY)
+                .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
+        }
     }
 }
+
+private data class Config(
+    val components: MutableMap<String, MutableList<ComponentConfig>> = mutableMapOf(),
+    val processors: MutableList<ProcessorConfig> = mutableListOf()
+)

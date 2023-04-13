@@ -15,6 +15,7 @@ import kotlin.io.path.notExists
 data class CoreFileContent(
     override val fileDownloadPath: Path,
     val sourceSavePath: Path,
+    val downloadPath: Path,
     override val patternVariables: MapPatternVariables,
     val fileSavePathPattern: PathPattern,
     val filenamePattern: PathPattern,
@@ -22,19 +23,6 @@ data class CoreFileContent(
 
     @Transient
     private val sharedVariables = SharedPatternVariables(patternVariables)
-
-    constructor(
-        fileContent: FileContent,
-        sourceSavePath: Path,
-        fileSavePathPattern: PathPattern,
-        filenamePattern: PathPattern,
-    ) : this(
-        fileContent.fileDownloadPath,
-        sourceSavePath,
-        MapPatternVariables(fileContent.patternVariables.variables()),
-        fileSavePathPattern,
-        filenamePattern
-    )
 
     private val targetPath: Path by lazy {
         saveDirectoryPath().resolve(targetFilename())
@@ -86,7 +74,7 @@ data class CoreFileContent(
      * 获取item文件对应的顶级目录e.g. 文件保存在下/mnt/bangumi/FATE/Season 01 返回 /mnt/bangumi/FATE
      * @return null如果item的文件是保存在saveRootPath下
      */
-    override fun itemFileRootDirectory(): Path? {
+    override fun saveItemFileRootDirectory(): Path? {
         val saveDirectoryPath = saveDirectoryPath()
         if (sourceSavePath == saveDirectoryPath) {
             return null
@@ -100,6 +88,18 @@ data class CoreFileContent(
             return null
         }
         return res
+    }
+
+    override fun downloadItemFileRootDirectory(): Path? {
+        if (fileDownloadPath.parent == downloadPath) {
+            return null
+        }
+
+        var path = fileDownloadPath.parent
+        while (path.parent != downloadPath) {
+            path = path.parent
+        }
+        return path
     }
 
     companion object {

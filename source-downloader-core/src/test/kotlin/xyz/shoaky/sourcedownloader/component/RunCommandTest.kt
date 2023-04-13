@@ -24,6 +24,7 @@ class RunCommandTest {
     private val content = CoreFileContent(
         Path("test.txt"),
         Path("test.txt"),
+        Path(""),
         MapPatternVariables(mapOf("date" to "2022-01-01", "name" to "test")),
         PathPattern.ORIGIN,
         PathPattern.ORIGIN,

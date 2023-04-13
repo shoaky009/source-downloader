@@ -9,6 +9,7 @@ import xyz.shoaky.sourcedownloader.sdk.SourceContent
 import xyz.shoaky.sourcedownloader.sdk.SourceItem
 import xyz.shoaky.sourcedownloader.sdk.component.TorrentDownloader
 import java.nio.file.Path
+import kotlin.io.path.Path
 import kotlin.io.path.name
 
 class QbittorrentDownloader(
@@ -60,9 +61,15 @@ class QbittorrentDownloader(
 
     override fun resolveFiles(sourceItem: SourceItem): List<Path> {
         val torrent = metadataService.fromUrl(sourceItem.downloadUri.toURL())
+        if (torrent.files.size == 1) {
+            return torrent.files.map { it.pathElements.joinToString("/") }
+                .map { Path(it) }
+        }
+        val parent = Path(torrent.name)
         return torrent.files
             .filter { it.size > 0 }
-            .map { Path.of(it.pathElements.joinToString("/")) }
+            .map { it.pathElements.joinToString("/") }
+            .map { parent.resolve(it) }
     }
 
     override fun isFinished(task: DownloadTask): Boolean? {

@@ -1,5 +1,6 @@
 package xyz.shoaky.sourcedownloader.sdk
 
+import com.fasterxml.jackson.annotation.JsonValue
 import java.nio.file.Path
 import java.util.regex.Pattern
 import kotlin.io.path.exists
@@ -28,6 +29,7 @@ interface SourceContent {
 }
 
 data class PathPattern(
+    @get:JsonValue
     val pattern: String
 ) {
     fun parse(provider: PatternVariables): ParseResult {

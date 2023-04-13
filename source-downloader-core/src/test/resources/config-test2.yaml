@@ -1,0 +1,12 @@
+components:
+  source:
+    - name: "test"
+      type: "test"
+processors:
+  - name: "test-normal-case"
+    triggers:
+      - "fixed:1s"
+    source: "test"
+    downloader: "test"
+    mover: "test"
+    savePath: "test"

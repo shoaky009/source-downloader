@@ -5,6 +5,8 @@ file-mover:
 run-after-completion:
   - name: touchItemDirectory
     type: touchItemDirectory
+  - name: cleanEmptyDirectory
+    type: cleanEmptyDirectory
 variable-provider:
   - name: metadata
     type: metadata

@@ -7,6 +7,7 @@ import xyz.shoaky.sourcedownloader.sdk.PathPattern
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 
 class CoreFileContentTest {
 
@@ -73,7 +74,7 @@ class CoreFileContentTest {
             savePathPattern = PathPattern("{name}/S{season}"),
             patternVars = MapPatternVariables(mapOf("name" to "test", "season" to "01"))
         )
-        assertEquals(sourceSavePath.resolve("test"), createFileContent.itemFileRootDirectory())
+        assertEquals(sourceSavePath.resolve("test"), createFileContent.saveItemFileRootDirectory())
     }
 
     @Test
@@ -82,10 +83,9 @@ class CoreFileContentTest {
             savePathPattern = PathPattern("{name}"),
             patternVars = MapPatternVariables(mapOf("name" to "test", "season" to "01"))
         )
-        assertEquals(null, content1.itemFileRootDirectory())
-
+        assertEquals(null, content1.saveItemFileRootDirectory())
         val content2 = content1.copy(fileSavePathPattern = PathPattern.ORIGIN)
-        assertEquals(null, content2.itemFileRootDirectory())
+        assertEquals(null, content2.saveItemFileRootDirectory())
     }
 
     @Test
@@ -98,17 +98,33 @@ class CoreFileContentTest {
         val saveDir = fileContent.saveDirectoryPath()
         assertEquals(sourceSavePath.resolve("test/S01"), saveDir)
     }
+
+    @Test
+    fun test_downloadItemFileRootDirectory() {
+        val content = createFileContent(
+        )
+        assertNull(content.downloadItemFileRootDirectory())
+
+        val downloadPath = Path("src/test/resources/downloads")
+        val content1 = content.copy(
+            fileDownloadPath = Path("src/test/resources/downloads/easd/222/1.txt"),
+            downloadPath = downloadPath
+        )
+        assertEquals(downloadPath.resolve("easd"), content1.downloadItemFileRootDirectory())
+    }
 }
 
 private fun createFileContent(
     fileDownloadPath: Path = Path("src/test/resources/downloads/1.txt"),
     sourceSavePath: Path = Path("src/test/resources/target"),
+    downloadPath: Path = Path("src/test/resources/downloads"),
     patternVars: MapPatternVariables = MapPatternVariables(),
     savePathPattern: PathPattern = PathPattern.ORIGIN,
     filenamePathPattern: PathPattern = PathPattern.ORIGIN): CoreFileContent {
     return CoreFileContent(
         fileDownloadPath,
         sourceSavePath,
+        downloadPath,
         patternVars,
         savePathPattern,
         filenamePathPattern,

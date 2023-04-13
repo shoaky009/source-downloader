@@ -39,6 +39,7 @@ class GeneralFileMoverTest {
         val file1 = CoreFileContent(
             Path("src/test/resources/downloads/1.txt"),
             Path("src/test/resources/target"),
+            Path("src/test/resources/downloads/"),
             MapPatternVariables(),
             PathPattern.ORIGIN,
             PathPattern.ORIGIN,
@@ -46,6 +47,7 @@ class GeneralFileMoverTest {
         val file2 = CoreFileContent(
             Path("src/test/resources/downloads/2.txt"),
             Path("src/test/resources/target"),
+            Path("src/test/resources/downloads"),
             MapPatternVariables(),
             PathPattern.ORIGIN,
             PathPattern.ORIGIN,

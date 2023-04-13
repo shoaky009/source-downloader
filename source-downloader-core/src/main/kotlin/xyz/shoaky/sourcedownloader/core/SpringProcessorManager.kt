@@ -3,8 +3,8 @@ package xyz.shoaky.sourcedownloader.core
 import org.springframework.beans.factory.config.ConfigurableBeanFactory
 import org.springframework.stereotype.Component
 import xyz.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
-import xyz.shoaky.sourcedownloader.component.supplier.ExpressionFileFilterSupplier
-import xyz.shoaky.sourcedownloader.component.supplier.ExpressionItemFilterSupplier
+import xyz.shoaky.sourcedownloader.component.supplier.*
+import xyz.shoaky.sourcedownloader.core.config.ProcessorConfig
 import xyz.shoaky.sourcedownloader.sdk.component.*
 
 @Component
@@ -20,13 +20,13 @@ class SpringProcessorManager(
             throw ComponentException.processor("Processor ${config.name} already exists")
         }
 
-        val source = applicationContext.getBean(config.getSourceInstanceName(), Source::class.java)
-        val downloader = applicationContext.getBean(config.getDownloaderInstanceName(), Downloader::class.java)
+        val source = applicationContext.getBean(config.sourceInstanceName(), Source::class.java)
+        val downloader = applicationContext.getBean(config.downloaderInstanceName(), Downloader::class.java)
 
-        val providers = config.getProviderInstanceNames().map {
+        val providers = config.providerInstanceNames().map {
             applicationContext.getBean(it, VariableProvider::class.java)
         }
-        val mover = applicationContext.getBean(config.getMoverInstanceName(), FileMover::class.java)
+        val mover = applicationContext.getBean(config.moverInstanceName(), FileMover::class.java)
         val processor = SourceProcessor(
             config.name,
             source,
@@ -70,7 +70,7 @@ class SpringProcessorManager(
         applicationContext.registerSingleton(processorBeanName, processor)
         log.info("处理器初始化完成:$processor")
 
-        config.getTriggerInstanceNames().map {
+        config.triggerInstanceNames().map {
             applicationContext.getBean(it, Trigger::class.java)
         }.forEach {
             it.addTask(processor.safeTask())
@@ -95,11 +95,13 @@ class SpringProcessorManager(
     }
 
     private fun initOptions(options: ProcessorConfig.Options, processor: SourceProcessor) {
+        processor.addItemFilter(
+            RegexSourceItemFilterSupplier.regexes(options.regexFilters)
+        )
         processor.addItemFilter(ExpressionItemFilterSupplier.expressions(
             options.itemExpressionExclusions,
             options.itemExpressionInclusions
         ))
-
         processor.addFileFilter(ExpressionFileFilterSupplier.expressions(
             options.fileExpressionExclusions,
             options.fileExpressionInclusions
@@ -112,6 +114,14 @@ class SpringProcessorManager(
                 .also { completion -> processor.addRunAfterCompletion(completion) }
         }
         processor.scheduleRenameTask(options.renameTaskInterval)
+        if (options.cleanEmptyDirectory) {
+            val cleanEmptyDirectory = CleanEmptyDirectorySupplier.apply(ComponentProps.empty())
+            processor.addRunAfterCompletion(cleanEmptyDirectory)
+        }
+        if (options.touchItemDirectory) {
+            val touchItemDirectory = TouchItemDirectorySupplier.apply(ComponentProps.empty())
+            processor.addRunAfterCompletion(touchItemDirectory)
+        }
     }
 
 

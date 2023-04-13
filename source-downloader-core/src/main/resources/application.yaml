@@ -1,7 +1,4 @@
 spring:
-  config:
-    import:
-      - ${SOURCE_DOWNLOADER_DATA_LOCATION:optional:}config.yaml
   main:
     banner-mode: off
     allow-bean-definition-overriding: true
@@ -18,6 +15,9 @@ spring:
       - classpath:/db/migration
     user: ${spring.datasource.username}
     password: ${spring.datasource.password}
+
+source-downloader:
+  data-location: ${SOURCE_DOWNLOADER_DATA_LOCATION:./}
 
 ---
 spring:
@@ -43,7 +43,8 @@ spring:
     activate:
       on-profile:
         - integration-test
-    import:
-      - classpath:config-test.yaml
   datasource:
     url: jdbc:h2:mem:testdb;DB_CLOSE_ON_EXIT=FALSE
+
+source-downloader:
+  data-location: src/test/resources
