@@ -22,7 +22,7 @@ class MockDownloader(private val downloadPath: Path) : TorrentDownloader {
     }
 
     override fun submit(task: DownloadTask) {
-        val dp = task.downloadPath ?: downloadPath
+        val dp = task.downloadPath
         task.downloadFiles.filter { it.notExists() }
             .forEach {
                 val resolve = dp.resolve(it)

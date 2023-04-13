@@ -326,7 +326,7 @@ class SourceProcessor(
     }
 
     private fun createDownloadTask(sourceItem: SourceItem, downloadFiles: List<Path>): DownloadTask {
-        return DownloadTask.create(sourceItem, downloadFiles, downloadPath = downloadPath, category = downloadOptions.category)
+        return DownloadTask(sourceItem, downloadFiles, downloadPath, downloadOptions)
     }
 
     private fun rename(content: PersistentSourceContent): Boolean {

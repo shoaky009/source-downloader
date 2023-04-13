@@ -4,6 +4,7 @@ import java.nio.file.Path
 
 interface FileContent {
 
+    val downloadPath: Path
     val fileDownloadPath: Path
     val patternVariables: PatternVariables
 

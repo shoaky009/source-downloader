@@ -15,7 +15,7 @@ import kotlin.io.path.notExists
 data class CoreFileContent(
     override val fileDownloadPath: Path,
     val sourceSavePath: Path,
-    val downloadPath: Path,
+    override val downloadPath: Path,
     override val patternVariables: MapPatternVariables,
     val fileSavePathPattern: PathPattern,
     val filenamePattern: PathPattern,

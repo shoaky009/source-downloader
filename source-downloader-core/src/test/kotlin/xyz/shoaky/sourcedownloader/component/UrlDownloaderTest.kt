@@ -25,10 +25,11 @@ class UrlDownloaderTest {
         targetPath.deleteIfExists()
 
         val url = "https://www.baidu.com"
-        val task = DownloadTask.create(sourceItem("test", link = url, downloadUrl = "https://www.baidu.com"),
+        val task = DownloadTask(sourceItem("test", link = url, downloadUrl = "https://www.baidu.com"),
             listOf(
                 targetPath
-            ))
+            ),
+            downloadPath = savePath)
         downloader.submit(task)
         assert(targetPath.exists())
 

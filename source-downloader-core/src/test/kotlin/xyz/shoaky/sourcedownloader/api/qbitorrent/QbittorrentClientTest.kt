@@ -28,9 +28,9 @@ class QbittorrentClientTest {
 
     @Test
     fun rename_file() {
-        val hash = "7443ef7a687f1068ee47cf0b9e38a6b2eba6a75b"
-        val old = Path.of("/downloads/[Lilith-Raws] 菜鸟炼金术师开店营业中 / Shinmai Renkinjutsushi no Tenpo Keiei - 09 [Baha][WEB-DL][1080p][AVC AAC][CHT][MP4].mp4")
-        val new = Path.of("/downloads/test.mp4")
+        val hash = "026f8170d2251e8f9b6cde7cf782760aa5c6b70f"
+        val old = Path.of("[DMG][REVENGER][01-12 END][1080P][GB][MP4]/[DMG][REVENGER][01][1080P][GB].mp4")
+        val new = Path.of("Test/[DMG][REVENGER][01][1080P][GB].mp4")
         val request = TorrentsRenameFileRequest(hash, old.toString(), new.toString())
         val execute = client.execute(request)
         println(execute.body())

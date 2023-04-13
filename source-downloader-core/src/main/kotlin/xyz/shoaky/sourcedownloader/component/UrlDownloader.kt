@@ -15,7 +15,7 @@ class UrlDownloader(private val downloadPath: Path) : Downloader {
         val uriResource = UrlResource(task.downloadUri())
         val filename = uriResource.filename.takeIf { it.isNullOrBlank().not() }
             ?: task.sourceItem.hashing()
-        val dp = task.downloadPath ?: downloadPath
+        val dp = task.downloadPath
 
         val targetPath = dp.resolve(filename)
         val readableByteChannel = Channels.newChannel(uriResource.inputStream)

@@ -10,7 +10,6 @@ import xyz.shoaky.sourcedownloader.sdk.SourceItem
 import xyz.shoaky.sourcedownloader.sdk.component.TorrentDownloader
 import java.nio.file.Path
 import kotlin.io.path.Path
-import kotlin.io.path.name
 
 class QbittorrentDownloader(
     private val client: QbittorrentClient,
@@ -23,8 +22,8 @@ class QbittorrentDownloader(
         val torrentsAddRequest = TorrentsAddRequest(
             listOf(task.downloadUri().toURL()),
             task.downloadPath.toString(),
-            task.category,
-            // 看实际效果
+            task.options.category,
+            // 待定看实际效果，可以少一次开启的请求
             false
         )
         val response = client.execute(torrentsAddRequest)
@@ -81,35 +80,34 @@ class QbittorrentDownloader(
     }
 
     private fun getTorrentHash(sourceItem: SourceItem): String {
-        return parseTorrentHash(sourceItem)
+        return tryParseTorrentHash(sourceItem)
             ?: metadataService.fromUrl(sourceItem.downloadUri.toURL()).torrentId.toString()
     }
 
     override fun rename(sourceContent: SourceContent): Boolean {
-        val sourceItem = sourceContent.sourceItem
-        // 优化
-        val torrent = metadataService.fromUrl(sourceItem.downloadUri.toURL())
-        val torrentHash = torrent.torrentId.toString()
+        val torrentHash = getTorrentHash(sourceContent.sourceItem)
         val sourceFiles = sourceContent.sourceFiles
 
-        val result = sourceFiles.groupBy { it.targetPath().parent }
-            .map { (path, files) ->
-                val setLocation = client.execute(
-                    TorrentsSetLocationRequest(
-                        listOf(torrentHash),
-                        path.toString()
-                    ))
-                val movingResult = files
-                    .map {
-                        val sourceFileName = it.fileDownloadPath.last().name
-                        val targetFileName = it.targetPath().last().name
-                        val renameFile =
-                            client.execute(TorrentsRenameFileRequest(torrentHash, sourceFileName, targetFileName))
-                        renameFile.statusCode() == HttpStatus.OK.value()
-                    }
-                setLocation.statusCode() == HttpStatus.OK.value() && movingResult.all { it }
-            }
-        return result.all { it }
+        val firstFile = sourceFiles.first()
+        val saveItemFileRootDirectory = firstFile.saveItemFileRootDirectory()
+        val itemLocation = saveItemFileRootDirectory ?: firstFile.saveDirectoryPath()
+
+        val all = sourceFiles.map {
+            val torrentRelativePath = it.downloadPath.relativize(it.fileDownloadPath).toString()
+
+            val targetRelativePath = itemLocation.relativize(it.targetPath()).toString()
+            val renameFile = client.execute(
+                TorrentsRenameFileRequest(torrentHash, torrentRelativePath, targetRelativePath)
+            )
+            renameFile.statusCode() == HttpStatus.OK.value()
+        }.all { it }
+
+        val setLocationResponse = client.execute(
+            TorrentsSetLocationRequest(
+                listOf(torrentHash),
+                itemLocation.toString()
+            ))
+        return all && setLocationResponse.statusCode() == HttpStatus.OK.value()
     }
 
     companion object {
