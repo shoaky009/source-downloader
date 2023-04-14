@@ -19,35 +19,46 @@ class QbittorrentDownloader(
     private val metadataService = MetadataService()
 
     override fun submit(task: DownloadTask) {
+        val tags = task.options.tags
+            .joinToString(",")
+            .takeIf { it.isNotBlank() }
         val torrentsAddRequest = TorrentsAddRequest(
             listOf(task.downloadUri().toURL()),
             task.downloadPath.toString(),
             task.options.category,
-            // 待定看实际效果，可以少一次开启的请求
-            false
+            tags = tags
         )
         val response = client.execute(torrentsAddRequest)
         if (QbittorrentClient.successResponse != response.body()) {
             log.error("qbittorrent submit task failed,code:${response.statusCode()} body:${response.body()}")
         }
+        if (alwaysDownloadAll) {
+            return
+        }
 
-        if (alwaysDownloadAll.not()) {
-            val torrentHash = getTorrentHash(task.sourceItem)
-            val torrentFiles = client.execute(TorrentFilesRequest(
+        val torrentHash = getTorrentHash(task.sourceItem)
+        // 必须要等一下qbittorrent(不知道有没有同步添加的方法)
+        Thread.sleep(150L)
+        val torrentFiles = retry({
+            client.execute(TorrentFilesRequest(
                 torrentHash
             )).body()
+        })
 
-            val downloadFiles = task.downloadFiles
-            val no = torrentFiles.filter {
-                downloadFiles.contains(it.name).not()
-            }
-            log.debug("torrent:{} set prio 0 files: {}", torrentHash, no)
-            client.execute(TorrentFilePrioRequest(
-                torrentHash,
-                no.map { it.index },
-                0
-            ))
+        val downloadFiles = task.downloadFiles
+        val no = torrentFiles.filter {
+            downloadFiles.contains(it.name).not()
         }
+        log.debug("torrent:{} set prio 0 files: {}", torrentHash, no)
+        if (no.isEmpty()) {
+            return
+        }
+
+        client.execute(TorrentFilePrioRequest(
+            torrentHash,
+            no.map { it.index },
+            0
+        ))
     }
 
     override fun defaultDownloadPath(): Path {
@@ -116,3 +127,18 @@ class QbittorrentDownloader(
 
 }
 
+fun <T> retry(block: () -> T, times: Int = 3): T {
+    var count = 0
+    while (count < times) {
+        try {
+            return block()
+        } catch (e: Exception) {
+            count++
+            Thread.sleep(200L * count)
+            if (count == times) {
+                throw e
+            }
+        }
+    }
+    throw RuntimeException("max retry times")
+}
