@@ -1,0 +1,135 @@
+components:
+  #触发器
+  trigger:
+    - type: fixed
+      name: 20min
+      props:
+        interval: PT20M
+        on-start-run-tasks: true
+  #源
+  source:
+    #类型
+    - type: rss
+      #组件名称
+      name: mikan
+      #属性
+      props:
+        url: https://test.com
+  #变量提供器
+  variable-provider:
+    - type: mikan
+      name: mikan
+  #下载器
+  downloader:
+    - type: qbittorrent
+      name: qbittorrent
+      props:
+        url: http://truenas:10095
+        username: admin
+        password: adminadmin
+        download-path: /mnt/bangumi
+  #文件移动器
+  file-mover:
+    - type: qbittorrent
+      name: qbittorrent
+  #完成后运行
+  run-after-completion:
+    - type: http
+      name: n8n-webhook-telegram-message
+      props:
+        method: POST
+        url: "http://truenas:5678/webhook/telegram-notify?message=番剧{summary}下载完成"
+  #SourceItem过滤器
+  source-item-filter:
+  #省略...
+  #SourceFile过滤器
+  source-file-filter:
+  #省略..
+
+processors:
+  #处理器名称
+  - name: processor-bangumi
+    #触发器支持多个
+    triggers:
+      - webhook
+      - fixed:20min
+    #引用要处理的源组件
+    source: system-file
+    #引用变量提供组件,支持多个
+    variable-provider:
+      - "metadata"
+      - "ai:gpt"
+    #引用下载器
+    downloader: system-file
+    #引用文件移动器
+    file-mover: general
+    #保存路径
+    save-path: /mnt/bangumi
+    #选项
+    options:
+      #保存路径模板,默认:原路径
+      save-path-pattern: "{parent}"
+      #文件名模板,默认:原文件名
+      filename-pattern: "S{season}E{episode}-{sequence}"
+      #命名完成后运行的组件,支持多个
+      run-after-completion:
+        - "touch-item-directory"
+        - "clean-empty-directory"
+        - "http:n8n-webhook-telegram-message"
+      #重命名间隔时间,参考java.time.Duration的格式,只有处理器是AsyncDownloader类型才生效,默认:PT5M(5分钟)
+      rename-task-interval: PT2M
+      #下载选项,具体看downloader实现,有些定义了也没意义
+      download-options:
+        #类目
+        category: Bangumi
+        #标签
+        tags:
+          - "processor-bangumi"
+      #变量冲突时的处理策略,默认:SMART(未实现)
+      #ANY:任意挑选
+      #VOTE:挑选值最多的,比如provider1-3,1和2都给了"02",3给了"01"则会选"02"来命名
+      #ACCURACY:覆盖,提供者会有准确度的属性,按照最高的来
+      #SMART:VOTE+ACCURACY
+      variable-conflict-strategy: SMART
+      #重命名失败次数阈值,默认:3
+      rename-times-threshold: 3
+      #内置metadata变量提供器的选项, 默认true
+      provide-metadata-variables: true
+      #保存SourceItem的处理信息
+      save-content: true
+      #重命名模式,默认:MOVE
+      #MOVE:移动文件
+      #HARD_LINK:硬链接
+      rename-mode: MOVE
+      #正则过滤SourceItem中的title,考虑弃用和下面的表达式过滤重复但正则比SpEL的要简单
+      regex-filters:
+        - "720(?i)P"
+      #SpEL表达式过滤SourceItem,任意一个为true则过滤,支持变量title,contentType,date(yyyy-MM-dd),link
+      #也有可能后面不会用SpEL觉得一般,主要是易用性方面可能会考虑js
+      item-expression-exclusions:
+        - "#title matches '.*720(?<!P).*'"
+        - "#title matches '.*中文配音.*'"
+      #表达式过滤sourceItem,任意一个为false则过滤,支持变量title,contentType,date(yyyy-MM-dd),link
+      item-expression-inclusions:
+        - "#date > &'2030-03-31'"
+      #表达式过滤sourceFile,任意一个为true则过滤,支持filename,size,contentType
+      file-expression-exclusions:
+        #文件大小小于1MB的
+        - "#size < &'1MB'"
+      #表达式过滤sourceFile,任意一个为false则过滤
+      file-expression-inclusions:
+        #文件名包含qaz的
+        - "#filename matches '.*qaz.*'"
+      #定义的模板变量不存在时的处理策略,默认:USE_ORIGINAL_FILENAME(未实现)
+      #USE_ORIGINAL_FILENAME:使用原文件名
+      #USE_PATTERN:使用模板
+      #STAY:不移动留在downloadPath下
+      parsing-failed-strategy: USE_ORIGINAL_FILENAME
+      #在run-after-completion添加touch-item-directory组件,默认:true
+      touch-item-directory: true
+      #在run-after-completion添加clean-empty-directory组件,默认:true
+      clean-empty-directory: true
+      #变量提供者中的变量名映射(未实现)
+      variables-name-mapping:
+        seasonNumber: season
+        anitomEpisode: episode

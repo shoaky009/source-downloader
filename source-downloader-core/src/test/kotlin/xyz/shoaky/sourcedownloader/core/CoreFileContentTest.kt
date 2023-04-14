@@ -112,6 +112,16 @@ class CoreFileContentTest {
         )
         assertEquals(downloadPath.resolve("easd"), content1.downloadItemFileRootDirectory())
     }
+
+    @Test
+    fun given_extension_pattern_should_expected() {
+        val fileContent = createFileContent(
+            fileDownloadPath = Path("src/test/resources/downloads/easd/222/1.mp4"),
+            filenamePathPattern = PathPattern("{name} - {season}.mp4"),
+            patternVars = MapPatternVariables(mapOf("name" to "test")))
+        fileContent.addSharedVariables(MapPatternVariables(mapOf("season" to "01")))
+        assertEquals("test - 01.mp4", fileContent.targetFilename())
+    }
 }
 
 private fun createFileContent(

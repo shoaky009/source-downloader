@@ -16,8 +16,8 @@ object SystemFileSourceSupplier : SdComponentSupplier<SystemFileSource> {
 
     override fun supplyTypes(): List<ComponentType> {
         return listOf(
-            ComponentType.source("systemFile"),
-            ComponentType.downloader("systemFile"),
+            ComponentType.source("system-file"),
+            ComponentType.downloader("system-file"),
         )
     }
 

@@ -42,10 +42,10 @@ class SpringProcessorManager(
         val mutableListOf = mutableListOf(
             config.source.getComponentType(Source::class),
             config.downloader.getComponentType(Downloader::class),
-            config.mover.getComponentType(FileMover::class),
+            config.fileMover.getComponentType(FileMover::class),
         )
         mutableListOf.addAll(
-            config.providers.map { it.getComponentType(VariableProvider::class) }
+            config.variableProviders.map { it.getComponentType(VariableProvider::class) }
         )
 
         val cps = mutableListOf(source, downloader, mover)
@@ -96,9 +96,11 @@ class SpringProcessorManager(
     }
 
     private fun initOptions(options: ProcessorConfig.Options, processor: SourceProcessor) {
-        processor.addItemFilter(
-            RegexSourceItemFilterSupplier.regexes(options.regexFilters)
-        )
+        if (options.regexFilters.isNotEmpty()) {
+            processor.addItemFilter(
+                RegexSourceItemFilterSupplier.regexes(options.regexFilters)
+            )
+        }
         if (options.itemExpressionExclusions.isNotEmpty() || options.itemExpressionInclusions.isNotEmpty()) {
             processor.addItemFilter(ExpressionItemFilterSupplier.expressions(
                 options.itemExpressionExclusions,

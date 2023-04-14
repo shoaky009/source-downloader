@@ -4,12 +4,13 @@ import xyz.shoaky.sourcedownloader.sdk.MapPatternVariables
 import xyz.shoaky.sourcedownloader.sdk.PatternVariables
 
 class SharedPatternVariables(
-    private val patternVariables: PatternVariables,
+    patternVariables: PatternVariables,
 ) : PatternVariables by patternVariables {
 
     private val sharedVariables = MapPatternVariables()
+    private val patternVariables = patternVariables.variables()
     override fun variables(): Map<String, String> {
-        return patternVariables.variables() + sharedVariables.variables()
+        return patternVariables + sharedVariables.variables()
     }
 
     fun addVariables(patternVariables: PatternVariables) {

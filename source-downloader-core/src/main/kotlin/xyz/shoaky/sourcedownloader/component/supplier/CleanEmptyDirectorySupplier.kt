@@ -12,7 +12,7 @@ object CleanEmptyDirectorySupplier : SdComponentSupplier<CleanEmptyDirectory> {
 
     override fun supplyTypes(): List<ComponentType> {
         return listOf(
-            ComponentType.run("cleanEmptyDirectory")
+            ComponentType.run("clean-empty-directory")
         )
     }
 

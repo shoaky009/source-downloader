@@ -25,15 +25,11 @@ processors:
     options:
       #完成后运行
       run-after-completion:
-        - touchItemDirectory
+        - touch-item-directory
       #        - script:n8n-webhook-send-message
       #可用变量具体看provider能提供什么
-      file-save-path-pattern: "{name}/Season {season}/"
+      save-path-pattern: "{name}/Season {season}/"
       #可用变量具体看provider能提供什么
       filename-pattern: "{name-cn} - S{season}E{episode}"
-      #全局过滤非必填
-      blacklist-regex:
-        - '720(?i)P'
-        - '中文配音'
       #重命名间隔时间,参考java.time.Duration的格式
       rename-task-interval: PT1M

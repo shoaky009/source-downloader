@@ -1,10 +1,7 @@
 package xyz.shoaky.sourcedownloader.sdk.component
 
 import com.google.common.base.CaseFormat
-import xyz.shoaky.sourcedownloader.sdk.DownloadTask
-import xyz.shoaky.sourcedownloader.sdk.SourceContent
-import xyz.shoaky.sourcedownloader.sdk.SourceItem
-import xyz.shoaky.sourcedownloader.sdk.SourceItemGroup
+import xyz.shoaky.sourcedownloader.sdk.*
 import java.nio.file.Path
 import java.util.function.Consumer
 import java.util.function.Predicate
@@ -33,7 +30,7 @@ enum class Components(
     SOURCE(Source::class, listOf("source")),
     DOWNLOADER(Downloader::class, listOf("downloader")),
     VARIABLE_PROVIDER(VariableProvider::class, listOf("provider", "variable-provider", "variableProvider")),
-    FILE_MOVER(FileMover::class, listOf("mover", "file-mover")),
+    FILE_MOVER(FileMover::class, listOf("mover", "file-mover", "fileMover")),
     RUN_AFTER_COMPLETION(RunAfterCompletion::class, listOf("run-after-completion", "run", "runAfterCompletion")),
     SOURCE_ITEM_FILTER(SourceItemFilter::class, listOf("source-item-filter", "item-filter", "sourceItemFilter", "itemFilter")),
     SOURCE_FILE_FILTER(SourceFileFilter::class, listOf("source-file-filter", "file-filter", "sourceFileFilter", "fileFilter"));
@@ -127,3 +124,8 @@ interface RunAfterCompletion : SdComponent, Consumer<SourceContent>
 interface SourceItemFilter : SdComponent, Predicate<SourceItem>
 
 interface SourceFileFilter : SdComponent, Predicate<Path>
+
+interface FileTagger : SdComponent {
+
+    fun tag(fileContent: FileContent): List<String>
+}

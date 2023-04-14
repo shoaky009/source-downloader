@@ -3,10 +3,10 @@ file-mover:
   - name: general
     type: general
 run-after-completion:
-  - name: touchItemDirectory
-    type: touchItemDirectory
-  - name: cleanEmptyDirectory
-    type: cleanEmptyDirectory
+  - name: touch-item-directory
+    type: touch-item-directory
+  - name: clean-empty-directory
+    type: clean-empty-directory
 variable-provider:
   - name: metadata
     type: metadata

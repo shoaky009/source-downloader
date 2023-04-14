@@ -5,6 +5,7 @@ package xyz.shoaky.sourcedownloader.core.config
 import com.fasterxml.jackson.annotation.*
 import xyz.shoaky.sourcedownloader.core.file.ParsingFailedStrategy
 import xyz.shoaky.sourcedownloader.core.file.RenameMode
+import xyz.shoaky.sourcedownloader.sdk.DownloadOptions
 import xyz.shoaky.sourcedownloader.sdk.PathPattern
 import xyz.shoaky.sourcedownloader.sdk.component.*
 import java.nio.file.Path
@@ -16,14 +17,16 @@ data class ProcessorConfig(
     val name: String,
     val triggers: List<ComponentId>,
     val source: ComponentId,
-    val providers: List<ComponentId> = emptyList(),
+    @JsonAlias("variable-providers", "providers")
+    val variableProviders: List<ComponentId> = emptyList(),
     val downloader: ComponentId = ComponentId("downloader:url"),
-    val mover: ComponentId = ComponentId("mover:general"),
-    @JsonAlias("savePath", "save-path")
+    @JsonAlias("file-mover", "mover")
+    val fileMover: ComponentId = ComponentId("mover:general"),
+    @JsonAlias("save-path")
     val savePath: Path,
-    @JsonAlias("sourceItemFilters", "source-item-filters", "item-filters")
+    @JsonAlias("source-item-filters", "item-filters")
     val sourceItemFilters: List<ComponentId> = emptyList(),
-    @JsonAlias("sourceFileFilters", "source-file-filters", "file-filters")
+    @JsonAlias("source-file-filters", "file-filters")
     val sourceFileFilters: List<ComponentId> = emptyList(),
     val options: Options = Options(),
 ) {
@@ -33,7 +36,7 @@ data class ProcessorConfig(
     }
 
     fun providerInstanceNames(): List<String> {
-        return providers.map {
+        return variableProviders.map {
             it.getInstanceName(VariableProvider::class)
         }
     }
@@ -43,7 +46,7 @@ data class ProcessorConfig(
     }
 
     fun moverInstanceName(): String {
-        return mover.getInstanceName(FileMover::class)
+        return fileMover.getInstanceName(FileMover::class)
     }
 
     fun triggerInstanceNames(): List<String> {
@@ -54,31 +57,50 @@ data class ProcessorConfig(
 
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     data class Options(
-        val fileSavePathPattern: PathPattern = PathPattern.ORIGIN,
+        @JsonAlias("save-path-pattern")
+        val savePathPattern: PathPattern = PathPattern.ORIGIN,
+        @JsonAlias("filename-pattern")
         val filenamePattern: PathPattern = PathPattern.ORIGIN,
+        @JsonAlias("run-after-completion")
         val runAfterCompletion: List<ComponentId> = emptyList(),
         @JsonFormat(shape = JsonFormat.Shape.STRING)
+        @JsonAlias("rename-task-interval")
         val renameTaskInterval: Duration = Duration.ofMinutes(5),
-        val downloadCategory: String? = null,
+        @JsonAlias("download-options")
+        val downloadOptions: DownloadOptions = DownloadOptions(),
         // NOT IMPLEMENTED
-        val variableConflictDecision: VariableConflictDecision = VariableConflictDecision.SMART,
+        @JsonAlias("variable-conflict-strategy")
+        val variableConflictStrategy: VariableConflictStrategy = VariableConflictStrategy.SMART,
         // 修改文件夹创建时间
+        @JsonAlias("touch-item-directory")
         val renameTimesThreshold: Int = 3,
+        @JsonAlias("provide-metadata-variables")
         val provideMetadataVariables: Boolean = true,
+        @JsonAlias("save-content")
         val saveContent: Boolean = true,
+        @JsonAlias("rename-mode")
         val renameMode: RenameMode = RenameMode.MOVE,
+        @JsonAlias("regex-filters")
         val regexFilters: List<String> = emptyList(),
+        @JsonAlias("item-expression-exclusions")
         val itemExpressionExclusions: List<String> = emptyList(),
+        @JsonAlias("item-expression-inclusions")
         val itemExpressionInclusions: List<String> = emptyList(),
+        @JsonAlias("file-expression-exclusions")
         val fileExpressionExclusions: List<String> = emptyList(),
+        @JsonAlias("file-expression-inclusions")
         val fileExpressionInclusions: List<String> = emptyList(),
+        @JsonAlias("parsing-failed-strategy")
         val parsingFailedStrategy: ParsingFailedStrategy = ParsingFailedStrategy.USE_ORIGINAL_FILENAME,
+        @JsonAlias("touch-item-directory")
         val touchItemDirectory: Boolean = true,
+        @JsonAlias("clean-empty-directory")
         val cleanEmptyDirectory: Boolean = true,
+        @JsonAlias("variables-name-mapping")
         val variablesNameMapping: Map<String, String> = emptyMap(),
     )
 
-    enum class VariableConflictDecision {
+    enum class VariableConflictStrategy {
         ANY,
         VOTE,
         ACCURACY,

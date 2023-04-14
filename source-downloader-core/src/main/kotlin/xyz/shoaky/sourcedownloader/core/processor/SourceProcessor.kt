@@ -47,9 +47,8 @@ class SourceProcessor(
     private val runAfterCompletion: MutableList<RunAfterCompletion> = mutableListOf()
 
     private val downloadPath = downloader.defaultDownloadPath()
-    private val fileSavePathPattern: PathPattern = options.fileSavePathPattern
+    private val fileSavePathPattern: PathPattern = options.savePathPattern
     private val filenamePattern: PathPattern = options.filenamePattern
-    private val downloadOptions = DownloadOptions(options.downloadCategory)
 
     private var renameTaskFuture: ScheduledFuture<*>? = null
     private val safeRunner by lazy {
@@ -336,7 +335,7 @@ class SourceProcessor(
     }
 
     private fun createDownloadTask(sourceItem: SourceItem, downloadFiles: List<Path>): DownloadTask {
-        return DownloadTask(sourceItem, downloadFiles, downloadPath, downloadOptions)
+        return DownloadTask(sourceItem, downloadFiles, downloadPath, options.downloadOptions)
     }
 
     private fun rename(content: PersistentSourceContent): Boolean {
