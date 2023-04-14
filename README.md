@@ -2,93 +2,14 @@
 
 
 ## 主要功能
+
 从源下载文件，然后按照自定义模板保存到指定路径，完全组件化
 
 ## 快速部署
 
 ### docker
 
-###  
-
-## 组件
-
-- Trigger: 触发器，触发处理器执行
-- Source: 从源转换成SourceItem
-- SourceFilter: 过滤SourceItem标题的规则
-- Provider: 根据sourceItem提供对应路径上的变量
-- Downloader: 下载任务
-- FileMover: 从下载路径移动文件到目标路径
-- RunAfterCompletion: 移动文件完成后执行的任务
-
-### 组件定义
-
-```yaml
-components:
-  downloader:
-    - name: truenas
-      type: qbittorrent
-      props:
-        url: http://truenas:10095
-        username: admin
-        password: adminadmin
-  source:
-    - name: mikan
-      type: rss
-      props:
-        url: https://mikanani.me/RSS/Bangumi?bangumiId=2852&subgroupid=583
-  variable-provider:
-    - name: mikan
-      type: mikan
-  file-mover:
-    - name: truenas
-      type: qbittorrent
-  run-after-completion:
-    - name: n8n-webhook-send-message
-      type: script
-      props:
-        path: /app/data/script.sh
-  trigger:
-    - name: 20min
-      type: fixed
-      props:
-        interval: PT20M
-        on-start-run-tasks: false
-```
-
-#### 内置组件
-
-trigger
-
-- fixed: 定时触发
-- cron: cron表达式触发
-- webhook: webhook触发 (在路上了.jpg)
-- dynamic: 动态自适应触发 (在路上了.jpg)
-
-source
-
-- rss: rss源
-- watch: 监听文件路径 (在路上了.jpg)
-- files: 文件列表 (在路上了.jpg)
-
-provider
-
-- mikan: Mikan番剧相关（已内置mikan插件）
-
-downloader
-
-- qbittorrent: qBittorrent
-- aria2: aria2 (在路上了.jpg)
-- transmission: transmission (在路上了.jpg)
-
-file-mover
-
-- general: 通用移动器，使用文件系统移动文件
-- qbittorrent: 使用qBittorrent的API移动文件（保种）
-- aria2: 使用aria2的API移动文件（保种）
-
-run-after-completion
-
-- script: 执行脚本
+###    
 
 ## 处理器
 

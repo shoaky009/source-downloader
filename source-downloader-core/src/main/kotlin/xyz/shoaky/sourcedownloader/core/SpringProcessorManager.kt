@@ -1,17 +1,18 @@
 package xyz.shoaky.sourcedownloader.core
 
-import org.springframework.beans.factory.config.ConfigurableBeanFactory
+import org.springframework.beans.factory.support.DefaultListableBeanFactory
 import org.springframework.stereotype.Component
 import xyz.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
 import xyz.shoaky.sourcedownloader.component.supplier.*
 import xyz.shoaky.sourcedownloader.core.config.ProcessorConfig
+import xyz.shoaky.sourcedownloader.core.processor.SourceProcessor
 import xyz.shoaky.sourcedownloader.sdk.component.*
 
 @Component
 class SpringProcessorManager(
     private val processingStorage: ProcessingStorage,
     private val componentManager: SdComponentManager,
-    private val applicationContext: ConfigurableBeanFactory,
+    private val applicationContext: DefaultListableBeanFactory,
 ) : ProcessorManager {
 
     override fun createProcessor(config: ProcessorConfig): SourceProcessor {
@@ -98,15 +99,18 @@ class SpringProcessorManager(
         processor.addItemFilter(
             RegexSourceItemFilterSupplier.regexes(options.regexFilters)
         )
-        processor.addItemFilter(ExpressionItemFilterSupplier.expressions(
-            options.itemExpressionExclusions,
-            options.itemExpressionInclusions
-        ))
-        processor.addFileFilter(ExpressionFileFilterSupplier.expressions(
-            options.fileExpressionExclusions,
-            options.fileExpressionInclusions
-        ))
-
+        if (options.itemExpressionExclusions.isNotEmpty() || options.itemExpressionInclusions.isNotEmpty()) {
+            processor.addItemFilter(ExpressionItemFilterSupplier.expressions(
+                options.itemExpressionExclusions,
+                options.itemExpressionInclusions
+            ))
+        }
+        if (options.fileExpressionExclusions.isNotEmpty() || options.fileExpressionInclusions.isNotEmpty()) {
+            processor.addFileFilter(ExpressionFileFilterSupplier.expressions(
+                options.fileExpressionExclusions,
+                options.fileExpressionInclusions
+            ))
+        }
         val runAfterCompletion = options.runAfterCompletion
         runAfterCompletion.forEach {
             val instanceName = it.getInstanceName(RunAfterCompletion::class)
@@ -136,4 +140,7 @@ class SpringProcessorManager(
         }
     }
 
+    override fun getProcessors(): List<SourceProcessor> {
+        return applicationContext.getBeansOfType(SourceProcessor::class.java).values.toList()
+    }
 }

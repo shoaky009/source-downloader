@@ -1,8 +1,11 @@
-package xyz.shoaky.sourcedownloader.core
+package xyz.shoaky.sourcedownloader.core.processor
 
 import org.springframework.retry.support.RetryTemplateBuilder
 import xyz.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
 import xyz.shoaky.sourcedownloader.component.provider.MetadataVariableProvider
+import xyz.shoaky.sourcedownloader.core.ProcessingContent
+import xyz.shoaky.sourcedownloader.core.ProcessingStorage
+import xyz.shoaky.sourcedownloader.core.ProcessorSubmitDownloadEvent
 import xyz.shoaky.sourcedownloader.core.config.ProcessorConfig
 import xyz.shoaky.sourcedownloader.core.file.CoreFileContent
 import xyz.shoaky.sourcedownloader.core.file.PersistentSourceContent
@@ -53,10 +56,11 @@ class SourceProcessor(
         SafeRunner(this)
     }
 
-    private val retry = RetryTemplateBuilder()
-        .maxAttempts(3)
-        .fixedBackoff(Duration.ofSeconds(5L).toMillis())
-        .build()
+    private var status: ProcessorStatus = ProcessorStatus.RUNNING
+
+    fun getStatus(): ProcessorStatus {
+        return status
+    }
 
     init {
         addItemFilter(SourceHashingItemFilter(name, processingStorage))
@@ -67,7 +71,7 @@ class SourceProcessor(
         }
     }
 
-    private fun info(): Map<String, Any> {
+    fun info(): Map<String, Any> {
         return mapOf(
             "Processor" to name,
             "Source" to source::class.java.simpleName,
@@ -117,6 +121,7 @@ class SourceProcessor(
         }
 
         val result = mutableListOf<ProcessingContent>()
+        var failure = false
         for (item in items) {
             if (sourceItemFilters.all { it.test(item) }.not()) {
                 log.debug("Filtered item:{}", item)
@@ -131,11 +136,16 @@ class SourceProcessor(
                 }
             }.onFailure {
                 log.error("Processor:${name}处理失败, item:$item", it)
+                status = ProcessorStatus.ERROR
+                failure = true
             }.onSuccess {
                 if (dryRun) {
                     result.add(it)
                 }
             }
+        }
+        if (!failure) {
+            status = ProcessorStatus.RUNNING
         }
         return result
     }
@@ -353,124 +363,58 @@ class SourceProcessor(
         runAfterCompletion.addAll(completion)
     }
 
-    companion object {
-        private val scheduledExecutor = Executors.newSingleThreadScheduledExecutor()
-    }
-
-    private class SafeRunner(private val processor: SourceProcessor) : Runnable {
-
-        @Volatile
-        private var running = false
-        override fun run() {
-            val name = processor.name
-            log.info("Processor:${name} 处理器触发获取源信息")
-            if (running) {
-                log.info("Processor:${name} 上一次任务还未完成，跳过本次任务")
-                return
-            }
-            running = true
-            try {
-                processor.run()
-            } catch (e: Exception) {
-                log.error("Processor:${name} 处理器执行失败", e)
-            } finally {
-                running = false
-            }
-        }
-    }
-
-    private class SourceHashingItemFilter(val sourceName: String, val processingStorage: ProcessingStorage) : SourceItemFilter {
-        override fun test(item: SourceItem): Boolean {
-            val processingContent = processingStorage.findByNameAndHash(sourceName, item.hashing())
-            if (processingContent != null) {
-                if (log.isDebugEnabled) {
-                    log.debug("Source:${sourceName}已提交过下载不做处理，item:${Jackson.toJsonString(item)}")
-                }
-            }
-            return processingContent == null
-        }
-    }
-
     override fun toString(): String {
         return info().map {
             "${it.key}: ${it.value}"
         }.joinToString("\n")
     }
 
-}
-
-class VariableProvidersAggregation(
-    private val providers: List<VariableProvider>
-) {
-    fun aggrVariables(sourceItem: SourceItem): SourceItemGroup {
-        val associateBy = providers.associateBy({
-            it
-        }, { it.createSourceGroup(sourceItem) })
-        return SourceItemGroupAggr(associateBy)
-    }
-}
-
-private class SourceItemGroupAggr(
-    private val groups: Map<VariableProvider, SourceItemGroup>
-) : SourceItemGroup {
-    override fun sourceFiles(paths: List<Path>): List<SourceFile> {
-        val res = mutableListOf<List<SourceFile>>()
-        for (group in groups) {
-            val sourceFiles = group.value.sourceFiles(paths)
-            res.add(sourceFiles)
-        }
-        return List(paths.size) { index ->
-            val sourceFiles = res.map { it[index] }
-            sourceFiles.reduce(this::combine)
-        }
-    }
-
-    override fun sharedPatternVariables(): PatternVariables {
-        val map = groups.values.map { it.sharedPatternVariables() }
-        val mapPatternVariables = MapPatternVariables()
-        map.forEach {
-            mapPatternVariables.addVariables(it)
-        }
-        return mapPatternVariables
-    }
-
-    private fun combine(sf1: SourceFile, sf2: SourceFile): SourceFile {
-        return CombineSourceFile(sf1, sf2)
-    }
-
-    class CombineSourceFile(
-        private val first: SourceFile,
-        private val second: SourceFile
-    ) : SourceFile {
-
-        private val patternVariables = run {
-            val pv1 = first.patternVariables()
-            val pv2 = second.patternVariables()
-            val var1 = pv1.variables()
-            val var2 = pv2.variables()
-            // TODO 处理冲突的情况，优先级
-            val allVariables = var1 + var2
-            MapPatternVariables(allVariables)
-        }
-
-        override fun patternVariables(): PatternVariables {
-            return patternVariables
-        }
-    }
-}
-
-private enum class DownloadStatus {
-    FINISHED,
-    NOT_FINISHED,
-    NOT_FOUND;
-
     companion object {
-        fun from(boolean: Boolean?): DownloadStatus {
-            return when (boolean) {
-                true -> FINISHED
-                false -> NOT_FINISHED
-                null -> NOT_FOUND
+        // 随便给的
+        private val scheduledExecutor = Executors.newSingleThreadScheduledExecutor()
+
+        private val retry = RetryTemplateBuilder()
+            .maxAttempts(3)
+            .fixedBackoff(Duration.ofSeconds(5L).toMillis())
+            .build()
+    }
+
+}
+
+
+private class SafeRunner(
+    private val processor: SourceProcessor
+) : Runnable {
+
+    @Volatile
+    private var running = false
+    override fun run() {
+        val name = processor.name
+        log.info("Processor:${name} 处理器触发获取源信息")
+        if (running) {
+            log.info("Processor:${name} 上一次任务还未完成，跳过本次任务")
+            return
+        }
+        running = true
+        try {
+            processor.run()
+        } catch (e: Exception) {
+            log.error("Processor:${name} 处理器执行失败", e)
+        } finally {
+            running = false
+        }
+    }
+}
+
+private class SourceHashingItemFilter(val sourceName: String, val processingStorage: ProcessingStorage) : SourceItemFilter {
+    override fun test(item: SourceItem): Boolean {
+        val processingContent = processingStorage.findByNameAndHash(sourceName, item.hashing())
+        if (processingContent != null) {
+            if (log.isDebugEnabled) {
+                log.debug("Source:${sourceName}已提交过下载不做处理，item:${Jackson.toJsonString(item)}")
             }
         }
+        return processingContent == null
     }
 }
+

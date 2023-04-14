@@ -3,6 +3,7 @@ package xyz.shoaky.sourcedownloader.core
 import org.springframework.beans.factory.support.DefaultListableBeanFactory
 import org.springframework.stereotype.Component
 import xyz.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
+import xyz.shoaky.sourcedownloader.core.processor.SourceProcessor
 import xyz.shoaky.sourcedownloader.sdk.component.*
 import xyz.shoaky.sourcedownloader.util.Events
 import java.util.concurrent.ConcurrentHashMap
@@ -12,7 +13,6 @@ interface SdComponentManager {
     fun createComponent(name: String, componentType: ComponentType, props: ComponentProps)
 
     fun getAllProcessor(): List<SourceProcessor>
-    fun getProcessor(name: String): SourceProcessor?
 
     fun getComponent(name: String): SdComponent?
 
@@ -62,7 +62,7 @@ class SpringSdComponentManager(
         }
 
         val supplier = getSupplier(componentType)
-        // TODO 创建顺序问题
+        // FIXME 创建顺序问题
         val otherTypes = supplier.supplyTypes().filter { it != componentType }
         val singletonNames = applicationContext.singletonNames.toSet()
         for (otherType in otherTypes) {
@@ -83,11 +83,6 @@ class SpringSdComponentManager(
 
     override fun getAllProcessor(): List<SourceProcessor> {
         return applicationContext.getBeansOfType(SourceProcessor::class.java).values.toList()
-    }
-
-    override fun getProcessor(name: String): SourceProcessor? {
-        return applicationContext.getBeansOfType(SourceProcessor::class.java)
-            .filter { it.value.name == name }.map { it.value }.firstOrNull()
     }
 
     override fun getComponent(name: String): SdComponent? {

@@ -1,7 +1,6 @@
 package xyz.shoaky.sourcedownloader.core
 
 import java.nio.file.Path
-import java.time.LocalDateTime
 
 object MemProcessingStorage : ProcessingStorage {
 
@@ -14,7 +13,7 @@ object MemProcessingStorage : ProcessingStorage {
     override fun findRenameContent(name: String, renameTimesThreshold: Int): List<ProcessingContent> {
         return contents.filter {
             it.processorName == name && it.renameTimes < renameTimesThreshold
-                    && it.status == ProcessingContent.Status.WAITING_TO_RENAME
+                && it.status == ProcessingContent.Status.WAITING_TO_RENAME
         }
     }
 
@@ -34,7 +33,4 @@ object MemProcessingStorage : ProcessingStorage {
         return paths.all { targetPaths.contains(it) }
     }
 
-    override fun clean(date: LocalDateTime) {
-        TODO("Not yet implemented")
-    }
 }

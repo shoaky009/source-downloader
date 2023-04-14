@@ -14,6 +14,7 @@ class TorrentsAddRequest(
     val savePath: String? = null,
     val category: String? = null,
     val paused: Boolean = false,
+    val tags: String? = null,
 ) : QbittorrentRequest<String>() {
 
     private val urls: String

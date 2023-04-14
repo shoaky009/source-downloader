@@ -81,7 +81,4 @@ class JpaProcessingStorage(
         return tr.existsAllByIdIn(ids)
     }
 
-    override fun clean(date: LocalDateTime) {
-        TODO("Not yet implemented")
-    }
 }

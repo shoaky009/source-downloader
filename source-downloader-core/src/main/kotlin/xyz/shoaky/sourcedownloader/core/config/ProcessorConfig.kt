@@ -94,16 +94,23 @@ data class ProcessorConfig(
         val id: String,
     ) {
         fun <T : SdComponent> getInstanceName(klass: KClass<T>): String {
-            val split = id.split(":")
-            return getComponentType(klass).instanceName(split.last())
+            return getComponentType(klass).instanceName(name())
         }
 
         fun <T : SdComponent> getComponentType(klass: KClass<T>): ComponentType {
+            return ComponentType(typeName(), klass)
+        }
+
+        fun name(): String {
+            return id.split(":").last()
+        }
+
+        fun typeName(): String {
             val split = id.split(":")
             if (split.isEmpty()) {
-                throw RuntimeException("重命名器配置错误:${id}")
+                throw RuntimeException("组件ID配置错误:${id}")
             }
-            return ComponentType(split.first(), klass)
+            return split.first()
         }
     }
 }

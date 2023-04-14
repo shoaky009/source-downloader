@@ -1,7 +1,6 @@
 package xyz.shoaky.sourcedownloader.core
 
 import java.nio.file.Path
-import java.time.LocalDateTime
 
 interface ProcessingStorage {
 
@@ -15,5 +14,4 @@ interface ProcessingStorage {
 
     fun targetPathExists(paths: List<Path>): Boolean
 
-    fun clean(date: LocalDateTime)
 }
