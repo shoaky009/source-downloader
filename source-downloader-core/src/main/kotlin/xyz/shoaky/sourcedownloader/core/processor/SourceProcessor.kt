@@ -127,10 +127,7 @@ class SourceProcessor(
             }
             kotlin.runCatching {
                 retry.execute<ProcessingContent, IOException> {
-                    val providers = variableProviders.filter { it.support(item) }.toList()
-                    // TODO 后面根据优先级选出冲突的变量用的类
-                    val providersAggregation = VariableProvidersAggregation(providers)
-                    processItem(item, providersAggregation, dryRun)
+                    processItem(item, dryRun)
                 }
             }.onFailure {
                 log.error("Processor:${name}处理失败, item:$item", it)
@@ -148,8 +145,10 @@ class SourceProcessor(
         return result
     }
 
-    private fun processItem(sourceItem: SourceItem, providersAggregation: VariableProvidersAggregation, dryRun: Boolean = false): ProcessingContent {
-        val sourceContent = createPersistentSourceContent(providersAggregation, sourceItem)
+    private fun processItem(sourceItem: SourceItem, dryRun: Boolean = false): ProcessingContent {
+        val providersAggregation = VariableProvidersAggregation(variableProviders.filter { it.support(sourceItem) }.toList())
+        val aggrVariables = providersAggregation.aggrVariables(sourceItem, options.variableConflictStrategy)
+        val sourceContent = createPersistentSourceContent(aggrVariables, sourceItem)
 
         val downloadTask = createDownloadTask(
             sourceItem,
@@ -182,8 +181,7 @@ class SourceProcessor(
         return pc
     }
 
-    private fun createPersistentSourceContent(providersAggregation: VariableProvidersAggregation, sourceItem: SourceItem): PersistentSourceContent {
-        val aggrSourceGroup = providersAggregation.aggrVariables(sourceItem)
+    private fun createPersistentSourceContent(sourceItemGroup: SourceItemGroup, sourceItem: SourceItem): PersistentSourceContent {
         val resolveFiles = downloader.resolveFiles(sourceItem)
         val filteredFiles = resolveFiles.filter { path ->
             val res = sourceFileFilters.all { it.test(path) }
@@ -193,7 +191,7 @@ class SourceProcessor(
             res
         }
 
-        val sourceFiles = aggrSourceGroup.sourceFiles(filteredFiles)
+        val sourceFiles = sourceItemGroup.sourceFiles(filteredFiles)
             .mapIndexed { index, sourceFile ->
                 val sourceFileContent = CoreFileContent(
                     downloadPath.resolve(filteredFiles[index]),
@@ -203,10 +201,10 @@ class SourceProcessor(
                     fileSavePathPattern,
                     filenamePattern,
                 )
-                sourceFileContent.addSharedVariables(aggrSourceGroup.sharedPatternVariables())
+                sourceFileContent.addSharedVariables(sourceItemGroup.sharedPatternVariables())
                 sourceFileContent
             }
-        val variables = aggrSourceGroup.sharedPatternVariables()
+        val variables = sourceItemGroup.sharedPatternVariables()
         return PersistentSourceContent(sourceItem, sourceFiles, MapPatternVariables(variables))
     }
 

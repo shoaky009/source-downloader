@@ -5,6 +5,7 @@ package xyz.shoaky.sourcedownloader.core.config
 import com.fasterxml.jackson.annotation.*
 import xyz.shoaky.sourcedownloader.core.file.ParsingFailedStrategy
 import xyz.shoaky.sourcedownloader.core.file.RenameMode
+import xyz.shoaky.sourcedownloader.core.processor.VariableConflictStrategy
 import xyz.shoaky.sourcedownloader.sdk.DownloadOptions
 import xyz.shoaky.sourcedownloader.sdk.PathPattern
 import xyz.shoaky.sourcedownloader.sdk.component.*
@@ -68,10 +69,8 @@ data class ProcessorConfig(
         val renameTaskInterval: Duration = Duration.ofMinutes(5),
         @JsonAlias("download-options")
         val downloadOptions: DownloadOptions = DownloadOptions(),
-        // NOT IMPLEMENTED
         @JsonAlias("variable-conflict-strategy")
         val variableConflictStrategy: VariableConflictStrategy = VariableConflictStrategy.SMART,
-        // 修改文件夹创建时间
         @JsonAlias("touch-item-directory")
         val renameTimesThreshold: Int = 3,
         @JsonAlias("provide-metadata-variables")
@@ -99,17 +98,6 @@ data class ProcessorConfig(
         @JsonAlias("variables-name-mapping")
         val variablesNameMapping: Map<String, String> = emptyMap(),
     )
-
-    enum class VariableConflictStrategy {
-        ANY,
-        VOTE,
-        ACCURACY,
-
-        /**
-         * VOTE + ACCURACY
-         */
-        SMART
-    }
 
     data class ComponentId(
         @get:JsonValue
