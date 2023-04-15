@@ -130,7 +130,7 @@ class SourceProcessor(
                     processItem(item, dryRun)
                 }
             }.onFailure {
-                log.error("Processor:${name}处理失败, item:$item", it)
+                log.error("Processor:${name} 处理失败, item:$item", it)
                 status = ProcessorStatus.ERROR
                 failure = true
             }.onSuccess {

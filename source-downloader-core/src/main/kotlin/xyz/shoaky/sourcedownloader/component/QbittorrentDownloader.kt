@@ -47,17 +47,18 @@ class QbittorrentDownloader(
         })
 
         val downloadFiles = task.downloadFiles
-        val no = torrentFiles.filter {
-            downloadFiles.contains(it.name).not()
+        val relativePaths = downloadFiles.map { task.downloadPath.relativize(it) }
+        val stopDownloadFiles = torrentFiles.filter {
+            relativePaths.contains(it.name).not()
         }
-        log.debug("torrent:{} set prio 0 files: {}", torrentHash, no)
-        if (no.isEmpty()) {
+        log.debug("torrent:{} set prio 0 files: {}", torrentHash, stopDownloadFiles)
+        if (stopDownloadFiles.isEmpty()) {
             return
         }
 
         client.execute(TorrentFilePrioRequest(
             torrentHash,
-            no.map { it.index },
+            stopDownloadFiles.map { it.index },
             0
         ))
     }
@@ -124,22 +125,25 @@ class QbittorrentDownloader(
 
     companion object {
         private val log = LoggerFactory.getLogger(QbittorrentDownloader::class.java)
-    }
-
-}
-
-fun <T> retry(block: () -> T, times: Int = 3): T {
-    var count = 0
-    while (count < times) {
-        try {
-            return block()
-        } catch (e: Exception) {
-            count++
-            Thread.sleep(200L * count)
-            if (count == times) {
-                throw e
+        fun <T> retry(block: () -> T, times: Int = 3): T {
+            var count = 0
+            while (count < times) {
+                try {
+                    return block()
+                } catch (e: Exception) {
+                    count++
+                    log.info("retry times: $count")
+                    Thread.sleep(200L * count)
+                    if (count == times) {
+                        throw e
+                    }
+                }
             }
+            throw RuntimeException("max retry times")
         }
     }
-    throw RuntimeException("max retry times")
+
+
 }
+
+
