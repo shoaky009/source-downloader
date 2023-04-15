@@ -7,10 +7,8 @@ import xyz.shoaky.sourcedownloader.sdk.PatternVariables
 import java.nio.file.Path
 import java.nio.file.attribute.PosixFilePermission
 import java.nio.file.attribute.PosixFilePermissions
-import kotlin.io.path.createDirectories
 import kotlin.io.path.extension
 import kotlin.io.path.name
-import kotlin.io.path.notExists
 
 data class CoreFileContent(
     override val fileDownloadPath: Path,
@@ -61,13 +59,6 @@ data class CoreFileContent(
         }
 
         return fileDownloadPath.name
-    }
-
-    fun createSaveDirectories() {
-        val targetSaveDirectoryPath = saveDirectoryPath()
-        if (targetSaveDirectoryPath.notExists()) {
-            targetSaveDirectoryPath.createDirectories(fileAttribute)
-        }
     }
 
     /**

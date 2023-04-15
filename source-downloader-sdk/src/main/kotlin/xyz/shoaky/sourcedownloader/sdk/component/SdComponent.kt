@@ -5,6 +5,8 @@ import xyz.shoaky.sourcedownloader.sdk.*
 import java.nio.file.Path
 import java.util.function.Consumer
 import java.util.function.Predicate
+import kotlin.io.path.createDirectories
+import kotlin.io.path.exists
 import kotlin.reflect.KClass
 import kotlin.reflect.full.allSuperclasses
 
@@ -34,7 +36,6 @@ enum class Components(
     RUN_AFTER_COMPLETION(RunAfterCompletion::class, listOf("run-after-completion", "run", "runAfterCompletion")),
     SOURCE_ITEM_FILTER(SourceItemFilter::class, listOf("source-item-filter", "item-filter", "sourceItemFilter", "itemFilter")),
     SOURCE_FILE_FILTER(SourceFileFilter::class, listOf("source-file-filter", "file-filter", "sourceFileFilter", "fileFilter"));
-
 
     fun lowerHyphenName(): String {
         return CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_HYPHEN,
@@ -113,7 +114,17 @@ interface VariableProvider : SdComponent {
 interface FileMover : SdComponent {
 
     fun rename(sourceContent: SourceContent): Boolean
+
+    fun exists(paths: List<Path>): Boolean {
+        return paths.all { it.exists() }
+    }
+
+    fun createDirectories(path: Path) {
+        path.createDirectories()
+    }
 }
+
+interface CloudFileMover : FileMover
 
 @FunctionalInterface
 interface RunAfterCompletion : SdComponent, Consumer<SourceContent>

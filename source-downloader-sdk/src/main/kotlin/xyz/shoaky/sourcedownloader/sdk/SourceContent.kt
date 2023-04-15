@@ -3,18 +3,11 @@ package xyz.shoaky.sourcedownloader.sdk
 import com.fasterxml.jackson.annotation.JsonValue
 import java.nio.file.Path
 import java.util.regex.Pattern
-import kotlin.io.path.exists
 import kotlin.io.path.name
-import kotlin.io.path.notExists
 
 interface SourceContent {
     val sourceFiles: List<FileContent>
     val sourceItem: SourceItem
-    fun canRenameFiles(): List<FileContent> {
-        return sourceFiles
-            .filter { it.targetPath().notExists() }
-            .filter { it.fileDownloadPath.exists() }
-    }
 
     fun allTargetPaths(): List<Path> {
         return sourceFiles.map { it.targetPath() }

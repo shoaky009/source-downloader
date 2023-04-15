@@ -22,7 +22,6 @@ import java.time.LocalDateTime
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
-import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
 import kotlin.time.ExperimentalTime
 import kotlin.time.measureTime
@@ -163,7 +162,7 @@ class SourceProcessor(
             this.downloader.submit(downloadTask)
             log.info("提交下载任务成功, Processor:${name} sourceItem:${sourceItem.title}")
             processingStorage.saveTargetPath(sourceContent.allTargetPaths())
-            Events.post(ProcessorSubmitDownloadEvent(name, sourceItem))
+            Events.post(ProcessorSubmitDownloadEvent(name, sourceContent))
         }
 
         var status = ProcessingContent.Status.WAITING_TO_RENAME
@@ -218,11 +217,12 @@ class SourceProcessor(
         }
 
         val targetPaths = files.map { it.targetPath() }
-        if (targetPaths.map { it.exists() }.all { it }) {
-            return false to ProcessingContent.Status.TARGET_ALREADY_EXISTS
-        }
         // 预防这一批次的Item有相同的目标，并且是AsyncDownloader的情况下会重复下载
         if (processingStorage.targetPathExists(targetPaths)) {
+            return false to ProcessingContent.Status.TARGET_ALREADY_EXISTS
+        }
+
+        if (fileMover.exists(targetPaths)) {
             return false to ProcessingContent.Status.TARGET_ALREADY_EXISTS
         }
 
@@ -288,7 +288,9 @@ class SourceProcessor(
         sourceFiles.forEach {
             it.addSharedVariables(sourceContent.sharedPatternVariables)
         }
-        if (sourceFiles.all { it.targetPath().exists() }) {
+
+        val targetPaths = sourceFiles.map { it.targetPath() }
+        if (fileMover.exists(targetPaths)) {
             val toUpdate = pc.copy(
                 renameTimes = pc.renameTimes.inc(),
                 status = ProcessingContent.Status.TARGET_ALREADY_EXISTS,
@@ -338,17 +340,25 @@ class SourceProcessor(
         return DownloadTask(sourceItem, downloadFiles, downloadPath, options.downloadOptions)
     }
 
+    private fun getRenameFiles(content: SourceContent): List<FileContent> {
+        return content.sourceFiles
+            .filter { fileMover.exists(listOf(it.targetPath())).not() }
+            .filter { it.fileDownloadPath.exists() }
+    }
+
     private fun rename(content: PersistentSourceContent): Boolean {
-        val sourceFiles = content.canRenameFiles()
-        sourceFiles.forEach {
-            it.saveDirectoryPath().createDirectories()
-        }
-        if (sourceFiles.isEmpty()) {
+        val renameFiles = getRenameFiles(content)
+        renameFiles.map { it.saveDirectoryPath() }
+            .distinct()
+            .forEach {
+                fileMover.createDirectories(it)
+            }
+        if (renameFiles.isEmpty()) {
             return true
         }
 
         if (options.renameMode == RenameMode.HARD_LINK) {
-            sourceFiles.forEach {
+            renameFiles.forEach {
                 val targetFilePath = it.targetPath()
                 Files.createLink(targetFilePath, it.fileDownloadPath)
             }
