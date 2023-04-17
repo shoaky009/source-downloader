@@ -21,6 +21,15 @@ private constructor(val properties: MutableMap<String, Any>) {
         }
     }
 
+    inline fun <reified T> getNotRequired(key: String): T? {
+        val any = properties[key] ?: return null
+        try {
+            return Jackson.convert(any, jacksonTypeRef())
+        } catch (e: Exception) {
+            throw RuntimeException("组件属性${key}解析异常: value:$any", e)
+        }
+    }
+
     fun getRaw(key: String): Any {
         return properties[key] ?: throw ComponentException.props("属性${key}不存在")
     }

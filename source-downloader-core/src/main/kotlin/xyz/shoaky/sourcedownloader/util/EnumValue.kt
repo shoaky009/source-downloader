@@ -1,5 +1,6 @@
 package xyz.shoaky.sourcedownloader.util
 
+import java.util.*
 import kotlin.reflect.KClass
 
 interface EnumValue<T> {
@@ -25,4 +26,8 @@ fun String.find(vararg regexes: Regex): String? {
         }
     }
     return null
+}
+
+fun String.encodeBase64(): String {
+    return Base64.getEncoder().encodeToString(this.toByteArray())
 }
