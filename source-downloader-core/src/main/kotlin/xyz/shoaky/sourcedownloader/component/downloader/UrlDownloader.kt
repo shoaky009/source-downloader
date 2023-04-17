@@ -1,4 +1,4 @@
-package xyz.shoaky.sourcedownloader.component
+package xyz.shoaky.sourcedownloader.component.downloader
 
 import org.springframework.core.io.UrlResource
 import xyz.shoaky.sourcedownloader.sdk.DownloadTask

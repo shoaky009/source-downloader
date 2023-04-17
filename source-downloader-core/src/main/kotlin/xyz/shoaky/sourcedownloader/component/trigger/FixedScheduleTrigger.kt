@@ -1,4 +1,4 @@
-package xyz.shoaky.sourcedownloader.component
+package xyz.shoaky.sourcedownloader.component.trigger
 
 import org.slf4j.LoggerFactory
 import java.time.Duration

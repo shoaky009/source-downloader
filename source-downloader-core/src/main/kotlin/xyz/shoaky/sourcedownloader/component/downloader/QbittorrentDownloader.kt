@@ -1,4 +1,4 @@
-package xyz.shoaky.sourcedownloader.component
+package xyz.shoaky.sourcedownloader.component.downloader
 
 import bt.metainfo.MetadataService
 import org.slf4j.LoggerFactory
@@ -145,5 +145,3 @@ class QbittorrentDownloader(
 
 
 }
-
-

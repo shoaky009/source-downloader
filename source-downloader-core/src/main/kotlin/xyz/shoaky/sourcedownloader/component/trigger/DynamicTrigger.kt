@@ -1,4 +1,4 @@
-package xyz.shoaky.sourcedownloader.component
+package xyz.shoaky.sourcedownloader.component.trigger
 
 import com.google.common.eventbus.Subscribe
 import xyz.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log

@@ -1,4 +1,4 @@
-package xyz.shoaky.sourcedownloader.component
+package xyz.shoaky.sourcedownloader.component.source
 
 import xyz.shoaky.sourcedownloader.sdk.DownloadTask
 import xyz.shoaky.sourcedownloader.sdk.SourceItem

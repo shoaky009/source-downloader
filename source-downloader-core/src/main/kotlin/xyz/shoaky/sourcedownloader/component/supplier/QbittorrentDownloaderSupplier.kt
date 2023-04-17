@@ -1,6 +1,6 @@
 package xyz.shoaky.sourcedownloader.component.supplier
 
-import xyz.shoaky.sourcedownloader.component.QbittorrentDownloader
+import xyz.shoaky.sourcedownloader.component.downloader.QbittorrentDownloader
 import xyz.shoaky.sourcedownloader.external.qbittorrent.QbittorrentClient
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentProps
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentType

@@ -2,7 +2,7 @@ package xyz.shoaky.sourcedownloader.component.supplier
 
 import org.springframework.stereotype.Component
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping
-import xyz.shoaky.sourcedownloader.component.WebhookTrigger
+import xyz.shoaky.sourcedownloader.component.trigger.WebhookTrigger
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentProps
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentType
 import xyz.shoaky.sourcedownloader.sdk.component.SdComponentSupplier

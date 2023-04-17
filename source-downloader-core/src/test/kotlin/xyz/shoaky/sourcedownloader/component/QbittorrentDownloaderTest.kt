@@ -3,6 +3,7 @@ package xyz.shoaky.sourcedownloader.component
 import org.apache.commons.lang3.NotImplementedException
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
+import xyz.shoaky.sourcedownloader.component.downloader.QbittorrentDownloader
 import xyz.shoaky.sourcedownloader.external.qbittorrent.QbittorrentClient
 import xyz.shoaky.sourcedownloader.external.qbittorrent.TorrentInfo
 import xyz.shoaky.sourcedownloader.external.qbittorrent.TorrentInfoRequest

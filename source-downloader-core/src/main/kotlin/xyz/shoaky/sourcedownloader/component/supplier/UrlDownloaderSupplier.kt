@@ -1,6 +1,6 @@
 package xyz.shoaky.sourcedownloader.component.supplier
 
-import xyz.shoaky.sourcedownloader.component.UrlDownloader
+import xyz.shoaky.sourcedownloader.component.downloader.UrlDownloader
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentProps
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentType
 import xyz.shoaky.sourcedownloader.sdk.component.SdComponentSupplier

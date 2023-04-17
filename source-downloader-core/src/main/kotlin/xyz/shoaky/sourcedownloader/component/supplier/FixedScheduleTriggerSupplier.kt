@@ -1,6 +1,6 @@
 package xyz.shoaky.sourcedownloader.component.supplier
 
-import xyz.shoaky.sourcedownloader.component.FixedScheduleTrigger
+import xyz.shoaky.sourcedownloader.component.trigger.FixedScheduleTrigger
 import xyz.shoaky.sourcedownloader.sdk.component.*
 import java.time.Duration
 

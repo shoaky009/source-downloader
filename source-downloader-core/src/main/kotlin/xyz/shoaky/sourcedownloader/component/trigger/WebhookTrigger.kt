@@ -1,4 +1,4 @@
-package xyz.shoaky.sourcedownloader.component
+package xyz.shoaky.sourcedownloader.component.trigger
 
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity

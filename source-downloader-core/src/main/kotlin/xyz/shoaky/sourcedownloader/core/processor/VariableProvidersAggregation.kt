@@ -152,7 +152,7 @@ private class AccuracyItemGroup(groups: Map<VariableProvider, SourceItemGroup>) 
     }
 }
 
-class SmartItemGroup(groups: Map<VariableProvider, SourceItemGroup>) : AggregationItemGroup(groups) {
+private class SmartItemGroup(groups: Map<VariableProvider, SourceItemGroup>) : AggregationItemGroup(groups) {
     override fun aggrSharedPatternVariables(groups: Map<VariableProvider, SourceItemGroup>): PatternVariables {
         val variablesList = groups.entries.map { (provider, group) ->
             val variables = group.sharedPatternVariables().variables()
