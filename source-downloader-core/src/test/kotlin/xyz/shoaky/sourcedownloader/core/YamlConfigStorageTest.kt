@@ -14,8 +14,7 @@ class YamlConfigStorageTest {
     private val storage = YamlConfigStorage(path)
 
     @BeforeEach
-    fun restora() {
-
+    fun restore() {
         Files.writeString(path, """
 components:
   source:
@@ -23,12 +22,16 @@ components:
       type: "test"
 processors:
   - name: "test-normal-case"
-    triggers: 
-      - "fixed:1s"
+    triggers:
+      - "test"
     source: "test"
     downloader: "test"
-    mover: "test"
-    savePath: "test"
+    variable-providers:
+      - "test"
+    file-mover: "test"
+    save-path: "test-path"
+    options:
+      rename-task-interval: "PT1M40S"
         """.trimIndent())
     }
 
@@ -55,9 +58,9 @@ processors:
     fun write_processor() {
         storage.save("test-normal-case", ProcessorConfig(
             "test-normal-case",
-            emptyList(),
+            listOf(ProcessorConfig.ComponentId("test")),
             ProcessorConfig.ComponentId("test"),
-            emptyList(),
+            listOf(ProcessorConfig.ComponentId("test")),
             ProcessorConfig.ComponentId("test"),
             ProcessorConfig.ComponentId("test"),
             Path(""),
@@ -65,5 +68,8 @@ processors:
                 renameTaskInterval = Duration.ofSeconds(100L)
             )
         ))
+
+        val processor = storage.getAllProcessorConfig().first()
+        assertEquals(Duration.ofSeconds(100L), processor.options.renameTaskInterval)
     }
 }

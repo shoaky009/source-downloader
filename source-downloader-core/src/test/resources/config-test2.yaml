@@ -5,8 +5,12 @@ components:
 processors:
   - name: "test-normal-case"
     triggers:
-      - "fixed:1s"
+      - "test"
     source: "test"
     downloader: "test"
-    mover: "test"
-    savePath: "test"
+    variable-providers:
+      - "test"
+    file-mover: "test"
+    save-path: "test-path"
+    options:
+      rename-task-interval: "PT1M40S"
