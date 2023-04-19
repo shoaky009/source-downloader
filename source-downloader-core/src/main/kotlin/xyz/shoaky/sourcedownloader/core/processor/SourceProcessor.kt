@@ -95,7 +95,7 @@ class SourceProcessor(
             log.debug("Processor:${name} 开始重命名任务...")
             val measureTime = measureTime {
                 try {
-                    runRenameTask()
+                    runRename()
                 } catch (e: Exception) {
                     log.error("Processor:${name} 重命名任务出错", e)
                 }
@@ -245,7 +245,7 @@ class SourceProcessor(
         }
     }
 
-    private fun runRenameTask() {
+    fun runRename() {
         val asyncDownloader = downloader as? AsyncDownloader
         if (asyncDownloader == null) {
             log.debug("Processor:${name} 非异步下载器不执行重命名任务")

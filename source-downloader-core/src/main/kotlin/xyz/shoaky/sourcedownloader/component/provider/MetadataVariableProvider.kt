@@ -5,6 +5,7 @@ import xyz.shoaky.sourcedownloader.sdk.component.VariableProvider
 import java.nio.file.Path
 import kotlin.io.path.extension
 import kotlin.io.path.name
+import kotlin.io.path.nameWithoutExtension
 
 object MetadataVariableProvider : VariableProvider {
     override fun createSourceGroup(sourceItem: SourceItem): SourceItemGroup {
@@ -22,7 +23,7 @@ class MetadataSourceItemGroup(val sourceItem: SourceItem) : SourceItemGroup {
         val length = paths.size.toString().length
         return paths.mapIndexed { index, sf ->
             val vars = MapPatternVariables()
-            vars.addVariable("filename", sf.name)
+            vars.addVariable("filename", sf.nameWithoutExtension)
             vars.addVariable("extension", sf.extension)
             vars.addVariable("sourceItemTitle", sourceItem.title)
             vars.addVariable("sourceItemDate", sourceItem.date.toLocalDate().toString())

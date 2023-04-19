@@ -1,35 +1,45 @@
 components:
   source:
-    - name: test
-      type: test
+    - name: test-files
+      type: system-file
+      props:
+        path: src/test/resources/sources
   downloader:
-    - name: test
-      type: url
-      props:
-        download-path: src/test/resources/downloads
-  trigger:
-    - name: 1s
-      type: fixed
-      props:
-        interval: PT1S
-        run-on-startup: true
+    - name: test-files
+      type: system-file
 
 processors:
-  - name: test-normal-case
-    triggers:
-      - fixed:1s
-    source: test
-    downloader: url:test
-    mover: general
+  - name: NormalCase
+    triggers: [ ]
+    source: "system-file:test-files"
+    downloader: "system-file:test-files"
+    file-mover: general
+    variable-providers: [ ]
     save-path: src/test/resources/target
     options:
       #完成后运行
       run-after-completion:
         - touch-item-directory
-      #        - script:n8n-webhook-send-message
       #可用变量具体看provider能提供什么
-      save-path-pattern: "{name}/Season {season}/"
+      save-path-pattern: "{sourceItemTitle}/{sourceItemDate}/"
       #可用变量具体看provider能提供什么
-      filename-pattern: "{name-cn} - S{season}E{episode}"
+      filename-pattern: "{filename} - {sequence}"
+      #重命名间隔时间,参考java.time.Duration的格式
+      rename-task-interval: PT1M
+  - name: NormalCase-Copy
+    triggers: [ ]
+    source: "system-file:test-files"
+    downloader: "system-file:test-files"
+    file-mover: general
+    variable-providers: [ ]
+    save-path: src/test/resources/target
+    options:
+      #完成后运行
+      run-after-completion:
+        - touch-item-directory
+      #可用变量具体看provider能提供什么
+      save-path-pattern: "{sourceItemTitle}/{sourceItemDate}/"
+      #可用变量具体看provider能提供什么
+      filename-pattern: "{filename} - {sequence}"
       #重命名间隔时间,参考java.time.Duration的格式
       rename-task-interval: PT1M

@@ -9,4 +9,6 @@ interface ProcessingRecordRepository : JpaRepository<ProcessingRecord, Long> {
     fun findByProcessorNameAndRenameTimesLessThan(processorName: String, renameTimesTh: Int): List<ProcessingRecord>
 
     fun findByProcessorNameAndSourceItemHashing(processorName: String, sourceItemHashing: String): ProcessingRecord?
+
+    fun findByProcessorName(processorName: String): List<ProcessingRecord>
 }
