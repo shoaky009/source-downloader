@@ -9,7 +9,6 @@ import xyz.shoaky.sourcedownloader.core.ProcessorManager
 import xyz.shoaky.sourcedownloader.repo.jpa.ProcessingRecordRepository
 import java.nio.file.Files
 import java.nio.file.Path
-import java.time.LocalDate
 import kotlin.io.path.*
 import kotlin.test.assertEquals
 
@@ -52,23 +51,26 @@ class SourceProcessorApplicationTest {
         val contents = processingStorage.findByProcessorName("NormalCase")
         assertEquals(3, contents.size)
 
-        val now = LocalDate.now()
-        assert(Path("src/test/resources/target/test1/$now/test1 - 1.jpg").exists())
-        assert(Path("src/test/resources/target/test2/$now/test2 - 1.jpg").exists())
-        assert(Path("src/test/resources/target/test-dir/$now/test3 - 1.jpg").exists())
-        assert(Path("src/test/resources/target/test-dir/$now/test4 - 2.jpg").exists())
+        val d1 = contents[0].sourceContent.sourceFiles.first().patternVariables.getVariables()["sourceItemDate"]
+        val d2 = contents[1].sourceContent.sourceFiles.first().patternVariables.getVariables()["sourceItemDate"]
+        val d3 = contents[2].sourceContent.sourceFiles.first().patternVariables.getVariables()["sourceItemDate"]
+
+        assert(Path("src/test/resources/target/test1/$d1/test1 - 1.jpg").exists())
+        assert(Path("src/test/resources/target/test2/$d2/test2 - 1.jpg").exists())
+        assert(Path("src/test/resources/target/test-dir/$d3/test3 - 1.jpg").exists())
+        assert(Path("src/test/resources/target/test-dir/$d3/test4 - 2.jpg").exists())
 
         savePath.deleteRecursively()
     }
 
     @Test
     fun normal_dry_run() {
-        val processor = processorManager.getProcessor("NormalCase-Copy")
+        val processor = processorManager.getProcessor("NormalCaseCopy")
             ?: throw IllegalStateException("Processor not found")
 
         val contents = processor.dryRun()
         assertEquals(3, contents.size)
-        assertEquals(0, processingStorage.findByProcessorName("NormalCase-Copy").size)
+        assertEquals(0, processingStorage.findByProcessorName("NormalCaseCopy").size)
     }
 }
 

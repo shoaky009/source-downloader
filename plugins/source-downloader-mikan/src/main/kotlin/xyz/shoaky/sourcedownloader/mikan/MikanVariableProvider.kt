@@ -17,7 +17,7 @@ import xyz.shoaky.sourcedownloader.sdk.api.bangumi.Subject
 import xyz.shoaky.sourcedownloader.sdk.component.*
 import java.nio.file.Path
 
-class Mikan(
+class MikanVariableProvider(
     private val mikanToken: String? = null
 ) : VariableProvider {
 
@@ -26,7 +26,7 @@ class Mikan(
     }
 
     companion object {
-        internal val log = LoggerFactory.getLogger(Mikan::class.java)
+        internal val log = LoggerFactory.getLogger(MikanVariableProvider::class.java)
     }
 
     private val bangumiCache =
@@ -115,14 +115,14 @@ private class MikanSourceGroup(
     }
 }
 
-object MikanProviderSupplier : SdComponentSupplier<Mikan> {
-    override fun apply(props: ComponentProps): Mikan {
+object MikanVariableProviderSupplier : SdComponentSupplier<MikanVariableProvider> {
+    override fun apply(props: ComponentProps): MikanVariableProvider {
         val token = props.properties["token"]?.toString()
-        return Mikan(token)
+        return MikanVariableProvider(token)
     }
 
-    override fun getComponentClass(): Class<Mikan> {
-        return Mikan::class.java
+    override fun getComponentClass(): Class<MikanVariableProvider> {
+        return MikanVariableProvider::class.java
     }
 
     override fun supplyTypes(): List<ComponentType> {

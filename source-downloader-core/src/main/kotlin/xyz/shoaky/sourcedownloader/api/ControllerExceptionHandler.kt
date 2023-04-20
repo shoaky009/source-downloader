@@ -19,4 +19,9 @@ private class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
         problemDetail.type = URI.create("component:${e.type}")
         return problemDetail
     }
+
+    @ExceptionHandler(NotFoundException::class)
+    fun notFoundException(e: NotFoundException): ProblemDetail {
+        return ProblemDetail.forStatus(HttpStatus.NOT_FOUND)
+    }
 }

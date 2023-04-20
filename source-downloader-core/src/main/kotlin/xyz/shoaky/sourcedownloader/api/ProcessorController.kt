@@ -18,7 +18,7 @@ private class ProcessorController(
     private val configStorages: List<ProcessorConfigStorage>
 ) {
 
-    @GetMapping("/all")
+    @GetMapping
     fun processors(): Any {
         val processors = processorManager.getProcessors()
         return processors.map {

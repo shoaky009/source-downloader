@@ -4,7 +4,7 @@ import java.nio.file.Path
 
 interface ProcessingStorage {
 
-    fun save(content: ProcessingContent)
+    fun save(content: ProcessingContent): ProcessingContent
 
     fun findRenameContent(name: String, renameTimesThreshold: Int): List<ProcessingContent>
     fun deleteById(id: Long)
@@ -13,5 +13,6 @@ interface ProcessingStorage {
     fun saveTargetPath(paths: List<Path>)
 
     fun targetPathExists(paths: List<Path>): Boolean
+    fun findById(id: Long): ProcessingContent?
 
 }

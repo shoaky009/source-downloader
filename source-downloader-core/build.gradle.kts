@@ -40,6 +40,7 @@ dependencies {
     implementation("com.github.plexpt:chatgpt:4.0.5")
     // 内置插件
     implementation("xyz.shoaky:source-downloader-mikan:1.0.0")
+    implementation(project(":plugins:source-downloader-dlsite"))
 
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml")
 

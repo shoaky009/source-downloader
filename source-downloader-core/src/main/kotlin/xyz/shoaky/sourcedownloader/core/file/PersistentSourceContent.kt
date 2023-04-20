@@ -9,7 +9,3 @@ data class PersistentSourceContent(
     override val sourceFiles: List<CoreFileContent>,
     val sharedPatternVariables: MapPatternVariables
 ) : SourceContent
-
-data class TypedSourceContent(
-    private val persistentSourceContent: PersistentSourceContent,
-) : SourceContent by persistentSourceContent

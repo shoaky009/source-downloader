@@ -1,14 +1,12 @@
-package xyz.shoaky.sourcedownloader.component.provider
+package xyz.shoaky.sourcedownloader.dlsite
 
 import xyz.shoaky.sourcedownloader.sdk.*
 import xyz.shoaky.sourcedownloader.sdk.component.VariableProvider
-import xyz.shoaky.sourcedownloader.util.find
+import xyz.shoaky.sourcedownloader.sdk.util.find
 
-class DLsiteVariableProvider : VariableProvider {
-
+class DlsiteVariableProvider : VariableProvider {
     override fun createSourceGroup(sourceItem: SourceItem): SourceItemGroup {
         val dlsiteId = getDLsiteId(sourceItem) ?: throw IllegalArgumentException("not dlsite item")
-
 
         // val document = Jsoup.newSession().cookie()
         //     .url("")

@@ -61,7 +61,9 @@ class SourceProcessor(
     }
 
     init {
-        addItemFilter(SourceHashingItemFilter(name, processingStorage))
+        if (options.saveContent) {
+            addItemFilter(SourceHashingItemFilter(name, processingStorage))
+        }
         if (options.provideMetadataVariables) {
             if (this.variableProviders.map { it }.contains(MetadataVariableProvider).not()) {
                 this.variableProviders.add(MetadataVariableProvider)

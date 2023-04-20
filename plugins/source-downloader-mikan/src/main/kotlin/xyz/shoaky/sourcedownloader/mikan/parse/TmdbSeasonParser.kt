@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import com.google.common.cache.CacheBuilder
 import com.google.common.cache.CacheLoader
-import xyz.shoaky.sourcedownloader.mikan.Mikan.Companion.log
+import xyz.shoaky.sourcedownloader.mikan.MikanVariableProvider.Companion.log
 import xyz.shoaky.sourcedownloader.sdk.util.Http
 import java.net.ProxySelector
 import java.net.URI

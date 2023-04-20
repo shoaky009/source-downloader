@@ -12,7 +12,6 @@ import kotlin.reflect.full.allSuperclasses
 
 sealed interface SdComponent {
 
-    fun onPropsChange(props: ComponentProps) {}
 }
 
 fun <T : SdComponent> KClass<T>.componentSuperClasses(): List<KClass<out SdComponent>> {
@@ -123,8 +122,6 @@ interface FileMover : SdComponent {
         path.createDirectories()
     }
 }
-
-interface CloudFileMover : FileMover
 
 @FunctionalInterface
 interface RunAfterCompletion : SdComponent, Consumer<SourceContent>

@@ -26,7 +26,7 @@ processors:
       filename-pattern: "{filename} - {sequence}"
       #重命名间隔时间,参考java.time.Duration的格式
       rename-task-interval: PT1M
-  - name: NormalCase-Copy
+  - name: NormalCaseCopy
     triggers: [ ]
     source: "system-file:test-files"
     downloader: "system-file:test-files"

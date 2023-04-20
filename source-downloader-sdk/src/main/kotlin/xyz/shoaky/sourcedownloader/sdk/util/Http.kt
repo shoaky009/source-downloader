@@ -20,3 +20,12 @@ object Http {
         }
     }
 }
+fun String.find(vararg regexes: Regex): String? {
+    for (regex in regexes) {
+        val match = regex.find(this)
+        if (match != null) {
+            return match.value
+        }
+    }
+    return null
+}

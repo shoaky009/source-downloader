@@ -1,20 +1,19 @@
-package xyz.shoaky.sourcedownloader.mikan
+package xyz.shoaky.sourcedownloader.dlsite
 
 import xyz.shoaky.sourcedownloader.sdk.Plugin
 import xyz.shoaky.sourcedownloader.sdk.PluginContext
 import xyz.shoaky.sourcedownloader.sdk.PluginDescription
 
-class MikanPlugin : Plugin {
+class DlsitePlugin : Plugin {
     override fun init(pluginContext: PluginContext) {
-        pluginContext.registerSupplier(MikanVariableProviderSupplier)
+        pluginContext.registerSupplier(DlsiteVariableProviderSupplier)
     }
 
     override fun destroy(pluginContext: PluginContext) {
-        println("Mikan plugin destroy")
+
     }
 
     override fun description(): PluginDescription {
-        return PluginDescription("Mikan", "1.0.0")
+        return PluginDescription("IDK", "0.0.1")
     }
-
 }

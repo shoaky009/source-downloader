@@ -6,8 +6,9 @@ object MemProcessingStorage : ProcessingStorage {
 
     private val contents = mutableListOf<ProcessingContent>()
     private val targetPaths = mutableSetOf<Path>()
-    override fun save(content: ProcessingContent) {
+    override fun save(content: ProcessingContent): ProcessingContent {
         contents.add(content)
+        return content
     }
 
     override fun findRenameContent(name: String, renameTimesThreshold: Int): List<ProcessingContent> {
@@ -31,6 +32,10 @@ object MemProcessingStorage : ProcessingStorage {
 
     override fun targetPathExists(paths: List<Path>): Boolean {
         return paths.all { targetPaths.contains(it) }
+    }
+
+    override fun findById(id: Long): ProcessingContent? {
+        TODO("Not yet implemented")
     }
 
 }

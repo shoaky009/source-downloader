@@ -1,5 +1,6 @@
 package xyz.shoaky.sourcedownloader.repo.jpa
 
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Component
 import xyz.shoaky.sourcedownloader.core.ProcessingContent
 import xyz.shoaky.sourcedownloader.core.ProcessingStorage
@@ -12,7 +13,7 @@ class JpaProcessingStorage(
     private val repository: ProcessingRecordRepository,
     private val tr: TargetPathRepository
 ) : ProcessingStorage {
-    override fun save(content: ProcessingContent) {
+    override fun save(content: ProcessingContent): ProcessingContent {
         val record = ProcessingRecord()
         record.processorName = content.processorName
         record.sourceItemHashing = content.sourceHash
@@ -22,7 +23,9 @@ class JpaProcessingStorage(
         record.modifyTime = content.modifyTime
         record.createTime = content.createTime
         record.id = content.id
-        repository.save(record)
+        val save = repository.save(record)
+
+        return content
     }
 
     override fun findRenameContent(name: String, renameTimesThreshold: Int): List<ProcessingContent> {
@@ -49,6 +52,10 @@ class JpaProcessingStorage(
 
     override fun findByNameAndHash(processorName: String, itemHashing: String): ProcessingContent? {
         val record = repository.findByProcessorNameAndSourceItemHashing(processorName, itemHashing)
+        return convert(record)
+    }
+
+    private fun convert(record: ProcessingRecord?): ProcessingContent? {
         return record?.let {
             val processingContent = ProcessingContent(
                 record.id,
@@ -81,4 +88,7 @@ class JpaProcessingStorage(
         return tr.existsAllByIdIn(ids)
     }
 
+    override fun findById(id: Long): ProcessingContent? {
+        return convert(repository.findByIdOrNull(id))
+    }
 }
