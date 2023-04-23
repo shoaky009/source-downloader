@@ -4,7 +4,6 @@ import com.google.common.cache.CacheBuilder
 import com.google.common.cache.CacheLoader
 import org.jsoup.Jsoup
 import org.slf4j.LoggerFactory
-import org.springframework.web.util.UriComponentsBuilder
 import xyz.shoaky.sourcedownloader.mikan.parse.ParserChain
 import xyz.shoaky.sourcedownloader.mikan.parse.SubjectContent
 import xyz.shoaky.sourcedownloader.sdk.PatternVariables
@@ -15,6 +14,7 @@ import xyz.shoaky.sourcedownloader.sdk.api.bangumi.BangumiApiClient
 import xyz.shoaky.sourcedownloader.sdk.api.bangumi.GetSubjectRequest
 import xyz.shoaky.sourcedownloader.sdk.api.bangumi.Subject
 import xyz.shoaky.sourcedownloader.sdk.component.*
+import java.net.URI
 import java.nio.file.Path
 
 class MikanVariableProvider(
@@ -45,8 +45,7 @@ class MikanVariableProvider(
                     ele.hasText() && ele.text().contains("/subject/")
                 }.map {
                     val text = it.text()
-                    val build = UriComponentsBuilder.fromHttpUrl(text).build()
-                    build.pathSegments.last()
+                    URI.create(text).pathSegments().last()
                 }.first()
             return BangumiApiClient.execute(GetSubjectRequest(subjectId)).body()
         }.onFailure {
@@ -132,6 +131,10 @@ object MikanVariableProviderSupplier : SdComponentSupplier<MikanVariableProvider
     override fun rules(): List<ComponentRule> {
         return listOf(ComponentRule.allowDownloader(TorrentDownloader::class))
     }
+}
+
+fun URI.pathSegments(): List<String> {
+    return path.split("/").filter { it.isNotBlank() }
 }
 
 data class BangumiInfo(

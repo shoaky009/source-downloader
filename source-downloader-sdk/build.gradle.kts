@@ -2,15 +2,13 @@ description = "source-downloader-sdk"
 
 plugins {
     `java-library`
-    id("maven-publish")
+    `maven-publish`
 }
 
 dependencies {
 
     api("org.jetbrains.kotlin:kotlin-stdlib")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
-    //TODO 准备移除
-    api("org.springframework:spring-web:6.0.5")
 
     api("com.fasterxml.jackson.core:jackson-core:2.14.2")
     api("com.fasterxml.jackson.module:jackson-module-kotlin:2.14.2")
@@ -31,4 +29,5 @@ publishing {
 
 java {
     withSourcesJar()
+    withJavadocJar()
 }

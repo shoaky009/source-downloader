@@ -3,8 +3,8 @@ package xyz.shoaky.sourcedownloader.sdk.api
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import com.google.common.net.HttpHeaders
 import com.google.common.net.MediaType
+import com.google.common.net.UrlEscapers
 import org.slf4j.LoggerFactory
-import org.springframework.web.util.UriComponentsBuilder
 import xyz.shoaky.sourcedownloader.sdk.api.BaseRequest.Companion.stringTypeReference
 import xyz.shoaky.sourcedownloader.sdk.util.Http
 import xyz.shoaky.sourcedownloader.sdk.util.Jackson
@@ -24,20 +24,10 @@ interface ApiClient {
 abstract class HookedApiClient : ApiClient {
 
     override fun <R : BaseRequest<T>, T : Any> execute(endpoint: URI, request: R): HttpResponse<T> {
-        val uriBuilder = UriComponentsBuilder.fromUri(endpoint).path(request.path)
-
-        if (request.httpMethod === HttpMethod.GET) {
-            Jackson.convertToMap(request)
-                .forEach {
-                    uriBuilder.queryParam(it.key, it.value)
-                }
-        } else {
-            request.queryString.forEach { (k, v) ->
-                uriBuilder.queryParam(k, v)
-            }
-        }
-
-        val requestBuilder = HttpRequest.newBuilder(uriBuilder.build().toUri())
+        val uri = endpoint.resolve(UrlEscapers.urlFragmentEscaper().escape(request.path))
+        val queryString = buildQueryString(request, uri)
+        val resolve = uri.toString() + queryString
+        val requestBuilder = HttpRequest.newBuilder(URI(resolve))
             .method(request.httpMethod.name, bodyPublisher(request))
         request.setHeader(HttpHeaders.CONTENT_TYPE, request.mediaType)
         request.httpHeaders().forEach { (name, value) -> requestBuilder.header(name, value) }
@@ -57,6 +47,31 @@ abstract class HookedApiClient : ApiClient {
         }
         afterRequest(httpResponse, request)
         return httpResponse as HttpResponse<T>
+    }
+
+    private fun <R : BaseRequest<T>, T : Any> buildQueryString(request: R, uri: URI): String {
+        val queryStringMap = mutableMapOf<String, String>()
+        if (request.httpMethod === HttpMethod.GET) {
+            val convertToMap = Jackson.convert(request, jacksonTypeRef<Map<String, String>>())
+            queryStringMap.putAll(convertToMap)
+        } else {
+            request.queryString.forEach { (k, v) ->
+                queryStringMap[k] = v.toString()
+            }
+        }
+        if (queryStringMap.isEmpty()) {
+            return ""
+        }
+
+        var queryString = queryStringMap.map { "${it.key}=${it.value}" }
+            .joinToString("&")
+
+        queryString = if (uri.query?.isEmpty() != false) {
+            "?$queryString"
+        } else {
+            "&$queryString"
+        }
+        return queryString
     }
 
     abstract fun <R : BaseRequest<T>, T : Any> beforeRequest(requestBuilder: HttpRequest.Builder, request: R)
