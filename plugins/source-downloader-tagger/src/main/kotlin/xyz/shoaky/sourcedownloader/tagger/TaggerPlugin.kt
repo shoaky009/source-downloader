@@ -1,12 +1,12 @@
-package xyz.shoaky.sourcedownloader.dlsite
+package xyz.shoaky.sourcedownloader.tagger
 
 import xyz.shoaky.sourcedownloader.sdk.Plugin
 import xyz.shoaky.sourcedownloader.sdk.PluginContext
 import xyz.shoaky.sourcedownloader.sdk.PluginDescription
 
-internal class DlsitePlugin : Plugin {
+internal class TaggerPlugin : Plugin {
     override fun init(pluginContext: PluginContext) {
-        pluginContext.registerSupplier(DlsiteVariableProviderSupplier)
+        pluginContext.registerSupplier(SimpleFileTaggerSupplier)
     }
 
     override fun destroy(pluginContext: PluginContext) {

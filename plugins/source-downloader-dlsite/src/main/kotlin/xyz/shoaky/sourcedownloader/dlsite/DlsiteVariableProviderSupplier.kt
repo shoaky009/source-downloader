@@ -4,7 +4,7 @@ import xyz.shoaky.sourcedownloader.sdk.component.ComponentProps
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentType
 import xyz.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
 
-object DlsiteVariableProviderSupplier : SdComponentSupplier<DlsiteVariableProvider> {
+internal object DlsiteVariableProviderSupplier : SdComponentSupplier<DlsiteVariableProvider> {
     override fun apply(props: ComponentProps): DlsiteVariableProvider {
         return DlsiteVariableProvider()
     }

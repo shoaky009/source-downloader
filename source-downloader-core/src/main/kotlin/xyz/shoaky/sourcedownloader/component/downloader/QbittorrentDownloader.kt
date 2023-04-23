@@ -105,14 +105,18 @@ class QbittorrentDownloader(
         val saveItemFileRootDirectory = firstFile.saveItemFileRootDirectory()
         val itemLocation = saveItemFileRootDirectory ?: firstFile.saveDirectoryPath()
 
-        val all = sourceFiles.map {
+        val allSuccess = sourceFiles.map {
             val torrentRelativePath = it.downloadPath.relativize(it.fileDownloadPath).toString()
 
             val targetRelativePath = itemLocation.relativize(it.targetPath()).toString()
             val renameFile = client.execute(
                 TorrentsRenameFileRequest(torrentHash, torrentRelativePath, targetRelativePath)
             )
-            renameFile.statusCode() == HttpStatus.OK.value()
+            val success = renameFile.statusCode() == HttpStatus.OK.value()
+            if (success.not()) {
+                log.error("rename file failed,hash:$torrentHash code:${renameFile.statusCode()} body:${renameFile.body()}")
+            }
+            success
         }.all { it }
 
         val setLocationResponse = client.execute(
@@ -120,7 +124,10 @@ class QbittorrentDownloader(
                 listOf(torrentHash),
                 itemLocation.toString()
             ))
-        return all && setLocationResponse.statusCode() == HttpStatus.OK.value()
+        if (setLocationResponse.statusCode() != HttpStatus.OK.value()) {
+            log.error("set location failed,hash:$torrentHash code:${setLocationResponse.statusCode()} body:${setLocationResponse.body()}")
+        }
+        return allSuccess && setLocationResponse.statusCode() == HttpStatus.OK.value()
     }
 
     companion object {

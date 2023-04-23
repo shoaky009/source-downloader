@@ -4,7 +4,7 @@ import xyz.shoaky.sourcedownloader.sdk.*
 import xyz.shoaky.sourcedownloader.sdk.component.VariableProvider
 import xyz.shoaky.sourcedownloader.sdk.util.find
 
-class DlsiteVariableProvider : VariableProvider {
+internal class DlsiteVariableProvider : VariableProvider {
     override fun createSourceGroup(sourceItem: SourceItem): SourceItemGroup {
         val dlsiteId = getDLsiteId(sourceItem) ?: throw IllegalArgumentException("not dlsite item")
 

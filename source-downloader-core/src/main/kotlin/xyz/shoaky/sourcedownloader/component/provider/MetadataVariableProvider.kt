@@ -15,7 +15,6 @@ object MetadataVariableProvider : VariableProvider {
     override fun support(item: SourceItem): Boolean = true
 
     override val accuracy: Int = 2
-    override val persistentVariable: Boolean = false
 }
 
 class MetadataSourceItemGroup(val sourceItem: SourceItem) : SourceItemGroup {

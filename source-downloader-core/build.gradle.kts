@@ -30,19 +30,22 @@ dependencies {
     implementation("org.apache.commons:commons-collections4:4.4")
     implementation("com.google.guava:guava:31.1-jre")
     implementation("com.vladmihalcea:hibernate-types-60:2.21.1")
-    implementation("com.apptasticsoftware:rssreader:3.3.0")
     implementation("org.springframework.retry:spring-retry")
+
+    // 可分离只有rss/jackett source组件需要
+    implementation("com.apptasticsoftware:rssreader:3.3.0")
 
     implementation("com.github.atomashpolskiy:bt-core:1.10")
     implementation("com.dgtlrepublic:anitomyJ:0.0.7")
 
     // TODO 不用这个库一个简单的请求引用了各种乱七八糟重复功能的依赖
     implementation("com.github.plexpt:chatgpt:4.0.5")
-    // 内置插件
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml")
+
+    // 内置插件，单纯为了方便
     implementation("xyz.shoaky:source-downloader-mikan:1.0.0")
     implementation(project(":plugins:source-downloader-dlsite"))
-
-    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml")
+    implementation(project(":plugins:source-downloader-tagger"))
 
 }
 

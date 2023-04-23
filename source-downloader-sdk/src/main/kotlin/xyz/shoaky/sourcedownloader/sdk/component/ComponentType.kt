@@ -28,6 +28,10 @@ data class ComponentType(
         fun run(type: String) = ComponentType(type, RunAfterCompletion::class)
         fun fileFilter(type: String) = ComponentType(type, SourceFileFilter::class)
 
+        fun fileTagger(type: String): ComponentType {
+            return ComponentType(type, FileTagger::class)
+        }
+
         private val componentTypes = SdComponent::class.sealedSubclasses
             .associateBy {
                 val simpleName = it.simpleName!!

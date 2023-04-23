@@ -102,9 +102,6 @@ interface VariableProvider : SdComponent {
      */
     val accuracy: Int get() = 1
 
-    // 暂时未实现，感觉有点麻烦（异步时需要重跑一次providers）作用也只是省略一点单行数据的占用空间
-    val persistentVariable: Boolean get() = true
-
     fun createSourceGroup(sourceItem: SourceItem): SourceItemGroup
     fun support(item: SourceItem): Boolean
 
@@ -135,5 +132,8 @@ interface SourceFileFilter : SdComponent, Predicate<Path>
 
 interface FileTagger : SdComponent {
 
-    fun tag(fileContent: FileContent): List<String>
+    /**
+     * 只允许标记一个
+     */
+    fun tag(fileContent: FileContent): String?
 }

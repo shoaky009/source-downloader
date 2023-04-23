@@ -115,7 +115,7 @@ data class ProcessorConfig(
             return id.split(":").last()
         }
 
-        fun typeName(): String {
+        private fun typeName(): String {
             val split = id.split(":")
             if (split.isEmpty()) {
                 throw RuntimeException("组件ID配置错误:${id}")

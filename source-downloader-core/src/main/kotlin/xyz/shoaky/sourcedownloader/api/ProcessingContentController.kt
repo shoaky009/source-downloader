@@ -7,7 +7,7 @@ import java.time.LocalDateTime
 
 
 @RestController
-@RequestMapping("/processing")
+@RequestMapping("/processing-content")
 private class ProcessingContentController(
     private val storage: ProcessingStorage
 ) {
