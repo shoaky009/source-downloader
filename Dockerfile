@@ -17,8 +17,9 @@ RUN mkdir -p /app/data /app/plugins /app/lib
 WORKDIR /app
 
 COPY --from=builder dependencies/BOOT-INF /app
-COPY --from=builder snapshot-dependencies /app
-COPY --from=builder application/BOOT-INF/lib /app/lib
+COPY --from=builder snapshot-dependencies/BOOT-INF /app
+COPY --from=builder source-downloader-plugins/BOOT-INF/lib /app/plugins
+#COPY --from=builder application/BOOT-INF/lib /app/lib
 COPY --from=builder application/BOOT-INF/classes /app
 
 ENTRYPOINT java -cp ".:/app/lib/*:/app/plugins/*" $JAVA_OPTS xyz.shoaky.sourcedownloader.SourceDownloaderApplication $SPRINGBOOT_OPTS

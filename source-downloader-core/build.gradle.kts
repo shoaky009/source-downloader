@@ -1,4 +1,5 @@
 import org.springframework.boot.gradle.tasks.bundling.BootBuildImage
+import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 description = "source-downloader-core"
 
@@ -43,14 +44,35 @@ dependencies {
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml")
 
     // 内置插件，单纯为了方便
-    implementation("xyz.shoaky:source-downloader-mikan:1.0.0")
-    implementation(project(":plugins:source-downloader-dlsite"))
-    implementation(project(":plugins:source-downloader-tagger"))
+    implementation("xyz.shoaky:source-downloader-mikan-plugin:1.0.0")
+    implementation(project(":plugins:source-downloader-dlsite-plugin"))
+    implementation(project(":plugins:source-downloader-tagger-plugin"))
 
 }
 
-tasks.named<BootBuildImage>("bootBuildImage") {
+tasks.withType<BootBuildImage> {
     imageName.set("source-downloader")
+}
+
+tasks.withType<BootJar> {
+    layered {
+        application {
+            intoLayer("spring-boot-loader") {
+                include("org/springframework/boot/loader/**")
+            }
+            intoLayer("application")
+        }
+        dependencies {
+            intoLayer("source-downloader-plugins") {
+                include("xyz.shoaky:source-downloader-*-plugin:*")
+            }
+            intoLayer("snapshot-dependencies") {
+                include("*:*:*SNAPSHOT")
+            }
+            intoLayer("dependencies")
+        }
+        layerOrder.addAll("dependencies", "spring-boot-loader", "snapshot-dependencies", "source-downloader-plugins", "application")
+    }
 }
 
 graalvmNative {

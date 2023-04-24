@@ -1,9 +1,9 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-description = "source-downloader-tagger"
+description = "source-downloader-dlsite-plugin"
 plugins {
     `java-library`
-    `maven-publish`
+    id("maven-publish")
 }
 
 group = "xyz.shoaky"
@@ -21,8 +21,6 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.2")
     testImplementation("org.junit.jupiter:junit-jupiter-engine:5.9.2")
-
-    implementation("org.apache.tika:tika-core:2.7.0")
 }
 
 tasks.withType<KotlinCompile> {
