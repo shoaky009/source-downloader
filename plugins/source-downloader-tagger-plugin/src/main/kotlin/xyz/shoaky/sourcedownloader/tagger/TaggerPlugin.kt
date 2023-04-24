@@ -14,6 +14,6 @@ internal class TaggerPlugin : Plugin {
     }
 
     override fun description(): PluginDescription {
-        return PluginDescription("IDK", "0.0.1")
+        return PluginDescription("tagger", "0.0.1")
     }
 }

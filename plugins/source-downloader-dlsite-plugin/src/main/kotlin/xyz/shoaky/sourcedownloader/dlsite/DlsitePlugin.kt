@@ -14,6 +14,6 @@ internal class DlsitePlugin : Plugin {
     }
 
     override fun description(): PluginDescription {
-        return PluginDescription("IDK", "0.0.1")
+        return PluginDescription("dlsite", "0.0.1")
     }
 }
