@@ -128,8 +128,12 @@ class SpringProcessorManager(
             val touchItemDirectory = TouchItemDirectorySupplier.apply(ComponentProps.empty())
             processor.addRunAfterCompletion(touchItemDirectory)
         }
+        options.taggers.forEach {
+            val instanceName = it.getInstanceName(FileTagger::class)
+            applicationContext.getBean(instanceName, FileTagger::class.java)
+                .also { tagger -> processor.addTagger(tagger) }
+        }
     }
-
 
     // TODO 第二个参数应该给组件的描述对象
     private fun check(componentType: ComponentType, components: List<SdComponent>) {

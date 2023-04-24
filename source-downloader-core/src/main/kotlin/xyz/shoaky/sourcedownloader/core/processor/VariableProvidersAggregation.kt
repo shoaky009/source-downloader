@@ -6,24 +6,74 @@ import xyz.shoaky.sourcedownloader.sdk.component.VariableProvider
 import java.nio.file.Path
 
 class VariableProvidersAggregation(
-    private val providers: List<VariableProvider>
-) {
-    fun aggrVariables(sourceItem: SourceItem, strategy: VariableConflictStrategy): SourceItemGroup {
-        val groups = providers.associateBy({
-            it
-        }, { it.createSourceGroup(sourceItem) })
-        return when (strategy) {
+    private val sourceItem: SourceItem,
+    providers: List<VariableProvider>,
+    private val strategy: VariableConflictStrategy = VariableConflictStrategy.SMART,
+    private val variableNameMapping: Map<String, String> = emptyMap()
+) : SourceItemGroup {
+
+    private val groups = providers.associateBy({ it }, {
+        NameMappingGroup(
+            it.createSourceGroup(sourceItem),
+            variableNameMapping
+        )
+    })
+
+    private val strategyGroup: SourceItemGroup by lazy {
+        when (strategy) {
             VariableConflictStrategy.ANY -> AnyItemGroup(groups)
             VariableConflictStrategy.VOTE -> VoteItemGroup(groups)
             VariableConflictStrategy.ACCURACY -> AccuracyItemGroup(groups)
             else -> SmartItemGroup(groups)
         }
     }
+
+    override fun sharedPatternVariables(): PatternVariables {
+        return strategyGroup.sharedPatternVariables()
+    }
+
+    override fun sourceFiles(paths: List<Path>): List<SourceFile> {
+        return strategyGroup.sourceFiles(paths)
+    }
+}
+
+class NameMappingPatternVariables(
+    private val patternVariables: PatternVariables,
+    private val nameMapping: Map<String, String>
+) : PatternVariables {
+
+    override fun variables(): Map<String, String> {
+        return patternVariables.variables().mapKeys { nameMapping[it.key] ?: it.key }
+    }
+}
+
+private class NameMappingGroup(
+    private val sourceItemGroup: SourceItemGroup,
+    private val nameMapping: Map<String, String>
+) : SourceItemGroup {
+    override fun sharedPatternVariables(): PatternVariables {
+        return NameMappingPatternVariables(sourceItemGroup.sharedPatternVariables(), nameMapping)
+    }
+
+    override fun sourceFiles(paths: List<Path>): List<SourceFile> {
+        return sourceItemGroup.sourceFiles(paths).map {
+            NameMappingSourceFile(it, nameMapping)
+        }
+    }
+
+    private class NameMappingSourceFile(
+        private val sourceFile: SourceFile,
+        private val nameMapping: Map<String, String>
+    ) : SourceFile {
+        override fun patternVariables(): PatternVariables {
+            return NameMappingPatternVariables(sourceFile.patternVariables(), nameMapping)
+        }
+    }
 }
 
 
-abstract class AggregationItemGroup(
-    private val groups: Map<VariableProvider, SourceItemGroup>
+private abstract class AggregationItemGroup(
+    private val groups: Map<VariableProvider, SourceItemGroup>,
 ) : SourceItemGroup {
     override fun sourceFiles(paths: List<Path>): List<SourceFile> {
         val map = groups.mapValues {
@@ -46,7 +96,9 @@ abstract class AggregationItemGroup(
 
 }
 
-private class AnyItemGroup(groups: Map<VariableProvider, SourceItemGroup>) : AggregationItemGroup(groups) {
+private class AnyItemGroup(
+    groups: Map<VariableProvider, SourceItemGroup>,
+) : AggregationItemGroup(groups) {
     override fun mergeFiles(providerFiles: List<List<Pair<VariableProvider, SourceFile>>>): List<SourceFile> {
         return List(providerFiles.size) { index ->
             val sourceFiles = providerFiles.map { it[index] }.map { it.second }
@@ -91,7 +143,9 @@ private data class ValueCount(val value: String, val count: Int) : Comparable<Va
     }
 }
 
-private class VoteItemGroup(groups: Map<VariableProvider, SourceItemGroup>) : AggregationItemGroup(groups) {
+private class VoteItemGroup(
+    groups: Map<VariableProvider, SourceItemGroup>,
+) : AggregationItemGroup(groups) {
     override fun aggrSharedPatternVariables(groups: Map<VariableProvider, SourceItemGroup>): PatternVariables {
         val variablesList = groups.values.map { it.sharedPatternVariables().variables() }
         val valueCounts = variablesList
@@ -128,7 +182,9 @@ private class VoteItemGroup(groups: Map<VariableProvider, SourceItemGroup>) : Ag
 }
 
 
-private class AccuracyItemGroup(groups: Map<VariableProvider, SourceItemGroup>) : AggregationItemGroup(groups) {
+private class AccuracyItemGroup(
+    groups: Map<VariableProvider, SourceItemGroup>,
+) : AggregationItemGroup(groups) {
     override fun aggrSharedPatternVariables(groups: Map<VariableProvider, SourceItemGroup>): PatternVariables {
         val variableMap = mutableMapOf<String, String>()
         groups.mapValues { it.value.sharedPatternVariables().variables() }
@@ -152,7 +208,9 @@ private class AccuracyItemGroup(groups: Map<VariableProvider, SourceItemGroup>) 
     }
 }
 
-private class SmartItemGroup(groups: Map<VariableProvider, SourceItemGroup>) : AggregationItemGroup(groups) {
+private class SmartItemGroup(
+    groups: Map<VariableProvider, SourceItemGroup>,
+) : AggregationItemGroup(groups) {
     override fun aggrSharedPatternVariables(groups: Map<VariableProvider, SourceItemGroup>): PatternVariables {
         val variablesList = groups.entries.map { (provider, group) ->
             val variables = group.sharedPatternVariables().variables()

@@ -2,7 +2,7 @@
 
 ![Kotlin](https://img.shields.io/badge/Kotlin-1.8.20-blueviolet)
 ![JRE](https://img.shields.io/badge/JRE-17--20-orange)
-[![GitHub license](https://img.shields.io/github/license/shoaky009/source-downloader)](https://github.com/shoaky009/source-downloader/blob/main/LICENSE)
+[![GitHub License](https://img.shields.io/github/license/shoaky009/source-downloader)](https://github.com/shoaky009/source-downloader/blob/main/LICENSE)
 
 ## 主要功能
 

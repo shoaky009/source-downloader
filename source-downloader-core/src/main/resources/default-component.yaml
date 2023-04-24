@@ -14,6 +14,8 @@ variable-provider:
     type: anitom
   - name: season
     type: season
+  - name: episode
+    type: episode
 trigger:
   - name: 30min
     type: fixed
@@ -34,3 +36,6 @@ trigger:
     type: webhook
     props:
       path: default
+file-tagger:
+  - name: simple
+    type: simple

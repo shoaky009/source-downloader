@@ -5,7 +5,7 @@ import xyz.shoaky.sourcedownloader.sdk.*
 import xyz.shoaky.sourcedownloader.sdk.component.VariableProvider
 import kotlin.io.path.nameWithoutExtension
 
-class EpisodeVariableProvider : VariableProvider {
+object EpisodeVariableProvider : VariableProvider {
 
     private val pattern = Regex("(\\[?[^\\[\\]]*]?)")
 

@@ -149,9 +149,13 @@ class SourceProcessor(
     }
 
     private fun processItem(sourceItem: SourceItem, dryRun: Boolean = false): ProcessingContent {
-        val providersAggregation = VariableProvidersAggregation(variableProviders.filter { it.support(sourceItem) }.toList())
-        val aggrVariables = providersAggregation.aggrVariables(sourceItem, options.variableConflictStrategy)
-        val sourceContent = createPersistentSourceContent(aggrVariables, sourceItem)
+        val variablesAggregation = VariableProvidersAggregation(
+            sourceItem,
+            variableProviders.filter { it.support(sourceItem) }.toList(),
+            options.variableConflictStrategy,
+            options.variablesNameMapping
+        )
+        val sourceContent = createPersistentSourceContent(variablesAggregation, sourceItem)
 
         val downloadTask = createDownloadTask(
             sourceItem,
@@ -400,6 +404,12 @@ class SourceProcessor(
         return info().map {
             "${it.key}: ${it.value}"
         }.joinToString("\n")
+    }
+
+    fun addTagger(tagger: FileTagger) {
+        if (taggers.contains(tagger).not()) {
+            taggers.add(tagger)
+        }
     }
 
     companion object {

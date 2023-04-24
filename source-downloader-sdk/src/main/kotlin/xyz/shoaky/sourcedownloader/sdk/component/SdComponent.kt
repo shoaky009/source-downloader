@@ -34,7 +34,9 @@ enum class Components(
     FILE_MOVER(FileMover::class, listOf("mover", "file-mover", "fileMover")),
     RUN_AFTER_COMPLETION(RunAfterCompletion::class, listOf("run-after-completion", "run", "runAfterCompletion")),
     SOURCE_ITEM_FILTER(SourceItemFilter::class, listOf("source-item-filter", "item-filter", "sourceItemFilter", "itemFilter")),
-    SOURCE_FILE_FILTER(SourceFileFilter::class, listOf("source-file-filter", "file-filter", "sourceFileFilter", "fileFilter"));
+    SOURCE_FILE_FILTER(SourceFileFilter::class, listOf("source-file-filter", "file-filter", "sourceFileFilter", "fileFilter")),
+    TAGGER(FileTagger::class, listOf("file-tagger", "tagger")),
+    ;
 
     fun lowerHyphenName(): String {
         return CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_HYPHEN,
