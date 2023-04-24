@@ -52,8 +52,8 @@ abstract class HookedApiClient : ApiClient {
     private fun <R : BaseRequest<T>, T : Any> buildQueryString(request: R, uri: URI): String {
         val queryStringMap = mutableMapOf<String, String>()
         if (request.httpMethod === HttpMethod.GET) {
-            val convertToMap = Jackson.convert(request, jacksonTypeRef<Map<String, String>>())
-            queryStringMap.putAll(convertToMap)
+            val convertToMap = Jackson.convert(request, jacksonTypeRef<Map<String, String?>>())
+            queryStringMap.putAll(convertToMap.filterNotNullValues())
         } else {
             request.queryString.forEach { (k, v) ->
                 queryStringMap[k] = v.toString()
@@ -114,6 +114,13 @@ abstract class HookedApiClient : ApiClient {
         val cookieManager = CookieManager()
         private val httpClient: HttpClient = HttpClient.newBuilder().cookieHandler(cookieManager).build()
         private val log = LoggerFactory.getLogger(BaseRequest::class.java)
+
+        private fun <K, V> Map<K, V?>.filterNotNullValues(): Map<K, V> =
+            mutableMapOf<K, V>().apply {
+                for ((k, v) in this@filterNotNullValues) if (v != null) put(k, v)
+            }
     }
 
+
 }
+

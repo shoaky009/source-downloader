@@ -44,6 +44,7 @@ class SourceProcessor(
     private val sourceFileFilters: MutableList<SourceFileFilter> = mutableListOf()
     private val variableProviders = variableProviders.toMutableList()
     private val runAfterCompletion: MutableList<RunAfterCompletion> = mutableListOf()
+    private val taggers: MutableList<FileTagger> = mutableListOf()
 
     private val downloadPath = downloader.defaultDownloadPath()
     private val fileSavePathPattern: PathPattern = options.savePathPattern
@@ -204,10 +205,33 @@ class SourceProcessor(
                     filenamePattern,
                 )
                 sourceFileContent.addSharedVariables(sourceItemGroup.sharedPatternVariables())
-                sourceFileContent
+                tagFileAndReplaceFilenamePattern(sourceFileContent)
             }
         val variables = sourceItemGroup.sharedPatternVariables()
         return PersistentSourceContent(sourceItem, sourceFiles, MapPatternVariables(variables))
+    }
+
+    private fun tagFileAndReplaceFilenamePattern(fileContent: CoreFileContent): CoreFileContent {
+        val customTags = options.tagFilenamePattern.keys
+        if (customTags.isEmpty()) {
+            return fileContent
+        }
+        val tags = taggers.mapNotNull { it.tag(fileContent) }
+        fileContent.tag(tags)
+
+        val tagged = customTags.filter {
+            fileContent.isTagged(it)
+        }
+        log.debug("Processor:{} 文件:{} 标签:{}", name, fileContent.fileDownloadPath, tagged)
+        val pathPatterns = tagged.mapNotNull {
+            options.tagFilenamePattern[it]
+        }
+        if (pathPatterns.isEmpty()) {
+            return fileContent
+        }
+        val typePattern = pathPatterns.first()
+        log.debug("Processor:{} 文件:{} 使用自定义命名规则:{}", name, fileContent.fileDownloadPath, typePattern)
+        return fileContent.copy(filenamePattern = typePattern)
     }
 
     private fun needDownload(sc: PersistentSourceContent): Pair<Boolean, ProcessingContent.Status> {

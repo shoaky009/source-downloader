@@ -24,7 +24,7 @@ class JpaProcessingStorage(
         record.createTime = content.createTime
         record.id = content.id
         val save = repository.save(record)
-
+        content.id = save.id
         return content
     }
 

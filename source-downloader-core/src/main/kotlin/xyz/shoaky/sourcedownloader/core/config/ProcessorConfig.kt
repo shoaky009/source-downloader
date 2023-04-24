@@ -97,6 +97,9 @@ data class ProcessorConfig(
         val cleanEmptyDirectory: Boolean = true,
         @JsonAlias("variables-name-mapping")
         val variablesNameMapping: Map<String, String> = emptyMap(),
+        @JsonAlias("tag-filename-pattern")
+        val tagFilenamePattern: Map<String, PathPattern> = emptyMap(),
+        val taggers: List<ComponentId> = emptyList()
     )
 
     data class ComponentId(

@@ -5,16 +5,17 @@ import xyz.shoaky.sourcedownloader.sdk.*
 import xyz.shoaky.sourcedownloader.sdk.component.VariableProvider
 import java.nio.file.Path
 import java.util.function.Function
-import java.util.regex.Pattern
+import kotlin.io.path.name
 import kotlin.io.path.nameWithoutExtension
 
+// TODO 改成title, filename, parent有不同的规则
 object SeasonProvider : VariableProvider {
 
     private val list: List<Function<Pair<SourceItem, Path>, Int?>> = listOf(
         GeneralSeason,
+        SpSeason,
     )
 
-    // 后面改成调用链
     override fun createSourceGroup(sourceItem: SourceItem): SourceItemGroup {
         return FunctionalItemGroup { path ->
             var seasonNumber = 1
@@ -42,8 +43,12 @@ private object GeneralSeason : Function<Pair<SourceItem, Path>, Int?> {
         val path = t.second
         val sourceItem = t.first
         for (rule in rules) {
-            val res = rule.ifMatchConvert(sourceItem.title)
+            var res = rule.ifMatchConvert(sourceItem.title)
                 ?: rule.ifMatchConvert(path.nameWithoutExtension)
+            if (res == null && path.parent != null) {
+                res = rule.ifMatchConvert(path.parent.name)
+            }
+
             if (res != null) {
                 return res
             }
@@ -51,10 +56,11 @@ private object GeneralSeason : Function<Pair<SourceItem, Path>, Int?> {
         return null
     }
 
-    private val lastMatchPattern = Pattern.compile("(?:\\d+|二|三|四|五|六|七|八|九|十|II|III|IV|V|VI|VII|VIII|IX|X|Ⅱ|Ⅲ|Ⅳ)\$")
+    // TODO 最后一个规则不应该用在filename中，多半会是集数
+    private val lastMatchPattern = "(?:\\d+|二|三|四|五|六|七|八|九|十|II|III|IV|V|VI|VII|VIII|IX|X|Ⅱ|Ⅲ|Ⅳ)\$".toRegex()
 
     // 常见的比如第X季 第X期 S Season
-    private val general = RegexRule(Pattern.compile("S\\d{1,2}|Season \\d{1,2}|第.[季期]|\\d+(?i:rd|nd)")) {
+    private val generalSeasonRegex = RegexRule("S\\d{1,2}|Season \\d{1,2}|第.[季期]|\\d+(?i:rd|nd)".toRegex(RegexOption.IGNORE_CASE)) {
         val s = it.replace("S", "", true)
             .replace("Season", "", true)
             .replace("第", "")
@@ -103,19 +109,49 @@ private object GeneralSeason : Function<Pair<SourceItem, Path>, Int?> {
 
     // 99%是季度命名的规则
     private val rules = listOf(
-        general,
+        generalSeasonRegex,
         last,
     )
 
-    private data class RegexRule(private val pattern: Pattern, val convert: Function<String, Int?>) {
-        fun ifMatchConvert(name: String): Int? {
-            val matcher = pattern.matcher(name)
-            if (matcher.find()) {
-                return convert.apply(matcher.group())
+    private data class RegexRule(private val regex: Regex, val convert: Function<String, Int?>) {
+        fun ifMatchConvert(target: String): Int? {
+            val matcher = regex.find(target)
+            if (matcher != null) {
+                return convert.apply(matcher.value)
             }
             return null
         }
     }
+}
+
+object SpSeason : Function<Pair<SourceItem, Path>, Int?> {
+
+    private val spRegexes = listOf(
+        "OVA|OAD".toRegex(),
+        "Special".toRegex(RegexOption.IGNORE_CASE),
+        "特别篇|\\[SP]".toRegex(),
+        "SPs".toRegex()
+    )
+
+    override fun apply(t: Pair<SourceItem, Path>): Int? {
+        val sourceItem = t.first
+        val path = t.second
+        val parentPathName = path.parent?.name
+        for (spRegex in spRegexes) {
+            var matchResult = spRegex.find(sourceItem.title)
+            if (matchResult == null && parentPathName != null) {
+                matchResult = spRegex.find(parentPathName)
+            }
+            if (matchResult == null) {
+                matchResult = spRegex.find(path.nameWithoutExtension)
+            }
+            if (matchResult != null) {
+                return 0
+            }
+        }
+        return null
+    }
+
 }
 
 private class Season(

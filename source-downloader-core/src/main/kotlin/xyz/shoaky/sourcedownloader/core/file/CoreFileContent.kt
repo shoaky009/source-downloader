@@ -22,6 +22,9 @@ data class CoreFileContent(
     @Transient
     private val sharedVariables = SharedPatternVariables(patternVariables)
 
+    @Transient
+    private val tags: MutableSet<String> = mutableSetOf()
+
     private val targetPath: Path by lazy {
         saveDirectoryPath().resolve(targetFilename())
     }
@@ -35,8 +38,8 @@ data class CoreFileContent(
         return sourceSavePath.resolve(parse.path)
     }
 
-    fun addSharedVariables(patternVariables: PatternVariables) {
-        sharedVariables.addVariables(patternVariables)
+    fun addSharedVariables(shared: PatternVariables) {
+        sharedVariables.addShared(shared)
     }
 
     fun targetFilename(): String {
@@ -91,6 +94,14 @@ data class CoreFileContent(
             path = path.parent
         }
         return path
+    }
+
+    fun tag(tags: List<String>) {
+        this.tags.addAll(tags)
+    }
+
+    fun isTagged(tag: String): Boolean {
+        return tags.contains(tag)
     }
 
     companion object {

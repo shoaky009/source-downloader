@@ -38,7 +38,7 @@ class QbittorrentClientTest {
 
     @Test
     fun torrent_info() {
-        val execute = client.execute(TorrentInfoRequest(hashes = "8a19b59fc53d15172286ccf6167037538c56b59c"))
+        val execute = client.execute(TorrentInfoRequest(hashes = "a8eeaa9978a0af5b20a0f94c5b025d1fe898cc29"))
         println(Jackson.toJsonString(execute.body()))
     }
 

@@ -10,10 +10,10 @@ class SharedPatternVariables(
     private val sharedVariables = MapPatternVariables()
     private val patternVariables = patternVariables.variables()
     override fun variables(): Map<String, String> {
-        return patternVariables + sharedVariables.variables()
+        return sharedVariables.variables() + patternVariables
     }
 
-    fun addVariables(patternVariables: PatternVariables) {
+    fun addShared(patternVariables: PatternVariables) {
         patternVariables.variables().forEach(sharedVariables::addVariable)
     }
 }
