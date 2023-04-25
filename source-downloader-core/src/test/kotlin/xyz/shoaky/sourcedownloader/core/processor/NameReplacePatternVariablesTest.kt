@@ -4,11 +4,11 @@ import org.junit.jupiter.api.Test
 import xyz.shoaky.sourcedownloader.sdk.MapPatternVariables
 import kotlin.test.assertEquals
 
-class NameMappingPatternVariablesTest {
+class NameReplacePatternVariablesTest {
 
     @Test
     fun test() {
-        val patternVariables = NameMappingPatternVariables(
+        val patternVariables = NameReplacePatternVariables(
             MapPatternVariables(
                 mapOf(
                     "episodeNumber" to "01",

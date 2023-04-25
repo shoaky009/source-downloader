@@ -153,7 +153,7 @@ class SourceProcessor(
             sourceItem,
             variableProviders.filter { it.support(sourceItem) }.toList(),
             options.variableConflictStrategy,
-            options.variablesNameMapping
+            options.variableNameReplace
         )
         val sourceContent = createPersistentSourceContent(variablesAggregation, sourceItem)
 

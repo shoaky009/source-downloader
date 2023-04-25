@@ -95,8 +95,8 @@ data class ProcessorConfig(
         val touchItemDirectory: Boolean = true,
         @JsonAlias("clean-empty-directory")
         val cleanEmptyDirectory: Boolean = true,
-        @JsonAlias("variables-name-mapping")
-        val variablesNameMapping: Map<String, String> = emptyMap(),
+        @JsonAlias("variable-name-replace")
+        val variableNameReplace: Map<String, String> = emptyMap(),
         @JsonAlias("tag-filename-pattern")
         val tagFilenamePattern: Map<String, PathPattern> = emptyMap(),
         val taggers: List<ComponentId> = emptyList()

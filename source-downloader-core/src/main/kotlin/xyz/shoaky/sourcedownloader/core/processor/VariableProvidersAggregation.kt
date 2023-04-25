@@ -9,13 +9,13 @@ class VariableProvidersAggregation(
     private val sourceItem: SourceItem,
     providers: List<VariableProvider>,
     private val strategy: VariableConflictStrategy = VariableConflictStrategy.SMART,
-    private val variableNameMapping: Map<String, String> = emptyMap()
+    private val variableNameReplace: Map<String, String> = emptyMap()
 ) : SourceItemGroup {
 
     private val groups = providers.associateBy({ it }, {
-        NameMappingGroup(
+        NameReplaceGroup(
             it.createSourceGroup(sourceItem),
-            variableNameMapping
+            variableNameReplace
         )
     })
 
@@ -37,27 +37,27 @@ class VariableProvidersAggregation(
     }
 }
 
-class NameMappingPatternVariables(
+class NameReplacePatternVariables(
     private val patternVariables: PatternVariables,
-    private val nameMapping: Map<String, String>
+    private val nameReplace: Map<String, String>
 ) : PatternVariables {
 
     override fun variables(): Map<String, String> {
-        return patternVariables.variables().mapKeys { nameMapping[it.key] ?: it.key }
+        return patternVariables.variables().mapKeys { nameReplace[it.key] ?: it.key }
     }
 }
 
-private class NameMappingGroup(
+private class NameReplaceGroup(
     private val sourceItemGroup: SourceItemGroup,
-    private val nameMapping: Map<String, String>
+    private val nameReplace: Map<String, String>
 ) : SourceItemGroup {
     override fun sharedPatternVariables(): PatternVariables {
-        return NameMappingPatternVariables(sourceItemGroup.sharedPatternVariables(), nameMapping)
+        return NameReplacePatternVariables(sourceItemGroup.sharedPatternVariables(), nameReplace)
     }
 
     override fun sourceFiles(paths: List<Path>): List<SourceFile> {
         return sourceItemGroup.sourceFiles(paths).map {
-            NameMappingSourceFile(it, nameMapping)
+            NameMappingSourceFile(it, nameReplace)
         }
     }
 
@@ -66,7 +66,7 @@ private class NameMappingGroup(
         private val nameMapping: Map<String, String>
     ) : SourceFile {
         override fun patternVariables(): PatternVariables {
-            return NameMappingPatternVariables(sourceFile.patternVariables(), nameMapping)
+            return NameReplacePatternVariables(sourceFile.patternVariables(), nameMapping)
         }
     }
 }
