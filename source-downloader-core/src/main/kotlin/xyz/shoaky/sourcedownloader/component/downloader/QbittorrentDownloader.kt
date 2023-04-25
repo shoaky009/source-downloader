@@ -38,8 +38,8 @@ class QbittorrentDownloader(
         }
 
         val torrentHash = getTorrentHash(task.sourceItem)
-        // 必须要等一下qbittorrent(不知道有没有同步添加的方法)
-        Thread.sleep(150L)
+        // NOTE 必须要等一下qbittorrent(不知道有没有同步添加的方法)
+        Thread.sleep(200L)
         val torrentFiles = retry({
             client.execute(TorrentFilesRequest(
                 torrentHash
