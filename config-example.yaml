@@ -97,10 +97,6 @@ processors:
       provide-metadata-variables: true
       #保存SourceItem的处理信息
       save-content: true
-      #重命名模式,默认:MOVE
-      #MOVE:移动文件
-      #HARD_LINK:硬链接
-      rename-mode: MOVE
       #正则过滤SourceItem中的title,考虑弃用和下面的表达式过滤重复但正则比SpEL的要简单
       regex-filters:
         - "720(?i)P"

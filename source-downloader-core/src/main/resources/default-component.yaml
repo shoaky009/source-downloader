@@ -2,6 +2,8 @@
 file-mover:
   - name: general
     type: general
+  - name: hardlink
+    type: hardlink
 run-after-completion:
   - name: touch-item-directory
     type: touch-item-directory

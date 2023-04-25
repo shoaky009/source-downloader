@@ -9,13 +9,11 @@ import xyz.shoaky.sourcedownloader.core.ProcessorSubmitDownloadEvent
 import xyz.shoaky.sourcedownloader.core.config.ProcessorConfig
 import xyz.shoaky.sourcedownloader.core.file.CoreFileContent
 import xyz.shoaky.sourcedownloader.core.file.PersistentSourceContent
-import xyz.shoaky.sourcedownloader.core.file.RenameMode
 import xyz.shoaky.sourcedownloader.sdk.*
 import xyz.shoaky.sourcedownloader.sdk.component.*
 import xyz.shoaky.sourcedownloader.sdk.util.Jackson
 import xyz.shoaky.sourcedownloader.util.Events
 import java.io.IOException
-import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Duration
 import java.time.LocalDateTime
@@ -384,15 +382,6 @@ class SourceProcessor(
         if (renameFiles.isEmpty()) {
             return true
         }
-
-        if (options.renameMode == RenameMode.HARD_LINK) {
-            renameFiles.forEach {
-                val targetFilePath = it.targetPath()
-                Files.createLink(targetFilePath, it.fileDownloadPath)
-            }
-            return true
-        }
-
         return fileMover.rename(content)
     }
 

@@ -4,7 +4,6 @@ package xyz.shoaky.sourcedownloader.core.config
 // import io.swagger.v3.oas.annotations.media.SchemaProperty
 import com.fasterxml.jackson.annotation.*
 import xyz.shoaky.sourcedownloader.core.file.ParsingFailedStrategy
-import xyz.shoaky.sourcedownloader.core.file.RenameMode
 import xyz.shoaky.sourcedownloader.core.processor.VariableConflictStrategy
 import xyz.shoaky.sourcedownloader.sdk.DownloadOptions
 import xyz.shoaky.sourcedownloader.sdk.PathPattern
@@ -77,8 +76,6 @@ data class ProcessorConfig(
         val provideMetadataVariables: Boolean = true,
         @JsonAlias("save-content")
         val saveContent: Boolean = true,
-        @JsonAlias("rename-mode")
-        val renameMode: RenameMode = RenameMode.MOVE,
         @JsonAlias("regex-filters")
         val regexFilters: List<String> = emptyList(),
         @JsonAlias("item-expression-exclusions")
