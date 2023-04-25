@@ -2,7 +2,6 @@ package xyz.shoaky.sourcedownloader.core
 
 import org.springframework.beans.factory.support.DefaultListableBeanFactory
 import org.springframework.stereotype.Component
-import xyz.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
 import xyz.shoaky.sourcedownloader.core.processor.SourceProcessor
 import xyz.shoaky.sourcedownloader.sdk.component.*
 import xyz.shoaky.sourcedownloader.util.Events
@@ -57,8 +56,7 @@ class SpringSdComponentManager(
         val beanName = componentType.instanceName(name)
         val exists = applicationContext.containsSingleton(beanName)
         if (exists) {
-            log.info("组件已存在: $beanName")
-            return
+            throw ComponentException.instanceExists("component $beanName already exists, check your config.yaml and remove duplicate component")
         }
 
         val supplier = getSupplier(componentType)

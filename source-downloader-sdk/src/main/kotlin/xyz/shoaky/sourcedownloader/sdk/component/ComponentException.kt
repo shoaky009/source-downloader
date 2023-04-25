@@ -9,6 +9,7 @@ private constructor(message: String, val type: String) : RuntimeException(messag
         fun missing(message: String) = ComponentException(message, "missing")
 
         fun supplierExists(message: String) = ComponentException(message, "supplier:exists")
+
         fun props(message: String) = ComponentException(message, "props:invalid")
 
         fun compatibility(message: String) = ComponentException(message, "compatibility")
@@ -16,5 +17,7 @@ private constructor(message: String, val type: String) : RuntimeException(messag
         fun processor(message: String) = ComponentException(message, "processor:exists")
 
         fun processorMissing(message: String) = ComponentException(message, "processor:missing")
+
+        fun instanceExists(message: String) = ComponentException(message, "instance:exists")
     }
 }

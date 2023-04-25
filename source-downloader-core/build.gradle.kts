@@ -7,7 +7,7 @@ plugins {
     id("maven-publish")
     id("org.springframework.boot")
     kotlin("plugin.spring")
-    id("org.graalvm.buildtools.native") version "0.9.20"
+    // id("org.graalvm.buildtools.native") version "0.9.20"
 }
 
 dependencies {
@@ -32,21 +32,16 @@ dependencies {
     implementation("com.google.guava:guava:31.1-jre")
     implementation("com.vladmihalcea:hibernate-types-60:2.21.1")
     implementation("org.springframework.retry:spring-retry")
-
-    // 可分离只有rss/jackett source组件需要
-    implementation("com.apptasticsoftware:rssreader:3.3.0")
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml")
 
     implementation("com.github.atomashpolskiy:bt-core:1.10")
-    implementation("com.dgtlrepublic:anitomyJ:0.0.7")
-
-    // TODO 不用这个库一个简单的请求引用了各种乱七八糟重复功能的依赖
-    implementation("com.github.plexpt:chatgpt:4.0.5")
-    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml")
 
     // 内置插件，单纯为了方便
     implementation("xyz.shoaky:source-downloader-mikan-plugin:1.0.0")
-    implementation(project(":plugins:source-downloader-dlsite-plugin"))
+    implementation(project(":plugins:source-downloader-common-plugin"))
     implementation(project(":plugins:source-downloader-tagger-plugin"))
+    // implementation(project(":plugins:source-downloader-telegram-plugin"))
+    implementation(project(":plugins:source-downloader-ai-plugin"))
 
 }
 
@@ -75,10 +70,10 @@ tasks.withType<BootJar> {
     }
 }
 
-graalvmNative {
-    binaries.all {
-        resources.includedPatterns.add(".*.yaml")
-        resources.includedPatterns.add(".*.yml")
-        resources.autodetect()
-    }
-}
+// graalvmNative {
+//     binaries.all {
+//         resources.includedPatterns.add(".*.yaml")
+//         resources.includedPatterns.add(".*.yml")
+//         resources.autodetect()
+//     }
+// }

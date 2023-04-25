@@ -36,6 +36,7 @@
             <version>${kotlin.version}</version>
             <scope>test</scope>
         </dependency>
+        <!--待移除-->
         <dependency>
             <groupId>com.dgtlrepublic</groupId>
             <artifactId>anitomyJ</artifactId>
