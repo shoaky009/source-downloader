@@ -21,6 +21,8 @@ class MikanVariableProvider(
     private val mikanToken: String? = null
 ) : VariableProvider {
 
+    override val accuracy: Int = 3
+
     init {
         log.debug("Mikan初始化,token:{}", mikanToken)
     }

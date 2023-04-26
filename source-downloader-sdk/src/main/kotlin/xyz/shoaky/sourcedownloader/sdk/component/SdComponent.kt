@@ -97,12 +97,11 @@ interface Downloader : SdComponent {
 interface VariableProvider : SdComponent {
 
     /**
-     * 变量准确度 当和其他provider变量冲突时会根据该值来决定
+     * 变量准确度
      * 0:low
      * 1:med
      * 2:high
-     *
-     * 考虑过和单个变量绑定，但是感觉没必要
+     * 3:99.99%准确 一般是通过SourceItem中特定的ID，然后从元数据源中获取的
      */
     val accuracy: Int get() = 1
 

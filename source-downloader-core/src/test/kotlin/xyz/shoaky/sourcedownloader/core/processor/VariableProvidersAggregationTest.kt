@@ -296,10 +296,21 @@ class VariableProvidersAggregationTest {
             1
         )
 
-        val aggregation1 = VariableProvidersAggregation(sourceItem(), listOf(p1, p3, p2, p4))
+        val p5 = CustomProvider(
+            mapOf("season" to "02", "test2" to "3"),
+            listOf(
+                UniversalSourceFile(MapPatternVariables()),
+                UniversalSourceFile(MapPatternVariables()),
+                UniversalSourceFile(MapPatternVariables())
+            ),
+            4
+        )
+
+        val aggregation1 = VariableProvidersAggregation(sourceItem(), listOf(p1, p3, p2, p4, p5))
         val sharedVariables1 = aggregation1.sharedPatternVariables().variables()
         assertEquals(3, sharedVariables1.size)
         assertEquals("02", sharedVariables1["season"])
+        assertEquals("3", sharedVariables1["test2"])
 
         val sourceFiles1 = aggregation1.sourceFiles(listOf(
             Path(""), Path(""), Path("")
@@ -309,10 +320,11 @@ class VariableProvidersAggregationTest {
         assertEquals("5", sourceFiles1[2].patternVariables().variables()["key4.1"])
 
         // change order
-        val aggregation2 = VariableProvidersAggregation(sourceItem(), listOf(p4, p3, p1, p2))
+        val aggregation2 = VariableProvidersAggregation(sourceItem(), listOf(p5, p4, p3, p1, p2))
         val sharedVariables2 = aggregation2.sharedPatternVariables().variables()
         assertEquals(3, sharedVariables2.size)
         assertEquals("02", sharedVariables2["season"])
+        assertEquals("3", sharedVariables1["test2"])
 
         val sourceFiles2 = aggregation2.sourceFiles(listOf(
             Path(""), Path(""), Path("")

@@ -285,7 +285,12 @@ private class SmartItemGroup(
 
     private class ValueAccuracyCount(val value: String, val accuracy: Int, val count: Int) : Comparable<ValueAccuracyCount> {
         override fun compareTo(other: ValueAccuracyCount): Int {
-            return accuracy.compareTo(other.accuracy) + count.compareTo(other.count)
+            val accuracyCmp = accuracy.compareTo(other.accuracy)
+            return if (accuracyCmp != 0) {
+                accuracyCmp
+            } else {
+                count.compareTo(other.count)
+            }
         }
 
         override fun equals(other: Any?): Boolean {
