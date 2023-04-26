@@ -20,6 +20,7 @@ import java.time.LocalDateTime
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.io.path.exists
 import kotlin.time.ExperimentalTime
 import kotlin.time.measureTime
@@ -115,14 +116,22 @@ class SourceProcessor(
     }
 
     private fun process(dryRun: Boolean = false): List<ProcessingContent> {
-        val items = retry.execute<List<SourceItem>, IOException> {
-            source.fetch()
+        val itemIterator = retry.execute<Iterator<SourceItem>, IOException> {
+            source.fetch().iterator()
         }
 
         val result = mutableListOf<ProcessingContent>()
         var failure = false
-        for (item in items) {
-            if (sourceItemFilters.all { it.test(item) }.not()) {
+        val fetchEndsEarly = options.fetchEndsEarly
+        // 为后面多线程准备
+        val filterTimes = AtomicInteger(0)
+        while (itemIterator.hasNext() && filterTimes.get() <= FILTER_THRESHOLD) {
+            val item = itemIterator.next()
+            val filterBy = sourceItemFilters.firstOrNull { it.test(item).not() }
+            if (filterBy != null) {
+                if (fetchEndsEarly && filterBy::class == SourceHashingItemFilter::class) {
+                    filterTimes.incrementAndGet()
+                }
                 log.debug("Filtered item:{}", item)
                 continue
             }
@@ -404,7 +413,7 @@ class SourceProcessor(
     companion object {
         // 随便给的
         private val scheduledExecutor = Executors.newSingleThreadScheduledExecutor()
-
+        private const val FILTER_THRESHOLD = 10
         private val retry = RetryTemplateBuilder()
             .maxAttempts(3)
             .fixedBackoff(Duration.ofSeconds(5L).toMillis())

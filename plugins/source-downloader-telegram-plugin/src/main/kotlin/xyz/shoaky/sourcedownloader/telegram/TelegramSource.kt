@@ -4,7 +4,7 @@ import xyz.shoaky.sourcedownloader.sdk.SourceItem
 import xyz.shoaky.sourcedownloader.sdk.component.Source
 
 class TelegramSource : Source {
-    override fun fetch(): List<SourceItem> {
+    override fun fetch(): Iterable<SourceItem> {
         return emptyList()
     }
 }

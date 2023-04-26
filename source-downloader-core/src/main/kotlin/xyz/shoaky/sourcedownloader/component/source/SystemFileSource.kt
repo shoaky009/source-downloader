@@ -19,7 +19,8 @@ class SystemFileSource(
     private val mode: Int = 0
 ) : Source, Downloader {
 
-    override fun fetch(): List<SourceItem> {
+    // TODO lazy
+    override fun fetch(): Iterable<SourceItem> {
         return when (mode) {
             0 -> createRootFileSourceItems()
             1 -> createEachFileSourceItems()

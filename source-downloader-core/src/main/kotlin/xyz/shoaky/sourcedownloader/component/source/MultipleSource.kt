@@ -6,7 +6,7 @@ import xyz.shoaky.sourcedownloader.sdk.component.Source
 class MultipleSource(
     private vararg val sources: Source
 ) : Source {
-    override fun fetch(): List<SourceItem> {
+    override fun fetch(): Iterable<SourceItem> {
         return sources.flatMap { it.fetch() }
     }
 }

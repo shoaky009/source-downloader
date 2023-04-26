@@ -11,7 +11,7 @@ import java.time.format.DateTimeFormatter
 class RssSource(private val url: String) : Source {
 
     private val rssReader = RssReader()
-    override fun fetch(): List<SourceItem> {
+    override fun fetch(): Iterable<SourceItem> {
         return rssReader.read(url)
             .map {
                 kotlin.runCatching {

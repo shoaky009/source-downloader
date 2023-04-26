@@ -13,7 +13,7 @@ class JackettSource(
 ) : Source {
 
     private val rssReader = RssReader()
-    override fun fetch(): List<SourceItem> {
+    override fun fetch(): Iterable<SourceItem> {
         return rssReader.read(url)
             .map {
                 kotlin.runCatching {

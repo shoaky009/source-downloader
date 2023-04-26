@@ -15,6 +15,6 @@ class RssSourceTest {
     @Test
     fun normal() {
         val items = rssSource.fetch()
-        assertEquals(12, items.size)
+        assertEquals(12, items.toList().size)
     }
 }

@@ -77,7 +77,7 @@ interface Trigger : SdComponent {
 
 interface Source : SdComponent {
 
-    fun fetch(): List<SourceItem>
+    fun fetch(): Iterable<SourceItem>
 
 }
 
