@@ -383,14 +383,14 @@ class SourceProcessor(
 
     private fun rename(content: PersistentSourceContent): Boolean {
         val renameFiles = getRenameFiles(content)
+        if (renameFiles.isEmpty()) {
+            return true
+        }
         renameFiles.map { it.saveDirectoryPath() }
             .distinct()
             .forEach {
                 fileMover.createDirectories(it)
             }
-        if (renameFiles.isEmpty()) {
-            return true
-        }
         return fileMover.rename(content)
     }
 

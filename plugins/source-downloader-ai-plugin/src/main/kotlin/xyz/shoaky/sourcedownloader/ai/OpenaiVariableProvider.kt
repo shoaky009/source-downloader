@@ -21,11 +21,7 @@ class OpenaiVariableProvider(
         .build()
         .init()
 
-    private val role = Message.ofSystem("""
-            你现在是一个文件解析器，从文件名中解析信息
-            需要的信息有:${config.resolveVariables}
-            返回json，不要有其他会干扰json解析的字符
-        """.trimIndent())
+    private val role = Message.ofSystem(config.role)
 
     override fun createSourceGroup(sourceItem: SourceItem): SourceItemGroup {
 
@@ -39,6 +35,11 @@ class OpenaiVariableProvider(
         val resolveVariables: List<String> = emptyList(),
         val type: String = "openai",
         val apiHost: String = "https://api.openai.com/",
+        val role: String = """
+            你现在是一个文件解析器，从文件名中解析信息
+            需要的信息有:${resolveVariables}
+            返回json，不要有其他会干扰json解析的字符
+        """.trimIndent()
     )
 }
 

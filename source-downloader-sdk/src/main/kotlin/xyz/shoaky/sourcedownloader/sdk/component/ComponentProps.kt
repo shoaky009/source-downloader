@@ -45,6 +45,8 @@ private constructor(val properties: MutableMap<String, Any>) {
 
     companion object {
 
+        private val emptyProps = ComponentProps(mutableMapOf())
+
         fun fromMap(map: Map<String, Any>): ComponentProps {
             val mutableMapOf = mutableMapOf<String, Any>()
             mutableMapOf.putAll(map)
@@ -65,7 +67,7 @@ private constructor(val properties: MutableMap<String, Any>) {
         }
 
         fun empty(): ComponentProps {
-            return ComponentProps(mutableMapOf())
+            return emptyProps
         }
 
     }

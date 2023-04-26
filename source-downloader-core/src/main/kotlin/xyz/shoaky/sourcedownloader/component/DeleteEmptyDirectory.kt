@@ -5,7 +5,7 @@ import xyz.shoaky.sourcedownloader.sdk.component.RunAfterCompletion
 import java.nio.file.Files
 import kotlin.io.path.exists
 
-object CleanEmptyDirectory : RunAfterCompletion {
+object DeleteEmptyDirectory : RunAfterCompletion {
     override fun accept(t: SourceContent) {
         t.sourceFiles.firstOrNull()?.run {
             val directoryPath = this.downloadItemFileRootDirectory()
