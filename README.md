@@ -15,7 +15,7 @@
 编写config.yaml挂载到容器/app/data下，然后运行镜像
 
 ```shell
-run -p 8080:8080 -v /path/source-downloader:/app/data shoaky009/source-downloader:latest
+docker run -p 8080:8080 -v /path/source-downloader:/app/data shoaky009/source-downloader:latest
 ```
 
 config.yaml配置详情查看[文档](https://github.com/shoaky009/source-downloader/wiki)
