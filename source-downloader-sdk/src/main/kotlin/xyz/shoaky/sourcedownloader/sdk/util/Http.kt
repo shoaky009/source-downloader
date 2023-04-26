@@ -2,7 +2,9 @@ package xyz.shoaky.sourcedownloader.sdk.util
 
 import com.fasterxml.jackson.core.type.TypeReference
 import java.io.InputStream
+import java.net.URI
 import java.net.http.HttpClient
+import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 
 object Http {
@@ -20,6 +22,16 @@ object Http {
         }
     }
 }
+
+fun httpGetRequest(
+    uri: URI,
+    headers: Map<String, String> = emptyMap()
+): HttpRequest {
+    val builder = HttpRequest.newBuilder(uri).GET()
+    headers.forEach(builder::header)
+    return builder.build()
+}
+
 fun String.find(vararg regexes: Regex): String? {
     for (regex in regexes) {
         val match = regex.find(this)

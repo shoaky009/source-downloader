@@ -24,9 +24,11 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.2")
     testImplementation("org.junit.jupiter:junit-jupiter-engine:5.9.2")
 
+    implementation("com.google.zxing:core:3.5.1")
     implementation(platform("it.tdlight:tdlight-java-bom:2.8.10.6"))
     implementation("it.tdlight:tdlight-java")
-    // implementation("it.tdlight:tdlight-natives-osx-aarch64")
+    implementation("it.tdlight:tdlight-natives-windows-amd64")
+
 }
 
 tasks.withType<KotlinCompile> {
