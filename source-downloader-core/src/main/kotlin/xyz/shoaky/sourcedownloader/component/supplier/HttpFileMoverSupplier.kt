@@ -21,8 +21,4 @@ object HttpFileMoverSupplier : SdComponentSupplier<HttpFileMover> {
         )
     }
 
-    override fun getComponentClass(): Class<HttpFileMover> {
-        return HttpFileMover::class.java
-    }
-
 }

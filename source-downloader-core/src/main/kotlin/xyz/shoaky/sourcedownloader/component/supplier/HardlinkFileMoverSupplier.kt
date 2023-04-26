@@ -16,7 +16,4 @@ object HardlinkFileMoverSupplier : SdComponentSupplier<HardlinkFileMover> {
         )
     }
 
-    override fun getComponentClass(): Class<HardlinkFileMover> {
-        return HardlinkFileMover::class.java
-    }
 }

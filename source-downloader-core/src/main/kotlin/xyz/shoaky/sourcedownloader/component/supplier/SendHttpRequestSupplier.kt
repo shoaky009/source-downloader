@@ -16,8 +16,4 @@ object SendHttpRequestSupplier : SdComponentSupplier<SendHttpRequest> {
         )
     }
 
-    override fun getComponentClass(): Class<SendHttpRequest> {
-        return SendHttpRequest::class.java
-    }
-
 }

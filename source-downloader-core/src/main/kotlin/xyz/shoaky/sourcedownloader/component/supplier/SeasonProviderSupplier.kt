@@ -16,8 +16,4 @@ object SeasonProviderSupplier : SdComponentSupplier<SeasonProvider> {
         )
     }
 
-    override fun getComponentClass(): Class<SeasonProvider> {
-        return SeasonProvider::class.java
-    }
-
 }

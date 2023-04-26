@@ -6,6 +6,9 @@ import xyz.shoaky.sourcedownloader.core.processor.SourceProcessor
 import xyz.shoaky.sourcedownloader.sdk.component.*
 import xyz.shoaky.sourcedownloader.util.Events
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.reflect.full.declaredMemberFunctions
+import kotlin.reflect.full.valueParameters
+import kotlin.reflect.jvm.jvmErasure
 
 interface SdComponentManager {
 
@@ -42,6 +45,7 @@ interface SdComponentManager {
         return getAllComponent().filterIsInstance<VariableProvider>()
     }
 
+    fun getComponentDescriptions(): List<ComponentDescription>
 }
 
 @Component
@@ -95,7 +99,7 @@ class SpringSdComponentManager(
 
     override fun getSupplier(type: ComponentType): SdComponentSupplier<*> {
         return sdComponentSuppliers[type]
-            ?: throw ComponentException.unsupported("Supplier不存在, 组件类型:${type.klass.simpleName}:${type.typeName}")
+            ?: throw ComponentException.unsupported("Supplier不存在, 组件类型:${type.topTypeClass.simpleName}:${type.typeName}")
     }
 
     override fun getSuppliers(): List<SdComponentSupplier<*>> {
@@ -120,4 +124,42 @@ class SpringSdComponentManager(
             applicationContext.destroySingleton(beanName)
         }
     }
+
+    override fun getComponentDescriptions(): List<ComponentDescription> {
+        return sdComponentSuppliers.values.distinct()
+            .map { supplier ->
+                val typeDesc = supplier.supplyTypes().groupBy { it.topType() }
+                    .map { (topType, types) ->
+                        TypeDescription(
+                            topType,
+                            types.map { it.typeName },
+                            // TODO description
+                            "",
+                        )
+                    }
+
+                val componentClass = supplier::class.declaredMemberFunctions
+                    .first {
+                        it.name == "apply" && it.valueParameters.size == 1
+                    }.returnType.jvmErasure
+
+                val any = typeDesc.any { it.topType == Components.VARIABLE_PROVIDER }
+                ComponentDescription(
+                    componentClass.simpleName!!,
+                    typeDesc,
+                    emptyList(),
+                    ruleDescriptions(supplier),
+                    if (any) emptyList() else null
+                )
+            }
+    }
+
+    private fun ruleDescriptions(supplier: SdComponentSupplier<*>) =
+        supplier.rules().map {
+            RuleDescription(
+                if (it.isAllow) "允许" else "禁止",
+                it.type.lowerHyphenName(),
+                it.value.simpleName!!
+            )
+        }
 }

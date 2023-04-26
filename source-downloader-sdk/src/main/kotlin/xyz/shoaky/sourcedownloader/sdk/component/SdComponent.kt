@@ -39,7 +39,7 @@ enum class Components(
     ;
 
     fun lowerHyphenName(): String {
-        return CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_HYPHEN,
+        return CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_HYPHEN,
             this.name
         )
     }

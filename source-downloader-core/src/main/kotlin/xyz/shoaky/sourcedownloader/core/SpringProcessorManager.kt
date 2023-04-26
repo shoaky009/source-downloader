@@ -119,7 +119,7 @@ class SpringProcessorManager(
                 .also { completion -> processor.addRunAfterCompletion(completion) }
         }
         processor.scheduleRenameTask(options.renameTaskInterval)
-        if (options.cleanEmptyDirectory) {
+        if (options.deleteEmptyDirectory) {
             val cleanEmptyDirectory = CleanEmptyDirectorySupplier.apply(ComponentProps.empty())
             processor.addRunAfterCompletion(cleanEmptyDirectory)
         }
@@ -137,8 +137,8 @@ class SpringProcessorManager(
     // TODO 第二个参数应该给组件的描述对象
     private fun check(componentType: ComponentType, components: List<SdComponent>) {
         val supplier = componentManager.getSupplier(componentType)
-        val rules = supplier.rules()
-        for (rule in rules) {
+        val compatibilities = supplier.rules()
+        for (rule in compatibilities) {
             components.forEach {
                 rule.verify(it)
             }

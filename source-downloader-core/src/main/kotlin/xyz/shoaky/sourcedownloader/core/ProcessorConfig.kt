@@ -89,8 +89,8 @@ data class ProcessorConfig(
         val parsingFailedStrategy: ParsingFailedStrategy = ParsingFailedStrategy.USE_ORIGINAL_FILENAME,
         @JsonAlias("touch-item-directory")
         val touchItemDirectory: Boolean = true,
-        @JsonAlias("clean-empty-directory")
-        val cleanEmptyDirectory: Boolean = true,
+        @JsonAlias("delete-empty-directory")
+        val deleteEmptyDirectory: Boolean = true,
         @JsonAlias("variable-name-replace")
         val variableNameReplace: Map<String, String> = emptyMap(),
         @JsonAlias("tag-filename-pattern")

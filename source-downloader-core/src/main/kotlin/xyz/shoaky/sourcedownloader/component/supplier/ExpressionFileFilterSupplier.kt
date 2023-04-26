@@ -26,8 +26,4 @@ object ExpressionFileFilterSupplier : SdComponentSupplier<ExpressionFileFilter> 
         )
     }
 
-    override fun getComponentClass(): Class<ExpressionFileFilter> {
-        return ExpressionFileFilter::class.java
-    }
-
 }

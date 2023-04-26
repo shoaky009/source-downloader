@@ -6,16 +6,16 @@ import kotlin.reflect.KClass
 data class ComponentType(
     val typeName: String,
     // TODO 限制密封类
-    val klass: KClass<out SdComponent>
+    val topTypeClass: KClass<out SdComponent>
 ) {
 
     constructor(type: String, name: String) : this(name, componentTypes[type]
         ?: throw ComponentException.unsupported("不支持的类型$type, 支持的类型有${componentTypes.keys}"))
 
-    fun type(): Components {
-        return Components.fromClass(klass)
+    fun topType(): Components {
+        return Components.fromClass(topTypeClass)
         // 不应该出现
-            ?: throw ComponentException.unsupported("不支持的类型${klass.simpleName}")
+            ?: throw ComponentException.unsupported("不支持的类型${topTypeClass.simpleName}")
     }
 
     companion object {
@@ -47,7 +47,7 @@ data class ComponentType(
         }
     }
 
-    fun fullName() = "${klass.simpleName}:$typeName"
+    fun fullName() = "${topTypeClass.simpleName}:$typeName"
 
     fun instanceName(name: String) = "${fullName()}:${name}"
 

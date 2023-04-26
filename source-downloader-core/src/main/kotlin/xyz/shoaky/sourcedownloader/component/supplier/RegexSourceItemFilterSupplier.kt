@@ -20,10 +20,6 @@ object RegexSourceItemFilterSupplier : SdComponentSupplier<RegexSourceItemFilter
         return listOf(ComponentType("regex", SourceItemFilter::class))
     }
 
-    override fun getComponentClass(): Class<RegexSourceItemFilter> {
-        return RegexSourceItemFilter::class.java
-    }
-
     fun regexes(regexes: List<String> = emptyList()): RegexSourceItemFilter {
         return RegexSourceItemFilter(regexes.map { Regex(it) })
     }

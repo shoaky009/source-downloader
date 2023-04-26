@@ -15,8 +15,4 @@ object OpenaiVariableProviderSupplier : SdComponentSupplier<OpenaiVariableProvid
         )
     }
 
-    override fun getComponentClass(): Class<OpenaiVariableProvider> {
-        return OpenaiVariableProvider::class.java
-    }
-
 }

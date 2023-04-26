@@ -15,9 +15,4 @@ internal object DlsiteVariableProviderSupplier : SdComponentSupplier<DlsiteVaria
         )
     }
 
-    override fun getComponentClass(): Class<DlsiteVariableProvider> {
-        return DlsiteVariableProvider::class.java
-    }
-
-
 }

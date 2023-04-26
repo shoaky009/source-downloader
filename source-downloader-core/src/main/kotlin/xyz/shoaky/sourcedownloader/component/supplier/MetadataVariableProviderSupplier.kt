@@ -16,8 +16,4 @@ object MetadataVariableProviderSupplier : SdComponentSupplier<MetadataVariablePr
         )
     }
 
-    override fun getComponentClass(): Class<MetadataVariableProvider> {
-        return MetadataVariableProvider::class.java
-    }
-
 }

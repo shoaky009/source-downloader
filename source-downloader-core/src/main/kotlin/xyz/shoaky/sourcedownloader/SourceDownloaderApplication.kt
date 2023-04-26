@@ -86,7 +86,7 @@ class SourceDownloaderApplication(
             .map { it.supplyTypes() }
             .flatten()
             .distinct()
-            .groupBy({ it.klass.simpleName }, { it.typeName })
+            .groupBy({ it.topTypeClass.simpleName }, { it.typeName })
         log.info("组件注册完成:$types")
     }
 
@@ -105,7 +105,7 @@ class SourceDownloaderApplication(
         configs.forEach {
             val type = ComponentType(it.type, componentKClass)
             componentManager.createComponent(it.name, type, ComponentProps.fromMap(it.props))
-            log.info("成功创建组件${type.klass.simpleName}:${it.type}:${it.name}")
+            log.info("成功创建组件${type.topTypeClass.simpleName}:${it.type}:${it.name}")
         }
     }
 

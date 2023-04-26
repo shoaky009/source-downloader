@@ -26,8 +26,4 @@ class MultipleSourceSupplier(val componentManager: SdComponentManager) : SdCompo
             ComponentType.source("aggregated"),
         )
     }
-
-    override fun getComponentClass(): Class<MultipleSource> {
-        return MultipleSource::class.java
-    }
 }

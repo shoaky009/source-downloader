@@ -24,8 +24,4 @@ object TelegramSupplier : SdComponentSupplier<TelegramSource> {
             ComponentRule.allowDownloader(TelegramSource::class),
         )
     }
-
-    override fun getComponentClass(): Class<TelegramSource> {
-        return TelegramSource::class.java
-    }
 }

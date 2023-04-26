@@ -26,8 +26,4 @@ object ExpressionItemFilterSupplier : SdComponentSupplier<ExpressionItemFilter> 
         return listOf(ComponentType("expression", SourceItemFilter::class))
     }
 
-    override fun getComponentClass(): Class<ExpressionItemFilter> {
-        return ExpressionItemFilter::class.java
-    }
-
 }

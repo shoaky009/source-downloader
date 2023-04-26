@@ -21,10 +21,6 @@ object SystemFileSourceSupplier : SdComponentSupplier<SystemFileSource> {
         )
     }
 
-    override fun getComponentClass(): Class<SystemFileSource> {
-        return SystemFileSource::class.java
-    }
-
     override fun rules(): List<ComponentRule> {
         return listOf(
             ComponentRule.allowSource(SystemFileSource::class),

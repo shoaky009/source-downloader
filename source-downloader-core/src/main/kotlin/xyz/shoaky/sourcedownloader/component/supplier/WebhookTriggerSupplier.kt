@@ -19,8 +19,4 @@ class WebhookTriggerSupplier(
         return listOf(ComponentType.trigger("webhook"))
     }
 
-    override fun getComponentClass(): Class<WebhookTrigger> {
-        return WebhookTrigger::class.java
-    }
-
 }

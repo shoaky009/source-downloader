@@ -16,8 +16,4 @@ object RssSourceSupplier : SdComponentSupplier<RssSource> {
         )
     }
 
-    override fun getComponentClass(): Class<RssSource> {
-        return RssSource::class.java
-    }
-
 }

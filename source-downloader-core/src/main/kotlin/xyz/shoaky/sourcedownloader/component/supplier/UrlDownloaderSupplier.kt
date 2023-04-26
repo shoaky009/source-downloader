@@ -20,7 +20,4 @@ object UrlDownloaderSupplier : SdComponentSupplier<UrlDownloader> {
         )
     }
 
-    override fun getComponentClass(): Class<UrlDownloader> {
-        return UrlDownloader::class.java
-    }
 }

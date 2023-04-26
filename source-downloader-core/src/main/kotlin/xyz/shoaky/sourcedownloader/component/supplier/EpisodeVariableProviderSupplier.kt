@@ -15,8 +15,4 @@ object EpisodeVariableProviderSupplier : SdComponentSupplier<EpisodeVariableProv
             ComponentType.provider("episode")
         )
     }
-
-    override fun getComponentClass(): Class<EpisodeVariableProvider> {
-        return EpisodeVariableProvider::class.java
-    }
 }

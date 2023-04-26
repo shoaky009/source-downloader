@@ -25,8 +25,4 @@ object RunCommandSupplier : SdComponentSupplier<RunCommand> {
         )
     }
 
-    override fun getComponentClass(): Class<RunCommand> {
-        return RunCommand::class.java
-    }
-
 }

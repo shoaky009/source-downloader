@@ -19,7 +19,4 @@ object QbittorrentDownloaderSupplier : SdComponentSupplier<QbittorrentDownloader
         )
     }
 
-    override fun getComponentClass(): Class<QbittorrentDownloader> {
-        return QbittorrentDownloader::class.java
-    }
 }

@@ -120,10 +120,6 @@ object MikanVariableProviderSupplier : SdComponentSupplier<MikanVariableProvider
         return MikanVariableProvider(token)
     }
 
-    override fun getComponentClass(): Class<MikanVariableProvider> {
-        return MikanVariableProvider::class.java
-    }
-
     override fun supplyTypes(): List<ComponentType> {
         return listOf(ComponentType.provider("mikan"))
     }

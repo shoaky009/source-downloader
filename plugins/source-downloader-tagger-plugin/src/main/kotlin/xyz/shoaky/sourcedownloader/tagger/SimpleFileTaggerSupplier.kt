@@ -15,8 +15,4 @@ internal object SimpleFileTaggerSupplier : SdComponentSupplier<SimpleFileTagger>
         )
     }
 
-    override fun getComponentClass(): Class<SimpleFileTagger> {
-        return SimpleFileTagger::class.java
-    }
-
 }

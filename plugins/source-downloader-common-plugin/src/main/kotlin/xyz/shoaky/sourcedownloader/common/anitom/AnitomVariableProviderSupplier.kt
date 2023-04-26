@@ -14,8 +14,4 @@ object AnitomVariableProviderSupplier : SdComponentSupplier<AnitomVariableProvid
             ComponentType.provider("anitom")
         )
     }
-
-    override fun getComponentClass(): Class<AnitomVariableProvider> {
-        return AnitomVariableProvider::class.java
-    }
 }

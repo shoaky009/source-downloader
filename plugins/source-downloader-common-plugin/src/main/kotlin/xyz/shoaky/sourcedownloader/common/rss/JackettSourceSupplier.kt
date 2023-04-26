@@ -16,8 +16,4 @@ object JackettSourceSupplier : SdComponentSupplier<JackettSource> {
         )
     }
 
-    override fun getComponentClass(): Class<JackettSource> {
-        return JackettSource::class.java
-    }
-
 }

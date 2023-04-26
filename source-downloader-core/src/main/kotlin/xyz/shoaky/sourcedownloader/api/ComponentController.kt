@@ -2,14 +2,8 @@ package xyz.shoaky.sourcedownloader.api
 
 import org.springframework.stereotype.Service
 import org.springframework.web.bind.annotation.*
-import xyz.shoaky.sourcedownloader.core.ComponentConfig
-import xyz.shoaky.sourcedownloader.core.ComponentConfigStorage
-import xyz.shoaky.sourcedownloader.core.ConfigOperator
-import xyz.shoaky.sourcedownloader.core.SdComponentManager
-import xyz.shoaky.sourcedownloader.sdk.component.ComponentException
-import xyz.shoaky.sourcedownloader.sdk.component.ComponentProps
-import xyz.shoaky.sourcedownloader.sdk.component.ComponentType
-import xyz.shoaky.sourcedownloader.sdk.component.Components
+import xyz.shoaky.sourcedownloader.core.*
+import xyz.shoaky.sourcedownloader.sdk.component.*
 
 @RestController
 @RequestMapping("/api/component")
@@ -67,15 +61,13 @@ private class ComponentController(
         configOperator.deleteComponent(type, typeName, name)
     }
 
-    @GetMapping("/types")
-    fun getComponentTypes(): Map<String, List<String>> {
-        return componentManager.getSuppliers()
-            .flatMap { it.supplyTypes() }
-            .map {
-                it.klass.simpleName!! to it.typeName
-            }.groupBy({ it.first }, { it.second })
+    @GetMapping("/descriptions")
+    fun getComponentDescriptions(): List<ComponentDescription> {
+        return componentManager.getComponentDescriptions()
+            .sortedBy { cd ->
+                cd.types.maxOf { it.topType }
+            }
     }
-
 }
 
 private data class ComponentDetail(
