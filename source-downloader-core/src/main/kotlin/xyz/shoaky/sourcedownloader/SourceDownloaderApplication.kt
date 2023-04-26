@@ -19,8 +19,6 @@ import xyz.shoaky.sourcedownloader.component.*
 import xyz.shoaky.sourcedownloader.component.supplier.*
 import xyz.shoaky.sourcedownloader.config.SourceDownloaderProperties
 import xyz.shoaky.sourcedownloader.core.*
-import xyz.shoaky.sourcedownloader.core.config.ComponentConfig
-import xyz.shoaky.sourcedownloader.core.config.ProcessorConfig
 import xyz.shoaky.sourcedownloader.external.qbittorrent.QbittorrentConfig
 import xyz.shoaky.sourcedownloader.sdk.PathPattern
 import xyz.shoaky.sourcedownloader.sdk.component.*
@@ -143,7 +141,7 @@ class SourceDownloaderApplication(
             hints.reflection().registerType(ProcessorConfig.Options::class.java, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS)
             hints.reflection().registerType(Regex::class.java, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS)
             hints.reflection().registerType(PathPattern::class.java, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS)
-            hints.reflection().registerType(ProcessorConfig.ComponentId::class.java, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS)
+            hints.reflection().registerType(ComponentId::class.java, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS)
             hints.reflection().registerType(ProcessorConfig.Options::class.java, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS)
             hints.reflection().registerType(ComponentConfig::class.java, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS)
             hints.reflection().registerType(QbittorrentConfig::class.java, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS)

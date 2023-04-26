@@ -5,8 +5,8 @@ import xyz.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
 import xyz.shoaky.sourcedownloader.component.provider.MetadataVariableProvider
 import xyz.shoaky.sourcedownloader.core.ProcessingContent
 import xyz.shoaky.sourcedownloader.core.ProcessingStorage
+import xyz.shoaky.sourcedownloader.core.ProcessorConfig
 import xyz.shoaky.sourcedownloader.core.ProcessorSubmitDownloadEvent
-import xyz.shoaky.sourcedownloader.core.config.ProcessorConfig
 import xyz.shoaky.sourcedownloader.core.file.CoreFileContent
 import xyz.shoaky.sourcedownloader.core.file.PersistentSourceContent
 import xyz.shoaky.sourcedownloader.sdk.*

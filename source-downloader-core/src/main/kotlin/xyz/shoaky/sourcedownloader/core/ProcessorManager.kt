@@ -1,6 +1,5 @@
 package xyz.shoaky.sourcedownloader.core
 
-import xyz.shoaky.sourcedownloader.core.config.ProcessorConfig
 import xyz.shoaky.sourcedownloader.core.processor.SourceProcessor
 
 interface ProcessorManager {
@@ -10,4 +9,5 @@ interface ProcessorManager {
     fun getProcessor(name: String): SourceProcessor?
 
     fun getProcessors(): List<SourceProcessor>
+    fun destroy(processorName: String)
 }

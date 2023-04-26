@@ -2,10 +2,10 @@ package xyz.shoaky.sourcedownloader.api
 
 import org.springframework.stereotype.Service
 import org.springframework.web.bind.annotation.*
+import xyz.shoaky.sourcedownloader.core.ComponentConfig
 import xyz.shoaky.sourcedownloader.core.ComponentConfigStorage
 import xyz.shoaky.sourcedownloader.core.ConfigOperator
 import xyz.shoaky.sourcedownloader.core.SdComponentManager
-import xyz.shoaky.sourcedownloader.core.config.ComponentConfig
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentException
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentProps
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentType
@@ -62,12 +62,9 @@ private class ComponentController(
         @PathVariable name: String,
     ) {
         // TODO 聚合componentManager和processorManager的业务层,如果有Processor引用组件不允许删除
-        val componentType = ComponentType(typeName, type.klass)
+        // check if processor is using this component
         // componentManager.destroyComponent(name, componentType)
-        configOperator.delete(
-            type.lowerHyphenName(),
-            ComponentConfig(name, typeName, emptyMap())
-        )
+        configOperator.deleteComponent(type, typeName, name)
     }
 
     @GetMapping("/types")

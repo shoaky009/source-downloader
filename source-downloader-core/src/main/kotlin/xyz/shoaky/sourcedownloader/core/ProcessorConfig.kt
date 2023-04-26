@@ -1,4 +1,4 @@
-package xyz.shoaky.sourcedownloader.core.config
+package xyz.shoaky.sourcedownloader.core
 
 // import io.swagger.v3.oas.annotations.media.Schema
 // import io.swagger.v3.oas.annotations.media.SchemaProperty
@@ -10,7 +10,6 @@ import xyz.shoaky.sourcedownloader.sdk.PathPattern
 import xyz.shoaky.sourcedownloader.sdk.component.*
 import java.nio.file.Path
 import java.time.Duration
-import kotlin.reflect.KClass
 
 @JsonInclude(JsonInclude.Include.NON_DEFAULT)
 data class ProcessorConfig(
@@ -99,30 +98,6 @@ data class ProcessorConfig(
         val taggers: List<ComponentId> = emptyList()
     )
 
-    data class ComponentId(
-        @get:JsonValue
-        val id: String,
-    ) {
-        fun <T : SdComponent> getInstanceName(klass: KClass<T>): String {
-            return getComponentType(klass).instanceName(name())
-        }
-
-        fun <T : SdComponent> getComponentType(klass: KClass<T>): ComponentType {
-            return ComponentType(typeName(), klass)
-        }
-
-        fun name(): String {
-            return id.split(":").last()
-        }
-
-        private fun typeName(): String {
-            val split = id.split(":")
-            if (split.isEmpty()) {
-                throw RuntimeException("组件ID配置错误:${id}")
-            }
-            return split.first()
-        }
-    }
 }
 
 

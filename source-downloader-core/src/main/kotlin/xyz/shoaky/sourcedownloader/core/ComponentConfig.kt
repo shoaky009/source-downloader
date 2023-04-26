@@ -1,4 +1,4 @@
-package xyz.shoaky.sourcedownloader.core.config
+package xyz.shoaky.sourcedownloader.core
 
 data class ComponentConfig(
     val name: String,

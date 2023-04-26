@@ -7,8 +7,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
-import xyz.shoaky.sourcedownloader.core.config.ComponentConfig
-import xyz.shoaky.sourcedownloader.core.config.ProcessorConfig
+import xyz.shoaky.sourcedownloader.sdk.component.Components
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.inputStream
@@ -55,13 +54,13 @@ class YamlConfigStorage(
     }
 
     @Synchronized
-    override fun delete(type: String, componentConfig: ComponentConfig) {
-        TODO("Not yet implemented")
+    override fun deleteComponent(topType: Components, type: String, name: String) {
+        TODO()
     }
 
     @Synchronized
-    override fun delete(name: String, processorConfig: ProcessorConfig) {
-        TODO("Not yet implemented")
+    override fun deleteProcessor(name: String) {
+        TODO()
     }
 
     companion object {

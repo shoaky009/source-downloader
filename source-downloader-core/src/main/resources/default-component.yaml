@@ -7,8 +7,8 @@ file-mover:
 run-after-completion:
   - name: touch-item-directory
     type: touch-item-directory
-  - name: clean-empty-directory
-    type: clean-empty-directory
+  - name: delete-empty-directory
+    type: delete-empty-directory
 variable-provider:
   - name: metadata
     type: metadata

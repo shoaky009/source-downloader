@@ -1,12 +1,10 @@
 package xyz.shoaky.sourcedownloader.api
 
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
+import xyz.shoaky.sourcedownloader.core.ConfigOperator
+import xyz.shoaky.sourcedownloader.core.ProcessorConfig
 import xyz.shoaky.sourcedownloader.core.ProcessorConfigStorage
 import xyz.shoaky.sourcedownloader.core.ProcessorManager
-import xyz.shoaky.sourcedownloader.core.config.ProcessorConfig
 import xyz.shoaky.sourcedownloader.core.processor.ProcessorStatus
 import xyz.shoaky.sourcedownloader.sdk.SourceItem
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentException
@@ -15,7 +13,8 @@ import xyz.shoaky.sourcedownloader.sdk.component.ComponentException
 @RequestMapping("/api/processor")
 private class ProcessorController(
     private val processorManager: ProcessorManager,
-    private val configStorages: List<ProcessorConfigStorage>
+    private val configStorages: List<ProcessorConfigStorage>,
+    private val configOperator: ConfigOperator
 ) {
 
     @GetMapping
@@ -26,10 +25,42 @@ private class ProcessorController(
         }
     }
 
-    @GetMapping("/config/{processorName}")
+    @GetMapping("/{processorName}")
     fun getConfig(@PathVariable processorName: String): ProcessorConfig? {
         return configStorages.flatMap { it.getAllProcessorConfig() }
             .firstOrNull { it.name == processorName }
+    }
+
+
+    @PostMapping("/{processorName}")
+    fun create(@PathVariable processorName: String,
+               @RequestBody processorConfig: ProcessorConfig
+    ) {
+        val processor = processorManager.getProcessor(processorName)
+        if (processor != null) {
+            throw ComponentException.processorExists("processor $processorName already exists")
+        }
+        configOperator.save(processorName, processorConfig)
+        processorManager.createProcessor(processorConfig)
+    }
+
+    @PutMapping("/{processorName}")
+    fun reload(@PathVariable processorName: String,
+               @RequestBody processorConfig: ProcessorConfig
+    ) {
+        processorManager.getProcessor(processorName)
+            ?: throw ComponentException.processorMissing("processor $processorName not found")
+
+        configOperator.save(processorName, processorConfig)
+        processorManager.destroy(processorName)
+        processorManager.createProcessor(processorConfig)
+    }
+
+
+    @DeleteMapping("/{processorName}")
+    fun delete(@PathVariable processorName: String) {
+        processorManager.destroy(processorName)
+        configOperator.deleteProcessor(processorName)
     }
 
     @GetMapping("/dry-run/{processorName}")
@@ -39,7 +70,11 @@ private class ProcessorController(
         return sourceProcessor.dryRun()
             .map { pc ->
                 val fileResult = pc.sourceContent.sourceFiles.map { file ->
-                    FileResult(file.fileDownloadPath.toString(), file.targetPath().toString(), file.patternVariables.variables())
+                    FileResult(
+                        file.fileDownloadPath.toString(),
+                        file.targetPath().toString(),
+                        file.patternVariables.variables()
+                    )
                 }
                 val sourceContent = pc.sourceContent
                 val variables = sourceContent.sharedPatternVariables.variables()

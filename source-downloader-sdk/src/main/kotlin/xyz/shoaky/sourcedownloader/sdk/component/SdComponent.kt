@@ -61,7 +61,7 @@ enum class Components(
 }
 
 interface Trigger : SdComponent {
-    fun addTask(runnable: Runnable)
+    fun addTask(task: Runnable)
 
     fun start()
 
@@ -71,6 +71,8 @@ interface Trigger : SdComponent {
         stop()
         start()
     }
+
+    fun removeTask(task: Runnable)
 }
 
 interface Source : SdComponent {

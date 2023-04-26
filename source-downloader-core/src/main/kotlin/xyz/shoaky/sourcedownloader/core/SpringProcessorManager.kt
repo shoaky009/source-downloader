@@ -4,7 +4,6 @@ import org.springframework.beans.factory.support.DefaultListableBeanFactory
 import org.springframework.stereotype.Component
 import xyz.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
 import xyz.shoaky.sourcedownloader.component.supplier.*
-import xyz.shoaky.sourcedownloader.core.config.ProcessorConfig
 import xyz.shoaky.sourcedownloader.core.processor.SourceProcessor
 import xyz.shoaky.sourcedownloader.sdk.component.*
 
@@ -16,9 +15,9 @@ class SpringProcessorManager(
 ) : ProcessorManager {
 
     override fun createProcessor(config: ProcessorConfig): SourceProcessor {
-        val processorBeanName = "Processor-${config.name}"
+        val processorBeanName = processorBeanName(config.name)
         if (applicationContext.containsBean(processorBeanName)) {
-            throw ComponentException.processor("Processor ${config.name} already exists")
+            throw ComponentException.processorExists("Processor ${config.name} already exists")
         }
 
         val source = applicationContext.getBean(config.sourceInstanceName(), Source::class.java)
@@ -148,5 +147,19 @@ class SpringProcessorManager(
 
     override fun getProcessors(): List<SourceProcessor> {
         return applicationContext.getBeansOfType(SourceProcessor::class.java).values.toList()
+    }
+
+    override fun destroy(processorName: String) {
+        val processorBeanName = processorBeanName(processorName)
+        if (applicationContext.containsBean(processorBeanName).not()) {
+            throw ComponentException.processorMissing("Processor $processorName not exists")
+        }
+
+        val processor = applicationContext.getBean(processorBeanName, SourceProcessor::class.java)
+        val safeTask = processor.safeTask()
+        componentManager.getAllTrigger().forEach {
+            it.removeTask(safeTask)
+        }
+        applicationContext.destroySingleton(processorBeanName)
     }
 }

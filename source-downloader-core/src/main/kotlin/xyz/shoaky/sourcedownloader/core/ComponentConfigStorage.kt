@@ -1,7 +1,6 @@
 package xyz.shoaky.sourcedownloader.core
 
-import xyz.shoaky.sourcedownloader.core.config.ComponentConfig
-import xyz.shoaky.sourcedownloader.core.config.ProcessorConfig
+import xyz.shoaky.sourcedownloader.sdk.component.Components
 
 interface ComponentConfigStorage {
 
@@ -14,6 +13,6 @@ interface ConfigOperator {
 
     fun save(name: String, processorConfig: ProcessorConfig)
 
-    fun delete(type: String, componentConfig: ComponentConfig)
-    fun delete(name: String, processorConfig: ProcessorConfig)
+    fun deleteComponent(topType: Components, type: String, name: String)
+    fun deleteProcessor(name: String)
 }

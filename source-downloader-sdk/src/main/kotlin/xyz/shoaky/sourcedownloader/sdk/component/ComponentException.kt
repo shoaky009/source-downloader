@@ -14,7 +14,7 @@ private constructor(message: String, val type: String) : RuntimeException(messag
 
         fun compatibility(message: String) = ComponentException(message, "compatibility")
 
-        fun processor(message: String) = ComponentException(message, "processor:exists")
+        fun processorExists(message: String) = ComponentException(message, "processor:exists")
 
         fun processorMissing(message: String) = ComponentException(message, "processor:missing")
 

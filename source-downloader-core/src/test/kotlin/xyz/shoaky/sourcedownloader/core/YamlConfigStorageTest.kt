@@ -2,8 +2,6 @@ package xyz.shoaky.sourcedownloader.core
 
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import xyz.shoaky.sourcedownloader.core.config.ComponentConfig
-import xyz.shoaky.sourcedownloader.core.config.ProcessorConfig
 import java.nio.file.Files
 import java.time.Duration
 import kotlin.io.path.Path
@@ -58,11 +56,11 @@ processors:
     fun write_processor() {
         storage.save("test-normal-case", ProcessorConfig(
             "test-normal-case",
-            listOf(ProcessorConfig.ComponentId("test")),
-            ProcessorConfig.ComponentId("test"),
-            listOf(ProcessorConfig.ComponentId("test")),
-            ProcessorConfig.ComponentId("test"),
-            ProcessorConfig.ComponentId("test"),
+            listOf(ComponentId("test")),
+            ComponentId("test"),
+            listOf(ComponentId("test")),
+            ComponentId("test"),
+            ComponentId("test"),
             Path(""),
             options = ProcessorConfig.Options(
                 renameTaskInterval = Duration.ofSeconds(100L)

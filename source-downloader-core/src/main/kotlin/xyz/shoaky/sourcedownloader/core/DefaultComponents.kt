@@ -4,7 +4,6 @@ import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import org.springframework.core.io.ClassPathResource
 import org.springframework.stereotype.Component
 import org.yaml.snakeyaml.Yaml
-import xyz.shoaky.sourcedownloader.core.config.ComponentConfig
 import xyz.shoaky.sourcedownloader.sdk.util.Jackson
 
 @Component
