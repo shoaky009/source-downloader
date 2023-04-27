@@ -1,53 +1,56 @@
-package xyz.shoaky.sourcedownloader.sdk.component
+package xyz.shoaky.sourcedownloader.sdk
 
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
+import xyz.shoaky.sourcedownloader.sdk.component.*
 import xyz.shoaky.sourcedownloader.sdk.util.Jackson
 import kotlin.reflect.KClass
 import kotlin.reflect.full.isSuperclassOf
 
-class ComponentProps
-private constructor(val properties: MutableMap<String, Any>) {
+class Properties
+private constructor(
+    val rawValues: MutableMap<String, Any>
+) {
 
     inline fun <reified T> parse(): T {
-        return Jackson.convert(properties, jacksonTypeRef())
+        return Jackson.convert(rawValues, jacksonTypeRef())
     }
 
     inline fun <reified T> get(key: String): T {
-        val any = properties[key] ?: throw ComponentException.props("属性${key}不存在")
+        val any = rawValues[key] ?: throw ComponentException.props("属性${key}不存在")
         try {
             return Jackson.convert(any, jacksonTypeRef())
         } catch (e: Exception) {
-            throw RuntimeException("组件属性${key}解析异常: value:$any", e)
+            throw RuntimeException("属性${key}解析异常: value:$any", e)
         }
     }
 
     inline fun <reified T> getNotRequired(key: String): T? {
-        val any = properties[key] ?: return null
+        val any = rawValues[key] ?: return null
         try {
             return Jackson.convert(any, jacksonTypeRef())
         } catch (e: Exception) {
-            throw RuntimeException("组件属性${key}解析异常: value:$any", e)
+            throw RuntimeException("属性${key}解析异常: value:$any", e)
         }
     }
 
     fun getRaw(key: String): Any {
-        return properties[key] ?: throw ComponentException.props("属性${key}不存在")
+        return rawValues[key] ?: throw ComponentException.props("属性${key}不存在")
     }
 
     inline fun <reified T> getOrDefault(key: String, default: T): T {
-        val any = properties[key] ?: return default
+        val any = rawValues[key] ?: return default
         try {
             return Jackson.convert(any, jacksonTypeRef())
         } catch (e: Exception) {
-            throw RuntimeException("组件属性解析异常: $key", e)
+            throw RuntimeException("属性解析异常: $key", e)
         }
     }
 
     companion object {
 
-        private val emptyProps = ComponentProps(mutableMapOf())
+        private val emptyProps = Properties(mutableMapOf())
 
-        fun fromMap(map: Map<String, Any>): ComponentProps {
+        fun fromMap(map: Map<String, Any>): Properties {
             val mutableMapOf = mutableMapOf<String, Any>()
             mutableMapOf.putAll(map)
             for (entry in map) {
@@ -58,15 +61,15 @@ private constructor(val properties: MutableMap<String, Any>) {
                 }
             }
 
-            return ComponentProps(mutableMapOf)
+            return Properties(mutableMapOf)
         }
 
-        fun fromJson(json: String): ComponentProps {
+        fun fromJson(json: String): Properties {
             val typeReference = jacksonTypeRef<MutableMap<String, Any>>()
-            return ComponentProps(Jackson.fromJson(json, typeReference))
+            return Properties(Jackson.fromJson(json, typeReference))
         }
 
-        fun empty(): ComponentProps {
+        fun empty(): Properties {
             return emptyProps
         }
 
@@ -75,7 +78,7 @@ private constructor(val properties: MutableMap<String, Any>) {
 
 interface SdComponentSupplier<R : SdComponent> {
 
-    fun apply(props: ComponentProps): R
+    fun apply(props: Properties): R
     fun supplyTypes(): List<ComponentType>
 
     fun rules(): List<ComponentRule> = emptyList()

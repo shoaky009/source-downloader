@@ -3,6 +3,7 @@ package xyz.shoaky.sourcedownloader.sdk.component
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
+import xyz.shoaky.sourcedownloader.sdk.ComponentRule
 import xyz.shoaky.sourcedownloader.sdk.DownloadTask
 import xyz.shoaky.sourcedownloader.sdk.SourceContent
 import xyz.shoaky.sourcedownloader.sdk.SourceItem

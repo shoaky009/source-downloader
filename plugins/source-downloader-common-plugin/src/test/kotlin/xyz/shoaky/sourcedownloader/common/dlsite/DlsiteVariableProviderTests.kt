@@ -1,8 +1,8 @@
 package xyz.shoaky.sourcedownloader.common.dlsite
 
 import org.junit.jupiter.api.Test
+import xyz.shoaky.sourcedownloader.sdk.Properties
 import xyz.shoaky.sourcedownloader.sdk.SourceItem
-import xyz.shoaky.sourcedownloader.sdk.component.ComponentProps
 import java.net.URI
 import java.nio.file.Files
 import java.time.LocalDateTime
@@ -19,7 +19,7 @@ class DlsiteVariableProviderTests {
         URI("http://localhost")
     )
 
-    private val provider = DlsiteVariableProviderSupplier.apply(ComponentProps.empty())
+    private val provider = DlsiteVariableProviderSupplier.apply(Properties.empty())
 
     @Test
     fun test_support() {

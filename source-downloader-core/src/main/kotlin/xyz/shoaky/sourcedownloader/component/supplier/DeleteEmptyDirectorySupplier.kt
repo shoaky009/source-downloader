@@ -1,12 +1,12 @@
 package xyz.shoaky.sourcedownloader.component.supplier
 
 import xyz.shoaky.sourcedownloader.component.DeleteEmptyDirectory
-import xyz.shoaky.sourcedownloader.sdk.component.ComponentProps
+import xyz.shoaky.sourcedownloader.sdk.Properties
+import xyz.shoaky.sourcedownloader.sdk.SdComponentSupplier
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentType
-import xyz.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
 
 object DeleteEmptyDirectorySupplier : SdComponentSupplier<DeleteEmptyDirectory> {
-    override fun apply(props: ComponentProps): DeleteEmptyDirectory {
+    override fun apply(props: Properties): DeleteEmptyDirectory {
         return DeleteEmptyDirectory
     }
 

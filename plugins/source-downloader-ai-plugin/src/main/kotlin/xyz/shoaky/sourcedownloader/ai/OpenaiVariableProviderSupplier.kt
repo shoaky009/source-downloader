@@ -1,11 +1,11 @@
 package xyz.shoaky.sourcedownloader.ai
 
-import xyz.shoaky.sourcedownloader.sdk.component.ComponentProps
+import xyz.shoaky.sourcedownloader.sdk.Properties
+import xyz.shoaky.sourcedownloader.sdk.SdComponentSupplier
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentType
-import xyz.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
 
 object OpenaiVariableProviderSupplier : SdComponentSupplier<OpenaiVariableProvider> {
-    override fun apply(props: ComponentProps): OpenaiVariableProvider {
+    override fun apply(props: Properties): OpenaiVariableProvider {
         return OpenaiVariableProvider(props.parse())
     }
 

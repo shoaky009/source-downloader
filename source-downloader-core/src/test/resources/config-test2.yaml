@@ -1,3 +1,7 @@
+instances:
+  - name: client1
+    props:
+      appId: 1111
 components:
   source:
     - name: "test"

@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test
 import xyz.shoaky.sourcedownloader.component.supplier.SendHttpRequestSupplier
 import xyz.shoaky.sourcedownloader.core.file.PersistentSourceContent
 import xyz.shoaky.sourcedownloader.sdk.MapPatternVariables
-import xyz.shoaky.sourcedownloader.sdk.component.ComponentProps
+import xyz.shoaky.sourcedownloader.sdk.Properties
 import xyz.shoaky.sourcedownloader.sourceItem
 import java.net.InetSocketAddress
 import kotlin.test.assertEquals
@@ -33,7 +33,7 @@ class SendHttpRequestTest {
         }
 
         val apply = SendHttpRequestSupplier.apply(
-            ComponentProps.fromMap(
+            Properties.fromMap(
                 mapOf(
                     "url" to "http://localhost:8080?message=下载{summary}",
                     "method" to "GET",

@@ -1,12 +1,12 @@
 package xyz.shoaky.sourcedownloader.common.rss
 
-import xyz.shoaky.sourcedownloader.sdk.component.ComponentProps
+import xyz.shoaky.sourcedownloader.sdk.Properties
+import xyz.shoaky.sourcedownloader.sdk.SdComponentSupplier
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentType
-import xyz.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
 import xyz.shoaky.sourcedownloader.sdk.component.Source
 
 object RssSourceSupplier : SdComponentSupplier<RssSource> {
-    override fun apply(props: ComponentProps): RssSource {
+    override fun apply(props: Properties): RssSource {
         return RssSource(props.get("url"))
     }
 

@@ -3,6 +3,7 @@ package xyz.shoaky.sourcedownloader.api
 import org.springframework.stereotype.Service
 import org.springframework.web.bind.annotation.*
 import xyz.shoaky.sourcedownloader.core.*
+import xyz.shoaky.sourcedownloader.sdk.Properties
 import xyz.shoaky.sourcedownloader.sdk.component.*
 
 @RestController
@@ -40,7 +41,7 @@ private class ComponentController(
                         @PathVariable typeName: String,
                         @PathVariable name: String,
                         @RequestBody body: Map<String, Any>) {
-        val props = ComponentProps.fromMap(body)
+        val props = Properties.fromMap(body)
         val componentType = ComponentType(typeName, type.klass)
         componentManager.createComponent(name, componentType, props)
         configOperator.save(

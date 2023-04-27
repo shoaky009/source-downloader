@@ -2,12 +2,12 @@ package xyz.shoaky.sourcedownloader.common.rss
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import xyz.shoaky.sourcedownloader.sdk.component.ComponentProps
+import xyz.shoaky.sourcedownloader.sdk.Properties
 
 class RssSourceTest {
 
     private val rssSource = RssSourceSupplier.apply(
-        ComponentProps.fromMap(
+        Properties.fromMap(
             mapOf("url" to "https://mikanani.me/RSS/Bangumi?bangumiId=2852&subgroupid=583")
         )
     )

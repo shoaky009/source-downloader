@@ -2,6 +2,9 @@ package xyz.shoaky.sourcedownloader.config
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import xyz.shoaky.sourcedownloader.core.DefaultInstanceManager
+import xyz.shoaky.sourcedownloader.core.InstanceConfigStorage
+import xyz.shoaky.sourcedownloader.core.InstanceManager
 import xyz.shoaky.sourcedownloader.core.YamlConfigStorage
 import kotlin.io.path.Path
 import kotlin.io.path.createFile
@@ -30,5 +33,10 @@ class StorageConfiguration(
             defaultPath.createFile()
         }
         return YamlConfigStorage(defaultPath)
+    }
+
+    @Bean
+    fun instanceManager(storage: InstanceConfigStorage): InstanceManager {
+        return DefaultInstanceManager(storage)
     }
 }

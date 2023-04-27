@@ -29,6 +29,7 @@ class TelegramSourceTest {
         client.send(proxy) {
             println(it.get())
         }
+        client.send(TdApi.StopPoll()) {}
 
         client.send(TdApi.GetChatHistory(-1001969491794, 0, 0, 0, false)) {
             val iterator = it.get().messages.iterator()

@@ -1,15 +1,15 @@
 package xyz.shoaky.sourcedownloader.component.supplier
 
 import xyz.shoaky.sourcedownloader.component.ExpressionItemFilter
-import xyz.shoaky.sourcedownloader.sdk.component.ComponentProps
+import xyz.shoaky.sourcedownloader.sdk.Properties
+import xyz.shoaky.sourcedownloader.sdk.SdComponentSupplier
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentType
-import xyz.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
 import xyz.shoaky.sourcedownloader.sdk.component.SourceItemFilter
 import xyz.shoaky.sourcedownloader.util.SpringExpression
 
 object ExpressionItemFilterSupplier : SdComponentSupplier<ExpressionItemFilter> {
 
-    override fun apply(props: ComponentProps): ExpressionItemFilter {
+    override fun apply(props: Properties): ExpressionItemFilter {
         val exclusions = props.getOrDefault<List<String>>("exclusions", listOf())
         val inclusions = props.getOrDefault<List<String>>("inclusions", listOf())
         return expressions(exclusions, inclusions)

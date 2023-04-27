@@ -1,3 +1,4 @@
+import org.gradle.internal.os.OperatingSystem
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 description = "source-downloader-telegram-plugin"
@@ -27,8 +28,28 @@ dependencies {
     implementation("com.google.zxing:core:3.5.1")
     implementation(platform("it.tdlight:tdlight-java-bom:2.8.10.6"))
     implementation("it.tdlight:tdlight-java")
-    implementation("it.tdlight:tdlight-natives-windows-amd64")
 
+    // 不能拼接 有些平台没有依赖
+    val os = OperatingSystem.current()
+    // val familyName = os.familyName.replace(" ", "")
+    val arch = System.getProperty("os.arch")
+    // TODO 忽略不存在的依赖错误
+    // implementation("it.tdlight:tdlight-natives-$familyName-$arch")
+    if (os.isWindows && "amd64" == arch) {
+        implementation("it.tdlight:tdlight-natives-windows-amd64")
+    }
+    if (os.isMacOsX && "amd64" == arch) {
+        implementation("it.tdlight:tdlight-natives-osx-amd64")
+    }
+    if (os.isLinux && "amd64" == arch) {
+        implementation("it.tdlight:tdlight-natives-linux-amd64")
+    }
+    if (os.isLinux && "aarch64" == arch) {
+        implementation("it.tdlight:tdlight-natives-linux-aarch64")
+    }
+    if (os.isLinux && "x86" == arch) {
+        implementation("it.tdlight:tdlight-natives-linux-x86")
+    }
 }
 
 tasks.withType<KotlinCompile> {

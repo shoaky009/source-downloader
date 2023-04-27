@@ -4,11 +4,15 @@ import org.springframework.stereotype.Component
 import xyz.shoaky.sourcedownloader.component.source.MultipleSource
 import xyz.shoaky.sourcedownloader.core.ComponentId
 import xyz.shoaky.sourcedownloader.core.SdComponentManager
-import xyz.shoaky.sourcedownloader.sdk.component.*
+import xyz.shoaky.sourcedownloader.sdk.Properties
+import xyz.shoaky.sourcedownloader.sdk.SdComponentSupplier
+import xyz.shoaky.sourcedownloader.sdk.component.ComponentException
+import xyz.shoaky.sourcedownloader.sdk.component.ComponentType
+import xyz.shoaky.sourcedownloader.sdk.component.Source
 
 @Component
 class MultipleSourceSupplier(val componentManager: SdComponentManager) : SdComponentSupplier<MultipleSource> {
-    override fun apply(props: ComponentProps): MultipleSource {
+    override fun apply(props: Properties): MultipleSource {
         val sources = props.getOrDefault("sources", emptyList<String>())
             .map { ComponentId(it) }
             .map {

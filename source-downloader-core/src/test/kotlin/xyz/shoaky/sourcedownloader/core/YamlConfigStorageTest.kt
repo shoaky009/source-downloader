@@ -14,6 +14,10 @@ class YamlConfigStorageTest {
     @BeforeEach
     fun restore() {
         Files.writeString(path, """
+instances:
+  - name: client1
+    props:
+      appId: 1111
 components:
   source:
     - name: "test"

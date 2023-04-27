@@ -2,13 +2,13 @@ package xyz.shoaky.sourcedownloader.component
 
 import org.junit.jupiter.api.Test
 import xyz.shoaky.sourcedownloader.component.supplier.FixedScheduleTriggerSupplier
-import xyz.shoaky.sourcedownloader.sdk.component.ComponentProps
+import xyz.shoaky.sourcedownloader.sdk.Properties
 
 class FixedScheduleTriggerTest {
     @Test
     fun should_run_after_started() {
         val trigger = FixedScheduleTriggerSupplier.apply(
-            ComponentProps.fromMap(
+            Properties.fromMap(
                 mapOf("interval" to "PT1M", "on-start-run-tasks" to true)
             )
         )
@@ -27,7 +27,7 @@ class FixedScheduleTriggerTest {
     @Test
     fun should_run() {
         val trigger = FixedScheduleTriggerSupplier.apply(
-            ComponentProps.fromMap(
+            Properties.fromMap(
                 mapOf("interval" to "PT1S")
             )
         )

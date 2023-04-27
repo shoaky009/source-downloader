@@ -8,7 +8,7 @@ import xyz.shoaky.sourcedownloader.core.file.PersistentSourceContent
 import xyz.shoaky.sourcedownloader.createIfNotExists
 import xyz.shoaky.sourcedownloader.sdk.MapPatternVariables
 import xyz.shoaky.sourcedownloader.sdk.PathPattern
-import xyz.shoaky.sourcedownloader.sdk.component.ComponentProps
+import xyz.shoaky.sourcedownloader.sdk.Properties
 import xyz.shoaky.sourcedownloader.sourceItem
 import java.nio.file.Files
 import kotlin.io.path.Path
@@ -17,7 +17,7 @@ import kotlin.io.path.deleteIfExists
 
 class GeneralFileMoverTest {
 
-    private val mover = GeneralFileMoverSupplier.apply(ComponentProps.fromMap(emptyMap()))
+    private val mover = GeneralFileMoverSupplier.apply(Properties.fromMap(emptyMap()))
     private val savePath = Path("src/test/resources/target")
     private val downloadPath = Path("src/test/resources/downloads")
 

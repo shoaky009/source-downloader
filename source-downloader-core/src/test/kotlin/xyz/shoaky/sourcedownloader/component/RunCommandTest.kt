@@ -6,7 +6,7 @@ import xyz.shoaky.sourcedownloader.core.file.CoreFileContent
 import xyz.shoaky.sourcedownloader.core.file.PersistentSourceContent
 import xyz.shoaky.sourcedownloader.sdk.MapPatternVariables
 import xyz.shoaky.sourcedownloader.sdk.PathPattern
-import xyz.shoaky.sourcedownloader.sdk.component.ComponentProps
+import xyz.shoaky.sourcedownloader.sdk.Properties
 import xyz.shoaky.sourcedownloader.sourceItem
 import kotlin.io.path.Path
 import kotlin.test.assertEquals
@@ -18,7 +18,7 @@ class RunCommandTest {
         listOf(Path("src/test/resources/script/test.sh").toAbsolutePath().toString(), "test1")
 
     private val runCommand = RunCommandSupplier.apply(
-        ComponentProps.fromMap(mapOf("command" to command))
+        Properties.fromMap(mapOf("command" to command))
     )
 
     private val content = CoreFileContent(
@@ -42,7 +42,7 @@ class RunCommandTest {
     @Test
     fun run_command_with_summary() {
         val apply = RunCommandSupplier.apply(
-            ComponentProps.fromMap(
+            Properties.fromMap(
                 mapOf("command" to command,
                     "withSubjectSummary" to true
                 ))

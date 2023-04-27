@@ -6,9 +6,12 @@ import xyz.shoaky.sourcedownloader.sdk.Plugin
 import java.util.*
 
 @Component
-class PluginManager(componentManager: SdComponentManager) {
+class PluginManager(
+    componentManager: SdComponentManager,
+    instanceManager: InstanceManager
+) {
 
-    private val pluginContext = DefaultPluginContext(componentManager)
+    private val pluginContext = DefaultPluginContext(componentManager, instanceManager)
     private val plugins = Collections.synchronizedList(mutableListOf<Plugin>())
     private val pluginLoader = ServiceLoaderPluginLoader
     fun loadPlugins() {
@@ -28,7 +31,7 @@ class PluginManager(componentManager: SdComponentManager) {
         plugins.forEach { it.destroy(pluginContext) }
     }
 
-    //NOTE native image下有点问题，暂时不用
+    // NOTE native image下有点问题，暂时不用
     private object SpringPluginLoader : PluginLoader {
         override fun loadPlugins(classLoader: ClassLoader?): List<Plugin> {
             val loader = SpringFactoriesLoader.forResourceLocation("META-INF/plugin", classLoader)

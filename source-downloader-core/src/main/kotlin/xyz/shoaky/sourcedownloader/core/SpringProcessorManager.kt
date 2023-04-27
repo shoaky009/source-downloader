@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component
 import xyz.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
 import xyz.shoaky.sourcedownloader.component.supplier.*
 import xyz.shoaky.sourcedownloader.core.processor.SourceProcessor
+import xyz.shoaky.sourcedownloader.sdk.Properties
 import xyz.shoaky.sourcedownloader.sdk.component.*
 
 @Component
@@ -120,11 +121,11 @@ class SpringProcessorManager(
         }
         processor.scheduleRenameTask(options.renameTaskInterval)
         if (options.deleteEmptyDirectory) {
-            val deleteEmptyDirectory = DeleteEmptyDirectorySupplier.apply(ComponentProps.empty())
+            val deleteEmptyDirectory = DeleteEmptyDirectorySupplier.apply(Properties.empty())
             processor.addRunAfterCompletion(deleteEmptyDirectory)
         }
         if (options.touchItemDirectory) {
-            val touchItemDirectory = TouchItemDirectorySupplier.apply(ComponentProps.empty())
+            val touchItemDirectory = TouchItemDirectorySupplier.apply(Properties.empty())
             processor.addRunAfterCompletion(touchItemDirectory)
         }
         options.taggers.forEach {

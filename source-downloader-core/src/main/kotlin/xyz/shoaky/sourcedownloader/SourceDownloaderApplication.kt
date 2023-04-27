@@ -21,6 +21,8 @@ import xyz.shoaky.sourcedownloader.config.SourceDownloaderProperties
 import xyz.shoaky.sourcedownloader.core.*
 import xyz.shoaky.sourcedownloader.external.qbittorrent.QbittorrentConfig
 import xyz.shoaky.sourcedownloader.sdk.PathPattern
+import xyz.shoaky.sourcedownloader.sdk.Properties
+import xyz.shoaky.sourcedownloader.sdk.SdComponentSupplier
 import xyz.shoaky.sourcedownloader.sdk.component.*
 import java.net.URL
 import kotlin.reflect.KClass
@@ -30,6 +32,7 @@ import kotlin.reflect.KClass
 @EnableConfigurationProperties(SourceDownloaderProperties::class)
 class SourceDownloaderApplication(
     private val environment: Environment,
+    private val instanceManager: InstanceManager,
     private val componentManager: SdComponentManager,
     private val processorManager: ProcessorManager,
     private val pluginManager: PluginManager,
@@ -104,7 +107,7 @@ class SourceDownloaderApplication(
 
         configs.forEach {
             val type = ComponentType(it.type, componentKClass)
-            componentManager.createComponent(it.name, type, ComponentProps.fromMap(it.props))
+            componentManager.createComponent(it.name, type, Properties.fromMap(it.props))
             log.info("成功创建组件${type.topTypeClass.simpleName}:${it.type}:${it.name}")
         }
     }
@@ -161,9 +164,16 @@ class SourceDownloaderApplication(
     override fun afterPropertiesSet() {
         // 加载出现异常不让应用完成启动
         loadAndInitPlugins()
+        registerInstanceFactories()
         log.info("支持的组件类型:${ComponentType.types()}")
         registerComponentSuppliers()
         createComponents()
+    }
+
+    private fun registerInstanceFactories() {
+        instanceManager.registerInstanceFactory(
+            QbittorrentClientInstanceFactory
+        )
     }
 
     // FIXME native image会失败，后面再看

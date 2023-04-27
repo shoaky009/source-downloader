@@ -3,6 +3,8 @@ package xyz.shoaky.sourcedownloader.core
 import org.springframework.beans.factory.support.DefaultListableBeanFactory
 import org.springframework.stereotype.Component
 import xyz.shoaky.sourcedownloader.core.processor.SourceProcessor
+import xyz.shoaky.sourcedownloader.sdk.Properties
+import xyz.shoaky.sourcedownloader.sdk.SdComponentSupplier
 import xyz.shoaky.sourcedownloader.sdk.component.*
 import xyz.shoaky.sourcedownloader.util.Events
 import java.util.concurrent.ConcurrentHashMap
@@ -12,7 +14,7 @@ import kotlin.reflect.jvm.jvmErasure
 
 interface SdComponentManager {
 
-    fun createComponent(name: String, componentType: ComponentType, props: ComponentProps)
+    fun createComponent(name: String, componentType: ComponentType, props: Properties)
 
     fun getAllProcessor(): List<SourceProcessor>
 
@@ -56,7 +58,7 @@ class SpringSdComponentManager(
     private val sdComponentSuppliers: MutableMap<ComponentType, SdComponentSupplier<*>> = ConcurrentHashMap()
 
     @Synchronized
-    override fun createComponent(name: String, componentType: ComponentType, props: ComponentProps) {
+    override fun createComponent(name: String, componentType: ComponentType, props: Properties) {
         val beanName = componentType.instanceName(name)
         val exists = applicationContext.containsSingleton(beanName)
         if (exists) {

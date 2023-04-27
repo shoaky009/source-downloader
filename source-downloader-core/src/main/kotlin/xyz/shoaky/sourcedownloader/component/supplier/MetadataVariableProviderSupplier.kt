@@ -1,12 +1,12 @@
 package xyz.shoaky.sourcedownloader.component.supplier
 
 import xyz.shoaky.sourcedownloader.component.provider.MetadataVariableProvider
-import xyz.shoaky.sourcedownloader.sdk.component.ComponentProps
+import xyz.shoaky.sourcedownloader.sdk.Properties
+import xyz.shoaky.sourcedownloader.sdk.SdComponentSupplier
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentType
-import xyz.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
 
 object MetadataVariableProviderSupplier : SdComponentSupplier<MetadataVariableProvider> {
-    override fun apply(props: ComponentProps): MetadataVariableProvider {
+    override fun apply(props: Properties): MetadataVariableProvider {
         return MetadataVariableProvider
     }
 

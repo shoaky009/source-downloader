@@ -6,14 +6,13 @@ import org.jsoup.Jsoup
 import org.slf4j.LoggerFactory
 import xyz.shoaky.sourcedownloader.mikan.parse.ParserChain
 import xyz.shoaky.sourcedownloader.mikan.parse.SubjectContent
-import xyz.shoaky.sourcedownloader.sdk.PatternVariables
-import xyz.shoaky.sourcedownloader.sdk.SourceFile
-import xyz.shoaky.sourcedownloader.sdk.SourceItem
-import xyz.shoaky.sourcedownloader.sdk.SourceItemGroup
+import xyz.shoaky.sourcedownloader.sdk.*
 import xyz.shoaky.sourcedownloader.sdk.api.bangumi.BangumiApiClient
 import xyz.shoaky.sourcedownloader.sdk.api.bangumi.GetSubjectRequest
 import xyz.shoaky.sourcedownloader.sdk.api.bangumi.Subject
-import xyz.shoaky.sourcedownloader.sdk.component.*
+import xyz.shoaky.sourcedownloader.sdk.component.ComponentType
+import xyz.shoaky.sourcedownloader.sdk.component.TorrentDownloader
+import xyz.shoaky.sourcedownloader.sdk.component.VariableProvider
 import java.net.URI
 import java.nio.file.Path
 
@@ -117,8 +116,8 @@ private class MikanSourceGroup(
 }
 
 object MikanVariableProviderSupplier : SdComponentSupplier<MikanVariableProvider> {
-    override fun apply(props: ComponentProps): MikanVariableProvider {
-        val token = props.properties["token"]?.toString()
+    override fun apply(props: Properties): MikanVariableProvider {
+        val token = props.getNotRequired<String>("token")
         return MikanVariableProvider(token)
     }
 
