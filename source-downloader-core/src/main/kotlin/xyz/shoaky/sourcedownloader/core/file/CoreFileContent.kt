@@ -104,6 +104,10 @@ data class CoreFileContent(
         return tags.contains(tag)
     }
 
+    fun tags(): List<String> {
+        return tags.toList()
+    }
+
     companion object {
 
         private val defaultPermissions = setOf(

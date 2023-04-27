@@ -73,7 +73,8 @@ private class ProcessorController(
                     FileResult(
                         file.fileDownloadPath.toString(),
                         file.targetPath().toString(),
-                        file.patternVariables.variables()
+                        file.patternVariables.variables(),
+                        file.tags()
                     )
                 }
                 val sourceContent = pc.sourceContent
@@ -101,5 +102,6 @@ private data class DryRunResult(
 private data class FileResult(
     val from: String,
     val to: String,
-    val variables: Map<String, Any>
+    val variables: Map<String, Any>,
+    val tags: List<String>
 )

@@ -71,6 +71,7 @@ class QbittorrentDownloader(
         return Path.of(response.body())
     }
 
+    // 需要分离文件解析器组件
     override fun resolveFiles(sourceItem: SourceItem): List<Path> {
         val torrent = metadataService.fromUrl(sourceItem.downloadUri.toURL())
         if (torrent.files.size == 1) {

@@ -9,7 +9,11 @@ data class SourceItem(
     val link: URI,
     val date: LocalDateTime,
     val contentType: String,
-    val downloadUri: URI
+    val downloadUri: URI,
+    /**
+     * -1表示不支持offset模式
+     */
+    val offset: Long = -1L
 ) {
     fun hashing(): String {
         return Hashing.sha256()

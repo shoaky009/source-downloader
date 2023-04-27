@@ -78,11 +78,12 @@ class SourceProcessor(
             "Providers" to variableProviders.map { it::class.simpleName },
             "Downloader" to downloader::class.java.simpleName,
             "Mover" to fileMover::class.java.simpleName,
-            "SourceFilter" to sourceItemFilters.map { it::class.simpleName },
+            "SourceItemFilter" to sourceItemFilters.map { it::class.simpleName },
             "RunAfterCompletion" to runAfterCompletion.map { it::class.simpleName },
             "DownloadPath" to downloadPath,
             "SourceSavePath" to sourceSavePath,
             "SourceFileFilter" to sourceFileFilters.map { it::class.simpleName },
+            "Taggers" to taggers.map { it::class.simpleName },
             "Options" to options,
         )
     }
@@ -116,6 +117,7 @@ class SourceProcessor(
     }
 
     private fun process(dryRun: Boolean = false): List<ProcessingContent> {
+        val committedOffset = 0L
         val itemIterator = retry.execute<Iterator<SourceItem>, IOException> {
             source.fetch().iterator()
         }
