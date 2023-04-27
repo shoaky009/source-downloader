@@ -18,4 +18,9 @@
 docker run -p 8080:8080 -v /path/source-downloader:/app/data shoaky009/source-downloader:latest
 ```
 
+```shell
+# 设置代理
+docker run -p 8080:8080 -e "JAVA_OPTS=-Dhttp.proxyHost={your-host} -Dhttp.proxyPort={your-port} -Dhttps.proxyHost={your-host} -Dhttps.proxyPort={your-port}" shoaky009/source-downloader:dev
+```
+
 config.yaml配置详情查看[文档](https://github.com/shoaky009/source-downloader/wiki)

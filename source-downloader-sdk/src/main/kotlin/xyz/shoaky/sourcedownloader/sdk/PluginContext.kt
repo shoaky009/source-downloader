@@ -10,7 +10,7 @@ interface PluginContext {
     /**
      * @param props 如果传入则不从instances的配置下读取
      *
-     * 区别主要是针对用户配置的方式，因为当前的props是对应component下的值
+     * 区别主要是针对用户配置的方式，因为[SdComponentSupplier]的props是当前对应component下的值
      * 1.如果传props来创建对应组件的依赖对象，那么用户就不需要配置instances对应的属性
      * 2.如果不传props，那么就需要用户配置instances对应的属性
      * 两者各有优缺点，第一种方式用户配置简单，但是配置多的情况下，会导致配置文件很长
