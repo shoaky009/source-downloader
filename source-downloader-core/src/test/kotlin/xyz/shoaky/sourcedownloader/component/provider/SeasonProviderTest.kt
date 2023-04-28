@@ -12,7 +12,7 @@ class SeasonProviderTest {
     @Test
     fun should_all_expected() {
         val sp = SeasonProviderSupplier.apply(Properties.fromMap(emptyMap()))
-        Files.readAllLines(Path("src/test/resources/season-test-data.csv"))
+        Files.readAllLines(Path("src", "test", "resources", "season-test-data.csv"))
             .filter { it.isNullOrBlank().not() }
             .map {
                 val split = it.split(",")

@@ -9,7 +9,7 @@ class EpisodeParserChainTest {
     @Test
     fun should_all_expected() {
         val episodeChain = ParserChain.episodeChain()
-        Files.readAllLines(Path("src/test/resources/episode-test.data"))
+        Files.readAllLines(Path("src", "test", "resources", "episode-test.data"))
             .filter { it.isNullOrBlank().not() }
             .map {
                 val split = it.split("|")

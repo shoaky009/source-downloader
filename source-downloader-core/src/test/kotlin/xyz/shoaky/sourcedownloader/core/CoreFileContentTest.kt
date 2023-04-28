@@ -11,7 +11,7 @@ import kotlin.test.assertNull
 
 class CoreFileContentTest {
 
-    private val sourceSavePath = Path("src/test/resources/target")
+    private val sourceSavePath = Path("src", "test", "resources", "target")
 
     @Test
     fun given_empty_should_filename_use_origin_name() {
@@ -53,7 +53,7 @@ class CoreFileContentTest {
             filenamePathPattern = PathPattern("3")
         )
         val targetFilePath = fileContent.targetPath()
-        assertEquals(sourceSavePath.resolve("2/3.txt"), targetFilePath)
+        assertEquals(sourceSavePath.resolve(Path("2", "3.txt")), targetFilePath)
     }
 
     @Test
@@ -64,7 +64,7 @@ class CoreFileContentTest {
             filenamePathPattern = PathPattern("{date} - {title}")
         )
         val targetFilePath = fileContent.targetPath()
-        val expected = sourceSavePath.resolve("2022/test/2022-01-01 - 123.txt")
+        val expected = sourceSavePath.resolve(Path("2022", "test", "2022-01-01 - 123.txt"))
         assertEquals(expected, targetFilePath)
     }
 
@@ -96,7 +96,7 @@ class CoreFileContentTest {
         fileContent.addSharedVariables(MapPatternVariables(mapOf("season" to "01")))
 
         val saveDir = fileContent.saveDirectoryPath()
-        assertEquals(sourceSavePath.resolve("test/S01"), saveDir)
+        assertEquals(sourceSavePath.resolve(Path("test", "S01")), saveDir)
     }
 
     @Test
@@ -105,9 +105,9 @@ class CoreFileContentTest {
         )
         assertNull(content.downloadItemFileRootDirectory())
 
-        val downloadPath = Path("src/test/resources/downloads")
+        val downloadPath = Path("src", "test", "resources", "downloads")
         val content1 = content.copy(
-            fileDownloadPath = Path("src/test/resources/downloads/easd/222/1.txt"),
+            fileDownloadPath = Path("src", "test", "resources", "downloads", "easd", "222", "1.txt"),
             downloadPath = downloadPath
         )
         assertEquals(downloadPath.resolve("easd"), content1.downloadItemFileRootDirectory())
@@ -116,7 +116,7 @@ class CoreFileContentTest {
     @Test
     fun given_extension_pattern_should_expected() {
         val fileContent = createFileContent(
-            fileDownloadPath = Path("src/test/resources/downloads/easd/222/1.mp4"),
+            fileDownloadPath = Path("src", "test", "resources", "downloads", "easd", "222", "1.mp4"),
             filenamePathPattern = PathPattern("{name} - {season}.mp4"),
             patternVars = MapPatternVariables(mapOf("name" to "test")))
         fileContent.addSharedVariables(MapPatternVariables(mapOf("season" to "01")))
@@ -125,9 +125,9 @@ class CoreFileContentTest {
 }
 
 private fun createFileContent(
-    fileDownloadPath: Path = Path("src/test/resources/downloads/1.txt"),
-    sourceSavePath: Path = Path("src/test/resources/target"),
-    downloadPath: Path = Path("src/test/resources/downloads"),
+    fileDownloadPath: Path = Path("src", "test", "resources", "downloads", "1.txt"),
+    sourceSavePath: Path = Path("src", "test", "resources", "target"),
+    downloadPath: Path = Path("src", "test", "resources", "downloads"),
     patternVars: MapPatternVariables = MapPatternVariables(),
     savePathPattern: PathPattern = PathPattern.ORIGIN,
     filenamePathPattern: PathPattern = PathPattern.ORIGIN): CoreFileContent {

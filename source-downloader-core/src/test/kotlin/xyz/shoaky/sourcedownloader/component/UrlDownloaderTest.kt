@@ -11,7 +11,7 @@ import kotlin.io.path.exists
 
 class UrlDownloaderTest {
 
-    private val savePath = Path("src/test/resources/downloads")
+    private val savePath = Path("src", "test", "resources", "downloads")
     private val targetPath = savePath.resolve("0f9a2d944ea7c4952e274dd1738005e4e18107b3832b6d6cf9d74933f123bdb3")
     private val downloader = UrlDownloaderSupplier.apply(
         Properties.fromMap(

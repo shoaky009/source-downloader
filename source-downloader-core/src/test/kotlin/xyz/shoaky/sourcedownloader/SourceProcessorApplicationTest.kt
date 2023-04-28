@@ -22,12 +22,12 @@ class SourceProcessorApplicationTest {
 
     @Autowired
     lateinit var processorManager: ProcessorManager
-    val savePath = Path("src/test/resources/target")
+    val savePath = Path("src", "test", "resources", "target")
 
     @BeforeEach
     fun beforeNormal() {
         savePath.deleteRecursively()
-        val sourcePath = Path("src/test/resources/sources/")
+        val sourcePath = Path("src", "test", "resources", "sources")
 
         sourcePath.resolve("test1.jpg").createIfNotExists()
         sourcePath.resolve("test2.jpg").createIfNotExists()
@@ -37,8 +37,8 @@ class SourceProcessorApplicationTest {
         source3.resolve("test3.jpg").createIfNotExists()
         source3.resolve("test4.jpg").createIfNotExists()
 
-        Path("src/test/resources/target/test1.jpg").deleteIfExists()
-        Path("src/test/resources/target/test2.jpg").deleteIfExists()
+        savePath.resolve("test1.jpg").deleteIfExists()
+        savePath.resolve("test2.jpg").deleteIfExists()
     }
 
     @Test
@@ -51,14 +51,14 @@ class SourceProcessorApplicationTest {
         val contents = processingStorage.findByProcessorName("NormalCase")
         assertEquals(3, contents.size)
 
-        val d1 = contents[0].sourceContent.sourceFiles.first().patternVariables.getVariables()["sourceItemDate"]
-        val d2 = contents[1].sourceContent.sourceFiles.first().patternVariables.getVariables()["sourceItemDate"]
-        val d3 = contents[2].sourceContent.sourceFiles.first().patternVariables.getVariables()["sourceItemDate"]
+        val d1 = contents[0].sourceContent.sourceFiles.first().patternVariables.getVariables()["sourceItemDate"]!!
+        val d2 = contents[1].sourceContent.sourceFiles.first().patternVariables.getVariables()["sourceItemDate"]!!
+        val d3 = contents[2].sourceContent.sourceFiles.first().patternVariables.getVariables()["sourceItemDate"]!!
 
-        assert(Path("src/test/resources/target/test1/$d1/test1 - 1.jpg").exists())
-        assert(Path("src/test/resources/target/test2/$d2/test2 - 1.jpg").exists())
-        assert(Path("src/test/resources/target/test-dir/$d3/test3 - 1.jpg").exists())
-        assert(Path("src/test/resources/target/test-dir/$d3/test4 - 2.jpg").exists())
+        assert(savePath.resolve(Path("test1", d1, "test1 - 1.jpg")).exists())
+        assert(savePath.resolve(Path("test2", d2, "test2 - 1.jpg")).exists())
+        assert(savePath.resolve(Path("test-dir", d3, "test3 - 1.jpg")).exists())
+        assert(savePath.resolve(Path("test-dir", d3, "test4 - 2.jpg")).exists())
 
         savePath.deleteRecursively()
     }

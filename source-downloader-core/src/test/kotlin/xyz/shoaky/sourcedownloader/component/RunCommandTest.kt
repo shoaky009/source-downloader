@@ -13,9 +13,9 @@ import kotlin.test.assertEquals
 
 class RunCommandTest {
     private val command = if (System.getProperty("os.name").contains("windows", true))
-        listOf("powershell.exe", Path("src/test/resources/script/test.ps1").toAbsolutePath().toString(), "test1")
+        listOf("powershell.exe", Path("src", "test", "resources", "script", "test.ps1").toAbsolutePath().toString(), "test1")
     else
-        listOf(Path("src/test/resources/script/test.sh").toAbsolutePath().toString(), "test1")
+        listOf(Path("src", "test", "resources", "script", "test.sh").toAbsolutePath().toString(), "test1")
 
     private val runCommand = RunCommandSupplier.apply(
         Properties.fromMap(mapOf("command" to command))

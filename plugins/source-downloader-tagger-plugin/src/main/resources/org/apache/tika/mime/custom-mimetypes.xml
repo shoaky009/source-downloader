@@ -13,4 +13,10 @@
         <sub-class-of type="text/plain"/>
         <glob pattern="*.srt"/>
     </mime-type>
+    <mime-type type="text/x-nfo">
+        <_comment>Nfo File</_comment>
+        <alias type="text/nfo"/>
+        <sub-class-of type="text/plain"/>
+        <glob pattern="*.nfo"/>
+    </mime-type>
 </mime-info>

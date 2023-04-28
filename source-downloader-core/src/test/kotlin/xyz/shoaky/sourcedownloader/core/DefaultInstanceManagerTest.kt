@@ -9,7 +9,7 @@ import kotlin.test.assertEquals
 class DefaultInstanceManagerTest {
 
     private val instanceManager = DefaultInstanceManager(
-        YamlConfigStorage(Path("src/test/resources/config-test2.yaml"))
+        YamlConfigStorage(Path("src", "test", "resources", "config-test2.yaml"))
     )
 
     init {

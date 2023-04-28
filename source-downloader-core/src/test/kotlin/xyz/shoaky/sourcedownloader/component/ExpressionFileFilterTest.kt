@@ -37,7 +37,8 @@ class ExpressionFileFilterTest {
             ),
         )
         assertEquals(true,
-            filter.test(Path("src/test/kotlin/xyz/shoaky/sourcedownloader/core/component/ExpressionFileFilterTest.kt")
+            filter.test(Path("src", "test", "kotlin", "xyz", "shoaky",
+                "sourcedownloader", "core", "component", "ExpressionFileFilterTest.kt")
             )
         )
     }

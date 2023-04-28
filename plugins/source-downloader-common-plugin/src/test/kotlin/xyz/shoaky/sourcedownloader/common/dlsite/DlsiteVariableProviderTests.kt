@@ -29,7 +29,7 @@ class DlsiteVariableProviderTests {
 
     @Test
     fun test_parse_work_info() {
-        val body = Files.readString(Path("src/test/resources/RJ01042626.html"))
+        val body = Files.readString(Path("src", "test", "resources", "RJ01042626.html"))
         val workInfo = provider.parseWorkInfo(body, "RJ01042626")
         println(workInfo)
         assertEquals("RJ01042626", workInfo.dlsiteId)

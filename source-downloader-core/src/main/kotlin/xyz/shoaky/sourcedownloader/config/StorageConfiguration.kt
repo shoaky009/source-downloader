@@ -24,7 +24,7 @@ class StorageConfiguration(
             return YamlConfigStorage(configPath)
         }
 
-        val path = Path("source-downloader-core/src/main/resources/config.yaml")
+        val path = Path("source-downloader-core", "src", "main", "resources", "config.yaml")
         if (path.exists()) {
             return YamlConfigStorage(path)
         }

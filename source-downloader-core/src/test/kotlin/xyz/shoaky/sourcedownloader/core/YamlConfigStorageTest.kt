@@ -8,7 +8,7 @@ import kotlin.io.path.Path
 import kotlin.test.assertEquals
 
 class YamlConfigStorageTest {
-    private val path = Path("src/test/resources/config-test2.yaml")
+    private val path = Path("src", "test", "resources", "config-test2.yaml")
     private val storage = YamlConfigStorage(path)
 
     @BeforeEach
