@@ -129,3 +129,10 @@ processors:
       variables-name-mapping:
         seasonNumber: season
         anitomEpisode: episode
+      #给文件打上标记
+      taggers:
+        - "simple"
+      #给特定标签的文件有单独的文件名模版，如果不存在则默认使用filename-pattern
+      tag-filename-pattern:
+        video: "S{season}E{episode}"
+        subtitle: "S{season}E{episode}.{language}"

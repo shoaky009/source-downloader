@@ -128,7 +128,7 @@ class SpringProcessorManager(
             val touchItemDirectory = TouchItemDirectorySupplier.apply(Properties.empty())
             processor.addRunAfterCompletion(touchItemDirectory)
         }
-        options.taggers.forEach {
+        options.fileTaggers.forEach {
             val instanceName = it.getInstanceName(FileTagger::class)
             applicationContext.getBean(instanceName, FileTagger::class.java)
                 .also { tagger -> processor.addTagger(tagger) }

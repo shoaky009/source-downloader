@@ -93,9 +93,10 @@ data class ProcessorConfig(
         val deleteEmptyDirectory: Boolean = true,
         @JsonAlias("variable-name-replace")
         val variableNameReplace: Map<String, String> = emptyMap(),
+        @JsonAlias("file-taggers")
+        val fileTaggers: List<ComponentId> = emptyList(),
         @JsonAlias("tag-filename-pattern")
         val tagFilenamePattern: Map<String, PathPattern> = emptyMap(),
-        val taggers: List<ComponentId> = emptyList(),
         // 如果迭代item时连续10次都是处理过的，就认为迭代结束了
         @JsonAlias("fetch-ends-early")
         val fetchEndsEarly: Boolean = true
