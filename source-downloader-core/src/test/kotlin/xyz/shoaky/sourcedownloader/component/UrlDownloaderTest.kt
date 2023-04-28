@@ -6,6 +6,7 @@ import xyz.shoaky.sourcedownloader.sdk.DownloadTask
 import xyz.shoaky.sourcedownloader.sdk.Properties
 import xyz.shoaky.sourcedownloader.sourceItem
 import kotlin.io.path.Path
+import kotlin.io.path.createDirectories
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.exists
 
@@ -17,19 +18,26 @@ class UrlDownloaderTest {
         Properties.fromMap(
             mapOf(
                 "download-path" to savePath
-            ))
+            )
+        )
     )
+
+    init {
+        savePath.createDirectories()
+    }
 
     @Test
     fun should_file_exists() {
         targetPath.deleteIfExists()
 
         val url = "https://www.baidu.com"
-        val task = DownloadTask(sourceItem("test", link = url, downloadUrl = "https://www.baidu.com"),
+        val task = DownloadTask(
+            sourceItem("test", link = url, downloadUrl = "https://www.baidu.com"),
             listOf(
                 targetPath
             ),
-            downloadPath = savePath)
+            downloadPath = savePath
+        )
         downloader.submit(task)
         assert(targetPath.exists())
 

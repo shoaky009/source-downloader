@@ -23,11 +23,16 @@ class SourceProcessorApplicationTest {
     @Autowired
     lateinit var processorManager: ProcessorManager
     val savePath = Path("src", "test", "resources", "target")
+    val sourcePath = Path("src", "test", "resources", "sources")
+
+    init {
+        sourcePath.createDirectories()
+        savePath.createDirectories()
+    }
 
     @BeforeEach
     fun beforeNormal() {
         savePath.deleteRecursively()
-        val sourcePath = Path("src", "test", "resources", "sources")
 
         sourcePath.resolve("test1.jpg").createIfNotExists()
         sourcePath.resolve("test2.jpg").createIfNotExists()
