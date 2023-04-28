@@ -60,7 +60,7 @@ internal class ParserChain(
 
         private val episodeParsers: List<ValueParser> =
             listOf(
-                AnitomEpisodeParser, EpisodeParser
+                 EpisodeParser
             )
 
         fun seasonChain(

@@ -47,7 +47,9 @@ data class PathPattern(
     }
 
     companion object {
+        @JvmStatic
         val VARIABLE_PATTERN: Pattern = Pattern.compile("\\{(.+?)}")
+        @JvmStatic
         val ORIGIN = PathPattern("")
     }
 

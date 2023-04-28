@@ -18,16 +18,25 @@ data class ComponentType(
             ?: throw ComponentException.unsupported("不支持的类型${topTypeClass.simpleName}")
     }
 
-    companion object {
-        fun downloader(type: String) = ComponentType(type, Downloader::class)
-        fun source(type: String) = ComponentType(type, Source::class)
-        fun fileMover(type: String) = ComponentType(type, FileMover::class)
-        fun provider(type: String) = ComponentType(type, VariableProvider::class)
-        fun itemFilter(type: String) = ComponentType(type, SourceItemFilter::class)
-        fun trigger(type: String) = ComponentType(type, Trigger::class)
-        fun run(type: String) = ComponentType(type, RunAfterCompletion::class)
-        fun fileFilter(type: String) = ComponentType(type, SourceFileFilter::class)
 
+    companion object {
+        @JvmStatic
+        fun downloader(type: String) = ComponentType(type, Downloader::class)
+        @JvmStatic
+        fun source(type: String) = ComponentType(type, Source::class)
+        @JvmStatic
+        fun fileMover(type: String) = ComponentType(type, FileMover::class)
+        @JvmStatic
+        fun provider(type: String) = ComponentType(type, VariableProvider::class)
+        @JvmStatic
+        fun itemFilter(type: String) = ComponentType(type, SourceItemFilter::class)
+        @JvmStatic
+        fun trigger(type: String) = ComponentType(type, Trigger::class)
+        @JvmStatic
+        fun run(type: String) = ComponentType(type, RunAfterCompletion::class)
+        @JvmStatic
+        fun fileFilter(type: String) = ComponentType(type, SourceFileFilter::class)
+        @JvmStatic
         fun fileTagger(type: String): ComponentType {
             return ComponentType(type, FileTagger::class)
         }
@@ -38,10 +47,12 @@ data class ComponentType(
                 CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_HYPHEN, simpleName)
             }
 
+        @JvmStatic
         fun typeOf(type: String): KClass<out SdComponent>? {
             return componentTypes[type]
         }
 
+        @JvmStatic
         fun types(): List<String> {
             return componentTypes.keys.toList()
         }

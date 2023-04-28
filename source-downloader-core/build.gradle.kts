@@ -37,8 +37,8 @@ dependencies {
     implementation("com.github.atomashpolskiy:bt-core:1.10")
 
     // 内置插件，单纯为了方便
-    implementation("xyz.shoaky:source-downloader-mikan-plugin:1.0.0")
     implementation(project(":plugins:source-downloader-common-plugin"))
+    implementation(project(":plugins:source-downloader-mikan-plugin"))
     implementation(project(":plugins:source-downloader-tagger-plugin"))
     // implementation(project(":plugins:source-downloader-telegram-plugin"))
     implementation(project(":plugins:source-downloader-ai-plugin"))
