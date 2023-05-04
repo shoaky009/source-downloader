@@ -2,10 +2,10 @@ package xyz.shoaky.sourcedownloader.component
 
 import org.junit.jupiter.api.Test
 import xyz.shoaky.sourcedownloader.component.supplier.RunCommandSupplier
+import xyz.shoaky.sourcedownloader.core.CorePathPattern
 import xyz.shoaky.sourcedownloader.core.file.CoreFileContent
 import xyz.shoaky.sourcedownloader.core.file.PersistentSourceContent
 import xyz.shoaky.sourcedownloader.sdk.MapPatternVariables
-import xyz.shoaky.sourcedownloader.sdk.PathPattern
 import xyz.shoaky.sourcedownloader.sdk.Properties
 import xyz.shoaky.sourcedownloader.sourceItem
 import kotlin.io.path.Path
@@ -26,8 +26,8 @@ class RunCommandTest {
         Path("test.txt"),
         Path(""),
         MapPatternVariables(mapOf("date" to "2022-01-01", "name" to "test")),
-        PathPattern.ORIGIN,
-        PathPattern.ORIGIN,
+        CorePathPattern.ORIGIN,
+        CorePathPattern.ORIGIN,
     )
 
     @Test

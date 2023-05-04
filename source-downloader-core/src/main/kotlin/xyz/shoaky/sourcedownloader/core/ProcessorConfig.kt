@@ -3,6 +3,7 @@ package xyz.shoaky.sourcedownloader.core
 // import io.swagger.v3.oas.annotations.media.Schema
 // import io.swagger.v3.oas.annotations.media.SchemaProperty
 import com.fasterxml.jackson.annotation.*
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import xyz.shoaky.sourcedownloader.core.file.ParsingFailedStrategy
 import xyz.shoaky.sourcedownloader.core.processor.VariableConflictStrategy
 import xyz.shoaky.sourcedownloader.sdk.DownloadOptions
@@ -63,9 +64,11 @@ data class ProcessorConfig(
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     data class Options(
         @JsonAlias("save-path-pattern")
-        val savePathPattern: PathPattern = PathPattern.ORIGIN,
+        @JsonDeserialize(`as` = CorePathPattern::class)
+        val savePathPattern: PathPattern = CorePathPattern.ORIGIN,
         @JsonAlias("filename-pattern")
-        val filenamePattern: PathPattern = PathPattern.ORIGIN,
+        @JsonDeserialize(`as` = CorePathPattern::class)
+        val filenamePattern: PathPattern = CorePathPattern.ORIGIN,
         @JsonAlias("run-after-completion")
         val runAfterCompletion: List<ComponentId> = emptyList(),
         @JsonFormat(shape = JsonFormat.Shape.STRING)
@@ -102,6 +105,7 @@ data class ProcessorConfig(
         @JsonAlias("file-taggers")
         val fileTaggers: List<ComponentId> = emptyList(),
         @JsonAlias("tag-filename-pattern")
+        @JsonDeserialize(contentAs = CorePathPattern::class)
         val tagFilenamePattern: Map<String, PathPattern> = emptyMap(),
     )
 

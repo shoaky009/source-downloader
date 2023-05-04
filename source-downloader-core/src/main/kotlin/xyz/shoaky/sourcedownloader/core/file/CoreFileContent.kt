@@ -1,5 +1,7 @@
 package xyz.shoaky.sourcedownloader.core.file
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
+import xyz.shoaky.sourcedownloader.core.CorePathPattern
 import xyz.shoaky.sourcedownloader.sdk.FileContent
 import xyz.shoaky.sourcedownloader.sdk.MapPatternVariables
 import xyz.shoaky.sourcedownloader.sdk.PathPattern
@@ -15,7 +17,9 @@ data class CoreFileContent(
     val sourceSavePath: Path,
     override val downloadPath: Path,
     override val patternVariables: MapPatternVariables,
+    @JsonDeserialize(`as` = CorePathPattern::class)
     val fileSavePathPattern: PathPattern,
+    @JsonDeserialize(`as` = CorePathPattern::class)
     val filenamePattern: PathPattern,
 ) : FileContent {
 
@@ -43,7 +47,7 @@ data class CoreFileContent(
     }
 
     fun targetFilename(): String {
-        if (filenamePattern == PathPattern.ORIGIN) {
+        if (filenamePattern == CorePathPattern.ORIGIN) {
             return fileDownloadPath.name
         }
         val parse = filenamePattern.parse(sharedVariables)

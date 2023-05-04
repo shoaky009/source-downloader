@@ -3,11 +3,11 @@ package xyz.shoaky.sourcedownloader.component
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import xyz.shoaky.sourcedownloader.component.supplier.GeneralFileMoverSupplier
+import xyz.shoaky.sourcedownloader.core.CorePathPattern
 import xyz.shoaky.sourcedownloader.core.file.CoreFileContent
 import xyz.shoaky.sourcedownloader.core.file.PersistentSourceContent
 import xyz.shoaky.sourcedownloader.createIfNotExists
 import xyz.shoaky.sourcedownloader.sdk.MapPatternVariables
-import xyz.shoaky.sourcedownloader.sdk.PathPattern
 import xyz.shoaky.sourcedownloader.sdk.Properties
 import xyz.shoaky.sourcedownloader.sourceItem
 import java.nio.file.Files
@@ -45,16 +45,16 @@ class GeneralFileMoverTest {
             savePath,
             downloadPath,
             MapPatternVariables(),
-            PathPattern.ORIGIN,
-            PathPattern.ORIGIN,
+            CorePathPattern.ORIGIN,
+            CorePathPattern.ORIGIN,
         )
         val file2 = CoreFileContent(
             downloadPath.resolve("2.txt"),
             savePath,
             downloadPath,
             MapPatternVariables(),
-            PathPattern.ORIGIN,
-            PathPattern.ORIGIN,
+            CorePathPattern.ORIGIN,
+            CorePathPattern.ORIGIN,
         )
 
         val sourceContent = PersistentSourceContent(sourceItem(), listOf(file1, file2), MapPatternVariables())

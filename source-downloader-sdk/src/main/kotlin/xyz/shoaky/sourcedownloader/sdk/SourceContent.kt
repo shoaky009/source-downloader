@@ -1,8 +1,6 @@
 package xyz.shoaky.sourcedownloader.sdk
 
-import com.fasterxml.jackson.annotation.JsonValue
 import java.nio.file.Path
-import java.util.regex.Pattern
 import kotlin.io.path.name
 
 interface SourceContent {
@@ -21,36 +19,12 @@ interface SourceContent {
     }
 }
 
-data class PathPattern(
-    @get:JsonValue
+interface PathPattern {
     val pattern: String
-) {
-    fun parse(provider: PatternVariables): ParseResult {
-        val matcher = VARIABLE_PATTERN.matcher(pattern)
-        val result = StringBuilder()
-        val variables = provider.variables()
-        val varRes = mutableListOf<VariableResult>()
-        while (matcher.find()) {
-            val variableName = matcher.group(1)
-            val variableValue = variables[variableName]
-            varRes.add(VariableResult(variableName, variableValue != null))
-            if (variableValue != null) {
-                matcher.appendReplacement(result, variableValue)
-            }
-        }
-        matcher.appendTail(result)
-        return ParseResult(result.toString(), varRes)
-    }
+    fun parse(provider: PatternVariables): ParseResult
 
     fun depth(): Int {
         return pattern.split("/").size
-    }
-
-    companion object {
-        @JvmStatic
-        val VARIABLE_PATTERN: Pattern = Pattern.compile("\\{(.+?)}")
-        @JvmStatic
-        val ORIGIN = PathPattern("")
     }
 
     data class ParseResult(

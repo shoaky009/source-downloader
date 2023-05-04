@@ -23,7 +23,7 @@ class CoreFileContentTest {
     @Test
     fun given_constant_pattern_should_filename_expected() {
         val content = createFileContent(
-            filenamePathPattern = PathPattern("2")
+            filenamePathPattern = CorePathPattern("2")
         )
         val targetFilename = content.targetFilename()
         assertEquals("2.txt", targetFilename)
@@ -33,7 +33,7 @@ class CoreFileContentTest {
     fun given_vars_pattern_should_filename_expected() {
         val content = createFileContent(
             patternVars = MapPatternVariables(mapOf("date" to "2022-01-01", "name" to "2")),
-            filenamePathPattern = PathPattern("{date} - {name}")
+            filenamePathPattern = CorePathPattern("{date} - {name}")
         )
         val targetFilename = content.targetFilename()
         assertEquals("2022-01-01 - 2.txt", targetFilename)
@@ -49,8 +49,8 @@ class CoreFileContentTest {
     @Test
     fun given_constant_should_target_expected() {
         val fileContent = createFileContent(
-            savePathPattern = PathPattern("2"),
-            filenamePathPattern = PathPattern("3")
+            savePathPattern = CorePathPattern("2"),
+            filenamePathPattern = CorePathPattern("3")
         )
         val targetFilePath = fileContent.targetPath()
         assertEquals(sourceSavePath.resolve(Path("2", "3.txt")), targetFilePath)
@@ -60,8 +60,8 @@ class CoreFileContentTest {
     fun given_vars_pattern_should_target_expected() {
         val fileContent = createFileContent(
             patternVars = MapPatternVariables(mapOf("date" to "2022-01-01", "work" to "test", "year" to "2022", "title" to "123")),
-            savePathPattern = PathPattern("{year}/{work}"),
-            filenamePathPattern = PathPattern("{date} - {title}")
+            savePathPattern = CorePathPattern("{year}/{work}"),
+            filenamePathPattern = CorePathPattern("{date} - {title}")
         )
         val targetFilePath = fileContent.targetPath()
         val expected = sourceSavePath.resolve(Path("2022", "test", "2022-01-01 - 123.txt"))
@@ -71,7 +71,7 @@ class CoreFileContentTest {
     @Test
     fun given_2depth_should_equals() {
         val createFileContent = createFileContent(
-            savePathPattern = PathPattern("{name}/S{season}"),
+            savePathPattern = CorePathPattern("{name}/S{season}"),
             patternVars = MapPatternVariables(mapOf("name" to "test", "season" to "01"))
         )
         assertEquals(sourceSavePath.resolve("test"), createFileContent.saveItemFileRootDirectory())
@@ -80,18 +80,18 @@ class CoreFileContentTest {
     @Test
     fun given_1depth_or_empty_should_null() {
         val content1 = createFileContent(
-            savePathPattern = PathPattern("{name}"),
+            savePathPattern = CorePathPattern("{name}"),
             patternVars = MapPatternVariables(mapOf("name" to "test", "season" to "01"))
         )
         assertEquals(null, content1.saveItemFileRootDirectory())
-        val content2 = content1.copy(fileSavePathPattern = PathPattern.ORIGIN)
+        val content2 = content1.copy(fileSavePathPattern = CorePathPattern.ORIGIN)
         assertEquals(null, content2.saveItemFileRootDirectory())
     }
 
     @Test
     fun given_shared_vars() {
         val fileContent = createFileContent(
-            savePathPattern = PathPattern("{name}/S{season}"),
+            savePathPattern = CorePathPattern("{name}/S{season}"),
             patternVars = MapPatternVariables(mapOf("name" to "test")))
         fileContent.addSharedVariables(MapPatternVariables(mapOf("season" to "01")))
 
@@ -117,7 +117,7 @@ class CoreFileContentTest {
     fun given_extension_pattern_should_expected() {
         val fileContent = createFileContent(
             fileDownloadPath = Path("src", "test", "resources", "downloads", "easd", "222", "1.mp4"),
-            filenamePathPattern = PathPattern("{name} - {season}.mp4"),
+            filenamePathPattern = CorePathPattern("{name} - {season}.mp4"),
             patternVars = MapPatternVariables(mapOf("name" to "test")))
         fileContent.addSharedVariables(MapPatternVariables(mapOf("season" to "01")))
         assertEquals("test - 01.mp4", fileContent.targetFilename())
@@ -129,8 +129,8 @@ private fun createFileContent(
     sourceSavePath: Path = Path("src", "test", "resources", "target"),
     downloadPath: Path = Path("src", "test", "resources", "downloads"),
     patternVars: MapPatternVariables = MapPatternVariables(),
-    savePathPattern: PathPattern = PathPattern.ORIGIN,
-    filenamePathPattern: PathPattern = PathPattern.ORIGIN): CoreFileContent {
+    savePathPattern: PathPattern = CorePathPattern.ORIGIN,
+    filenamePathPattern: PathPattern = CorePathPattern.ORIGIN): CoreFileContent {
     return CoreFileContent(
         fileDownloadPath,
         sourceSavePath,
