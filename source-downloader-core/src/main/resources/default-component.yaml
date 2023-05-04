@@ -18,6 +18,8 @@ variable-provider:
     type: season
   - name: episode
     type: episode
+  - name: language
+    type: language
 trigger:
   - name: 30min
     type: fixed

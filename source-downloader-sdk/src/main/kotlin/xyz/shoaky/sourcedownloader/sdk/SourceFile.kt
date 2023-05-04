@@ -7,4 +7,13 @@ interface SourceFile {
      */
     fun patternVariables(): PatternVariables
 
+    companion object {
+        @JvmStatic
+        val EMPTY: SourceFile = EmptySourceFile
+    }
+}
+
+private object EmptySourceFile : SourceFile {
+    override fun patternVariables(): PatternVariables = PatternVariables.EMPTY
+
 }
