@@ -1,8 +1,8 @@
 package xyz.shoaky.sourcedownloader.mikan.parse
 
+import org.apache.commons.lang3.CharUtils
 import org.apache.commons.lang3.math.NumberUtils
 import java.util.function.Function
-import java.util.regex.Pattern
 
 internal object SeasonParser : ValueParser {
 
@@ -25,17 +25,24 @@ internal object SeasonParser : ValueParser {
         return Result()
     }
 
-    internal data class SeasonRule(private val pattern: Pattern, val convert: Function<String, Int?>) {
+    internal data class SeasonRule(private val regex: Regex, val convert: Function<String, Int?>) {
         fun ifMatchConvert(name: String): Int? {
-            val matcher = pattern.matcher(name)
-            if (matcher.find()) {
-                return convert.apply(matcher.group())
+            val matcher = regex.find(name)
+            if (matcher != null) {
+                // 如果前面有字母，那么就不算季度
+                if (matcher.range.first > 0) {
+                    val prevChar = name[matcher.range.first - 1]
+                    if (CharUtils.isAsciiAlpha(prevChar)) {
+                        return null
+                    }
+                }
+                return convert.apply(matcher.value)
             }
             return null
         }
     }
 
-    private val lastMatchPattern = Pattern.compile("(?:\\d+|二|三|四|五|六|七|八|九|十|II|III|IV|V|VI|VII|VIII|IX|X|Ⅱ|Ⅲ|Ⅳ)\$")
+    private val lastMatchPattern = "(?:\\d+|二|三|四|五|六|七|八|九|十|II|III|IV|V|VI|VII|VIII|IX|X|Ⅱ|Ⅲ|Ⅳ)\$".toRegex()
 
     // 标题最后是数字的
     private val last =
@@ -45,7 +52,7 @@ internal object SeasonParser : ValueParser {
         }
 
     // 常见的比如第X季 第X期 S Season
-    private val general = SeasonRule(Pattern.compile("S\\d{1,2}|Season \\d{1,2}|第.[季期]|\\d+(?i)nd")) {
+    private val general = SeasonRule("S\\d{1,2}|Season \\d{1,2}|第.[季期]|\\d+(?i:rd|nd)".toRegex(RegexOption.IGNORE_CASE)) {
         val s = it.replace("S", "", true)
             .replace("Season", "", true)
             .replace("第", "")

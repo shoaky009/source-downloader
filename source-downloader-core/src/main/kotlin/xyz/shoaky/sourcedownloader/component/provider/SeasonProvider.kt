@@ -1,5 +1,6 @@
 package xyz.shoaky.sourcedownloader.component.provider
 
+import org.apache.commons.lang3.CharUtils
 import org.apache.commons.lang3.math.NumberUtils
 import xyz.shoaky.sourcedownloader.sdk.*
 import xyz.shoaky.sourcedownloader.sdk.component.VariableProvider
@@ -76,7 +77,7 @@ private object GeneralSeason : Function<Pair<SourceItem, Path>, Int?> {
         seasonNumberMapping[s] ?: Regex("\\d+").find(s)?.value?.toInt()
     }
 
-    // 标题最后是数字的
+    // 标题最后是连续数字的
     private val last = RegexRule(lastMatchPattern) {
         it.toIntOrNull() ?: seasonNumberMapping[it]
         ?: throw RuntimeException("can't parse season number from $it")
@@ -117,6 +118,13 @@ private object GeneralSeason : Function<Pair<SourceItem, Path>, Int?> {
         fun ifMatchConvert(target: String): Int? {
             val matcher = regex.find(target)
             if (matcher != null) {
+                // 如果前面有字母，那么就不算季度
+                if (matcher.range.first > 0) {
+                    val prevChar = target[matcher.range.first - 1]
+                    if (CharUtils.isAsciiAlpha(prevChar)) {
+                        return null
+                    }
+                }
                 return convert.apply(matcher.value)
             }
             return null
