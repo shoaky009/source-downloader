@@ -27,6 +27,7 @@ processors:
     triggers:
       - "test"
     source: "test"
+    item-file-resolver: "test"
     downloader: "test"
     variable-providers:
       - "test"
@@ -63,6 +64,7 @@ processors:
             listOf(ComponentId("test")),
             ComponentId("test"),
             listOf(ComponentId("test")),
+            ComponentId("test"),
             ComponentId("test"),
             ComponentId("test"),
             Path(""),

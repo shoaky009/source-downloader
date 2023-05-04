@@ -6,7 +6,6 @@ import org.junit.jupiter.api.assertThrows
 import xyz.shoaky.sourcedownloader.sdk.ComponentRule
 import xyz.shoaky.sourcedownloader.sdk.DownloadTask
 import xyz.shoaky.sourcedownloader.sdk.SourceContent
-import xyz.shoaky.sourcedownloader.sdk.SourceItem
 import java.nio.file.Path
 
 class RuleTest {
@@ -56,10 +55,6 @@ object TestDownloader : Downloader {
         return Path.of("test")
     }
 
-    override fun resolveFiles(sourceItem: SourceItem): List<Path> {
-        return listOf()
-    }
-
 }
 
 object TestTorrentDownloader : TorrentDownloader {
@@ -72,10 +67,6 @@ object TestTorrentDownloader : TorrentDownloader {
 
     override fun defaultDownloadPath(): Path {
         return Path.of("test")
-    }
-
-    override fun resolveFiles(sourceItem: SourceItem): List<Path> {
-        return listOf()
     }
 
     override fun rename(sourceContent: SourceContent): Boolean {

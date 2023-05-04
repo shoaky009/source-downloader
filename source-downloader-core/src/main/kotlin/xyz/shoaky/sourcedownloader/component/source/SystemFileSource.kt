@@ -20,7 +20,6 @@ class SystemFileSource(
     // 用这个只是偷懒，如果要面对超大的文件数量需要用到pointer
 ) : AlwaysLatestSource(), Downloader {
 
-
     override fun fetch(): Iterable<SourceItem> {
         return when (mode) {
             0 -> createRootFileSourceItems()
@@ -60,14 +59,6 @@ class SystemFileSource(
 
     override fun defaultDownloadPath(): Path {
         return path
-    }
-
-    override fun resolveFiles(sourceItem: SourceItem): List<Path> {
-        val path = sourceItem.downloadUri.toPath()
-        if (path.isDirectory()) {
-            return Files.list(path).sorted().toList()
-        }
-        return listOf(path)
     }
 
 

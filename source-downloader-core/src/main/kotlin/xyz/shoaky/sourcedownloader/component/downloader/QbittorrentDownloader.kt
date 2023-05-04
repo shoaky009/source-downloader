@@ -9,7 +9,6 @@ import xyz.shoaky.sourcedownloader.sdk.SourceContent
 import xyz.shoaky.sourcedownloader.sdk.SourceItem
 import xyz.shoaky.sourcedownloader.sdk.component.TorrentDownloader
 import java.nio.file.Path
-import kotlin.io.path.Path
 
 class QbittorrentDownloader(
     private val client: QbittorrentClient,
@@ -69,20 +68,6 @@ class QbittorrentDownloader(
             throw RuntimeException("获取默认下载路径失败,code:${response.statusCode()} body:${response.body()}")
         }
         return Path.of(response.body())
-    }
-
-    // 需要分离文件解析器组件
-    override fun resolveFiles(sourceItem: SourceItem): List<Path> {
-        val torrent = metadataService.fromUrl(sourceItem.downloadUri.toURL())
-        if (torrent.files.size == 1) {
-            return torrent.files.map { it.pathElements.joinToString("/") }
-                .map { Path(it) }
-        }
-        val parent = Path(torrent.name)
-        return torrent.files
-            .filter { it.size > 0 }
-            .map { it.pathElements.joinToString("/") }
-            .map { parent.resolve(it) }
     }
 
     override fun isFinished(task: DownloadTask): Boolean? {

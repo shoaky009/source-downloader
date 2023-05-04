@@ -22,20 +22,31 @@ data class ComponentType(
     companion object {
         @JvmStatic
         fun downloader(type: String) = ComponentType(type, Downloader::class)
+
         @JvmStatic
         fun source(type: String) = ComponentType(type, Source::class)
+
         @JvmStatic
         fun fileMover(type: String) = ComponentType(type, FileMover::class)
+
         @JvmStatic
         fun provider(type: String) = ComponentType(type, VariableProvider::class)
+
+        @JvmStatic
+        fun fileResolver(type: String) = ComponentType(type, ItemFileResolver::class)
+
         @JvmStatic
         fun itemFilter(type: String) = ComponentType(type, SourceItemFilter::class)
+
         @JvmStatic
         fun trigger(type: String) = ComponentType(type, Trigger::class)
+
         @JvmStatic
         fun run(type: String) = ComponentType(type, RunAfterCompletion::class)
+
         @JvmStatic
         fun fileFilter(type: String) = ComponentType(type, SourceFileFilter::class)
+
         @JvmStatic
         fun fileTagger(type: String): ComponentType {
             return ComponentType(type, FileTagger::class)

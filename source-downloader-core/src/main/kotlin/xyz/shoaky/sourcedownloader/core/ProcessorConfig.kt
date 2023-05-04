@@ -18,6 +18,8 @@ data class ProcessorConfig(
     val source: ComponentId,
     @JsonAlias("variable-providers", "providers")
     val variableProviders: List<ComponentId> = emptyList(),
+    @JsonAlias("item-file-resolver", "file-resolver")
+    val itemFileResolver: ComponentId,
     val downloader: ComponentId = ComponentId("downloader:url"),
     @JsonAlias("file-mover", "mover")
     val fileMover: ComponentId = ComponentId("mover:general"),
@@ -38,6 +40,10 @@ data class ProcessorConfig(
         return variableProviders.map {
             it.getInstanceName(VariableProvider::class)
         }
+    }
+
+    fun fileResolverInstanceName(): String {
+        return itemFileResolver.getInstanceName(ItemFileResolver::class)
     }
 
     fun downloaderInstanceName(): String {

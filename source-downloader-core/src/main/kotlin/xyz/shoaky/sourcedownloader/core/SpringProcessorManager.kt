@@ -29,11 +29,13 @@ class SpringProcessorManager(
             applicationContext.getBean(it, VariableProvider::class.java)
         }
         val mover = applicationContext.getBean(config.moverInstanceName(), FileMover::class.java)
+        val resolver = applicationContext.getBean(config.fileResolverInstanceName(), ItemFileResolver::class.java)
         val processor = SourceProcessor(
             config.name,
             config.source.id,
             source,
             providers,
+            resolver,
             downloader,
             mover,
             config.savePath,

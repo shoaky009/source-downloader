@@ -8,6 +8,7 @@ components:
     - name: test-files
       type: system-file
 
+
 processors:
   - name: NormalCase
     triggers: [ ]
@@ -15,6 +16,7 @@ processors:
     downloader: "system-file:test-files"
     file-mover: general
     variable-providers: [ ]
+    item-file-resolver: system-file
     save-path: src/test/resources/target
     options:
       #完成后运行
@@ -30,6 +32,7 @@ processors:
     triggers: [ ]
     source: "system-file:test-files"
     downloader: "system-file:test-files"
+    item-file-resolver: system-file
     file-mover: general
     variable-providers: [ ]
     save-path: src/test/resources/target

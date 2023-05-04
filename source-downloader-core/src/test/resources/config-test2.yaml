@@ -11,6 +11,7 @@ processors:
     triggers:
       - "test"
     source: "test"
+    item-file-resolver: "test"
     downloader: "test"
     variable-providers:
       - "test"

@@ -19,6 +19,10 @@ components:
   variable-provider:
     - type: mikan
       name: mikan
+  #item文件解析器
+  item-file-resolver:
+    - type: fanbox
+      name: fanbox
   #下载器
   downloader:
     - type: qbittorrent
@@ -59,6 +63,8 @@ processors:
     variable-provider:
       - "metadata"
       - "ai:gpt"
+    #引用item文件解析组件
+    item-file-resolver: system-file
     #引用下载器
     downloader: system-file
     #引用文件移动器

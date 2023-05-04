@@ -30,6 +30,7 @@ class SourceProcessor(
     private val sourceId: String,
     private val source: Source<SourceItemPointer>,
     variableProviders: List<VariableProvider>,
+    private val itemFileResolver: ItemFileResolver,
     private val downloader: Downloader,
     private val fileMover: FileMover,
     private val sourceSavePath: Path,
@@ -74,6 +75,7 @@ class SourceProcessor(
             "Processor" to name,
             "Source" to source::class.java.simpleName,
             "Providers" to variableProviders.map { it::class.simpleName },
+            "Resolver" to itemFileResolver::class.java.simpleName,
             "Downloader" to downloader::class.java.simpleName,
             "Mover" to fileMover::class.java.simpleName,
             "SourceItemFilter" to sourceItemFilters.map { it::class.simpleName },
@@ -220,7 +222,7 @@ class SourceProcessor(
     }
 
     private fun createPersistentSourceContent(sourceItemGroup: SourceItemGroup, sourceItem: SourceItem): PersistentSourceContent {
-        val resolveFiles = downloader.resolveFiles(sourceItem)
+        val resolveFiles = itemFileResolver.resolveFiles(sourceItem)
         val filteredFiles = resolveFiles.filter { path ->
             val res = sourceFileFilters.all { it.test(path) }
             if (res.not()) {

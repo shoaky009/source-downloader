@@ -2,12 +2,10 @@ package xyz.shoaky.sourcedownloader.component.downloader
 
 import org.springframework.core.io.UrlResource
 import xyz.shoaky.sourcedownloader.sdk.DownloadTask
-import xyz.shoaky.sourcedownloader.sdk.SourceItem
 import xyz.shoaky.sourcedownloader.sdk.component.Downloader
 import java.io.FileOutputStream
 import java.nio.channels.Channels
 import java.nio.file.Path
-import kotlin.io.path.Path
 
 class UrlDownloader(private val downloadPath: Path) : Downloader {
 
@@ -26,12 +24,6 @@ class UrlDownloader(private val downloadPath: Path) : Downloader {
 
     override fun defaultDownloadPath(): Path {
         return downloadPath
-    }
-
-    override fun resolveFiles(sourceItem: SourceItem): List<Path> {
-        val filename = UrlResource(sourceItem.downloadUri).filename
-            ?: sourceItem.hashing()
-        return listOf(Path(filename))
     }
 
 }

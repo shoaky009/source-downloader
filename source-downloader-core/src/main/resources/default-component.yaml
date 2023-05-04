@@ -41,3 +41,10 @@ trigger:
 file-tagger:
   - name: simple
     type: simple
+item-file-resolver:
+  - name: torrent
+    type: torrent
+  - name: system-file
+    type: system-file
+  - name: url
+    type: url

@@ -30,6 +30,7 @@ enum class Components(
     TRIGGER(Trigger::class, listOf("trigger")),
     SOURCE(Source::class, listOf("source")),
     DOWNLOADER(Downloader::class, listOf("downloader")),
+    ITEM_FILE_RESOLVER(ItemFileResolver::class, listOf("item-file-resolver", "file-resolver", "itemFileResolver", "fileResolver")),
     VARIABLE_PROVIDER(VariableProvider::class, listOf("provider", "variable-provider", "variableProvider")),
     FILE_MOVER(FileMover::class, listOf("mover", "file-mover", "fileMover")),
     RUN_AFTER_COMPLETION(RunAfterCompletion::class, listOf("run-after-completion", "run", "runAfterCompletion")),
@@ -86,6 +87,15 @@ interface Downloader : SdComponent {
     fun submit(task: DownloadTask)
 
     fun defaultDownloadPath(): Path
+
+    // /**
+    //  * Resolve files from item
+    //  * @return Relative paths in the download path
+    //  */
+    // fun resolveFiles(sourceItem: SourceItem): List<Path>
+}
+
+interface ItemFileResolver : SdComponent {
 
     /**
      * Resolve files from item
