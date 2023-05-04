@@ -28,6 +28,7 @@ data class ProcessingContent(
         RENAMED(5),
         DOWNLOADED(6),
         NO_FILES(7),
+        PROCESSING_FAILED(8)
         ;
 
         override fun getValue(): Int {

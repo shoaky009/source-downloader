@@ -75,9 +75,9 @@ interface Trigger : SdComponent {
     fun removeTask(task: Runnable)
 }
 
-interface Source : SdComponent {
+interface Source<T : SourceItemPointer> : SdComponent {
 
-    fun fetch(): Iterable<SourceItem>
+    fun fetch(pointer: T?, limit: Int = 50): Iterable<PointedItem<T>>
 
 }
 

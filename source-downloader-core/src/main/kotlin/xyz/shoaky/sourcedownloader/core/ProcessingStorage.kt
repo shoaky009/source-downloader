@@ -7,12 +7,18 @@ interface ProcessingStorage {
     fun save(content: ProcessingContent): ProcessingContent
 
     fun findRenameContent(name: String, renameTimesThreshold: Int): List<ProcessingContent>
+
     fun deleteById(id: Long)
+
     fun findByNameAndHash(processorName: String, itemHashing: String): ProcessingContent?
 
     fun saveTargetPath(paths: List<Path>)
 
     fun targetPathExists(paths: List<Path>): Boolean
+
     fun findById(id: Long): ProcessingContent?
+
+    fun findProcessorSourceState(processorName: String, sourceId: String): ProcessorSourceState?
+    fun save(state: ProcessorSourceState)
 
 }

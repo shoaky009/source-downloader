@@ -1,9 +1,9 @@
 package xyz.shoaky.sourcedownloader.component.source
 
+import xyz.shoaky.sourcedownloader.sdk.AlwaysLatestSource
 import xyz.shoaky.sourcedownloader.sdk.DownloadTask
 import xyz.shoaky.sourcedownloader.sdk.SourceItem
 import xyz.shoaky.sourcedownloader.sdk.component.Downloader
-import xyz.shoaky.sourcedownloader.sdk.component.Source
 import xyz.shoaky.sourcedownloader.util.creationTime
 import java.nio.file.Files
 import java.nio.file.Path
@@ -17,9 +17,10 @@ class SystemFileSource(
      * 1: 把路径下的所有文件(不包括文件夹，包括子路径下的文件)作为一个SourceItem
      */
     private val mode: Int = 0
-) : Source, Downloader {
+    // 用这个只是偷懒，如果要面对超大的文件数量需要用到pointer
+) : AlwaysLatestSource(), Downloader {
 
-    // TODO lazy
+
     override fun fetch(): Iterable<SourceItem> {
         return when (mode) {
             0 -> createRootFileSourceItems()
@@ -68,6 +69,7 @@ class SystemFileSource(
         }
         return listOf(path)
     }
+
 
 }
 

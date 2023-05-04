@@ -3,10 +3,7 @@ package xyz.shoaky.sourcedownloader.core.processor
 import org.springframework.retry.support.RetryTemplateBuilder
 import xyz.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
 import xyz.shoaky.sourcedownloader.component.provider.MetadataVariableProvider
-import xyz.shoaky.sourcedownloader.core.ProcessingContent
-import xyz.shoaky.sourcedownloader.core.ProcessingStorage
-import xyz.shoaky.sourcedownloader.core.ProcessorConfig
-import xyz.shoaky.sourcedownloader.core.ProcessorSubmitDownloadEvent
+import xyz.shoaky.sourcedownloader.core.*
 import xyz.shoaky.sourcedownloader.core.file.CoreFileContent
 import xyz.shoaky.sourcedownloader.core.file.PersistentSourceContent
 import xyz.shoaky.sourcedownloader.sdk.*
@@ -20,7 +17,6 @@ import java.time.LocalDateTime
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.AtomicInteger
 import kotlin.io.path.exists
 import kotlin.time.ExperimentalTime
 import kotlin.time.measureTime
@@ -30,7 +26,9 @@ import kotlin.time.measureTime
  */
 class SourceProcessor(
     val name: String,
-    private val source: Source,
+    // 先这样传入 后面要改
+    private val sourceId: String,
+    private val source: Source<SourceItemPointer>,
     variableProviders: List<VariableProvider>,
     private val downloader: Downloader,
     private val fileMover: FileMover,
@@ -117,29 +115,26 @@ class SourceProcessor(
     }
 
     private fun process(dryRun: Boolean = false): List<ProcessingContent> {
-        val committedOffset = 0L
-        val itemIterator = retry.execute<Iterator<SourceItem>, IOException> {
-            source.fetch().iterator()
+        val lastState = processingStorage.findProcessorSourceState(name, sourceId)
+        val itemIterator = retry.execute<Iterator<PointedItem<SourceItemPointer>>, IOException> {
+            val pointer = lastState?.resolvePointer(source::class)
+            val iterator = source.fetch(pointer).iterator()
+            iterator
         }
 
         val result = mutableListOf<ProcessingContent>()
+        // 好像没什么用，后面处理器状态改查failed状态的
         var failure = false
-        val fetchEndsEarly = options.fetchEndsEarly
-        // 为后面多线程准备
-        val filterTimes = AtomicInteger(0)
-        while (itemIterator.hasNext() && filterTimes.get() <= FILTER_THRESHOLD) {
-            val item = itemIterator.next()
-            val filterBy = sourceItemFilters.firstOrNull { it.test(item).not() }
+        var lastPointedItem: PointedItem<SourceItemPointer>? = null
+        for (item in itemIterator) {
+            val filterBy = sourceItemFilters.firstOrNull { it.test(item.sourceItem).not() }
             if (filterBy != null) {
-                if (fetchEndsEarly && filterBy::class == SourceHashingItemFilter::class) {
-                    filterTimes.incrementAndGet()
-                }
                 log.debug("Filtered item:{}", item)
                 continue
             }
             kotlin.runCatching {
                 retry.execute<ProcessingContent, IOException> {
-                    processItem(item, dryRun)
+                    processItem(item.sourceItem, dryRun)
                 }
             }.onFailure {
                 log.error("Processor:${name} 处理失败, item:$item", it)
@@ -150,11 +145,38 @@ class SourceProcessor(
                     result.add(it)
                 }
             }
+            lastPointedItem = item
         }
         if (!failure) {
             status = ProcessorStatus.RUNNING
         }
+        saveSourceState(lastPointedItem, lastState)
         return result
+    }
+
+    private fun saveSourceState(lastPointedItem: PointedItem<SourceItemPointer>?, lastState: ProcessorSourceState?) {
+        if (lastState != null && lastPointedItem == null) {
+            processingStorage.save(
+                lastState.copy(lastActiveTime = LocalDateTime.now())
+            )
+            return
+        }
+        if (lastPointedItem == null) {
+            log.info("Processor:${name} Source:${sourceId} no items to process")
+            return
+        }
+        val latestPointer = Jackson.convert(lastPointedItem.pointer, PersistentItemPointer::class)
+        val sourceState = lastState?.copy(
+            processorName = name,
+            sourceId = sourceId,
+            lastPointer = latestPointer,
+            lastActiveTime = LocalDateTime.now()
+        ) ?: ProcessorSourceState(
+            processorName = name,
+            sourceId = sourceId,
+            lastPointer = latestPointer,
+        )
+        processingStorage.save(sourceState)
     }
 
     private fun processItem(sourceItem: SourceItem, dryRun: Boolean = false): ProcessingContent {
@@ -415,7 +437,6 @@ class SourceProcessor(
     companion object {
         // 随便给的
         private val scheduledExecutor = Executors.newSingleThreadScheduledExecutor()
-        private const val FILTER_THRESHOLD = 10
         private val retry = RetryTemplateBuilder()
             .maxAttempts(3)
             .fixedBackoff(Duration.ofSeconds(5L).toMillis())

@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component
 import xyz.shoaky.sourcedownloader.core.processor.SourceProcessor
 import xyz.shoaky.sourcedownloader.sdk.Properties
 import xyz.shoaky.sourcedownloader.sdk.SdComponentSupplier
+import xyz.shoaky.sourcedownloader.sdk.SourceItemPointer
 import xyz.shoaky.sourcedownloader.sdk.component.*
 import xyz.shoaky.sourcedownloader.util.Events
 import java.util.concurrent.ConcurrentHashMap
@@ -31,8 +32,8 @@ interface SdComponentManager {
         return getAllComponent().filterIsInstance<Trigger>()
     }
 
-    fun getAllSource(): List<Source> {
-        return getAllComponent().filterIsInstance<Source>()
+    fun getAllSource(): List<Source<SourceItemPointer>> {
+        return getAllComponent().filterIsInstance<Source<SourceItemPointer>>()
     }
 
     fun getAllDownloader(): List<Downloader> {

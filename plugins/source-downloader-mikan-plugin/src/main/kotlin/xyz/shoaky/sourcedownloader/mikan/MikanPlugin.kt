@@ -6,7 +6,7 @@ import xyz.shoaky.sourcedownloader.sdk.PluginDescription
 
 class MikanPlugin : Plugin {
     override fun init(pluginContext: PluginContext) {
-        // pluginContext.registerSupplier(MikanVariableProviderSupplier)
+        pluginContext.registerSupplier(MikanVariableProviderSupplier)
     }
 
     override fun destroy(pluginContext: PluginContext) {

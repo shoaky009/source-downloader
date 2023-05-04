@@ -4,15 +4,18 @@ import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Component
 import xyz.shoaky.sourcedownloader.core.ProcessingContent
 import xyz.shoaky.sourcedownloader.core.ProcessingStorage
+import xyz.shoaky.sourcedownloader.core.ProcessorSourceState
 import xyz.shoaky.sourcedownloader.util.fromValue
 import java.nio.file.Path
 import java.time.LocalDateTime
 
 @Component
 class JpaProcessingStorage(
-    private val repository: ProcessingRecordRepository,
-    private val tr: TargetPathRepository
-) : ProcessingStorage {
+    private val processingRecordRepository: ProcessingRecordRepository,
+    private val targetPathRepository: TargetPathRepository,
+    private val processorSourceStateRepository: ProcessorSourceStateRepository,
+
+    ) : ProcessingStorage {
     override fun save(content: ProcessingContent): ProcessingContent {
         val record = ProcessingRecord()
         record.processorName = content.processorName
@@ -23,13 +26,13 @@ class JpaProcessingStorage(
         record.modifyTime = content.modifyTime
         record.createTime = content.createTime
         record.id = content.id
-        val save = repository.save(record)
+        val save = processingRecordRepository.save(record)
         content.id = save.id
         return content
     }
 
     override fun findRenameContent(name: String, renameTimesThreshold: Int): List<ProcessingContent> {
-        return repository.findByProcessorNameAndRenameTimesLessThan(name, renameTimesThreshold)
+        return processingRecordRepository.findByProcessorNameAndRenameTimesLessThan(name, renameTimesThreshold)
             .map { record ->
                 val processingContent = ProcessingContent(
                     record.id,
@@ -47,11 +50,11 @@ class JpaProcessingStorage(
     }
 
     override fun deleteById(id: Long) {
-        repository.deleteById(id)
+        processingRecordRepository.deleteById(id)
     }
 
     override fun findByNameAndHash(processorName: String, itemHashing: String): ProcessingContent? {
-        val record = repository.findByProcessorNameAndSourceItemHashing(processorName, itemHashing)
+        val record = processingRecordRepository.findByProcessorNameAndSourceItemHashing(processorName, itemHashing)
         return convert(record)
     }
 
@@ -80,15 +83,44 @@ class JpaProcessingStorage(
             rc.createTime = now
             rc
         }
-        tr.saveAll(map)
+        targetPathRepository.saveAll(map)
     }
 
     override fun targetPathExists(paths: List<Path>): Boolean {
         val ids = paths.map { it.toString() }
-        return tr.existsAllByIdIn(ids)
+        return targetPathRepository.existsAllByIdIn(ids)
     }
 
     override fun findById(id: Long): ProcessingContent? {
-        return convert(repository.findByIdOrNull(id))
+        return convert(processingRecordRepository.findByIdOrNull(id))
+    }
+
+    override fun findProcessorSourceState(processorName: String, sourceId: String): ProcessorSourceState? {
+        return processorSourceStateRepository.findByProcessorNameAndSourceId(
+            processorName, sourceId
+        )?.let {
+            ProcessorSourceState(
+                it.id,
+                it.processorName,
+                it.sourceId,
+                it.lastPointer,
+                it.retryTimes,
+                it.lastActiveTime
+            )
+        }
+    }
+
+
+    override fun save(state: ProcessorSourceState) {
+        processorSourceStateRepository.save(state.let {
+            val record = ProcessorSourceStateRecord()
+            record.id = state.id
+            record.processorName = state.processorName
+            record.sourceId = state.sourceId
+            record.lastPointer = state.lastPointer
+            record.retryTimes = state.retryTimes
+            record.lastActiveTime = state.lastActiveTime
+            record
+        })
     }
 }

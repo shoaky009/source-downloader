@@ -11,6 +11,10 @@ object MemProcessingStorage : ProcessingStorage {
         return content
     }
 
+    override fun save(state: ProcessorSourceState) {
+
+    }
+
     override fun findRenameContent(name: String, renameTimesThreshold: Int): List<ProcessingContent> {
         return contents.filter {
             it.processorName == name && it.renameTimes < renameTimesThreshold
@@ -35,6 +39,10 @@ object MemProcessingStorage : ProcessingStorage {
     }
 
     override fun findById(id: Long): ProcessingContent? {
+        TODO("Not yet implemented")
+    }
+
+    override fun findProcessorSourceState(processorName: String, sourceId: String): ProcessorSourceState? {
         TODO("Not yet implemented")
     }
 

@@ -6,6 +6,7 @@ import xyz.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
 import xyz.shoaky.sourcedownloader.component.supplier.*
 import xyz.shoaky.sourcedownloader.core.processor.SourceProcessor
 import xyz.shoaky.sourcedownloader.sdk.Properties
+import xyz.shoaky.sourcedownloader.sdk.SourceItemPointer
 import xyz.shoaky.sourcedownloader.sdk.component.*
 
 @Component
@@ -15,13 +16,13 @@ class SpringProcessorManager(
     private val applicationContext: DefaultListableBeanFactory,
 ) : ProcessorManager {
 
+    @Suppress("UNCHECKED_CAST")
     override fun createProcessor(config: ProcessorConfig): SourceProcessor {
         val processorBeanName = processorBeanName(config.name)
         if (applicationContext.containsBean(processorBeanName)) {
             throw ComponentException.processorExists("Processor ${config.name} already exists")
         }
-
-        val source = applicationContext.getBean(config.sourceInstanceName(), Source::class.java)
+        val source = applicationContext.getBean(config.sourceInstanceName(), Source::class.java) as Source<SourceItemPointer>
         val downloader = applicationContext.getBean(config.downloaderInstanceName(), Downloader::class.java)
 
         val providers = config.providerInstanceNames().map {
@@ -30,6 +31,7 @@ class SpringProcessorManager(
         val mover = applicationContext.getBean(config.moverInstanceName(), FileMover::class.java)
         val processor = SourceProcessor(
             config.name,
+            config.source.id,
             source,
             providers,
             downloader,
