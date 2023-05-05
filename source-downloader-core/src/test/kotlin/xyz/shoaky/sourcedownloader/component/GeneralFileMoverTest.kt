@@ -45,16 +45,16 @@ class GeneralFileMoverTest {
             savePath,
             downloadPath,
             MapPatternVariables(),
-            CorePathPattern.ORIGIN,
-            CorePathPattern.ORIGIN,
+            CorePathPattern.origin,
+            CorePathPattern.origin,
         )
         val file2 = CoreFileContent(
             downloadPath.resolve("2.txt"),
             savePath,
             downloadPath,
             MapPatternVariables(),
-            CorePathPattern.ORIGIN,
-            CorePathPattern.ORIGIN,
+            CorePathPattern.origin,
+            CorePathPattern.origin,
         )
 
         val sourceContent = PersistentSourceContent(sourceItem(), listOf(file1, file2), MapPatternVariables())

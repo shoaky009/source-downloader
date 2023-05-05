@@ -84,7 +84,7 @@ class CoreFileContentTest {
             patternVars = MapPatternVariables(mapOf("name" to "test", "season" to "01"))
         )
         assertEquals(null, content1.saveItemFileRootDirectory())
-        val content2 = content1.copy(fileSavePathPattern = CorePathPattern.ORIGIN)
+        val content2 = content1.copy(fileSavePathPattern = CorePathPattern.origin)
         assertEquals(null, content2.saveItemFileRootDirectory())
     }
 
@@ -129,8 +129,8 @@ private fun createFileContent(
     sourceSavePath: Path = Path("src", "test", "resources", "target"),
     downloadPath: Path = Path("src", "test", "resources", "downloads"),
     patternVars: MapPatternVariables = MapPatternVariables(),
-    savePathPattern: PathPattern = CorePathPattern.ORIGIN,
-    filenamePathPattern: PathPattern = CorePathPattern.ORIGIN): CoreFileContent {
+    savePathPattern: PathPattern = CorePathPattern.origin,
+    filenamePathPattern: PathPattern = CorePathPattern.origin): CoreFileContent {
     return CoreFileContent(
         fileDownloadPath,
         sourceSavePath,

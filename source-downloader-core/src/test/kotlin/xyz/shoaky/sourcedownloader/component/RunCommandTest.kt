@@ -26,8 +26,8 @@ class RunCommandTest {
         Path("test.txt"),
         Path(""),
         MapPatternVariables(mapOf("date" to "2022-01-01", "name" to "test")),
-        CorePathPattern.ORIGIN,
-        CorePathPattern.ORIGIN,
+        CorePathPattern.origin,
+        CorePathPattern.origin,
     )
 
     @Test

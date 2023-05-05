@@ -29,19 +29,19 @@ interface PathPattern {
 
     data class ParseResult(
         val path: String,
-        val results: List<VariableResult>
+        val results: List<ExpressionResult>
     ) {
         fun success(): Boolean {
             return results.all { it.success }
         }
 
-        fun failedVariables(): List<String> {
-            return results.filter { !it.success }.map { it.variable }
+        fun failedExpression(): List<String> {
+            return results.filter { !it.success }.map { it.expression }
         }
     }
 
-    data class VariableResult(
-        val variable: String,
+    data class ExpressionResult(
+        val expression: String,
         val success: Boolean = true
     )
 }

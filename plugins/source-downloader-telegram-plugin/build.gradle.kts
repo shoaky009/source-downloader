@@ -29,7 +29,6 @@ dependencies {
     implementation(platform("it.tdlight:tdlight-java-bom:2.8.10.6"))
     implementation("it.tdlight:tdlight-java")
 
-    // 不能拼接 有些平台没有依赖
     val os = OperatingSystem.current()
     // val familyName = os.familyName.replace(" ", "")
     val arch = System.getProperty("os.arch")

@@ -33,8 +33,9 @@ dependencies {
     implementation("com.vladmihalcea:hibernate-types-60:2.21.1")
     implementation("org.springframework.retry:spring-retry")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml")
-
     implementation("com.github.atomashpolskiy:bt-core:1.10")
+    implementation(enforcedPlatform("org.projectnessie.cel:cel-bom:0.3.15"))
+    implementation("org.projectnessie.cel:cel-tools")
 
     // 内置插件，单纯为了方便
     implementation(project(":plugins:source-downloader-common-plugin"))

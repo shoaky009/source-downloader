@@ -44,4 +44,26 @@ class CorePathPatternTest {
         kotlin.test.assertEquals("111/abc", parseResult.path)
         kotlin.test.assertEquals(true, parseResult.results.all { it.success })
     }
+
+
+    @Test
+    fun given_expression() {
+        val pathPattern = CorePathPattern("{'test '+name} {episode + '1'}:{' - '+source}")
+        val variables = MapPatternVariables(mapOf(
+            "name" to "111",
+            "episode" to "2",
+            "source" to "1"
+        ))
+        val parseResult = pathPattern.parse(variables)
+        kotlin.test.assertEquals("test 111 21 - 1", parseResult.path)
+        kotlin.test.assertEquals(true, parseResult.results.all { it.success })
+
+        val variables2 = MapPatternVariables(mapOf(
+            "name" to "111",
+            "episode" to "2",
+        ))
+        val result2 = pathPattern.parse(variables2)
+        kotlin.test.assertEquals("test 111 21", result2.path)
+        kotlin.test.assertEquals(true, result2.results.all { it.success })
+    }
 }
