@@ -16,6 +16,10 @@ import xyz.shoaky.sourcedownloader.sdk.component.VariableProvider
 import java.net.URI
 import java.nio.file.Path
 
+/**
+ * Mikan变量提供器
+ * 从[SourceItem.link]中爬取获取bgm.tv的subjectId
+ */
 class MikanVariableProvider(
     private val mikanToken: String? = null
 ) : VariableProvider {

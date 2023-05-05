@@ -13,4 +13,6 @@ object TorrentFileResolverSupplier : SdComponentSupplier<TorrentFileResolver> {
     override fun supplyTypes(): List<ComponentType> {
         return listOf(ComponentType.fileResolver("torrent"))
     }
+
+    override fun autoCreateDefault(): Boolean = true
 }

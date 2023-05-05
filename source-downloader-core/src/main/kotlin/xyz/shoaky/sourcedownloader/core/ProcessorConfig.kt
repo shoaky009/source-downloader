@@ -26,10 +26,6 @@ data class ProcessorConfig(
     val fileMover: ComponentId = ComponentId("mover:general"),
     @JsonAlias("save-path")
     val savePath: Path,
-    @JsonAlias("source-item-filters", "item-filters")
-    val sourceItemFilters: List<ComponentId> = emptyList(),
-    @JsonAlias("source-file-filters", "file-filters")
-    val sourceFileFilters: List<ComponentId> = emptyList(),
     val options: Options = Options(),
 ) {
 
@@ -63,6 +59,10 @@ data class ProcessorConfig(
 
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     data class Options(
+        @JsonAlias("source-item-filters", "item-filters")
+        val sourceItemFilters: List<ComponentId> = emptyList(),
+        @JsonAlias("source-file-filters", "file-filters")
+        val sourceFileFilters: List<ComponentId> = emptyList(),
         @JsonAlias("save-path-pattern")
         @JsonDeserialize(`as` = CorePathPattern::class)
         val savePathPattern: PathPattern = CorePathPattern.ORIGIN,

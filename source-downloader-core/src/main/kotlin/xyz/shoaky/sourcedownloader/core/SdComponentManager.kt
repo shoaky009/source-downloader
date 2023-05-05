@@ -22,8 +22,11 @@ interface SdComponentManager {
     fun getComponent(name: String): SdComponent?
 
     fun getAllComponent(): List<SdComponent>
+
     fun getSupplier(type: ComponentType): SdComponentSupplier<*>
+
     fun getSuppliers(): List<SdComponentSupplier<*>>
+
     fun registerSupplier(vararg sdComponentSuppliers: SdComponentSupplier<*>)
 
     fun removeComponent(name: String, componentType: ComponentType)

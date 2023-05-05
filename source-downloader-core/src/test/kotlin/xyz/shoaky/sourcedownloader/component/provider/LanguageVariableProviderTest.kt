@@ -11,7 +11,7 @@ class LanguageVariableProviderTest {
     @Test
     fun test() {
         val provider = LanguageVariableProviderSupplier.apply(
-            Properties.empty()
+            Properties.EMPTY
         )
 
         val group = provider.createSourceGroup(sourceItem())

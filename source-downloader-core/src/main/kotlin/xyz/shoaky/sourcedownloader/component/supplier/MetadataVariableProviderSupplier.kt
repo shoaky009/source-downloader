@@ -16,4 +16,5 @@ object MetadataVariableProviderSupplier : SdComponentSupplier<MetadataVariablePr
         )
     }
 
+    override fun autoCreateDefault(): Boolean = true
 }

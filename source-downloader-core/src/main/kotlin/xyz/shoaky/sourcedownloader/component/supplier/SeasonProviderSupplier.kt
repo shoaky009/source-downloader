@@ -16,4 +16,5 @@ object SeasonProviderSupplier : SdComponentSupplier<SeasonProvider> {
         )
     }
 
+    override fun autoCreateDefault(): Boolean = true
 }

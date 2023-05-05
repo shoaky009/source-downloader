@@ -1,25 +1,3 @@
-#放置常见没什么个性化配置的组件
-file-mover:
-  - name: general
-    type: general
-  - name: hardlink
-    type: hardlink
-run-after-completion:
-  - name: touch-item-directory
-    type: touch-item-directory
-  - name: delete-empty-directory
-    type: delete-empty-directory
-variable-provider:
-  - name: metadata
-    type: metadata
-  - name: anitom
-    type: anitom
-  - name: season
-    type: season
-  - name: episode
-    type: episode
-  - name: language
-    type: language
 trigger:
   - name: 30min
     type: fixed
@@ -40,13 +18,3 @@ trigger:
     type: webhook
     props:
       path: default
-file-tagger:
-  - name: simple
-    type: simple
-item-file-resolver:
-  - name: torrent
-    type: torrent
-  - name: system-file
-    type: system-file
-  - name: url
-    type: url

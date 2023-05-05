@@ -14,7 +14,7 @@ class MikanPlugin : Plugin {
     }
 
     override fun description(): PluginDescription {
-        return PluginDescription("Mikan", "1.0.0")
+        return PluginDescription("mikan", "0.0.1")
     }
 
 }

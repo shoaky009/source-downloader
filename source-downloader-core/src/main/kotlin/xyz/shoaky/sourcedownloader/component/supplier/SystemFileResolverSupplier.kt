@@ -25,4 +25,6 @@ object SystemFileResolverSupplier : SdComponentSupplier<SystemFileResolver> {
             )
         )
     }
+
+    override fun autoCreateDefault(): Boolean = true
 }

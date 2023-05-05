@@ -15,4 +15,6 @@ object LanguageVariableProviderSupplier : SdComponentSupplier<LanguageVariablePr
             ComponentType.provider("language")
         )
     }
+
+    override fun autoCreateDefault(): Boolean = true
 }

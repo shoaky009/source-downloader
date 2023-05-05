@@ -6,9 +6,11 @@ import it.tdlight.client.SimpleTelegramClient
 import it.tdlight.client.TDLibSettings
 import it.tdlight.common.Init
 import it.tdlight.jni.TdApi
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import kotlin.io.path.Path
 
+@Disabled
 class TelegramSourceTest {
 
     @Test
@@ -39,6 +41,6 @@ class TelegramSourceTest {
             }
         }
 
-            client.waitForExit()
+        client.waitForExit()
     }
 }

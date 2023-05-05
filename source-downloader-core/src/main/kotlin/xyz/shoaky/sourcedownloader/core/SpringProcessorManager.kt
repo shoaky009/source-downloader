@@ -58,13 +58,13 @@ class SpringProcessorManager(
             check(it, cps)
         }
 
-        val fileFilters = config.sourceFileFilters.map {
+        val fileFilters = config.options.sourceFileFilters.map {
             val instanceName = it.getInstanceName(SourceFileFilter::class)
             applicationContext.getBean(instanceName, SourceFileFilter::class.java)
         }.toTypedArray()
         processor.addFileFilter(*fileFilters)
 
-        val itemFilters = config.sourceItemFilters.map {
+        val itemFilters = config.options.sourceItemFilters.map {
             val instanceName = it.getInstanceName(SourceFileFilter::class)
             applicationContext.getBean(instanceName, SourceFileFilter::class.java)
         }.toTypedArray()
@@ -125,11 +125,11 @@ class SpringProcessorManager(
         }
         processor.scheduleRenameTask(options.renameTaskInterval)
         if (options.deleteEmptyDirectory) {
-            val deleteEmptyDirectory = DeleteEmptyDirectorySupplier.apply(Properties.empty())
+            val deleteEmptyDirectory = DeleteEmptyDirectorySupplier.apply(Properties.EMPTY)
             processor.addRunAfterCompletion(deleteEmptyDirectory)
         }
         if (options.touchItemDirectory) {
-            val touchItemDirectory = TouchItemDirectorySupplier.apply(Properties.empty())
+            val touchItemDirectory = TouchItemDirectorySupplier.apply(Properties.EMPTY)
             processor.addRunAfterCompletion(touchItemDirectory)
         }
         options.fileTaggers.forEach {

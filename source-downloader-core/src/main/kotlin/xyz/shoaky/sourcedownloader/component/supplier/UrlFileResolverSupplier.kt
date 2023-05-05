@@ -13,4 +13,6 @@ object UrlFileResolverSupplier : SdComponentSupplier<UrlFileResolver> {
     override fun supplyTypes(): List<ComponentType> {
         return listOf(ComponentType.fileResolver("url"))
     }
+
+    override fun autoCreateDefault(): Boolean = true
 }

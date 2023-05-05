@@ -17,4 +17,5 @@ object GeneralFileMoverSupplier : SdComponentSupplier<GeneralFileMover> {
         )
     }
 
+    override fun autoCreateDefault(): Boolean = true
 }

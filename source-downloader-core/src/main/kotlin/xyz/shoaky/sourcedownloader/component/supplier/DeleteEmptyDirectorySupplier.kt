@@ -15,4 +15,6 @@ object DeleteEmptyDirectorySupplier : SdComponentSupplier<DeleteEmptyDirectory> 
             ComponentType.run("delete-empty-directory")
         )
     }
+
+    override fun autoCreateDefault(): Boolean = true
 }

@@ -16,4 +16,6 @@ object HardlinkFileMoverSupplier : SdComponentSupplier<HardlinkFileMover> {
         )
     }
 
+    override fun autoCreateDefault(): Boolean = true
+
 }

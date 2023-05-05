@@ -14,4 +14,6 @@ object AnitomVariableProviderSupplier : SdComponentSupplier<AnitomVariableProvid
             ComponentType.provider("anitom")
         )
     }
+
+    override fun autoCreateDefault(): Boolean = true
 }

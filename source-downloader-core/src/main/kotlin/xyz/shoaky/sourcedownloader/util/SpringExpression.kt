@@ -56,11 +56,3 @@ fun Path.fileDataSize(): DataSize? {
     val size = Files.size(this)
     return DataSize.ofBytes(size)
 }
-
-fun String.replaces(replaces: List<String>, to: String): String {
-    var result = this
-    for (replace in replaces) {
-        result = result.replace(replace, to)
-    }
-    return result
-}

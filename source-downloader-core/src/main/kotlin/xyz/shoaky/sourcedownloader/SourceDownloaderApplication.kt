@@ -94,6 +94,16 @@ class SourceDownloaderApplication(
     }
 
     private fun createComponents() {
+        componentManager.getSuppliers().filter {
+            it.autoCreateDefault()
+        }.forEach {
+            for (type in it.supplyTypes()) {
+                val typeName = type.typeName
+                componentManager.createComponent(typeName, type, Properties.EMPTY)
+                log.info("成功创建组件${type.topTypeClass.simpleName}:${typeName}:${typeName}")
+            }
+        }
+
         for (componentStorage in componentStorages) {
             componentStorage
                 .getAllComponentConfig()

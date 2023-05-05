@@ -41,3 +41,11 @@ fun String.find(vararg regexes: Regex): String? {
     }
     return null
 }
+
+fun String.replaces(replaces: List<String>, to: String): String {
+    var result = this
+    for (replace in replaces) {
+        result = result.replace(replace, to)
+    }
+    return result
+}

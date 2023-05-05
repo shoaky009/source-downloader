@@ -15,4 +15,6 @@ object EpisodeVariableProviderSupplier : SdComponentSupplier<EpisodeVariableProv
             ComponentType.provider("episode")
         )
     }
+
+    override fun autoCreateDefault(): Boolean = true
 }

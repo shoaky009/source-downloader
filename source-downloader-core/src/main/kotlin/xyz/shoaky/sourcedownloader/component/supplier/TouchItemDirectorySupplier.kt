@@ -14,5 +14,6 @@ object TouchItemDirectorySupplier : SdComponentSupplier<TouchItemDirectory> {
         return listOf(ComponentType.run("touch-item-directory"))
     }
 
+    override fun autoCreateDefault(): Boolean = true
 
 }

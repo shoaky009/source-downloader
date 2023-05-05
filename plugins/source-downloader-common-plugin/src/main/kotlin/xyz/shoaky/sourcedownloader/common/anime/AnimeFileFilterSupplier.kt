@@ -1,20 +1,19 @@
-package xyz.shoaky.sourcedownloader.tagger
+package xyz.shoaky.sourcedownloader.common.anime
 
 import xyz.shoaky.sourcedownloader.sdk.Properties
 import xyz.shoaky.sourcedownloader.sdk.SdComponentSupplier
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentType
 
-internal object SimpleFileTaggerSupplier : SdComponentSupplier<SimpleFileTagger> {
-    override fun apply(props: Properties): SimpleFileTagger {
-        return SimpleFileTagger
+object AnimeFileFilterSupplier : SdComponentSupplier<AnimeFileFilter> {
+    override fun apply(props: Properties): AnimeFileFilter {
+        return AnimeFileFilter
     }
 
     override fun supplyTypes(): List<ComponentType> {
         return listOf(
-            ComponentType.fileTagger("simple")
+            ComponentType.fileFilter("anime")
         )
     }
 
     override fun autoCreateDefault(): Boolean = true
-
 }

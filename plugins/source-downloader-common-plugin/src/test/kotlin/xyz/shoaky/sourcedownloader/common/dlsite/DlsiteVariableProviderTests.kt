@@ -19,7 +19,7 @@ class DlsiteVariableProviderTests {
         URI("http://localhost")
     )
 
-    private val provider = DlsiteVariableProviderSupplier.apply(Properties.empty())
+    private val provider = DlsiteVariableProviderSupplier.apply(Properties.EMPTY)
 
     @Test
     fun test_support() {
