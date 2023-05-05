@@ -21,8 +21,6 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.2")
     testImplementation("org.junit.jupiter:junit-jupiter-engine:5.9.2")
-
-    implementation("com.github.plexpt:chatgpt:4.0.5")
 }
 
 tasks.withType<KotlinCompile> {
