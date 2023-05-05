@@ -96,15 +96,22 @@ class SourceProcessor(
         renameTaskFuture?.cancel(false)
         renameTaskFuture = scheduledExecutor.scheduleAtFixedRate({
             log.debug("Processor:${name} 开始重命名任务...")
+            var modified = false
             val measureTime = measureTime {
                 try {
-                    runRename()
+                    modified = runRename() > 0
                 } catch (e: Exception) {
                     log.error("Processor:${name} 重命名任务出错", e)
                 }
                 System.currentTimeMillis()
             }
-            log.info("Processor:${name} 重命名任务完成 took:${measureTime.inWholeMilliseconds}ms")
+
+            if (modified) {
+                log.info("Processor:${name} 重命名任务完成 took:${measureTime.inWholeMilliseconds}ms")
+            }
+            if (modified.not() && measureTime.inWholeMilliseconds > 50L) {
+                log.warn("Processor:${name} 重命名任务没有修改 took:${measureTime.inWholeMilliseconds}ms")
+            }
         }, 5L, interval.seconds, TimeUnit.SECONDS)
     }
 
@@ -131,7 +138,7 @@ class SourceProcessor(
         for (item in itemIterator) {
             val filterBy = sourceItemFilters.firstOrNull { it.test(item.sourceItem).not() }
             if (filterBy != null) {
-                log.debug("Filtered item:{}", item)
+                log.debug("{} Filtered item:{}", filterBy::class.simpleName, item)
                 continue
             }
             kotlin.runCatching {
@@ -308,11 +315,11 @@ class SourceProcessor(
         }
     }
 
-    fun runRename() {
+    fun runRename(): Int {
         val asyncDownloader = downloader as? AsyncDownloader
         if (asyncDownloader == null) {
             log.debug("Processor:${name} 非异步下载器不执行重命名任务")
-            return
+            return 0
         }
         val contentGrouping = processingStorage.findRenameContent(name, options.renameTimesThreshold)
             .groupBy(
@@ -341,6 +348,7 @@ class SourceProcessor(
                 log.error("Processing重命名任务出错, record:${Jackson.toJsonString(pc)}", it)
             }
         }
+        return contentGrouping[DownloadStatus.FINISHED]?.size ?: 0
     }
 
     private fun processRenameTask(pc: ProcessingContent) {

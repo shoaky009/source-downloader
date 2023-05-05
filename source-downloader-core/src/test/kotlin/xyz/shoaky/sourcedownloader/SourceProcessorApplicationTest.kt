@@ -22,8 +22,8 @@ class SourceProcessorApplicationTest {
 
     @Autowired
     lateinit var processorManager: ProcessorManager
-    val savePath = Path("src", "test", "resources", "target")
-    val sourcePath = Path("src", "test", "resources", "sources")
+    private val savePath = Path("src", "test", "resources", "target")
+    private val sourcePath = Path("src", "test", "resources", "sources")
 
     init {
         sourcePath.createDirectories()

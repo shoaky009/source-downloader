@@ -18,11 +18,16 @@ data class CorePathPattern(
         val variables = provider.variables()
         val varRes = mutableListOf<VariableResult>()
         while (matcher.find()) {
-            val variableName = matcher.group(1)
-            val variableValue = variables[variableName]
-            varRes.add(VariableResult(variableName, variableValue != null))
+            val expression = Expression(matcher.group())
+            // TODO 表达式支持
+            val expressionString = expression.getExpression()
+            val variableValue = variables[expressionString]
+
+            varRes.add(VariableResult(expressionString, variableValue != null || expression.isOptional()))
             if (variableValue != null) {
                 matcher.appendReplacement(result, variableValue)
+            } else if (expression.isOptional()) {
+                matcher.appendReplacement(result, "")
             }
         }
         matcher.appendTail(result)
@@ -31,9 +36,24 @@ data class CorePathPattern(
 
     companion object {
         @JvmStatic
-        val VARIABLE_PATTERN: Pattern = Pattern.compile("\\{(.+?)}")
+        val VARIABLE_PATTERN: Pattern = Pattern.compile("\\{(.+?)}|:\\{(.+?)}")
 
         @JvmStatic
         val ORIGIN = CorePathPattern("")
+    }
+}
+
+private class Expression(
+    val raw: String
+) {
+    fun getExpression(): String {
+        if (raw.startsWith(":")) {
+            return raw.substring(2, raw.length - 1)
+        }
+        return raw.substring(1, raw.length - 1)
+    }
+
+    fun isOptional(): Boolean {
+        return raw.startsWith(":")
     }
 }
