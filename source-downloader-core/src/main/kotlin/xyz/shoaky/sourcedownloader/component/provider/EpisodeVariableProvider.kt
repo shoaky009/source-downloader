@@ -29,6 +29,7 @@ object EpisodeVariableProvider : VariableProvider {
                 .filter { it.isNotBlank() }
                 .map { it.removePrefix("[").removeSuffix("]") }
                 .filter { NumberUtils.isParsable(it) }
+                .filter { it.length > 1 }
                 .maxByOrNull { it.length }
                 ?.let {
                     if (it.contains(".")) {
