@@ -9,5 +9,8 @@ interface ProcessorManager {
     fun getProcessor(name: String): SourceProcessor?
 
     fun getProcessors(): List<SourceProcessor>
+
     fun destroy(processorName: String)
+
+    fun getAllProcessorNames(): Set<String>
 }

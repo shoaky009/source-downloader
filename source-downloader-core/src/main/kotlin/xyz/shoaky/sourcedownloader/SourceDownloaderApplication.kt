@@ -42,7 +42,7 @@ class SourceDownloaderApplication(
 ) : InitializingBean {
 
     @EventListener(ApplicationReadyEvent::class)
-    fun initApplication() {
+    fun createProcessors() {
         log.info("Database file located:${
             environment.getProperty("spring.datasource.url")
                 ?.removePrefix("jdbc:h2:file:")
@@ -186,6 +186,21 @@ class SourceDownloaderApplication(
         )
     }
 
+    fun reload() {
+        val processorNames = processorManager.getAllProcessorNames()
+        for (name in processorNames) {
+            processorManager.destroy(name)
+        }
+
+        val componentNames = componentManager.getAllComponentNames()
+        for (name in componentNames) {
+            componentManager.destroy(name)
+        }
+
+        createComponents()
+        createProcessors()
+    }
+
     // FIXME native image会失败，后面再看
     private fun getObjectSuppliers(): List<SdComponentSupplier<*>> {
         return ClassPath.from(this::class.java.classLoader)
@@ -197,27 +212,4 @@ class SourceDownloaderApplication(
                 it.objectInstance
             }
     }
-
-    // private fun getObjectSuppliers(): List<SdComponentSupplier<*>> {
-    //     return listOf(
-    //         QbittorrentSupplier,
-    //         RssSourceSupplier,
-    //         GeneralFileMoverSupplier,
-    //         RunCommandSupplier,
-    //         ExpressionItemFilterSupplier,
-    //         FixedScheduleTriggerSupplier,
-    //         UrlDownloaderSupplier,
-    //         MockDownloaderSupplier,
-    //         TouchItemDirectorySupplier,
-    //         DynamicTriggerSupplier,
-    //         SendHttpRequestSupplier,
-    //         AiVariableProviderSupplier,
-    //         SystemFileSourceSupplier,
-    //         MetadataVariableProviderSupplier,
-    //         JackettSourceSupplier,
-    //         AnitomVariableProviderSupplier,
-    //         SeasonProviderSupplier,
-    //         CleanEmptyDirectorySupplier,
-    //     )
-    // }
 }

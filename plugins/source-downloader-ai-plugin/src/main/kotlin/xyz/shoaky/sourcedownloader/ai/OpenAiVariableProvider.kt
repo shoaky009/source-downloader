@@ -9,20 +9,19 @@ import java.nio.file.Path
 import kotlin.io.path.name
 
 class OpenAiVariableProvider(
-    val config: Config
+    private val openaiBaseUri: URI,
+    private val openAiClient: OpenAiClient,
+    private val systemRole: ChatMessage
 ) : VariableProvider {
 
-    private val openaiClient = OpenAiClient(config.apiKeys)
-
-    private val systemRole = ChatMessage.ofSystem(config.systemRole)
 
     override fun createSourceGroup(sourceItem: SourceItem): SourceItemGroup {
-        return AiSourceGroup(openaiClient, systemRole, config.apiHost, sourceItem)
+        return AiSourceGroup(openAiClient, systemRole, openaiBaseUri, sourceItem)
     }
 
     override fun support(item: SourceItem): Boolean = true
 
-    data class Config(
+    data class OpenAiConfig(
         val apiKeys: List<String>,
         val resolveVariables: List<String> = emptyList(),
         val apiHost: URI = URI("https://api.openai.com"),

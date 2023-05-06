@@ -6,7 +6,11 @@ import xyz.shoaky.sourcedownloader.sdk.component.ComponentType
 
 object OpenaiVariableProviderSupplier : SdComponentSupplier<OpenAiVariableProvider> {
     override fun apply(props: Properties): OpenAiVariableProvider {
-        return OpenAiVariableProvider(props.parse())
+        val config = props.parse<OpenAiVariableProvider.OpenAiConfig>()
+        val client = OpenAiClient(
+            config.apiKeys
+        )
+        return OpenAiVariableProvider(config.apiHost, client, ChatMessage.ofSystem(config.systemRole))
     }
 
     override fun supplyTypes(): List<ComponentType> {

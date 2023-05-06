@@ -29,7 +29,7 @@ interface SdComponentManager {
 
     fun registerSupplier(vararg sdComponentSuppliers: SdComponentSupplier<*>)
 
-    fun removeComponent(name: String, componentType: ComponentType)
+    fun getAllComponentNames(): Set<String>
 
     fun getAllTrigger(): List<Trigger> {
         return getAllComponent().filterIsInstance<Trigger>()
@@ -52,6 +52,7 @@ interface SdComponentManager {
     }
 
     fun getComponentDescriptions(): List<ComponentDescription>
+    fun destroy(instanceName: String)
 }
 
 @Component
@@ -124,11 +125,19 @@ class SpringSdComponentManager(
         }
     }
 
-    override fun removeComponent(name: String, componentType: ComponentType) {
-        val beanName = componentType.instanceName(name)
-        if (applicationContext.containsSingleton(beanName)) {
-            applicationContext.destroySingleton(beanName)
+    override fun destroy(instanceName: String) {
+        if (applicationContext.containsSingleton(instanceName)) {
+            val bean = applicationContext.getBean(instanceName)
+            if (bean is Trigger) {
+                bean.stop()
+            }
+            applicationContext.destroySingleton(instanceName)
         }
+    }
+
+    override fun getAllComponentNames(): Set<String> {
+        val type = applicationContext.getBeansOfType(SdComponent::class.java)
+        return type.keys
     }
 
     override fun getComponentDescriptions(): List<ComponentDescription> {

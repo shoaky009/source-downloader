@@ -167,4 +167,8 @@ class SpringProcessorManager(
         }
         applicationContext.destroySingleton(processorBeanName)
     }
+
+    override fun getAllProcessorNames(): Set<String> {
+        return applicationContext.getBeansOfType(SourceProcessor::class.java).keys
+    }
 }
