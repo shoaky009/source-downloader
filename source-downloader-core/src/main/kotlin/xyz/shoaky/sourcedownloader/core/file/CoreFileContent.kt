@@ -7,8 +7,6 @@ import xyz.shoaky.sourcedownloader.sdk.MapPatternVariables
 import xyz.shoaky.sourcedownloader.sdk.PathPattern
 import xyz.shoaky.sourcedownloader.sdk.PatternVariables
 import java.nio.file.Path
-import java.nio.file.attribute.PosixFilePermission
-import java.nio.file.attribute.PosixFilePermissions
 import kotlin.io.path.extension
 import kotlin.io.path.name
 
@@ -21,6 +19,7 @@ data class CoreFileContent(
     val fileSavePathPattern: PathPattern,
     @JsonDeserialize(`as` = CorePathPattern::class)
     val filenamePattern: PathPattern,
+    var status: FileContentStatus = FileContentStatus.NORMAL
 ) : FileContent {
 
     @Transient
@@ -112,17 +111,7 @@ data class CoreFileContent(
         return tags.toList()
     }
 
-    companion object {
-
-        private val defaultPermissions = setOf(
-            PosixFilePermission.OWNER_READ,
-            PosixFilePermission.OWNER_WRITE,
-            PosixFilePermission.OWNER_EXECUTE,
-            PosixFilePermission.GROUP_READ,
-            PosixFilePermission.GROUP_EXECUTE,
-            PosixFilePermission.OTHERS_READ,
-            PosixFilePermission.OTHERS_EXECUTE
-        )
-        private val fileAttribute = PosixFilePermissions.asFileAttribute(defaultPermissions)
+    fun currentVariables(): PatternVariables {
+        return sharedVariables
     }
 }

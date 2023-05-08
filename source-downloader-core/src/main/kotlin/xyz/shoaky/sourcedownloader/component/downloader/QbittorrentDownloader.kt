@@ -116,6 +116,10 @@ class QbittorrentDownloader(
         return allSuccess && setLocationResponse.statusCode() == HttpStatus.OK.value()
     }
 
+    override fun exists(paths: List<Path>): Boolean {
+        return super.exists(paths)
+    }
+
     companion object {
         private val log = LoggerFactory.getLogger(QbittorrentDownloader::class.java)
         fun <T> retry(block: () -> T, times: Int = 3): T {

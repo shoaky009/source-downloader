@@ -3,9 +3,9 @@ package xyz.shoaky.sourcedownloader.component.supplier
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import xyz.shoaky.sourcedownloader.component.RunCommand
 import xyz.shoaky.sourcedownloader.sdk.Properties
-import xyz.shoaky.sourcedownloader.sdk.SdComponentSupplier
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentType
 import xyz.shoaky.sourcedownloader.sdk.component.RunAfterCompletion
+import xyz.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
 import xyz.shoaky.sourcedownloader.sdk.util.Jackson
 
 object RunCommandSupplier : SdComponentSupplier<RunCommand> {

@@ -1,8 +1,8 @@
 package xyz.shoaky.sourcedownloader.common.dlsite
 
 import xyz.shoaky.sourcedownloader.sdk.Properties
-import xyz.shoaky.sourcedownloader.sdk.SdComponentSupplier
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentType
+import xyz.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
 
 internal object DlsiteVariableProviderSupplier : SdComponentSupplier<DlsiteVariableProvider> {
     override fun apply(props: Properties): DlsiteVariableProvider {

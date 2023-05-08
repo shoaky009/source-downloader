@@ -66,4 +66,5 @@ class CorePathPatternTest {
         kotlin.test.assertEquals("test 111 21", result2.path)
         kotlin.test.assertEquals(true, result2.results.all { it.success })
     }
+
 }

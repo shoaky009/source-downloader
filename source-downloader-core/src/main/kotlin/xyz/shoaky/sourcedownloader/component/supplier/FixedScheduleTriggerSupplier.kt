@@ -2,9 +2,9 @@ package xyz.shoaky.sourcedownloader.component.supplier
 
 import xyz.shoaky.sourcedownloader.component.trigger.FixedScheduleTrigger
 import xyz.shoaky.sourcedownloader.sdk.Properties
-import xyz.shoaky.sourcedownloader.sdk.SdComponentSupplier
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentException
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentType
+import xyz.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
 import xyz.shoaky.sourcedownloader.sdk.component.Trigger
 import java.time.Duration
 

@@ -5,6 +5,7 @@ import xyz.shoaky.sourcedownloader.core.ConfigOperator
 import xyz.shoaky.sourcedownloader.core.ProcessorConfig
 import xyz.shoaky.sourcedownloader.core.ProcessorConfigStorage
 import xyz.shoaky.sourcedownloader.core.ProcessorManager
+import xyz.shoaky.sourcedownloader.core.file.FileContentStatus
 import xyz.shoaky.sourcedownloader.core.processor.ProcessorStatus
 import xyz.shoaky.sourcedownloader.sdk.SourceItem
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentException
@@ -74,7 +75,8 @@ private class ProcessorController(
                         file.fileDownloadPath.toString(),
                         file.targetPath().toString(),
                         file.patternVariables.variables(),
-                        file.tags()
+                        file.tags(),
+                        file.status
                     )
                 }
                 val sourceContent = pc.sourceContent
@@ -103,5 +105,6 @@ private data class FileResult(
     val from: String,
     val to: String,
     val variables: Map<String, Any>,
-    val tags: List<String>
+    val tags: List<String>,
+    val status: FileContentStatus
 )

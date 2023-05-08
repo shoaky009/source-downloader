@@ -8,10 +8,11 @@ import java.util.*
 @Component
 class PluginManager(
     componentManager: SdComponentManager,
-    instanceManager: InstanceManager
+    instanceManager: InstanceManager,
+    cacheManager: MemoryCacheManager
 ) {
 
-    private val pluginContext = DefaultPluginContext(componentManager, instanceManager)
+    private val pluginContext = DefaultPluginContext(componentManager, instanceManager, cacheManager)
     private val plugins = Collections.synchronizedList(mutableListOf<Plugin>())
     private val pluginLoader = ServiceLoaderPluginLoader
     fun loadPlugins() {

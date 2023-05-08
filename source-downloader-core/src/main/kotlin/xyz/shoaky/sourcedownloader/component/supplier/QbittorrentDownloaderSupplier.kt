@@ -7,8 +7,8 @@ import xyz.shoaky.sourcedownloader.external.qbittorrent.QbittorrentClient
 import xyz.shoaky.sourcedownloader.external.qbittorrent.QbittorrentConfig
 import xyz.shoaky.sourcedownloader.sdk.InstanceFactory
 import xyz.shoaky.sourcedownloader.sdk.Properties
-import xyz.shoaky.sourcedownloader.sdk.SdComponentSupplier
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentType
+import xyz.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
 
 @Component
 class QbittorrentDownloaderSupplier(

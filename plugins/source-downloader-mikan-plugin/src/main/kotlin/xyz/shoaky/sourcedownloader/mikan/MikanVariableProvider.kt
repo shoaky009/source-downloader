@@ -11,6 +11,7 @@ import xyz.shoaky.sourcedownloader.sdk.api.bangumi.BangumiApiClient
 import xyz.shoaky.sourcedownloader.sdk.api.bangumi.GetSubjectRequest
 import xyz.shoaky.sourcedownloader.sdk.api.bangumi.Subject
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentType
+import xyz.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
 import xyz.shoaky.sourcedownloader.sdk.component.TorrentDownloader
 import xyz.shoaky.sourcedownloader.sdk.component.VariableProvider
 import java.net.URI

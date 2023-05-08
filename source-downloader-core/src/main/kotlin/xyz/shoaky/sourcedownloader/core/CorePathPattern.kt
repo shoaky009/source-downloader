@@ -5,8 +5,8 @@ import org.projectnessie.cel.checker.Decls
 import org.projectnessie.cel.tools.ScriptHost
 import xyz.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
 import xyz.shoaky.sourcedownloader.sdk.PathPattern
-import xyz.shoaky.sourcedownloader.sdk.PathPattern.ParseResult
 import xyz.shoaky.sourcedownloader.sdk.PathPattern.ExpressionResult
+import xyz.shoaky.sourcedownloader.sdk.PathPattern.ParseResult
 import xyz.shoaky.sourcedownloader.sdk.PatternVariables
 import java.util.regex.Pattern
 

@@ -2,8 +2,8 @@ package xyz.shoaky.sourcedownloader.component.supplier
 
 import xyz.shoaky.sourcedownloader.component.downloader.UrlDownloader
 import xyz.shoaky.sourcedownloader.sdk.Properties
-import xyz.shoaky.sourcedownloader.sdk.SdComponentSupplier
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentType
+import xyz.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
 import kotlin.io.path.Path
 
 object UrlDownloaderSupplier : SdComponentSupplier<UrlDownloader> {

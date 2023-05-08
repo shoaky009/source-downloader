@@ -4,8 +4,8 @@ import xyz.shoaky.sourcedownloader.component.resolver.SystemFileResolver
 import xyz.shoaky.sourcedownloader.component.source.SystemFileSource
 import xyz.shoaky.sourcedownloader.sdk.ComponentRule
 import xyz.shoaky.sourcedownloader.sdk.Properties
-import xyz.shoaky.sourcedownloader.sdk.SdComponentSupplier
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentType
+import xyz.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
 
 object SystemFileResolverSupplier : SdComponentSupplier<SystemFileResolver> {
     override fun apply(props: Properties): SystemFileResolver {

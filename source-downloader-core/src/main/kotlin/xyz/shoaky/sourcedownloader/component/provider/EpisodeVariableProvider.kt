@@ -48,6 +48,8 @@ object EpisodeVariableProvider : VariableProvider {
 
     override fun support(item: SourceItem): Boolean = true
 
+    override val accuracy: Int = 2
+
     private fun replace(filename: String): String {
         var res = filename
         replaces.forEach { (key, value) ->

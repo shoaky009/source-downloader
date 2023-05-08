@@ -120,7 +120,11 @@ class SourceProcessor(
     }
 
     fun dryRun(): List<ProcessingContent> {
-        return process(true)
+        val contents = process(true)
+        contents.forEach {
+            it.sourceContent.updateFileStatus(fileMover)
+        }
+        return contents
     }
 
     private fun process(dryRun: Boolean = false): List<ProcessingContent> {
@@ -159,7 +163,9 @@ class SourceProcessor(
         if (!failure) {
             status = ProcessorStatus.RUNNING
         }
-        saveSourceState(lastPointedItem, lastState)
+        if (dryRun.not()) {
+            saveSourceState(lastPointedItem, lastState)
+        }
         return result
     }
 
@@ -275,7 +281,9 @@ class SourceProcessor(
         }
         val typePattern = pathPatterns.first()
         log.debug("Processor:{} 文件:{} 使用自定义命名规则:{}", name, fileContent.fileDownloadPath, typePattern)
-        return fileContent.copy(filenamePattern = typePattern)
+        val copy = fileContent.copy(filenamePattern = typePattern)
+        copy.tag(fileContent.tags())
+        return copy
     }
 
     private fun needDownload(sc: PersistentSourceContent): Pair<Boolean, ProcessingContent.Status> {
@@ -410,13 +418,23 @@ class SourceProcessor(
     }
 
     private fun getRenameFiles(content: SourceContent): List<FileContent> {
-        return content.sourceFiles
+        val filter = content.sourceFiles
             .filter { fileMover.exists(listOf(it.targetPath())).not() }
             .filter { it.fileDownloadPath.exists() }
+
+        // 冲突的不移动
+        val conflicts = filter.map { it.targetPath() }.groupingBy { it }.eachCount()
+            .filter { it.value > 1 }.keys
+
+        val partition = filter.partition { conflicts.contains(it.targetPath()).not() }
+        if (partition.second.isNotEmpty()) {
+            log.warn("存在重名文件，需要手动处理 files:${partition.second.map { it.fileDownloadPath }}")
+        }
+        return partition.first
     }
 
     private fun rename(content: PersistentSourceContent): Boolean {
-        val renameFiles = getRenameFiles(content)
+        val renameFiles = content.getRenameFiles(fileMover)
         if (renameFiles.isEmpty()) {
             return true
         }

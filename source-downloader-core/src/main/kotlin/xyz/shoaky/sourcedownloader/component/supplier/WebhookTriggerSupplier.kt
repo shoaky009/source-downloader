@@ -4,8 +4,8 @@ import org.springframework.stereotype.Component
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping
 import xyz.shoaky.sourcedownloader.component.trigger.WebhookTrigger
 import xyz.shoaky.sourcedownloader.sdk.Properties
-import xyz.shoaky.sourcedownloader.sdk.SdComponentSupplier
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentType
+import xyz.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
 
 @Component
 class WebhookTriggerSupplier(
