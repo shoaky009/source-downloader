@@ -39,7 +39,6 @@ dependencies {
 
     // 内置插件，单纯为了方便
     implementation(project(":plugins:source-downloader-common-plugin"))
-    implementation(project(":plugins:source-downloader-mikan-plugin"))
     implementation(project(":plugins:source-downloader-tagger-plugin"))
     // implementation(project(":plugins:source-downloader-telegram-plugin"))
     implementation(project(":plugins:source-downloader-ai-plugin"))

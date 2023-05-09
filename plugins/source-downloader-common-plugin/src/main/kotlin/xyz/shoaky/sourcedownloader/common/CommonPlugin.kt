@@ -3,6 +3,7 @@ package xyz.shoaky.sourcedownloader.common
 import xyz.shoaky.sourcedownloader.common.anime.AnimeFileFilterSupplier
 import xyz.shoaky.sourcedownloader.common.anitom.AnitomVariableProviderSupplier
 import xyz.shoaky.sourcedownloader.common.dlsite.DlsiteVariableProviderSupplier
+import xyz.shoaky.sourcedownloader.common.mikan.MikanVariableProviderSupplier
 import xyz.shoaky.sourcedownloader.common.rss.JackettSourceSupplier
 import xyz.shoaky.sourcedownloader.common.rss.RssSourceSupplier
 import xyz.shoaky.sourcedownloader.sdk.Plugin
@@ -16,7 +17,8 @@ internal class CommonPlugin : Plugin {
             DlsiteVariableProviderSupplier,
             JackettSourceSupplier,
             RssSourceSupplier,
-            AnimeFileFilterSupplier
+            AnimeFileFilterSupplier,
+            MikanVariableProviderSupplier
         )
     }
 

@@ -24,6 +24,7 @@ dependencies {
 
     implementation("com.apptasticsoftware:rssreader:3.3.0")
     implementation("com.dgtlrepublic:anitomyJ:0.0.7")
+    compileOnly("org.springframework:spring-web:6.0.8")
 }
 
 tasks.withType<KotlinCompile> {

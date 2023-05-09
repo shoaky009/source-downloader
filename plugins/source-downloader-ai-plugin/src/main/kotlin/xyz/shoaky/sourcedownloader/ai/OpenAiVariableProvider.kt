@@ -9,14 +9,14 @@ import java.nio.file.Path
 import kotlin.io.path.name
 
 class OpenAiVariableProvider(
-    private val openaiBaseUri: URI,
+    private val openAiBaseUri: URI,
     private val openAiClient: OpenAiClient,
     private val systemRole: ChatMessage
 ) : VariableProvider {
 
 
     override fun createSourceGroup(sourceItem: SourceItem): SourceItemGroup {
-        return AiSourceGroup(openAiClient, systemRole, openaiBaseUri, sourceItem)
+        return AiSourceGroup(openAiClient, systemRole, openAiBaseUri, sourceItem)
     }
 
     override fun support(item: SourceItem): Boolean = true
@@ -35,7 +35,7 @@ class OpenAiVariableProvider(
 
 
 private class AiSourceGroup(
-    val openaiClient: OpenAiClient,
+    val openAiClient: OpenAiClient,
     val systemRole: ChatMessage,
     val uri: URI,
     val sourceItem: SourceItem,
@@ -45,7 +45,7 @@ private class AiSourceGroup(
             val chatCompletion = ChatCompletion(
                 listOf(systemRole, ChatMessage.ofUser("${sourceItem.title} ${path.name}"))
             )
-            val response = openaiClient.execute(uri, chatCompletion).body()
+            val response = openAiClient.execute(uri, chatCompletion).body()
             val first = response.choices.map { it.message }.first()
             val variables = Jackson.fromJson(first.content, jacksonTypeRef<Map<String, String>>())
             UniversalSourceFile(MapPatternVariables(variables))
