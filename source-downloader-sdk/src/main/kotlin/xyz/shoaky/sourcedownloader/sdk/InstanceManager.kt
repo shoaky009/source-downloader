@@ -1,7 +1,4 @@
-package xyz.shoaky.sourcedownloader.core
-
-import xyz.shoaky.sourcedownloader.sdk.InstanceFactory
-import xyz.shoaky.sourcedownloader.sdk.Properties
+package xyz.shoaky.sourcedownloader.sdk
 
 interface InstanceManager {
 

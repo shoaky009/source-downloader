@@ -12,7 +12,8 @@ internal class TelegramPlugin : Plugin {
     }
 
     override fun destroy(pluginContext: PluginContext) {
-        pluginContext.getInstances(SimpleTelegramClient::class.java).forEach {
+        val instanceManager = pluginContext.getInstanceManager()
+        instanceManager.getInstance(SimpleTelegramClient::class.java).forEach {
             it.closeAndWait()
         }
     }

@@ -20,6 +20,7 @@ import xyz.shoaky.sourcedownloader.component.supplier.*
 import xyz.shoaky.sourcedownloader.config.SourceDownloaderProperties
 import xyz.shoaky.sourcedownloader.core.*
 import xyz.shoaky.sourcedownloader.external.qbittorrent.QbittorrentConfig
+import xyz.shoaky.sourcedownloader.sdk.InstanceManager
 import xyz.shoaky.sourcedownloader.sdk.PathPattern
 import xyz.shoaky.sourcedownloader.sdk.Properties
 import xyz.shoaky.sourcedownloader.sdk.component.*
@@ -180,9 +181,8 @@ class SourceDownloaderApplication(
     }
 
     private fun registerInstanceFactories() {
-        instanceManager.registerInstanceFactory(
-            QbittorrentClientInstanceFactory
-        )
+        // instanceManager.registerInstanceFactory(
+        // )
     }
 
     fun reload() {

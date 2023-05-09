@@ -1,4 +1,4 @@
-package xyz.shoaky.sourcedownloader.component.downloader
+package xyz.shoaky.sourcedownloader.common.torrent
 
 import bt.metainfo.MetadataService
 import org.slf4j.LoggerFactory

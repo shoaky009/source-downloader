@@ -2,6 +2,7 @@ package xyz.shoaky.sourcedownloader.core
 
 import xyz.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
 import xyz.shoaky.sourcedownloader.sdk.InstanceFactory
+import xyz.shoaky.sourcedownloader.sdk.InstanceManager
 import xyz.shoaky.sourcedownloader.sdk.Properties
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.reflect.full.declaredMemberFunctions

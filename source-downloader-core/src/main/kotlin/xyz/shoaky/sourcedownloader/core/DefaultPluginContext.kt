@@ -23,10 +23,9 @@ class DefaultPluginContext(
         return instanceManager.load(name, klass, props)
     }
 
-    override fun <T> getInstances(klass: Class<T>): List<T> {
-        return instanceManager.getInstance(klass)
+    override fun getInstanceManager(): InstanceManager {
+        return instanceManager
     }
-
 }
 
 @Component

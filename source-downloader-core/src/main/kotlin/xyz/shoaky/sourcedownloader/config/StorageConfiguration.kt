@@ -4,8 +4,8 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import xyz.shoaky.sourcedownloader.core.DefaultInstanceManager
 import xyz.shoaky.sourcedownloader.core.InstanceConfigStorage
-import xyz.shoaky.sourcedownloader.core.InstanceManager
 import xyz.shoaky.sourcedownloader.core.YamlConfigStorage
+import xyz.shoaky.sourcedownloader.sdk.InstanceManager
 import kotlin.io.path.Path
 import kotlin.io.path.createFile
 import kotlin.io.path.exists

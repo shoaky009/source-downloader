@@ -1,4 +1,4 @@
-package xyz.shoaky.sourcedownloader.component.resolver
+package xyz.shoaky.sourcedownloader.common.torrent
 
 import bt.metainfo.MetadataService
 import xyz.shoaky.sourcedownloader.sdk.SourceItem

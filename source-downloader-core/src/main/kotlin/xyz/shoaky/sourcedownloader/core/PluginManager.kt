@@ -2,6 +2,7 @@ package xyz.shoaky.sourcedownloader.core
 
 import org.springframework.core.io.support.SpringFactoriesLoader
 import org.springframework.stereotype.Component
+import xyz.shoaky.sourcedownloader.sdk.InstanceManager
 import xyz.shoaky.sourcedownloader.sdk.Plugin
 import java.util.*
 

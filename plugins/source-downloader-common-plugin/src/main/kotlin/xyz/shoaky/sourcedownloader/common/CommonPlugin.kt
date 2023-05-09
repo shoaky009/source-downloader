@@ -6,19 +6,26 @@ import xyz.shoaky.sourcedownloader.common.dlsite.DlsiteVariableProviderSupplier
 import xyz.shoaky.sourcedownloader.common.mikan.MikanVariableProviderSupplier
 import xyz.shoaky.sourcedownloader.common.rss.JackettSourceSupplier
 import xyz.shoaky.sourcedownloader.common.rss.RssSourceSupplier
+import xyz.shoaky.sourcedownloader.common.torrent.QbittorrentClientInstanceFactory
+import xyz.shoaky.sourcedownloader.common.torrent.QbittorrentDownloaderSupplier
+import xyz.shoaky.sourcedownloader.common.torrent.TorrentFileResolverSupplier
 import xyz.shoaky.sourcedownloader.sdk.Plugin
 import xyz.shoaky.sourcedownloader.sdk.PluginContext
 import xyz.shoaky.sourcedownloader.sdk.PluginDescription
 
 internal class CommonPlugin : Plugin {
     override fun init(pluginContext: PluginContext) {
+        pluginContext.registerInstanceFactory(QbittorrentClientInstanceFactory)
+
         pluginContext.registerSupplier(
             AnitomVariableProviderSupplier,
             DlsiteVariableProviderSupplier,
             JackettSourceSupplier,
             RssSourceSupplier,
             AnimeFileFilterSupplier,
-            MikanVariableProviderSupplier
+            TorrentFileResolverSupplier,
+            MikanVariableProviderSupplier,
+            QbittorrentDownloaderSupplier(pluginContext.getInstanceManager())
         )
     }
 

@@ -18,12 +18,14 @@ dependencies {
     implementation(project(":source-downloader-sdk"))
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
+    testImplementation("org.mockito:mockito-junit-jupiter:5.3.1")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.2")
     testImplementation("org.junit.jupiter:junit-jupiter-engine:5.9.2")
 
     implementation("com.apptasticsoftware:rssreader:3.3.0")
     implementation("com.dgtlrepublic:anitomyJ:0.0.7")
+    implementation("com.github.atomashpolskiy:bt-core:1.10")
     compileOnly("org.springframework:spring-web:6.0.8")
 }
 

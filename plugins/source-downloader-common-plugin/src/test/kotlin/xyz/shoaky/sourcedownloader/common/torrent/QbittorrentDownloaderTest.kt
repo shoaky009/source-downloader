@@ -1,15 +1,13 @@
-package xyz.shoaky.sourcedownloader.component
+package xyz.shoaky.sourcedownloader.common.torrent
 
 import org.apache.commons.lang3.NotImplementedException
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
-import xyz.shoaky.sourcedownloader.component.downloader.QbittorrentDownloader
 import xyz.shoaky.sourcedownloader.external.qbittorrent.QbittorrentClient
 import xyz.shoaky.sourcedownloader.external.qbittorrent.TorrentInfo
 import xyz.shoaky.sourcedownloader.external.qbittorrent.TorrentInfoRequest
 import xyz.shoaky.sourcedownloader.sdk.DownloadTask
 import xyz.shoaky.sourcedownloader.sdk.SourceItem
-import xyz.shoaky.sourcedownloader.sourceItem
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpHeaders
@@ -58,8 +56,12 @@ class QbittorrentDownloaderTest {
             R(listOf(TorrentInfo(0, torrentHash, 305807162L, 0.95f)))
         )
 
-        val sourceItem = sourceItem(link = "https://mikanani.me/Download/20230308/$torrentHash",
-            downloadUrl = "https://mikanani.me/Download/20230308/$torrentHash.torrent")
+        val sourceItem = SourceItem(
+            "",
+            URI("https://mikanani.me/Download/20230308/f3bcd4831746caac97212896caa41f4e24d0ae88"),
+            LocalDateTime.now(), "torrent",
+            URI("https://mikanani.me/Download/20230308/f3bcd4831746caac97212896caa41f4e24d0ae88.torrent")
+        )
         val downloadTask = DownloadTask(sourceItem, emptyList(), Path(""))
         val finished = downloader.isFinished(downloadTask) ?: false
         assert(!finished)

@@ -1,6 +1,5 @@
 package xyz.shoaky.sourcedownloader.component.downloader
 
-import bt.metainfo.MetadataService
 import xyz.shoaky.sourcedownloader.sdk.DownloadTask
 import xyz.shoaky.sourcedownloader.sdk.SourceContent
 import xyz.shoaky.sourcedownloader.sdk.component.TorrentDownloader
@@ -11,8 +10,6 @@ import kotlin.io.path.moveTo
 import kotlin.io.path.notExists
 
 class MockDownloader(private val downloadPath: Path) : TorrentDownloader {
-
-    private val metadataService = MetadataService()
 
     override fun isFinished(task: DownloadTask): Boolean {
         return true
