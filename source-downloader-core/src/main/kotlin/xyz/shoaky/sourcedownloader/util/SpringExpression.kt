@@ -3,7 +3,6 @@ package xyz.shoaky.sourcedownloader.util
 import org.springframework.expression.Expression
 import org.springframework.expression.ExpressionParser
 import org.springframework.expression.spel.standard.SpelExpressionParser
-import org.springframework.expression.spel.support.StandardEvaluationContext
 import org.springframework.util.unit.DataSize
 import java.nio.file.Files
 import java.nio.file.Path
@@ -19,13 +18,6 @@ object SpringExpression {
     private val expressionParser: ExpressionParser = SpelExpressionParser()
     fun parseExpression(expressionText: String): Expression {
         return expressionParser.parseExpression(expressionText)
-    }
-
-    fun evalString(expressionText: String, root: Any? = null, variable: Map<String, Any> = emptyMap()): String? {
-        val ctx = StandardEvaluationContext()
-        ctx.setVariables(variable)
-        val expression = expressionParser.parseExpression(expressionText)
-        return expression.getValue(root, String::class.java)
     }
 
 }

@@ -30,25 +30,25 @@ data class CorePathPattern(
 
     override fun parse(provider: PatternVariables): ParseResult {
         val matcher = variablePatternRegex.matcher(pattern)
-        val result = StringBuilder()
+        val pathBuilder = StringBuilder()
         val variables = provider.variables()
-        val varRes = mutableListOf<ExpressionResult>()
+        val variableResults = mutableListOf<ExpressionResult>()
 
         var expressionIndex = 0
         while (matcher.find()) {
             val expression = expressions[expressionIndex]
             val value = expression.eval(variables)
 
-            varRes.add(ExpressionResult(expression.raw, value != null || expression.isOptional()))
+            variableResults.add(ExpressionResult(expression.raw, value != null || expression.isOptional()))
             if (value != null) {
-                matcher.appendReplacement(result, value)
+                matcher.appendReplacement(pathBuilder, value)
             } else if (expression.isOptional()) {
-                matcher.appendReplacement(result, "")
+                matcher.appendReplacement(pathBuilder, "")
             }
             expressionIndex = expressionIndex.inc()
         }
-        matcher.appendTail(result)
-        return ParseResult(result.toString(), varRes)
+        matcher.appendTail(pathBuilder)
+        return ParseResult(pathBuilder.toString(), variableResults)
     }
 
     companion object {

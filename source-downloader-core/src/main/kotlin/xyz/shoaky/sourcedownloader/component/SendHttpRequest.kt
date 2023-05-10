@@ -6,6 +6,7 @@ import xyz.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
 import xyz.shoaky.sourcedownloader.sdk.SourceContent
 import xyz.shoaky.sourcedownloader.sdk.component.RunAfterCompletion
 import xyz.shoaky.sourcedownloader.sdk.util.Http
+import xyz.shoaky.sourcedownloader.sdk.util.Jackson
 import java.net.http.HttpRequest
 import java.net.http.HttpRequest.BodyPublishers
 import java.net.http.HttpResponse.BodyHandlers
@@ -20,8 +21,10 @@ class SendHttpRequest(
         uriComponents = uriComponents.expand(mapOf("summary" to t.summarySubject()))
 
         val client = Http.client
+
+        val body = BodyPublishers.ofString(Jackson.toJsonString(t))
         val request = HttpRequest.newBuilder(uriComponents.toUri())
-            .method(props.method.name(), BodyPublishers.noBody())
+            .method(props.method.name(), body)
 
         props.headers.forEach(request::setHeader)
         val response = client.send(request.build(), BodyHandlers.discarding())
@@ -32,9 +35,10 @@ class SendHttpRequest(
 
     data class Props(
         val url: String,
-        val method: HttpMethod = HttpMethod.GET,
+        val method: HttpMethod = HttpMethod.POST,
         val headers: Map<String, String> = emptyMap(),
-        val withSummary: Boolean = true
+        val withSummary: Boolean = true,
+        val withContent: Boolean = true
     )
 }
 

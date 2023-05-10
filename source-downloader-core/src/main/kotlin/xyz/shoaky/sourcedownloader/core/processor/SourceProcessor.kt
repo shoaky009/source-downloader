@@ -207,9 +207,8 @@ class SourceProcessor(
             sourceItem,
             sourceContent.sourceFiles.map { it.fileDownloadPath }
         )
-        val needDownload = needDownload(sourceContent)
-
-        if (needDownload.first && dryRun.not()) {
+        val contentStatus = probeContent(sourceContent)
+        if (contentStatus.first && dryRun.not()) {
             // NOTE 非异步下载会阻塞
             this.downloader.submit(downloadTask)
             log.info("提交下载任务成功, Processor:${name} sourceItem:${sourceItem.title}")
@@ -223,8 +222,8 @@ class SourceProcessor(
             status = ProcessingContent.Status.RENAMED
         }
 
-        if (needDownload.first.not() && downloader is AsyncDownloader) {
-            status = needDownload.second
+        if (contentStatus.first.not() && downloader is AsyncDownloader) {
+            status = contentStatus.second
         }
 
         val pc = ProcessingContent(name, sourceContent).copy(status = status)
@@ -279,14 +278,15 @@ class SourceProcessor(
         if (pathPatterns.isEmpty()) {
             return fileContent
         }
-        val typePattern = pathPatterns.first()
-        log.debug("Processor:{} 文件:{} 使用自定义命名规则:{}", name, fileContent.fileDownloadPath, typePattern)
-        val copy = fileContent.copy(filenamePattern = typePattern)
+        val taggedFilePattern = pathPatterns.first()
+        log.debug("Processor:{} 文件:{} 使用自定义命名规则:{}", name, fileContent.fileDownloadPath, taggedFilePattern)
+        val copy = fileContent.copy(filenamePattern = taggedFilePattern)
+        // 考虑要不要存tag
         copy.tag(fileContent.tags())
         return copy
     }
 
-    private fun needDownload(sc: PersistentSourceContent): Pair<Boolean, ProcessingContent.Status> {
+    private fun probeContent(sc: PersistentSourceContent): Pair<Boolean, ProcessingContent.Status> {
         val files = sc.sourceFiles
         if (files.isEmpty()) {
             return false to ProcessingContent.Status.NO_FILES
@@ -509,4 +509,3 @@ private class SourceHashingItemFilter(val sourceName: String, val processingStor
         return processingContent == null
     }
 }
-
