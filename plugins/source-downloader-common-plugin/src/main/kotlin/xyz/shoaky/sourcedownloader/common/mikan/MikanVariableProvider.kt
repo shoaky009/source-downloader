@@ -122,7 +122,7 @@ private class MikanSourceGroup(
 
 object MikanVariableProviderSupplier : SdComponentSupplier<MikanVariableProvider> {
     override fun apply(props: Properties): MikanVariableProvider {
-        val token = props.getNotRequired<String>("token")
+        val token = props.getOrNull<String>("token")
         return MikanVariableProvider(token)
     }
 

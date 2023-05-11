@@ -22,7 +22,7 @@ private constructor(
         }
     }
 
-    inline fun <reified T> getNotRequired(key: String): T? {
+    inline fun <reified T> getOrNull(key: String): T? {
         val any = rawValues[key] ?: return null
         try {
             return Jackson.convert(any, jacksonTypeRef())

@@ -60,4 +60,8 @@ object Jackson {
     fun convertToMap(any: Any): Map<String, Any> {
         return convert(any, mapRef)
     }
+
+    // fun <T> fromXml(inputStream: InputStream, type: TypeReference<T>): T {
+    //     return objectMapper.readValue(inputStream, type)
+    // }
 }

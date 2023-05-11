@@ -6,7 +6,6 @@ import kotlin.io.path.name
 interface SourceContent {
     val sourceFiles: List<FileContent>
     val sourceItem: SourceItem
-
     fun allTargetPaths(): List<Path> {
         return sourceFiles.map { it.targetPath() }
     }

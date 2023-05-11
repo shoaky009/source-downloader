@@ -5,8 +5,6 @@ import com.google.common.net.HttpHeaders
 import com.google.common.net.MediaType
 import com.google.common.net.UrlEscapers
 import org.slf4j.LoggerFactory
-import xyz.shoaky.sourcedownloader.sdk.api.BaseRequest.Companion.stringTypeReference
-import xyz.shoaky.sourcedownloader.sdk.util.Http
 import xyz.shoaky.sourcedownloader.sdk.util.Jackson
 import java.net.CookieManager
 import java.net.URI
@@ -34,7 +32,7 @@ abstract class HookedApiClient : ApiClient {
 
         beforeRequest(requestBuilder, request)
         val httpRequest = requestBuilder.build()
-        val httpResponse = httpClient.send(httpRequest, bodyHandler(request))
+        val httpResponse = httpClient.send(httpRequest, request.bodyHandler())
         if (log.isDebugEnabled) {
             log.debug(
                 """
@@ -42,7 +40,7 @@ abstract class HookedApiClient : ApiClient {
                 requestBody:{}
                 responseCode:{}
                 responseBody:{}
-                """, httpRequest.uri(), Jackson.toJsonString(httpRequest),
+                """, httpRequest.uri(), Jackson.toJsonString(request),
                 httpResponse.statusCode(), httpResponse.body())
         }
         afterRequest(httpResponse, request)
@@ -77,17 +75,6 @@ abstract class HookedApiClient : ApiClient {
     abstract fun <R : BaseRequest<T>, T : Any> beforeRequest(requestBuilder: HttpRequest.Builder, request: R)
 
     abstract fun <R : BaseRequest<T>, T : Any> afterRequest(response: HttpResponse<T>, request: R)
-
-    private fun <R : BaseRequest<T>, T : Any> bodyHandler(request: BaseRequest<T>): HttpResponse.BodyHandler<T> {
-        if (request.mediaType == MediaType.JSON_UTF_8) {
-            return Http.JsonBodyHandler(request.responseBodyType)
-        }
-        if (request.responseBodyType == stringTypeReference) {
-            @Suppress("UNCHECKED_CAST")
-            return stringBodyHandler as HttpResponse.BodyHandler<T>
-        }
-        return Http.JsonBodyHandler(request.responseBodyType)
-    }
 
     private fun <R : BaseRequest<T>, T : Any> bodyPublisher(request: BaseRequest<T>): HttpRequest.BodyPublisher {
         val mediaType = request.mediaType

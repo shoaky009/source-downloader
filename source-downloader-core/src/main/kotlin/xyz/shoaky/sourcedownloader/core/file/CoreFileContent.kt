@@ -67,10 +67,6 @@ data class CoreFileContent(
         return fileDownloadPath.name
     }
 
-    /**
-     * 获取item文件对应的顶级目录e.g. 文件保存在下/mnt/bangumi/FATE/Season 01 返回 /mnt/bangumi/FATE
-     * @return null如果item的文件是保存在saveRootPath下
-     */
     override fun saveItemFileRootDirectory(): Path? {
         val saveDirectoryPath = saveDirectoryPath()
         if (sourceSavePath == saveDirectoryPath) {

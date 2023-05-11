@@ -77,7 +77,7 @@ internal class TmdbSeasonParser(private val apiKey: String) : ValueParser {
                 .GET()
                 .uri(URI("https://api.themoviedb.org/3/tv/$tvId?api_key=${apiKey}&language=zh-CN"))
                 .build()
-            val response: HttpResponse<TvShow> = newHttpClient.send(request, Http.JsonBodyHandler(jacksonTypeRef()))
+            val response: HttpResponse<TvShow> = newHttpClient.send(request, Http.CommonBodyHandler(jacksonTypeRef()))
             if (response.statusCode() != 200) {
                 log.error("获取TVShow失败,code:${response.statusCode()} body:${response.body()} request:$request")
                 return null
@@ -93,7 +93,7 @@ internal class TmdbSeasonParser(private val apiKey: String) : ValueParser {
                 .GET()
                 .uri(uri)
                 .build()
-            val body = newHttpClient.send(request, Http.JsonBodyHandler(jacksonTypeRef<TmdbResult>())).body()
+            val body = newHttpClient.send(request, Http.CommonBodyHandler(jacksonTypeRef<TmdbResult>())).body()
             return body.results.map { it.id }.firstOrNull()
         }
 

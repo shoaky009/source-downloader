@@ -14,4 +14,13 @@ data class DownloadTask(
         return sourceItem.downloadUri
     }
 
+    fun relativePaths(): List<Path> {
+        return downloadFiles.map {
+            if (it.isAbsolute) {
+                downloadPath.relativize(it)
+            } else {
+                it
+            }
+        }
+    }
 }

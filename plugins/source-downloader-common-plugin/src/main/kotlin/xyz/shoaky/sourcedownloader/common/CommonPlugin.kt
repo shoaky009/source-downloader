@@ -9,6 +9,7 @@ import xyz.shoaky.sourcedownloader.common.rss.RssSourceSupplier
 import xyz.shoaky.sourcedownloader.common.torrent.QbittorrentClientInstanceFactory
 import xyz.shoaky.sourcedownloader.common.torrent.QbittorrentDownloaderSupplier
 import xyz.shoaky.sourcedownloader.common.torrent.TorrentFileResolverSupplier
+import xyz.shoaky.sourcedownloader.common.torrent.TransmissionDownloaderSupplier
 import xyz.shoaky.sourcedownloader.sdk.Plugin
 import xyz.shoaky.sourcedownloader.sdk.PluginContext
 import xyz.shoaky.sourcedownloader.sdk.PluginDescription
@@ -25,7 +26,8 @@ internal class CommonPlugin : Plugin {
             AnimeFileFilterSupplier,
             TorrentFileResolverSupplier,
             MikanVariableProviderSupplier,
-            QbittorrentDownloaderSupplier(pluginContext.getInstanceManager())
+            QbittorrentDownloaderSupplier(pluginContext.getInstanceManager()),
+            TransmissionDownloaderSupplier,
         )
     }
 

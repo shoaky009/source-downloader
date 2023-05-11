@@ -1,6 +1,5 @@
 package xyz.shoaky.sourcedownloader.util
 
-import java.util.*
 import kotlin.reflect.KClass
 
 interface EnumValue<T> {
@@ -16,8 +15,4 @@ fun <T, R> KClass<R>.fromValue(value: T): R where R : EnumValue<T>, R : Enum<R> 
         }
     }
     throw RuntimeException("Unknown value: $this")
-}
-
-fun String.encodeBase64(): String {
-    return Base64.getEncoder().encodeToString(this.toByteArray())
 }

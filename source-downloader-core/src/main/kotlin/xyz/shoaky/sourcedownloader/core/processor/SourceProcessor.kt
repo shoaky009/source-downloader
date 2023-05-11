@@ -5,6 +5,7 @@ import xyz.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
 import xyz.shoaky.sourcedownloader.component.provider.MetadataVariableProvider
 import xyz.shoaky.sourcedownloader.core.*
 import xyz.shoaky.sourcedownloader.core.file.CoreFileContent
+import xyz.shoaky.sourcedownloader.core.file.FileContentStatus
 import xyz.shoaky.sourcedownloader.core.file.PersistentSourceContent
 import xyz.shoaky.sourcedownloader.sdk.*
 import xyz.shoaky.sourcedownloader.sdk.component.*
@@ -202,12 +203,9 @@ class SourceProcessor(
             options.variableNameReplace
         )
         val sourceContent = createPersistentSourceContent(variablesAggregation, sourceItem)
-
-        val downloadTask = createDownloadTask(
-            sourceItem,
-            sourceContent.sourceFiles.map { it.fileDownloadPath }
-        )
         val contentStatus = probeContent(sourceContent)
+
+        val downloadTask = createDownloadTask(sourceContent)
         if (contentStatus.first && dryRun.not()) {
             // NOTE 非异步下载会阻塞
             this.downloader.submit(downloadTask)
@@ -332,8 +330,7 @@ class SourceProcessor(
         val contentGrouping = processingStorage.findRenameContent(name, options.renameTimesThreshold)
             .groupBy(
                 { pc ->
-                    val files = pc.sourceContent.sourceFiles.map { it.fileDownloadPath }
-                    val downloadTask = createDownloadTask(pc.sourceContent.sourceItem, files)
+                    val downloadTask = createDownloadTask(pc.sourceContent)
                     DownloadStatus.from(asyncDownloader.isFinished(downloadTask))
                 }, { it }
             )
@@ -413,24 +410,15 @@ class SourceProcessor(
         return safeRunner
     }
 
-    private fun createDownloadTask(sourceItem: SourceItem, downloadFiles: List<Path>): DownloadTask {
-        return DownloadTask(sourceItem, downloadFiles, downloadPath, options.downloadOptions)
-    }
-
-    private fun getRenameFiles(content: SourceContent): List<FileContent> {
-        val filter = content.sourceFiles
-            .filter { fileMover.exists(listOf(it.targetPath())).not() }
-            .filter { it.fileDownloadPath.exists() }
-
-        // 冲突的不移动
-        val conflicts = filter.map { it.targetPath() }.groupingBy { it }.eachCount()
-            .filter { it.value > 1 }.keys
-
-        val partition = filter.partition { conflicts.contains(it.targetPath()).not() }
-        if (partition.second.isNotEmpty()) {
-            log.warn("存在重名文件，需要手动处理 files:${partition.second.map { it.fileDownloadPath }}")
+    private fun createDownloadTask(content: PersistentSourceContent): DownloadTask {
+        // val originFiles = content.sourceFiles.map { it.fileDownloadPath }
+        val downloadFiles = content.sourceFiles
+            .filter { it.status != FileContentStatus.TARGET_EXISTS }
+            .map { it.downloadPath }
+        if (log.isDebugEnabled) {
+            log.debug("{} 创建下载任务文件, files:{}", content.sourceItem.title, downloadFiles)
         }
-        return partition.first
+        return DownloadTask(content.sourceItem, downloadFiles, downloadPath, options.downloadOptions)
     }
 
     private fun rename(content: PersistentSourceContent): Boolean {

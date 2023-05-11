@@ -12,9 +12,10 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 
-    api("com.fasterxml.jackson.core:jackson-core:2.14.2")
-    api("com.fasterxml.jackson.module:jackson-module-kotlin:2.14.2")
-    api("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.14.2")
+    api("com.fasterxml.jackson.core:jackson-core:2.15.0")
+    api("com.fasterxml.jackson.module:jackson-module-kotlin:2.15.0")
+    api("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.0")
+    // api("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.15.0")
 
     api("org.slf4j:slf4j-api:2.0.6")
     api("ch.qos.logback:logback-classic:1.4.6")

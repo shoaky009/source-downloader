@@ -4,7 +4,14 @@ import java.nio.file.Path
 
 interface FileContent {
 
+    /**
+     * 保存文件的根目录
+     */
     val downloadPath: Path
+
+    /**
+     * 文件全路径
+     */
     val fileDownloadPath: Path
     val patternVariables: PatternVariables
 

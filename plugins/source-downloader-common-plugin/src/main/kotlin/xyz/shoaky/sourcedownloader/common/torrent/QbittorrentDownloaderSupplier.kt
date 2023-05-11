@@ -2,6 +2,7 @@ package xyz.shoaky.sourcedownloader.common.torrent
 
 import xyz.shoaky.sourcedownloader.external.qbittorrent.QbittorrentClient
 import xyz.shoaky.sourcedownloader.external.qbittorrent.QbittorrentConfig
+import xyz.shoaky.sourcedownloader.sdk.ComponentRule
 import xyz.shoaky.sourcedownloader.sdk.InstanceFactory
 import xyz.shoaky.sourcedownloader.sdk.InstanceManager
 import xyz.shoaky.sourcedownloader.sdk.Properties
@@ -23,10 +24,15 @@ class QbittorrentDownloaderSupplier(
     override fun supplyTypes(): List<ComponentType> {
         return listOf(
             ComponentType.downloader("qbittorrent"),
-            ComponentType.fileMover("qbittorrent")
+            ComponentType.fileMover("qbittorrent"),
         )
     }
 
+    override fun rules(): List<ComponentRule> {
+        return listOf(
+            ComponentRule.allowFileResolver(TorrentFileResolver::class)
+        )
+    }
 }
 
 object QbittorrentClientInstanceFactory : InstanceFactory<QbittorrentClient> {

@@ -8,14 +8,13 @@ import xyz.shoaky.sourcedownloader.sdk.DownloadTask
 import xyz.shoaky.sourcedownloader.sdk.SourceContent
 import xyz.shoaky.sourcedownloader.sdk.SourceItem
 import xyz.shoaky.sourcedownloader.sdk.component.TorrentDownloader
+import xyz.shoaky.sourcedownloader.sdk.component.TorrentDownloader.Companion.tryParseTorrentHash
 import java.nio.file.Path
 
 class QbittorrentDownloader(
     private val client: QbittorrentClient,
     private val alwaysDownloadAll: Boolean = false
 ) : TorrentDownloader {
-
-    private val metadataService = MetadataService()
 
     override fun submit(task: DownloadTask) {
         val tags = task.options.tags
@@ -45,8 +44,7 @@ class QbittorrentDownloader(
             )).body()
         })
 
-        val downloadFiles = task.downloadFiles
-        val relativePaths = downloadFiles.map { task.downloadPath.relativize(it) }
+        val relativePaths = task.relativePaths()
         val stopDownloadFiles = torrentFiles.filter {
             relativePaths.contains(it.name).not()
         }
@@ -76,11 +74,6 @@ class QbittorrentDownloader(
         val torrent = client.execute(TorrentInfoRequest(hashes = torrentHash))
         val torrents = torrent.body()
         return torrents.map { it.progress >= 0.99f }.firstOrNull()
-    }
-
-    private fun getTorrentHash(sourceItem: SourceItem): String {
-        return tryParseTorrentHash(sourceItem)
-            ?: metadataService.fromUrl(sourceItem.downloadUri.toURL()).torrentId.toString()
     }
 
     override fun rename(sourceContent: SourceContent): Boolean {
@@ -122,6 +115,8 @@ class QbittorrentDownloader(
 
     companion object {
         private val log = LoggerFactory.getLogger(QbittorrentDownloader::class.java)
+
+
         fun <T> retry(block: () -> T, times: Int = 3): T {
             var count = 0
             while (count < times) {
@@ -138,7 +133,14 @@ class QbittorrentDownloader(
             }
             throw RuntimeException("max retry times")
         }
+
+
     }
 
+}
 
+private val metadataService = MetadataService()
+fun getTorrentHash(sourceItem: SourceItem): String {
+    return tryParseTorrentHash(sourceItem)
+        ?: metadataService.fromUrl(sourceItem.downloadUri.toURL()).torrentId.toString()
 }

@@ -37,7 +37,7 @@ class TmdbClientImpl(
         val request = HttpRequest.newBuilder()
             .uri(build.toUri())
             .build()
-        return client.send(request, Http.JsonBodyHandler(typeReference)).body()
+        return client.send(request, Http.CommonBodyHandler(typeReference)).body()
     }
 
 }

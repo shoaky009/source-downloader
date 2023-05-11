@@ -6,7 +6,7 @@ import xyz.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
 import xyz.shoaky.sourcedownloader.sdk.SourceContent
 import xyz.shoaky.sourcedownloader.sdk.component.FileMover
 import xyz.shoaky.sourcedownloader.sdk.util.Http
-import xyz.shoaky.sourcedownloader.util.encodeBase64
+import xyz.shoaky.sourcedownloader.sdk.util.encodeBase64
 import java.net.URI
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse

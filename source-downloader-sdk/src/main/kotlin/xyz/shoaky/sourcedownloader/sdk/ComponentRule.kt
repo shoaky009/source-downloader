@@ -62,6 +62,12 @@ data class ComponentRule internal constructor(
         fun allowProvider(value: KClass<out SdComponent>) = ComponentRule(true, Components.VARIABLE_PROVIDER, value)
 
         @JvmStatic
+        fun allowFileResolver(value: KClass<out SdComponent>) = ComponentRule(true, Components.ITEM_FILE_RESOLVER, value)
+
+        @JvmStatic
+        fun notAllowFileResolver(value: KClass<out SdComponent>) = ComponentRule(false, Components.ITEM_FILE_RESOLVER, value)
+
+        @JvmStatic
         fun notAllowProvider(value: KClass<out SdComponent>) =
             ComponentRule(false, Components.VARIABLE_PROVIDER, value)
 

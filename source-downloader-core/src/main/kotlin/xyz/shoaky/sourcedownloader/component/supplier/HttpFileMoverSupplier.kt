@@ -9,8 +9,8 @@ object HttpFileMoverSupplier : SdComponentSupplier<HttpFileMover> {
     override fun apply(props: Properties): HttpFileMover {
         return HttpFileMover(
             props.get("server-url"),
-            props.getNotRequired("username"),
-            props.getNotRequired("password"),
+            props.getOrNull("username"),
+            props.getOrNull("password"),
         )
     }
 

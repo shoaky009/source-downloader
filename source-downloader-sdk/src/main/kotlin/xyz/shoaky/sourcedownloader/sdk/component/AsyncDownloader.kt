@@ -18,13 +18,12 @@ interface AsyncDownloader : Downloader {
 
 interface TorrentDownloader : AsyncDownloader, FileMover {
 
-    fun tryParseTorrentHash(sourceItem: SourceItem): String? {
-        val find = torrentHashRegex.find(sourceItem.downloadUri.toString())
-            ?: torrentHashRegex.find(sourceItem.link.toString()) ?: torrentHashRegex.find(sourceItem.title)
-        return find?.value
-    }
-
     companion object {
         private val torrentHashRegex = Regex("[0-9a-f]{40}")
+        fun tryParseTorrentHash(sourceItem: SourceItem): String? {
+            val find = torrentHashRegex.find(sourceItem.downloadUri.toString())
+                ?: torrentHashRegex.find(sourceItem.link.toString()) ?: torrentHashRegex.find(sourceItem.title)
+            return find?.value
+        }
     }
 }
