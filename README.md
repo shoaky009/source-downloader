@@ -24,8 +24,3 @@ docker run -p 8080:8080 -e "JAVA_OPTS=-Dhttp.proxyHost={your-host} -Dhttp.proxyP
 ```
 
 config.yaml配置详情查看[文档](https://github.com/shoaky009/source-downloader/wiki)
-
-现阶段暂时不会对易用性改进，有几个核心问题仍需解决
-
-1. 更好的表达式实现
-2. `Source`组件和`SourceProcessor`更灵活的交互模式以适应不同的数据获取问题
