@@ -1,5 +1,6 @@
 package xyz.shoaky.sourcedownloader.sdk.component
 
+@Suppress("UNUSED")
 class ComponentException
 private constructor(message: String, val type: String) : RuntimeException(message) {
 

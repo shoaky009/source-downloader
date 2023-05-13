@@ -156,7 +156,7 @@ class DynamicTrigger(config: Config) : HoldingTaskTrigger() {
 
     class Config {
         val boundProcessors: Set<String> = emptySet()
-        val defaultInternal = Duration.ofHours(2L)
+        val defaultInternal: Duration = Duration.ofHours(2L)
     }
 
     class TriggerRange(hitTime: LocalDateTime) : ClosedRange<LocalTime> {

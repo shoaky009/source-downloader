@@ -10,8 +10,8 @@ import java.net.http.HttpResponse
 
 class TransmissionClient(
     private val endpoint: URI,
-    private val username: String?,
-    private val password: String?,
+    username: String?,
+    password: String?,
 ) : HookedApiClient() {
 
     private val credentials = "Basic ${"$username:$password".encodeBase64()}}"

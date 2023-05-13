@@ -11,7 +11,7 @@ class TmdbClientImpl(
     private val defaultApiKey: String
 ) : TmdbClient {
 
-    override fun getTvShow(tvId: Long, language: String, apiKey: String?): TvShow? {
+    override fun getTvShow(tvId: Long, language: String, apiKey: String?): TvShow {
         return invoke(
             "https://api.themoviedb.org/3/tv/$tvId?language=$language",
             apiKey,

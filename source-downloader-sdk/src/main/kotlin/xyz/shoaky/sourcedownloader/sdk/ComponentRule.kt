@@ -7,6 +7,7 @@ import xyz.shoaky.sourcedownloader.sdk.component.componentSuperClasses
 import kotlin.reflect.KClass
 import kotlin.reflect.full.isSuperclassOf
 
+@Suppress("UNUSED")
 data class ComponentRule internal constructor(
     val isAllow: Boolean,
     val type: Components,

@@ -19,6 +19,7 @@ data class ComponentType(
     }
 
 
+    @Suppress("UNUSED")
     companion object {
         @JvmStatic
         fun downloader(type: String) = ComponentType(type, Downloader::class)

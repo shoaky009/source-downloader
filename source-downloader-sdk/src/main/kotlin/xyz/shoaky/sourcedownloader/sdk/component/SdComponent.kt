@@ -10,9 +10,7 @@ import kotlin.io.path.exists
 import kotlin.reflect.KClass
 import kotlin.reflect.full.allSuperclasses
 
-sealed interface SdComponent {
-
-}
+sealed interface SdComponent
 
 fun <T : SdComponent> KClass<T>.componentSuperClasses(): List<KClass<out SdComponent>> {
     val result = mutableListOf(this)
