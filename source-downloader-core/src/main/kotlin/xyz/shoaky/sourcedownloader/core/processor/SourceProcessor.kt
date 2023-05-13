@@ -431,7 +431,9 @@ class SourceProcessor(
             .forEach {
                 fileMover.createDirectories(it)
             }
-        return fileMover.rename(content)
+        return fileMover.rename(
+            content.copy(sourceFiles = renameFiles)
+        )
     }
 
     fun addRunAfterCompletion(vararg completion: RunAfterCompletion) {
