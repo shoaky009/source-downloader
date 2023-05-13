@@ -19,7 +19,8 @@ internal class BangumiFile(
         val episodeChain = ParserChain.episodeChain()
         val result = episodeChain.apply(subject, filename)
 
-        val padNumber = result.padNumber(subject.episodeLength()) ?: return PatternVariables.EMPTY
+        val length = subject.episodeLength().coerceAtLeast(2)
+        val padNumber = result.padNumber(length) ?: return PatternVariables.EMPTY
         return MapPatternVariables(
             mapOf("episode" to padNumber)
         )

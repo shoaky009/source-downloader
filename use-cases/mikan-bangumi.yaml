@@ -1,0 +1,66 @@
+components:
+  source:
+    - name: mikan
+      type: rss
+      props:
+        url: https://mikanani.me/RSS/MyBangumi?token=
+  downloader:
+    - name: qbittorrent
+      type: qbittorrent
+      props:
+        url: http://192.168.1.219:10095
+        username: admin
+        password: 123456
+  variable-provider:
+    - name: mikan
+      type: mikan
+      props:
+      # 推荐填上token，有些番剧要登陆才能番剧信息页面，否则有些番会无法正确重命名
+      # 登陆https://mikanani.me/后，F12打开开发者工具，找到cookie中的token
+      # token:
+  file-mover:
+    - name: qbittorrent
+      type: qbittorrent
+  # 如果没有可以去掉
+  run-after-completion:
+    - name: telegram-message-webhook
+      type: http
+      props:
+        url: "http://192.168.1.219:15678/webhook/telegram-notify?message=番剧 {summary}下载完成"
+  trigger:
+    - name: 20min
+      type: fixed
+      props:
+        interval: PT20M
+        on-start-run-tasks: true
+# 过滤720P，中文配音的番剧，
+# 完成后
+processors:
+  - name: mikan-bangumi
+    triggers:
+      - fixed:20min
+      - webhook
+    source: rss:mikan
+    variable-providers:
+      - "mikan"
+      - "episode"
+      - "season"
+    item-file-resolver: torrent
+    downloader: qbittorrent
+    mover: qbittorrent
+    save-path: /mnt/bangumi
+    options:
+      run-after-completion:
+        - http:telegram-message-webhook
+      save-path-pattern: "{name}/Season {season}/"
+      filename-pattern: "{nameCn} S{season}E{episode}"
+      rename-task-interval: PT2M
+      rename-times-threshold: 2
+      download-options:
+        category: Bangumi
+        tags:
+          - "mikan-bangumi"
+      provide-metadata-variables: false
+      item-expression-exclusions:
+        - "#title matches '.*720(?<!P).*'"
+        - "#title matches '.*中文配音.*'"

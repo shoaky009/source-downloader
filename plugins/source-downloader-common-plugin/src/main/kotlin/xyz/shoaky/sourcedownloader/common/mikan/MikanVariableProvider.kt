@@ -99,7 +99,7 @@ class MikanVariableProvider(
     }
 
     override fun support(item: SourceItem): Boolean {
-        return item.link.host == "mikanani.me"
+        return item.link.host.contains("mikan")
     }
 
 }
