@@ -414,7 +414,7 @@ class SourceProcessor(
         // val originFiles = content.sourceFiles.map { it.fileDownloadPath }
         val downloadFiles = content.sourceFiles
             .filter { it.status != FileContentStatus.TARGET_EXISTS }
-            .map { it.downloadPath }
+            .map { it.fileDownloadPath }
         if (log.isDebugEnabled) {
             log.debug("{} 创建下载任务文件, files:{}", content.sourceItem.title, downloadFiles)
         }
