@@ -195,6 +195,10 @@ class SourceDownloaderApplication(
             componentManager.destroy(name)
         }
 
+        if (instanceManager is DefaultInstanceManager) {
+            instanceManager.destroyAll()
+        }
+
         createComponents()
         createProcessors()
     }

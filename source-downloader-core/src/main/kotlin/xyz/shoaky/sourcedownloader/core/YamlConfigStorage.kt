@@ -19,7 +19,7 @@ class YamlConfigStorage(
     ConfigOperator, InstanceConfigStorage {
 
     override fun getAllProcessorConfig(): List<ProcessorConfig> {
-        val get = yamlMapper.readTree(configPath.inputStream()).get("processors")
+        val get = yamlMapper.readTree(configPath.inputStream()).get("processors") ?: return emptyList()
         return yamlMapper.convertValue(get, jacksonTypeRef())
     }
 

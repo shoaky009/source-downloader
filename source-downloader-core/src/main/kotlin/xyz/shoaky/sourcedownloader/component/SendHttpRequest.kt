@@ -15,30 +15,42 @@ class SendHttpRequest(
     private val props: Props
 ) : RunAfterCompletion {
     override fun accept(t: SourceContent) {
-        val url = props.url
-        var uriComponents = UriComponentsBuilder.fromHttpUrl(url)
-            .encode().build()
-        uriComponents = uriComponents.expand(mapOf("summary" to t.summarySubject()))
+        val uriComponents = UriComponentsBuilder.fromHttpUrl(props.url)
+            .encode().build().expand(
+                mapOf("summary" to t.summaryContent())
+            )
 
-        val client = Http.client
+        val bodyPublishers = buildBodyPublisher(t)
 
-        val body = BodyPublishers.ofString(Jackson.toJsonString(t))
-        val request = HttpRequest.newBuilder(uriComponents.toUri())
-            .method(props.method.name(), body)
+        val uri = uriComponents.toUri()
+        val request = HttpRequest.newBuilder(uri)
+            .method(props.method.name(), bodyPublishers)
 
         props.headers.forEach(request::setHeader)
-        val response = client.send(request.build(), BodyHandlers.discarding())
+        val response = Http.client.send(request.build(), BodyHandlers.discarding())
         if (response.statusCode() != 200) {
-            log.warn("send http request to $url, response code is ${response.statusCode()}")
+            log.warn("send http request to $uri, response code is ${response.statusCode()}")
         }
+    }
+
+    private fun buildBodyPublisher(content: SourceContent): HttpRequest.BodyPublisher? {
+        val bodyPublishers = if (props.withContent) {
+            BodyPublishers.ofString(Jackson.toJsonString(content))
+        } else if (props.body.isNullOrBlank().not()) {
+            val body = props.body?.replace("{summary}", content.summaryContent())
+            BodyPublishers.ofString(body)
+        } else {
+            BodyPublishers.noBody()
+        }
+        return bodyPublishers
     }
 
     data class Props(
         val url: String,
         val method: HttpMethod = HttpMethod.POST,
         val headers: Map<String, String> = emptyMap(),
-        val withSummary: Boolean = true,
-        val withContent: Boolean = true
+        val body: String? = null,
+        val withContent: Boolean = false
     )
 }
 

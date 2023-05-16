@@ -51,6 +51,15 @@ class DefaultInstanceManager(
             instanceFactories[type.java] = factory
         }
     }
+
+    fun destroyAll() {
+        instances.values.forEach {
+            if (it is AutoCloseable) {
+                it.close()
+            }
+        }
+        instances.clear()
+    }
 }
 
 

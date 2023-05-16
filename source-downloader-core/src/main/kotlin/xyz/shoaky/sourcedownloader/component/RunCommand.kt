@@ -25,7 +25,7 @@ class RunCommand(
     private fun process(sourceContent: SourceContent): Process {
         val cmds = command.toMutableList()
         if (withSubjectSummary) {
-            cmds.add(sourceContent.summarySubject())
+            cmds.add(sourceContent.summaryContent())
         }
         val processBuilder = ProcessBuilder(*cmds.toTypedArray())
         return processBuilder.start()

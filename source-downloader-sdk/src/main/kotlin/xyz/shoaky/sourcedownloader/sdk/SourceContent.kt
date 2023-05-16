@@ -10,7 +10,7 @@ interface SourceContent {
         return sourceFiles.map { it.targetPath() }
     }
 
-    fun summarySubject(): String {
+    fun summaryContent(): String {
         if (sourceFiles.size == 1) {
             return sourceFiles.first().targetPath().name
         }
