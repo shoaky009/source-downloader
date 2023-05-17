@@ -31,23 +31,24 @@ class RssSource(private val url: String) : AlwaysLatestSource() {
     }
 
     companion object {
-        private val patterns = listOf(
-            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-        )
-
-        private fun parseTime(pubDateText: String): LocalDateTime {
-
-            return try {
-                LocalDateTime.parse(pubDateText)
-            } catch (e: Exception) {
-                for (pattern in patterns) {
-                    return LocalDateTime.parse(pubDateText, pattern)
-                }
-                throw RuntimeException("解析日期$pubDateText 失败")
-            }
-        }
 
         private val log = LoggerFactory.getLogger(RssSource::class.java)
+    }
+}
+
+private val dateTimePatterns = listOf(
+    DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+)
+
+fun parseTime(pubDateText: String): LocalDateTime {
+
+    return try {
+        LocalDateTime.parse(pubDateText)
+    } catch (e: Exception) {
+        for (pattern in dateTimePatterns) {
+            return LocalDateTime.parse(pubDateText, pattern)
+        }
+        throw RuntimeException("解析日期$pubDateText 失败")
     }
 }
 

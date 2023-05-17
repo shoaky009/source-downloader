@@ -15,10 +15,6 @@ import kotlin.test.assertEquals
 
 class SendHttpRequestTest {
 
-    init {
-        server.start()
-    }
-
     @Test
     fun test_query_string() {
         val context = server.createContext("/")
@@ -121,6 +117,11 @@ class SendHttpRequestTest {
             InetSocketAddress(8080),
             0
         )
+
+        init {
+            server.start()
+            println("server started")
+        }
 
         @AfterAll
         @JvmStatic

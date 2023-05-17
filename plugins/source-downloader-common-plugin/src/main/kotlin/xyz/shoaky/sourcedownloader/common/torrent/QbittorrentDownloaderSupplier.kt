@@ -18,7 +18,7 @@ class QbittorrentDownloaderSupplier(
         val client = instanceManager.load(name, QbittorrentClient::class.java, props)
 
         // val client = instanceManager.load(clientName, QbittorrentClient::class.java)
-        return QbittorrentDownloader(client, props.getOrDefault("alwaysDownloadAll", false))
+        return QbittorrentDownloader(client, props.getOrDefault("always-download-all", false))
     }
 
     override fun supplyTypes(): List<ComponentType> {

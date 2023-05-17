@@ -1,6 +1,7 @@
 package xyz.shoaky.sourcedownloader.core.processor
 
 import org.springframework.retry.support.RetryTemplateBuilder
+import org.springframework.util.StopWatch
 import xyz.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
 import xyz.shoaky.sourcedownloader.component.provider.MetadataVariableProvider
 import xyz.shoaky.sourcedownloader.core.*
@@ -140,6 +141,10 @@ class SourceProcessor(
         // 好像没什么用，后面处理器状态改查failed状态的
         var failure = false
         var lastPointedItem: PointedItem<SourceItemPointer>? = null
+
+        val stopWatch = StopWatch("$name:fetch")
+        stopWatch.start()
+        var counting = 0
         for (item in itemIterator) {
             val filterBy = sourceItemFilters.firstOrNull { it.test(item.sourceItem).not() }
             if (filterBy != null) {
@@ -160,7 +165,13 @@ class SourceProcessor(
                 }
             }
             lastPointedItem = item
+            counting = counting.inc()
         }
+        stopWatch.stop()
+        if (counting > 0) {
+            log.info("Processor:{} 处理了{}个, took:{}ms", name, counting, stopWatch.totalTimeMillis)
+        }
+
         if (!failure) {
             status = ProcessorStatus.RUNNING
         }

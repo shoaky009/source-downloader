@@ -3,6 +3,7 @@ package xyz.shoaky.sourcedownloader.common
 import xyz.shoaky.sourcedownloader.common.anime.AnimeFileFilterSupplier
 import xyz.shoaky.sourcedownloader.common.anitom.AnitomVariableProviderSupplier
 import xyz.shoaky.sourcedownloader.common.dlsite.DlsiteVariableProviderSupplier
+import xyz.shoaky.sourcedownloader.common.mikan.MikanSourceSupplier
 import xyz.shoaky.sourcedownloader.common.mikan.MikanVariableProviderSupplier
 import xyz.shoaky.sourcedownloader.common.rss.JackettSourceSupplier
 import xyz.shoaky.sourcedownloader.common.rss.RssSourceSupplier
@@ -28,6 +29,7 @@ internal class CommonPlugin : Plugin {
             MikanVariableProviderSupplier,
             QbittorrentDownloaderSupplier(pluginContext.getInstanceManager()),
             TransmissionDownloaderSupplier,
+            MikanSourceSupplier
         )
     }
 

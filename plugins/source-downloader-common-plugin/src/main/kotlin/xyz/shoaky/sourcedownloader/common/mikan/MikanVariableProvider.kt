@@ -9,10 +9,10 @@ import xyz.shoaky.sourcedownloader.common.mikan.parse.SubjectContent
 import xyz.shoaky.sourcedownloader.external.bangumi.BangumiApiClient
 import xyz.shoaky.sourcedownloader.external.bangumi.GetSubjectRequest
 import xyz.shoaky.sourcedownloader.external.bangumi.Subject
-import xyz.shoaky.sourcedownloader.sdk.*
-import xyz.shoaky.sourcedownloader.sdk.component.ComponentType
-import xyz.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
-import xyz.shoaky.sourcedownloader.sdk.component.TorrentDownloader
+import xyz.shoaky.sourcedownloader.sdk.PatternVariables
+import xyz.shoaky.sourcedownloader.sdk.SourceFile
+import xyz.shoaky.sourcedownloader.sdk.SourceItem
+import xyz.shoaky.sourcedownloader.sdk.SourceItemGroup
 import xyz.shoaky.sourcedownloader.sdk.component.VariableProvider
 import java.net.URI
 import java.nio.file.Path
@@ -117,21 +117,6 @@ private class MikanSourceGroup(
 
     override fun sharedPatternVariables(): PatternVariables {
         return bangumiInfo
-    }
-}
-
-object MikanVariableProviderSupplier : SdComponentSupplier<MikanVariableProvider> {
-    override fun apply(props: Properties): MikanVariableProvider {
-        val token = props.getOrNull<String>("token")
-        return MikanVariableProvider(token)
-    }
-
-    override fun supplyTypes(): List<ComponentType> {
-        return listOf(ComponentType.provider("mikan"))
-    }
-
-    override fun rules(): List<ComponentRule> {
-        return listOf(ComponentRule.allowDownloader(TorrentDownloader::class))
     }
 }
 
