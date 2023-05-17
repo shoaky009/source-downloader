@@ -10,7 +10,8 @@ import kotlin.io.path.name
 
 internal class BangumiFile(
     private val torrentFilePath: Path,
-    private val subject: SubjectContent
+    private val subject: SubjectContent,
+    private val bangumiInfo: BangumiInfo
 ) : SourceFile {
 
     override fun patternVariables(): PatternVariables {
@@ -20,10 +21,15 @@ internal class BangumiFile(
         val result = episodeChain.apply(subject, filename)
 
         val length = subject.episodeLength().coerceAtLeast(2)
-        val padNumber = result.padNumber(length) ?: return PatternVariables.EMPTY
-        return MapPatternVariables(
-            mapOf("episode" to padNumber)
-        )
+        val episode = result.padNumber(length) ?: return PatternVariables.EMPTY
+
+        val variables = buildMap {
+            put("episode", episode)
+            if (bangumiInfo.season != null) {
+                put("season", bangumiInfo.season)
+            }
+        }
+        return MapPatternVariables(variables)
     }
 
 }

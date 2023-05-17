@@ -149,6 +149,7 @@ class SourceProcessor(
             val filterBy = sourceItemFilters.firstOrNull { it.test(item.sourceItem).not() }
             if (filterBy != null) {
                 log.debug("{} Filtered item:{}", filterBy::class.simpleName, item)
+                lastPointedItem = item
                 continue
             }
             kotlin.runCatching {

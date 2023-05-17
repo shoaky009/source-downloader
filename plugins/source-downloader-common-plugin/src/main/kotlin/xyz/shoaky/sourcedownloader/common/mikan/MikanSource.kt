@@ -55,7 +55,7 @@ internal class MikanSource(
             .asSequence()
             .flatMap { pi ->
                 extractor.apply(pi.sourceItem).map { sourceItem ->
-                    PointedItem(sourceItem, MikanPointer(sourceItem.date))
+                    PointedItem(sourceItem, MikanPointer(pi.sourceItem.date))
                 }.sortedBy { it.sourceItem.date }
             }
             .take(limit)

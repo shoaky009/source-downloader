@@ -29,4 +29,5 @@ class MikanVariableProviderTest {
         assertEquals(sourceFile.patternVariables().variables()["episode"], "11")
 
     }
+
 }

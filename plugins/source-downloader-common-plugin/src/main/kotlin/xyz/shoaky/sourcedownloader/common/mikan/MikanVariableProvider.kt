@@ -111,7 +111,7 @@ private class MikanSourceGroup(
 
     override fun sourceFiles(paths: List<Path>): List<SourceFile> {
         return paths.map { path ->
-            BangumiFile(path, subject)
+            BangumiFile(path, subject, bangumiInfo)
         }
     }
 
