@@ -54,11 +54,8 @@ class SourceProcessor(
     private val safeRunner by lazy {
         SafeRunner(this)
     }
-
-    private var status: ProcessorStatus = ProcessorStatus.RUNNING
-
-    fun getStatus(): ProcessorStatus {
-        return status
+    private val renameScheduledExecutor by lazy {
+        Executors.newSingleThreadScheduledExecutor()
     }
 
     init {
@@ -77,9 +74,9 @@ class SourceProcessor(
             "Processor" to name,
             "Source" to source::class.java.simpleName,
             "Providers" to variableProviders.map { it::class.simpleName },
-            "Resolver" to itemFileResolver::class.java.simpleName,
+            "FileResolver" to itemFileResolver::class.java.simpleName,
             "Downloader" to downloader::class.java.simpleName,
-            "Mover" to fileMover::class.java.simpleName,
+            "FileMover" to fileMover::class.java.simpleName,
             "SourceItemFilter" to sourceItemFilters.map { it::class.simpleName },
             "RunAfterCompletion" to runAfterCompletion.map { it::class.simpleName },
             "DownloadPath" to downloadPath,
@@ -96,7 +93,7 @@ class SourceProcessor(
             return
         }
         renameTaskFuture?.cancel(false)
-        renameTaskFuture = scheduledExecutor.scheduleAtFixedRate({
+        renameTaskFuture = renameScheduledExecutor.scheduleAtFixedRate({
             log.debug("Processor:${name} 开始重命名任务...")
             var modified = false
             val measureTime = measureTime {
@@ -111,7 +108,9 @@ class SourceProcessor(
             if (modified) {
                 log.info("Processor:${name} 重命名任务完成 took:${measureTime.inWholeMilliseconds}ms")
             }
-            if (modified.not() && measureTime.inWholeMilliseconds > 50L) {
+
+            val renameCostTimeThreshold = 100L
+            if (modified.not() && measureTime.inWholeMilliseconds > renameCostTimeThreshold) {
                 log.warn("Processor:${name} 重命名任务没有修改 took:${measureTime.inWholeMilliseconds}ms")
             }
         }, 5L, interval.seconds, TimeUnit.SECONDS)
@@ -138,18 +137,15 @@ class SourceProcessor(
         }
 
         val result = mutableListOf<ProcessingContent>()
-        // 好像没什么用，后面处理器状态改查failed状态的
-        var failure = false
         var lastPointedItem: PointedItem<SourceItemPointer>? = null
 
-        val stopWatch = StopWatch("$name:fetch")
-        stopWatch.start()
-        var counting = 0
+        val simpleStat = SimpleStat(name)
         for (item in itemIterator) {
             val filterBy = sourceItemFilters.firstOrNull { it.test(item.sourceItem).not() }
             if (filterBy != null) {
                 log.debug("{} Filtered item:{}", filterBy::class.simpleName, item)
                 lastPointedItem = item
+                simpleStat.incFilterCounting()
                 continue
             }
             kotlin.runCatching {
@@ -157,25 +153,21 @@ class SourceProcessor(
                     processItem(item.sourceItem, dryRun)
                 }
             }.onFailure {
-                log.error("Processor:${name} 处理失败, item:$item", it)
-                status = ProcessorStatus.ERROR
-                failure = true
+                log.error("Processor:${name}处理失败, item:$item", it)
             }.onSuccess {
                 if (dryRun) {
                     result.add(it)
                 }
             }
             lastPointedItem = item
-            counting = counting.inc()
+            simpleStat.incProcessingCounting()
         }
-        stopWatch.stop()
-        if (counting > 0) {
-            log.info("Processor:{} 处理了{}个, took:{}ms", name, counting, stopWatch.totalTimeMillis)
+        simpleStat.stopWatch.stop()
+
+        if (simpleStat.processingCounting > 0 || simpleStat.filterCounting > 0) {
+            log.info("Processor:{}", simpleStat)
         }
 
-        if (!failure) {
-            status = ProcessorStatus.RUNNING
-        }
         if (dryRun.not()) {
             saveSourceState(lastPointedItem, lastState)
         }
@@ -183,16 +175,20 @@ class SourceProcessor(
     }
 
     private fun saveSourceState(lastPointedItem: PointedItem<SourceItemPointer>?, lastState: ProcessorSourceState?) {
+        // not first time but no items
         if (lastState != null && lastPointedItem == null) {
             processingStorage.save(
                 lastState.copy(lastActiveTime = LocalDateTime.now())
             )
             return
         }
+
+        // first time and no items
         if (lastPointedItem == null) {
             log.info("Processor:${name} Source:${sourceId} no items to process")
             return
         }
+
         val latestPointer = Jackson.convert(lastPointedItem.pointer, PersistentItemPointer::class)
         val sourceState = lastState?.copy(
             processorName = name,
@@ -346,6 +342,7 @@ class SourceProcessor(
                     DownloadStatus.from(asyncDownloader.isFinished(downloadTask))
                 }, { it }
             )
+
         contentGrouping[DownloadStatus.NOT_FOUND]?.forEach { pc ->
             kotlin.runCatching {
                 log.info("Processing下载任务不存在, record:${Jackson.toJsonString(pc)}")
@@ -465,14 +462,37 @@ class SourceProcessor(
     }
 
     companion object {
-        // 随便给的
-        private val scheduledExecutor = Executors.newSingleThreadScheduledExecutor()
         private val retry = RetryTemplateBuilder()
             .maxAttempts(3)
             .fixedBackoff(Duration.ofSeconds(5L).toMillis())
             .build()
     }
 
+}
+
+private class SimpleStat(
+    private val name: String,
+    var processingCounting: Int = 0,
+    var filterCounting: Int = 0,
+) {
+
+    val stopWatch = StopWatch("$name:fetch")
+
+    init {
+        stopWatch.start()
+    }
+
+    fun incProcessingCounting() {
+        processingCounting = processingCounting.inc()
+    }
+
+    fun incFilterCounting() {
+        filterCounting = filterCounting.inc()
+    }
+
+    override fun toString(): String {
+        return "$name 处理了${processingCounting}个 过滤了${filterCounting}个, took:${stopWatch.totalTimeMillis}ms"
+    }
 }
 
 
@@ -484,7 +504,7 @@ private class SafeRunner(
     private var running = false
     override fun run() {
         val name = processor.name
-        log.info("Processor:${name} 处理器触发获取源信息")
+        log.info("Processor:${name} 触发获取源信息")
         if (running) {
             log.info("Processor:${name} 上一次任务还未完成，跳过本次任务")
             return
@@ -493,7 +513,7 @@ private class SafeRunner(
         try {
             processor.run()
         } catch (e: Exception) {
-            log.error("Processor:${name} 处理器执行失败", e)
+            log.error("Processor:${name} 执行失败", e)
         } finally {
             running = false
         }

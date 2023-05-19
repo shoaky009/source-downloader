@@ -39,7 +39,6 @@ abstract class HookedApiClient : ApiClient {
         val httpResponse = try {
             httpClient.send(httpRequest, request.bodyHandler())
         } catch (e: Exception) {
-            log.error("request error", e)
             throw e
         }
         if (log.isDebugEnabled) {

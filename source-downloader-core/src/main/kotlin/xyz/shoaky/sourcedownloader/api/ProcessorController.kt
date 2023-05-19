@@ -6,7 +6,6 @@ import xyz.shoaky.sourcedownloader.core.ProcessorConfig
 import xyz.shoaky.sourcedownloader.core.ProcessorConfigStorage
 import xyz.shoaky.sourcedownloader.core.ProcessorManager
 import xyz.shoaky.sourcedownloader.core.file.FileContentStatus
-import xyz.shoaky.sourcedownloader.core.processor.ProcessorStatus
 import xyz.shoaky.sourcedownloader.sdk.SourceItem
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentException
 
@@ -22,7 +21,7 @@ private class ProcessorController(
     fun processors(): Any {
         val processors = processorManager.getProcessors()
         return processors.map {
-            ProcessorInfo(it.name, it.getStatus(), it.info())
+            ProcessorInfo(it.name, it.info())
         }
     }
 
@@ -90,7 +89,6 @@ private class ProcessorController(
 
 private data class ProcessorInfo(
     val name: String,
-    val status: ProcessorStatus,
     val components: Map<String, Any>
 )
 
