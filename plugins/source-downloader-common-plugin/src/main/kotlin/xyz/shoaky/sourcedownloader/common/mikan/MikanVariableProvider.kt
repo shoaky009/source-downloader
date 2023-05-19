@@ -2,11 +2,10 @@ package xyz.shoaky.sourcedownloader.common.mikan
 
 import com.google.common.cache.CacheBuilder
 import com.google.common.cache.CacheLoader
-import org.jsoup.Jsoup
 import org.slf4j.LoggerFactory
 import xyz.shoaky.sourcedownloader.common.mikan.parse.ParserChain
 import xyz.shoaky.sourcedownloader.common.mikan.parse.SubjectContent
-import xyz.shoaky.sourcedownloader.external.bangumi.BangumiApiClient
+import xyz.shoaky.sourcedownloader.external.bangumi.BgmTvApiClient
 import xyz.shoaky.sourcedownloader.external.bangumi.GetSubjectRequest
 import xyz.shoaky.sourcedownloader.external.bangumi.Subject
 import xyz.shoaky.sourcedownloader.sdk.PatternVariables
@@ -22,7 +21,9 @@ import java.nio.file.Path
  * 从[SourceItem.link]中爬取获取bgm.tv的subjectId
  */
 class MikanVariableProvider(
-    private val mikanToken: String? = null
+    private val mikanToken: String? = null,
+    private val mikanSupport: MikanSupport = MikanSupport(mikanToken),
+    private val bgmTvClient: BgmTvApiClient = BgmTvApiClient()
 ) : VariableProvider {
 
     override val accuracy: Int = 3
@@ -44,16 +45,10 @@ class MikanVariableProvider(
 
     private fun getBangumiSubject(mikanBangumiHref: String): Subject {
         kotlin.runCatching {
-            val page = Jsoup.newSession().cookie(".AspNetCore.Identity.Application", mikanToken ?: "")
-                .url(mikanBangumiHref).get().body()
-            val subjectId = page.select(".bangumi-info a")
-                .filter { ele ->
-                    ele.hasText() && ele.text().contains("/subject/")
-                }.map {
-                    val text = it.text()
-                    URI.create(text).pathSegments().last()
-                }.first()
-            return BangumiApiClient.execute(GetSubjectRequest(subjectId)).body()
+            val bangumiPageInfo = mikanSupport.getBangumiPageInfo(mikanBangumiHref)
+            val subjectId = bangumiPageInfo.bgmTvSubjectId
+                ?: throw RuntimeException("从$mikanBangumiHref 获取 BgmTv Subject失败")
+            return bgmTvClient.execute(GetSubjectRequest(subjectId)).body()
         }.onFailure {
             log.error("获取Bangumi Subject失败 $mikanBangumiHref", it)
         }
@@ -61,24 +56,15 @@ class MikanVariableProvider(
     }
 
     override fun createSourceGroup(sourceItem: SourceItem): SourceItemGroup {
-        val connection = Jsoup.newSession().cookie(".AspNetCore.Identity.Application", mikanToken ?: "")
-        val body = connection.url(sourceItem.link.toURL()).get().body()
-        val titleElement = body.select(".bangumi-title a").first()
-        val mikanTitle = titleElement?.text()?.trim()
-        if (mikanTitle == null) {
-            log.error("mikanTitle is null,sourceItem:{}", sourceItem)
-            throw RuntimeException("mikanTitle not found")
+        val pageInfo = mikanSupport.getEpisodePageInfo(sourceItem.link)
+        if (pageInfo.mikanHref == null) {
+            log.warn("mikanHref is null, link:{}", sourceItem.link)
+            return SourceItemGroup.EMPTY
         }
-        val mikanHref = titleElement.attr("href").let {
-            if (it.startsWith("https://mikanani.me").not()) {
-                "https://mikanani.me$it"
-            } else {
-                it
-            }
-        }
-        val subject = bangumiCache.get(mikanHref)
 
-        val subjectContent = SubjectContent(subject, mikanTitle)
+        val bangumiTitle = pageInfo.bangumiTitle!!
+        val subject = bangumiCache.get(pageInfo.mikanHref)
+        val subjectContent = SubjectContent(subject, bangumiTitle)
 
         // 暂时没看到文件跨季度的情况
         val parserChain = ParserChain.seasonChain()
@@ -89,7 +75,7 @@ class MikanVariableProvider(
             subject.name,
             // 有些纯字母的没有中文名
             subjectContent.nonEmptyName(),
-            mikanTitle,
+            bangumiTitle,
             subject.date.toString(),
             subject.date.year,
             subject.date.monthValue,

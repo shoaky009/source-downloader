@@ -8,7 +8,8 @@ internal object MikanSourceSupplier : SdComponentSupplier<MikanSource> {
     override fun apply(props: Properties): MikanSource {
         val url = props.get<String>("url")
         val allEpisode = props.getOrNull<Boolean>("all-episode") ?: false
-        return MikanSource(url, allEpisode)
+        val token = props.getOrNull<String>("token")
+        return MikanSource(url, allEpisode, mikanSupport = MikanSupport(token))
     }
 
     override fun supplyTypes(): List<ComponentType> {

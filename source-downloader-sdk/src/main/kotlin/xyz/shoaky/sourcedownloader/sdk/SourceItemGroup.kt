@@ -14,4 +14,9 @@ interface SourceItemGroup {
      */
     fun sharedPatternVariables() = PatternVariables.EMPTY
 
+    companion object {
+        val EMPTY = object : SourceItemGroup {
+            override fun sourceFiles(paths: List<Path>): List<SourceFile> = paths.map { SourceFile.EMPTY }
+        }
+    }
 }

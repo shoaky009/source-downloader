@@ -60,7 +60,9 @@ object Http {
                         return@mapping entry.value.get().mapping(rp)
                     }
                 }
-                throw IllegalArgumentException("Unsupported media type: $mediaType")
+
+                val body = inputStream.readAllBytes().decodeToString()
+                throw IllegalArgumentException("Unsupported media type: $mediaType , body:$body")
             }
         }
     }

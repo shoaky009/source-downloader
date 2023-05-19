@@ -76,6 +76,9 @@ interface Trigger : SdComponent {
 
 interface Source<T : SourceItemPointer> : SdComponent {
 
+    /**
+     * @param limit 不一定完全按照limit的数量返回，但尽可能接近
+     */
     fun fetch(pointer: T?, limit: Int = 50): Iterable<PointedItem<T>>
 
 }

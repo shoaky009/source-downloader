@@ -22,17 +22,26 @@ interface ApiClient {
 abstract class HookedApiClient : ApiClient {
 
     override fun <R : BaseRequest<T>, T : Any> execute(endpoint: URI, request: R): HttpResponse<T> {
+        val requestBuilder = HttpRequest.newBuilder(endpoint)
+        beforeRequest(requestBuilder, request)
+
         val uri = endpoint.resolve(UrlEscapers.urlFragmentEscaper().escape(request.path))
         val queryString = buildQueryString(request, uri)
         val resolve = uri.toString() + queryString
-        val requestBuilder = HttpRequest.newBuilder(URI(resolve))
-            .method(request.httpMethod.name, bodyPublisher(request))
+        requestBuilder.uri(URI(resolve))
+
+        requestBuilder.method(request.httpMethod.name, bodyPublisher(request))
         request.setHeader(HttpHeaders.CONTENT_TYPE, request.mediaType)
         request.httpHeaders().forEach { (name, value) -> requestBuilder.header(name, value) }
 
-        beforeRequest(requestBuilder, request)
         val httpRequest = requestBuilder.build()
-        val httpResponse = httpClient.send(httpRequest, request.bodyHandler())
+
+        val httpResponse = try {
+            httpClient.send(httpRequest, request.bodyHandler())
+        } catch (e: Exception) {
+            log.error("request error", e)
+            throw e
+        }
         if (log.isDebugEnabled) {
             log.debug(
                 """
@@ -52,10 +61,11 @@ abstract class HookedApiClient : ApiClient {
         if (request.httpMethod === HttpMethod.GET) {
             val convertToMap = Jackson.convert(request, jacksonTypeRef<Map<String, String?>>())
             queryStringMap.putAll(convertToMap.filterNotNullValues())
-        } else {
-            request.queryString.forEach { (k, v) ->
-                queryStringMap[k] = v.toString()
-            }
+
+        }
+
+        request.queryString.forEach { (k, v) ->
+            queryStringMap[k] = v.toString()
         }
         if (queryStringMap.isEmpty()) {
             return ""
