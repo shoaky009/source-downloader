@@ -12,7 +12,7 @@ import kotlin.io.path.nameWithoutExtension
 // TODO 改成title, filename, parent有不同的规则
 object SeasonProvider : VariableProvider {
 
-    private val list: List<Function<Pair<SourceItem, Path>, Int?>> = listOf(
+    private val rules: List<Function<Pair<SourceItem, Path>, Int?>> = listOf(
         GeneralSeason,
         SpSeason,
     )
@@ -20,7 +20,7 @@ object SeasonProvider : VariableProvider {
     override fun createSourceGroup(sourceItem: SourceItem): SourceItemGroup {
         return FunctionalItemGroup { path ->
             var seasonNumber = 1
-            for (function in list) {
+            for (function in rules) {
                 val apply = function.apply(sourceItem to path)
                 if (apply != null) {
                     seasonNumber = apply
