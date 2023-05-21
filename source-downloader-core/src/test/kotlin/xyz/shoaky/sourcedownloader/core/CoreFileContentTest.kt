@@ -74,7 +74,7 @@ class CoreFileContentTest {
             savePathPattern = CorePathPattern("{name}/S{season}"),
             patternVars = MapPatternVariables(mapOf("name" to "test", "season" to "01"))
         )
-        assertEquals(sourceSavePath.resolve("test"), createFileContent.saveItemFileRootDirectory())
+        assertEquals(sourceSavePath.resolve("test"), createFileContent.itemSaveRootDirectory())
     }
 
     @Test
@@ -83,9 +83,9 @@ class CoreFileContentTest {
             savePathPattern = CorePathPattern("{name}"),
             patternVars = MapPatternVariables(mapOf("name" to "test", "season" to "01"))
         )
-        assertEquals(null, content1.saveItemFileRootDirectory())
+        assertEquals(null, content1.itemSaveRootDirectory())
         val content2 = content1.copy(fileSavePathPattern = CorePathPattern.origin)
-        assertEquals(null, content2.saveItemFileRootDirectory())
+        assertEquals(null, content2.itemSaveRootDirectory())
     }
 
     @Test
@@ -103,14 +103,14 @@ class CoreFileContentTest {
     fun test_downloadItemFileRootDirectory() {
         val content = createFileContent(
         )
-        assertNull(content.downloadItemFileRootDirectory())
+        assertNull(content.itemDownloadRootDirectory())
 
         val downloadPath = Path("src", "test", "resources", "downloads")
         val content1 = content.copy(
             fileDownloadPath = Path("src", "test", "resources", "downloads", "easd", "222", "1.txt"),
             downloadPath = downloadPath
         )
-        assertEquals(downloadPath.resolve("easd"), content1.downloadItemFileRootDirectory())
+        assertEquals(downloadPath.resolve("easd"), content1.itemDownloadRootDirectory())
     }
 
     @Test

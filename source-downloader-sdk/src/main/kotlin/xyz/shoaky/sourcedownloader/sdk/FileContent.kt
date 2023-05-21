@@ -26,12 +26,12 @@ interface FileContent {
      * Returns:
      * null如果item的文件是保存在saveRootPath下
      */
-    fun saveItemFileRootDirectory(): Path?
+    fun itemSaveRootDirectory(): Path?
 
     /**
      * 获取item文件对应的顶级目录e.g. 文件保存在下/downloads/FATE/Season 01 返回 /downloads/FATE/
      * Returns:
      * null如果item的文件是保存在downloadPath下
      */
-    fun downloadItemFileRootDirectory(): Path?
+    fun itemDownloadRootDirectory(): Path?
 }

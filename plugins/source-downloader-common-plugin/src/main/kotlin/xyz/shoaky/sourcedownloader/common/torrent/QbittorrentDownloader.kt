@@ -81,7 +81,7 @@ class QbittorrentDownloader(
         val sourceFiles = sourceContent.sourceFiles
 
         val firstFile = sourceFiles.first()
-        val saveItemFileRootDirectory = firstFile.saveItemFileRootDirectory()
+        val saveItemFileRootDirectory = firstFile.itemSaveRootDirectory()
         val itemLocation = saveItemFileRootDirectory ?: firstFile.saveDirectoryPath()
 
         val allSuccess = sourceFiles.map {

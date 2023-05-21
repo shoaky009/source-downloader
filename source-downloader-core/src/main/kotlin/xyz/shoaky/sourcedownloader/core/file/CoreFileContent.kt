@@ -67,7 +67,7 @@ data class CoreFileContent(
         return fileDownloadPath.name
     }
 
-    override fun saveItemFileRootDirectory(): Path? {
+    override fun itemSaveRootDirectory(): Path? {
         val saveDirectoryPath = saveDirectoryPath()
         if (sourceSavePath == saveDirectoryPath) {
             return null
@@ -83,7 +83,7 @@ data class CoreFileContent(
         return res
     }
 
-    override fun downloadItemFileRootDirectory(): Path? {
+    override fun itemDownloadRootDirectory(): Path? {
         if (fileDownloadPath.parent == downloadPath) {
             return null
         }
