@@ -46,7 +46,7 @@ data class CoreFileContent(
     }
 
     fun targetFilename(): String {
-        if (filenamePattern == CorePathPattern.origin) {
+        if (filenamePattern == CorePathPattern.ORIGIN) {
             return fileDownloadPath.name
         }
         val parse = filenamePattern.parse(sharedVariables)

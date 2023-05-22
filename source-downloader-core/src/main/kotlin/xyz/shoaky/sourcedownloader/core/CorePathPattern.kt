@@ -53,7 +53,7 @@ data class CorePathPattern(
 
     companion object {
         private val variablePatternRegex: Pattern = Pattern.compile("\\{(.+?)}|:\\{(.+?)}")
-        val origin = CorePathPattern("")
+        val ORIGIN = CorePathPattern("")
 
     }
 

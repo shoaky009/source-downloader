@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test
 import xyz.shoaky.sourcedownloader.core.file.CoreFileContent
 import xyz.shoaky.sourcedownloader.sdk.MapPatternVariables
 import xyz.shoaky.sourcedownloader.sdk.PathPattern
+import xyz.shoaky.sourcedownloader.testResourcePath
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.test.assertEquals
@@ -84,7 +85,7 @@ class CoreFileContentTest {
             patternVars = MapPatternVariables(mapOf("name" to "test", "season" to "01"))
         )
         assertEquals(null, content1.itemSaveRootDirectory())
-        val content2 = content1.copy(fileSavePathPattern = CorePathPattern.origin)
+        val content2 = content1.copy(fileSavePathPattern = CorePathPattern.ORIGIN)
         assertEquals(null, content2.itemSaveRootDirectory())
     }
 
@@ -122,15 +123,26 @@ class CoreFileContentTest {
         fileContent.addSharedVariables(MapPatternVariables(mapOf("season" to "01")))
         assertEquals("test - 01.mp4", fileContent.targetFilename())
     }
+
+    @Test
+    fun test_item_download_root_directory() {
+        val c1 = createFileContent(downloadPath = testResourcePath)
+        val d1 = c1.itemDownloadRootDirectory()
+        assertEquals(testResourcePath.resolve("downloads"), d1)
+
+        val c2 = createFileContent()
+        val d2 = c2.itemDownloadRootDirectory()
+        assertEquals(null, d2)
+    }
 }
 
 private fun createFileContent(
     fileDownloadPath: Path = Path("src", "test", "resources", "downloads", "1.txt"),
-    sourceSavePath: Path = Path("src", "test", "resources", "target"),
-    downloadPath: Path = Path("src", "test", "resources", "downloads"),
+    sourceSavePath: Path = testResourcePath.resolve("target"),
+    downloadPath: Path = testResourcePath.resolve("downloads"),
     patternVars: MapPatternVariables = MapPatternVariables(),
-    savePathPattern: PathPattern = CorePathPattern.origin,
-    filenamePathPattern: PathPattern = CorePathPattern.origin): CoreFileContent {
+    savePathPattern: PathPattern = CorePathPattern.ORIGIN,
+    filenamePathPattern: PathPattern = CorePathPattern.ORIGIN): CoreFileContent {
     return CoreFileContent(
         fileDownloadPath,
         sourceSavePath,

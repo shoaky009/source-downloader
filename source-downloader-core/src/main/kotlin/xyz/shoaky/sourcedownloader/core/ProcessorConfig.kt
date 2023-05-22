@@ -65,10 +65,10 @@ data class ProcessorConfig(
         val sourceFileFilters: List<ComponentId> = emptyList(),
         @JsonAlias("save-path-pattern")
         @JsonDeserialize(`as` = CorePathPattern::class)
-        val savePathPattern: PathPattern = CorePathPattern.origin,
+        val savePathPattern: PathPattern = CorePathPattern.ORIGIN,
         @JsonAlias("filename-pattern")
         @JsonDeserialize(`as` = CorePathPattern::class)
-        val filenamePattern: PathPattern = CorePathPattern.origin,
+        val filenamePattern: PathPattern = CorePathPattern.ORIGIN,
         @JsonAlias("run-after-completion")
         val runAfterCompletion: List<ComponentId> = emptyList(),
         @JsonFormat(shape = JsonFormat.Shape.STRING)
