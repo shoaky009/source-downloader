@@ -158,8 +158,9 @@ class SourceProcessor(
                 if (dryRun) {
                     result.add(it)
                 }
+                // 也许有一直失败的会卡住整体，暂时先这样处理
+                lastPointedItem = item
             }
-            lastPointedItem = item
             simpleStat.incProcessingCounting()
         }
         simpleStat.stopWatch.stop()

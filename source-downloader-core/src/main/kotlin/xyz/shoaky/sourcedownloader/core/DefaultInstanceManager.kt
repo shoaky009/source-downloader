@@ -23,7 +23,7 @@ class DefaultInstanceManager(
                 ?: throw RuntimeException("no factory found for $klass")
             val instanceProps = props ?: instanceConfigStorage.getInstanceProps(name)
             val create = instanceFactory.create(instanceProps) ?: throw RuntimeException("create instance failed")
-            log.info("成功创建实例 $name")
+            log.info("成功创建实例$name")
             createdFlag = true
             create
         }
