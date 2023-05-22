@@ -2,7 +2,7 @@ package xyz.shoaky.sourcedownloader.common.mikan.parse
 
 import org.junit.jupiter.api.Test
 
-class ChainParserTest {
+class ParserChainTest {
 
     @Test
     fun given_false_should_all_parser_executed() {

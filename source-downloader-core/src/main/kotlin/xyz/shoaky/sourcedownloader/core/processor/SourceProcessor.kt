@@ -1,5 +1,8 @@
 package xyz.shoaky.sourcedownloader.core.processor
 
+import org.springframework.retry.RetryCallback
+import org.springframework.retry.RetryContext
+import org.springframework.retry.listener.RetryListenerSupport
 import org.springframework.retry.support.RetryTemplateBuilder
 import org.springframework.util.StopWatch
 import xyz.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
@@ -149,7 +152,7 @@ class SourceProcessor(
                 continue
             }
             val processingContent = kotlin.runCatching {
-                retry.execute<ProcessingContent, IOException> {
+                retry.execute<ProcessingContent, Throwable> {
                     processItem(item.sourceItem, dryRun)
                 }
             }.onFailure {
@@ -185,6 +188,7 @@ class SourceProcessor(
     }
 
     private fun saveSourceState(lastPointedItem: PointedItem<SourceItemPointer>?, lastState: ProcessorSourceState?) {
+        log.info("Processor:$name update pointer Source:$sourceId lastPointedItem:$lastPointedItem")
         // not first time but no items
         if (lastState != null && lastPointedItem == null) {
             processingStorage.save(
@@ -471,9 +475,35 @@ class SourceProcessor(
         private val retry = RetryTemplateBuilder()
             .maxAttempts(3)
             .fixedBackoff(Duration.ofSeconds(5L).toMillis())
+            .withListener(LoggingRetryListener())
             .build()
     }
 
+}
+
+private class LoggingRetryListener() : RetryListenerSupport() {
+
+    override fun <T : Any?, E : Throwable?> onError(
+        context: RetryContext?,
+        callback: RetryCallback<T, E>?,
+        throwable: Throwable?
+    ) {
+        log.error("重试失败", throwable)
+    }
+
+    override fun <T : Any?, E : Throwable?> open(context: RetryContext?, callback: RetryCallback<T, E>?): Boolean {
+        log.info("onOpen")
+        return super.open(context, callback)
+    }
+
+    override fun <T : Any?, E : Throwable?> close(
+        context: RetryContext?,
+        callback: RetryCallback<T, E>?,
+        throwable: Throwable?
+    ) {
+        log.info("onClose")
+        super.close(context, callback, throwable)
+    }
 }
 
 private class SimpleStat(

@@ -58,11 +58,17 @@ internal class MikanSource(
             val fansubRss = mikanSupport.getEpisodePageInfo(pi.sourceItem.link).fansubRss
                 ?: return@Expander emptyList()
 
-            rssReader.read(fansubRss)
+            var pointedItems = rssReader.read(fansubRss)
                 .map {
                     PointedItem(fromRssItem(it), MikanPointer(pi.sourceItem.date))
                 }.toList()
                 .sortedBy { it.sourceItem.date }
+            if (pointedItems.contains(pi).not()) {
+                log.info("item不在RSS列表中:{}", pi)
+                pointedItems = pointedItems.toMutableList()
+                pointedItems.add(pi)
+            }
+            pointedItems
         }
 
         log.debug("fetching mikan source pointer is:{}", pointer)
