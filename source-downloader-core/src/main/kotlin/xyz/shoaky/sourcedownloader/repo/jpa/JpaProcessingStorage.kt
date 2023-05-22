@@ -23,6 +23,7 @@ class JpaProcessingStorage(
         record.sourceContent = content.sourceContent
         record.renameTimes = content.renameTimes
         record.status = content.status.value
+        record.failureReason = content.failureReason
         record.modifyTime = content.modifyTime
         record.createTime = content.createTime
         record.id = content.id
@@ -41,6 +42,7 @@ class JpaProcessingStorage(
                     record.sourceContent,
                     record.renameTimes,
                     ProcessingContent.Status::class.fromValue(record.status),
+                    record.failureReason,
                     record.modifyTime,
                     record.createTime
                 )
@@ -67,6 +69,7 @@ class JpaProcessingStorage(
                 record.sourceContent,
                 record.renameTimes,
                 ProcessingContent.Status::class.fromValue(record.status),
+                record.failureReason,
                 record.modifyTime,
                 record.createTime
             )

@@ -13,6 +13,7 @@ data class ProcessingContent(
     val sourceContent: PersistentSourceContent,
     val renameTimes: Int = 0,
     val status: Status = Status.WAITING_TO_RENAME,
+    val failureReason: String? = null,
     val modifyTime: LocalDateTime? = null,
     val createTime: LocalDateTime = LocalDateTime.now()
 ) {
@@ -57,7 +58,7 @@ data class ProcessingContent(
         /**
          * 处理失败
          */
-        PROCESSING_FAILED(8)
+        FAILURE(8)
         ;
 
         override fun getValue(): Int {

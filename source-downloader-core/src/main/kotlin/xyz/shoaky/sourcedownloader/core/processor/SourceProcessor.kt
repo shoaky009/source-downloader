@@ -148,7 +148,7 @@ class SourceProcessor(
                 simpleStat.incFilterCounting()
                 continue
             }
-            kotlin.runCatching {
+            val processingContent = kotlin.runCatching {
                 retry.execute<ProcessingContent, IOException> {
                     processItem(item.sourceItem, dryRun)
                 }
@@ -160,12 +160,21 @@ class SourceProcessor(
                 }
                 // 也许有一直失败的会卡住整体，暂时先这样处理
                 lastPointedItem = item
+            }.getOrElse {
+                ProcessingContent(name, PersistentSourceContent(
+                    item.sourceItem, emptyList(), MapPatternVariables()
+                )).copy(status = ProcessingContent.Status.FAILURE, failureReason = it.message)
             }
+
+            if (options.saveContent && dryRun.not()) {
+                processingStorage.save(processingContent)
+            }
+
             simpleStat.incProcessingCounting()
         }
         simpleStat.stopWatch.stop()
 
-        if (simpleStat.processingCounting > 0 || simpleStat.filterCounting > 0) {
+        if (simpleStat.isChanged()) {
             log.info("Processor:{}", simpleStat)
         }
 
@@ -233,11 +242,7 @@ class SourceProcessor(
             status = contentStatus.second
         }
 
-        val pc = ProcessingContent(name, sourceContent).copy(status = status)
-        if (options.saveContent && dryRun.not()) {
-            processingStorage.save(pc)
-        }
-        return pc
+        return ProcessingContent(name, sourceContent).copy(status = status)
     }
 
     private fun createPersistentSourceContent(sourceItemGroup: SourceItemGroup, sourceItem: SourceItem): PersistentSourceContent {
@@ -489,6 +494,10 @@ private class SimpleStat(
 
     fun incFilterCounting() {
         filterCounting = filterCounting.inc()
+    }
+
+    fun isChanged(): Boolean {
+        return processingCounting > 0 || filterCounting > 0
     }
 
     override fun toString(): String {

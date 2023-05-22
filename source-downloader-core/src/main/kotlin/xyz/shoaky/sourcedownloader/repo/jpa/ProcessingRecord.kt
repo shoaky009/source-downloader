@@ -25,6 +25,7 @@ class ProcessingRecord {
 
     var renameTimes: Int = 0
     var status: Int = 0
+    var failureReason: String? = null
     var modifyTime: LocalDateTime? = null
     lateinit var createTime: LocalDateTime
 }
