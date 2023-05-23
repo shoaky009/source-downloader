@@ -29,7 +29,7 @@ class DeleteEmptyDirectoryTest {
             sourceItem(),
             listOf(
                 CoreFileContent(
-                    itemDownloadPath,
+                    itemDownloadPath.resolve("test.mp4"),
                     Path(""),
                     testResourcePath,
                     MapPatternVariables(),
