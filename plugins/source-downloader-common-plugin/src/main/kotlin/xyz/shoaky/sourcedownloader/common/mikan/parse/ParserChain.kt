@@ -66,7 +66,7 @@ internal class ParserChain(
             return ParserChain(listOf(
                 SeasonParser,
                 TmdbSeasonParser(tmdbApiKey),
-                DefaultSeasonParser
+                DefaultValueSeasonParser
             ), true)
         }
 

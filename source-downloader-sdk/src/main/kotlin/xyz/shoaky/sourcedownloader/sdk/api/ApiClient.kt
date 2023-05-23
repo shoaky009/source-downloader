@@ -11,6 +11,7 @@ import java.net.URI
 import java.net.URLEncoder
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
+import java.net.http.HttpRequest.BodyPublishers
 import java.net.http.HttpResponse
 
 interface ApiClient {
@@ -30,7 +31,12 @@ abstract class HookedApiClient : ApiClient {
         val resolve = uri.toString() + queryString
         requestBuilder.uri(URI(resolve))
 
-        requestBuilder.method(request.httpMethod.name, bodyPublisher(request))
+        val bodyPublisher = if (request.httpMethod == HttpMethod.GET) {
+            BodyPublishers.noBody()
+        } else {
+            bodyPublisher(request)
+        }
+        requestBuilder.method(request.httpMethod.name, bodyPublisher)
         request.setHeader(HttpHeaders.CONTENT_TYPE, request.mediaType)
         request.httpHeaders().forEach { (name, value) -> requestBuilder.header(name, value) }
 
@@ -48,7 +54,7 @@ abstract class HookedApiClient : ApiClient {
                 requestBody:{}
                 responseCode:{}
                 responseBody:{}
-                """, httpRequest.uri(), Jackson.toJsonString(request),
+                """, httpRequest.uri(), Jackson.toJsonString(bodyPublisher.toString()),
                 httpResponse.statusCode(), httpResponse.body())
         }
         afterRequest(httpResponse, request)
@@ -70,7 +76,7 @@ abstract class HookedApiClient : ApiClient {
             return ""
         }
 
-        var queryString = queryStringMap.map { "${it.key}=${it.value}" }
+        var queryString = queryStringMap.map { "${it.key}=${URLEncoder.encode(it.value, Charsets.UTF_8)}" }
             .joinToString("&")
 
         queryString = if (uri.query?.isEmpty() != false) {
@@ -96,17 +102,16 @@ abstract class HookedApiClient : ApiClient {
                 }
                 .reduce { p1, p2 -> "$p1&$p2" }
                 .orElse("")
-            return HttpRequest.BodyPublishers.ofString(query)
+            return BodyPublishers.ofString(query)
         }
         if (mediaType == MediaType.JSON_UTF_8) {
             val json = Jackson.toJsonString(request)
-            return HttpRequest.BodyPublishers.ofString(json)
+            return BodyPublishers.ofString(json)
         }
         throw RuntimeException("No publisher support, mediaType:$mediaType")
     }
 
     companion object {
-        private val stringBodyHandler = HttpResponse.BodyHandlers.ofString(Charsets.UTF_8)
         val cookieManager = CookieManager()
         private val httpClient: HttpClient = HttpClient.newBuilder().cookieHandler(cookieManager).build()
         private val log = LoggerFactory.getLogger(BaseRequest::class.java)

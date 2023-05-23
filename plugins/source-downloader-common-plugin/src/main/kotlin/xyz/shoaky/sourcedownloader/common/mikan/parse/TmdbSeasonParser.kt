@@ -31,7 +31,10 @@ internal class TmdbSeasonParser(private val apiKey: String) : ValueParser {
         return Result(season, accuracy = Result.Accuracy.ACCURATE)
     }
 
-    private data class Content(val subjectName: String, val apiKey: String)
+    private data class Content(
+        val subjectName: String,
+        val apiKey: String
+    )
 
     private data class TmdbResult(
         val results: List<PageResult>

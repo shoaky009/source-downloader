@@ -17,6 +17,7 @@ class TmdbClientV2(
 
     override fun <R : BaseRequest<T>, T : Any> beforeRequest(requestBuilder: HttpRequest.Builder, request: R) {
         request.queryString["api_key"] = apiKey
+        // requestBuilder.header(HttpHeaders.AUTHORIZATION, "Bearer $apiKey")
     }
 
     override fun <R : BaseRequest<T>, T : Any> afterRequest(response: HttpResponse<T>, request: R) {
