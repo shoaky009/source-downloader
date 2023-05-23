@@ -24,9 +24,10 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.2")
     testImplementation("org.junit.jupiter:junit-jupiter-engine:5.9.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
 
     implementation("com.google.zxing:core:3.5.1")
-    implementation(platform("it.tdlight:tdlight-java-bom:2.8.10.6"))
+    implementation(platform("it.tdlight:tdlight-java-bom:3.0.8+td.1.8.14"))
     implementation("it.tdlight:tdlight-java")
 
     val os = OperatingSystem.current()
@@ -35,19 +36,16 @@ dependencies {
     // TODO 忽略不存在的依赖错误
     // implementation("it.tdlight:tdlight-natives-$familyName-$arch")
     if (os.isWindows && "amd64" == arch) {
-        implementation("it.tdlight:tdlight-natives-windows-amd64")
+        implementation(group = "it.tdlight", name = "tdlight-natives", classifier = "windows_amd64")
     }
     if (os.isMacOsX && "amd64" == arch) {
-        implementation("it.tdlight:tdlight-natives-osx-amd64")
+        implementation(group = "it.tdlight", name = "tdlight-natives", classifier = "macos_amd64")
     }
     if (os.isLinux && "amd64" == arch) {
-        implementation("it.tdlight:tdlight-natives-linux-amd64")
+        implementation(group = "it.tdlight", name = "tdlight-natives", classifier = "linux_amd64_ssl3")
     }
     if (os.isLinux && "aarch64" == arch) {
-        implementation("it.tdlight:tdlight-natives-linux-aarch64")
-    }
-    if (os.isLinux && "x86" == arch) {
-        implementation("it.tdlight:tdlight-natives-linux-x86")
+        implementation(group = "it.tdlight", name = "tdlight-natives", classifier = "linux_arm64_ssl3")
     }
 }
 

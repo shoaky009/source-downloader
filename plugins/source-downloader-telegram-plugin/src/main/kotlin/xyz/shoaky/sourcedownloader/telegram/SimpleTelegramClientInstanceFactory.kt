@@ -2,7 +2,9 @@ package xyz.shoaky.sourcedownloader.telegram
 
 import it.tdlight.client.APIToken
 import it.tdlight.client.AuthenticationData
+import it.tdlight.client.AuthenticationSupplier
 import it.tdlight.client.SimpleTelegramClient
+import it.tdlight.client.SimpleTelegramClientFactory
 import it.tdlight.client.TDLibSettings
 import it.tdlight.jni.TdApi
 import xyz.shoaky.sourcedownloader.sdk.InstanceFactory
@@ -21,10 +23,13 @@ object SimpleTelegramClientInstanceFactory : InstanceFactory<SimpleTelegramClien
         val downloadPath = config.downloadPath
 
         val settings = TDLibSettings.create(APIToken(apiId, apiHash))
-        val client = SimpleTelegramClient(settings)
+
+        val clientFactory = SimpleTelegramClientFactory()
+
+        val client = clientFactory.builder(settings)
+            .build(AuthenticationSupplier.qrCode())
         settings.databaseDirectoryPath = databasePath
         settings.downloadedFilesDirectoryPath = downloadPath
-        client.start(AuthenticationData.qrCode())
 
         val proxyHost = config.proxyHost
         val proxyPort = config.proxyPort

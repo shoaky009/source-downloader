@@ -1,0 +1,3 @@
+<configuration>
+    <logger name="it.tdlight.TDLight" level="WARN" />
+</configuration>
