@@ -4,9 +4,9 @@ import org.apache.commons.lang3.CharUtils
 import org.apache.commons.lang3.math.NumberUtils
 import java.util.function.Function
 
-internal object SeasonParser : ValueParser {
+internal object CommonSeasonParser : ValueParser {
 
-    override val name: String = "SeasonFromSubject"
+    override val name: String = "CommonSeasonParser"
 
     override fun apply(subjectContent: SubjectContent, filename: String): Result {
         val subjectName = subjectContent.nonEmptyName().trim()

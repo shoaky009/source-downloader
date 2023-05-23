@@ -13,10 +13,10 @@ data class SearchTvShow(
     val page: Int = 1,
     @JsonProperty("include_adult")
     val includeAdult: Boolean = true
-) : BaseRequest<PageResultV2<SearchResult>>() {
+) : BaseRequest<PageResult<SearchResult>>() {
 
     override val path: String = "/3/search/tv"
-    override val responseBodyType: TypeReference<PageResultV2<SearchResult>> = jacksonTypeRef()
+    override val responseBodyType: TypeReference<PageResult<SearchResult>> = jacksonTypeRef()
     override val httpMethod: HttpMethod = HttpMethod.GET
     override val mediaType: MediaType = MediaType.JSON_UTF_8
 }

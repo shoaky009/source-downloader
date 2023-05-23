@@ -3,11 +3,11 @@ package xyz.shoaky.sourcedownloader.common.mikan
 import com.google.common.cache.CacheBuilder
 import com.google.common.cache.CacheLoader
 import org.slf4j.LoggerFactory
-import xyz.shoaky.sourcedownloader.common.mikan.parse.ParserChain
-import xyz.shoaky.sourcedownloader.common.mikan.parse.SubjectContent
+import xyz.shoaky.sourcedownloader.common.mikan.parse.*
 import xyz.shoaky.sourcedownloader.external.bangumi.BgmTvApiClient
 import xyz.shoaky.sourcedownloader.external.bangumi.GetSubjectRequest
 import xyz.shoaky.sourcedownloader.external.bangumi.Subject
+import xyz.shoaky.sourcedownloader.external.tmdb.TmdbClient
 import xyz.shoaky.sourcedownloader.sdk.PatternVariables
 import xyz.shoaky.sourcedownloader.sdk.SourceFile
 import xyz.shoaky.sourcedownloader.sdk.SourceItem
@@ -23,10 +23,19 @@ import java.nio.file.Path
 class MikanVariableProvider(
     private val mikanToken: String? = null,
     private val mikanSupport: MikanSupport = MikanSupport(mikanToken),
-    private val bgmTvClient: BgmTvApiClient = BgmTvApiClient()
+    private val bgmTvClient: BgmTvApiClient = BgmTvApiClient(),
+    tmdbClient: TmdbClient = TmdbClient(TmdbClient.DEFAULT_TOKEN)
 ) : VariableProvider {
 
     override val accuracy: Int = 3
+
+    private val parserChain = ParserChain(
+        listOf(
+            CommonSeasonParser,
+            TmdbSeasonParser(tmdbClient),
+            DefaultValueSeasonParser
+        ), true
+    )
 
     init {
         log.debug("Mikan初始化,token:{}", mikanToken)
@@ -67,7 +76,6 @@ class MikanVariableProvider(
         val subjectContent = SubjectContent(subject, bangumiTitle)
 
         // 暂时没看到文件跨季度的情况
-        val parserChain = ParserChain.seasonChain()
         val result = parserChain.apply(subjectContent, sourceItem.title)
 
         val season = result.padValue() ?: "01"

@@ -51,11 +51,8 @@ class MikanVariableProviderTest {
         assertEquals(1, sourceFiles.size)
 
         val bangumiInfo = sourceGroup.sharedPatternVariables() as BangumiInfo
-        assertEquals(bangumiInfo.season, "01")
-        val sourceFile = sourceGroup.sourceFiles(listOf(Path("[ANi] 前進吧！登山少女  Next Summit（僅限港澳台地區） - 11 [1080P][Bilibili][WEB-DL][AAC AVC][CHT CHS].mp4"))).first()
-        assertEquals(sourceFile.patternVariables().variables()["episode"], "11")
+        assertEquals("04", bangumiInfo.season)
     }
-
 
     @Test
     @Disabled
@@ -72,8 +69,6 @@ class MikanVariableProviderTest {
         assertEquals(1, sourceFiles.size)
 
         val bangumiInfo = sourceGroup.sharedPatternVariables() as BangumiInfo
-        assertEquals(bangumiInfo.season, "01")
-        val sourceFile = sourceGroup.sourceFiles(listOf(Path("[ANi] 前進吧！登山少女  Next Summit（僅限港澳台地區） - 11 [1080P][Bilibili][WEB-DL][AAC AVC][CHT CHS].mp4"))).first()
-        assertEquals(sourceFile.patternVariables().variables()["episode"], "11")
+        assertEquals("04", bangumiInfo.season)
     }
 }

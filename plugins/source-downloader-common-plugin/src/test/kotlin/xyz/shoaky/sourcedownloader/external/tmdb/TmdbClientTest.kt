@@ -5,9 +5,9 @@ import org.junit.jupiter.api.Test
 import xyz.shoaky.sourcedownloader.sdk.util.Jackson
 
 @Disabled
-class TmdbClientV2Test {
+class TmdbClientTest {
 
-    private val client = TmdbClientV2("7d82a6a830d5f4458f42929f73878195")
+    private val client = TmdbClient(TmdbClient.DEFAULT_TOKEN)
 
     @Test
     fun search_tv_show() {
