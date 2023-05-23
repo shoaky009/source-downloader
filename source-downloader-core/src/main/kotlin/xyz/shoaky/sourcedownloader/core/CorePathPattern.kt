@@ -1,22 +1,32 @@
 package xyz.shoaky.sourcedownloader.core
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonValue
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.google.api.expr.v1alpha1.Expr
 import org.projectnessie.cel.Env
 import org.projectnessie.cel.checker.Decls
 import org.projectnessie.cel.tools.Script
 import org.projectnessie.cel.tools.ScriptHost
 import xyz.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
+import xyz.shoaky.sourcedownloader.VariableMatcher
 import xyz.shoaky.sourcedownloader.sdk.PathPattern
 import xyz.shoaky.sourcedownloader.sdk.PathPattern.ExpressionResult
 import xyz.shoaky.sourcedownloader.sdk.PathPattern.ParseResult
 import xyz.shoaky.sourcedownloader.sdk.PatternVariables
+import xyz.shoaky.sourcedownloader.util.jackson.PathPatternDeserializer
 import java.util.regex.Pattern
 
 
+@JsonDeserialize(using = PathPatternDeserializer::class)
 data class CorePathPattern(
     @get:JsonValue
-    override val pattern: String
+    override val pattern: String,
+    /**
+     * 不在[PatternVariables]装饰替换的原因是不想做成全局的，而是每个[PathPattern]有自己独立的替换规则
+     */
+    @JsonIgnore
+    private val variableReplace: Map<VariableMatcher, String> = emptyMap()
 ) : PathPattern {
 
     private val expressions: List<Expression> by lazy {
@@ -31,14 +41,21 @@ data class CorePathPattern(
     override fun parse(provider: PatternVariables): ParseResult {
         val matcher = variablePatternRegex.matcher(pattern)
         val pathBuilder = StringBuilder()
-        val variables = provider.variables()
+        val variables = provider.variables().mapValues { entry ->
+            variableReplace.firstNotNullOfOrNull {
+                if (it.key.match(entry.value)) {
+                    return@mapValues it.value
+                }
+            }
+            entry.value
+        }
+
         val variableResults = mutableListOf<ExpressionResult>()
 
         var expressionIndex = 0
         while (matcher.find()) {
             val expression = expressions[expressionIndex]
             val value = expression.eval(variables)
-
             variableResults.add(ExpressionResult(expression.raw, value != null || expression.isOptional()))
             if (value != null) {
                 matcher.appendReplacement(pathBuilder, value)

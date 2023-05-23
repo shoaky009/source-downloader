@@ -1,13 +1,15 @@
 package xyz.shoaky.sourcedownloader.core
 
 import org.junit.jupiter.api.Test
+import xyz.shoaky.sourcedownloader.RegexVariableMatcher
 import xyz.shoaky.sourcedownloader.sdk.MapPatternVariables
+import kotlin.test.assertEquals
 
 class CorePathPatternTest {
     @Test
     fun depth() {
         val pathPattern = CorePathPattern("{name}/{title}")
-        kotlin.test.assertEquals(2, pathPattern.depth())
+        assertEquals(2, pathPattern.depth())
     }
 
     @Test
@@ -18,8 +20,8 @@ class CorePathPatternTest {
             "title" to "test"
         ))
         val parseResult = pathPattern.parse(variables)
-        kotlin.test.assertEquals("111/testabc", parseResult.path)
-        kotlin.test.assertEquals(true, parseResult.results.all { it.success })
+        assertEquals("111/testabc", parseResult.path)
+        assertEquals(true, parseResult.results.all { it.success })
     }
 
     @Test
@@ -30,8 +32,8 @@ class CorePathPatternTest {
             "title" to "test"
         ))
         val parseResult = pathPattern.parse(variables)
-        kotlin.test.assertEquals("111/testabc", parseResult.path)
-        kotlin.test.assertEquals(true, parseResult.results.all { it.success })
+        assertEquals("111/testabc", parseResult.path)
+        assertEquals(true, parseResult.results.all { it.success })
     }
 
     @Test
@@ -41,8 +43,8 @@ class CorePathPatternTest {
             "name" to "111",
         ))
         val parseResult = pathPattern.parse(variables)
-        kotlin.test.assertEquals("111/abc", parseResult.path)
-        kotlin.test.assertEquals(true, parseResult.results.all { it.success })
+        assertEquals("111/abc", parseResult.path)
+        assertEquals(true, parseResult.results.all { it.success })
     }
 
 
@@ -55,16 +57,37 @@ class CorePathPatternTest {
             "source" to "1"
         ))
         val parseResult = pathPattern.parse(variables)
-        kotlin.test.assertEquals("test 111 E21 - 1", parseResult.path)
-        kotlin.test.assertEquals(true, parseResult.results.all { it.success })
+        assertEquals("test 111 E21 - 1", parseResult.path)
+        assertEquals(true, parseResult.results.all { it.success })
 
         val variables2 = MapPatternVariables(mapOf(
             "name" to "111",
             "episode" to "2",
         ))
         val result2 = pathPattern.parse(variables2)
-        kotlin.test.assertEquals("test 111 E21", result2.path)
-        kotlin.test.assertEquals(true, result2.results.all { it.success })
+        assertEquals("test 111 E21", result2.path)
+        assertEquals(true, result2.results.all { it.success })
     }
 
+    @Test
+    fun test_replacement() {
+        val pathPattern = CorePathPattern(
+            "{title}-{source}",
+            mapOf(
+                RegexVariableMatcher("BDRIP".toRegex(RegexOption.IGNORE_CASE)) to "BD"
+            )
+        )
+
+        val parse1 = pathPattern.parse(MapPatternVariables(mapOf(
+            "title" to "111",
+            "source" to "Web",
+        )))
+        assertEquals("111-Web", parse1.path)
+
+        val parse = pathPattern.parse(MapPatternVariables(mapOf(
+            "title" to "111",
+            "source" to "BDrip",
+        )))
+        assertEquals("111-BD", parse.path)
+    }
 }

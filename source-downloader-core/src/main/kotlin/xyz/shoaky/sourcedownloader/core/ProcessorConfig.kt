@@ -4,11 +4,13 @@ package xyz.shoaky.sourcedownloader.core
 // import io.swagger.v3.oas.annotations.media.SchemaProperty
 import com.fasterxml.jackson.annotation.*
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
+import xyz.shoaky.sourcedownloader.VariableMatcher
 import xyz.shoaky.sourcedownloader.core.file.ParsingFailedStrategy
 import xyz.shoaky.sourcedownloader.core.processor.VariableConflictStrategy
 import xyz.shoaky.sourcedownloader.sdk.DownloadOptions
 import xyz.shoaky.sourcedownloader.sdk.PathPattern
 import xyz.shoaky.sourcedownloader.sdk.component.*
+import xyz.shoaky.sourcedownloader.util.jackson.VariableMatcherDeserializer
 import java.nio.file.Path
 import java.time.Duration
 
@@ -107,7 +109,9 @@ data class ProcessorConfig(
         @JsonAlias("tag-filename-pattern")
         @JsonDeserialize(contentAs = CorePathPattern::class)
         val tagFilenamePattern: Map<String, PathPattern> = emptyMap(),
-        val fileReplaceStrategy: String = "NEVER"
+        @JsonAlias("replace-variable")
+        @JsonDeserialize(keyUsing = VariableMatcherDeserializer::class)
+        val replaceVariable: Map<VariableMatcher, String> = emptyMap()
     )
 
 }

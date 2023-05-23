@@ -51,7 +51,10 @@ class SourceProcessor(
 
     private val downloadPath = downloader.defaultDownloadPath()
     private val fileSavePathPattern: PathPattern = options.savePathPattern
-    private val filenamePattern: PathPattern = options.filenamePattern
+    private val filenamePattern: PathPattern = CorePathPattern(options.filenamePattern.pattern, options.replaceVariable)
+    private val tagFilenamePattern = options.tagFilenamePattern.mapValues {
+        CorePathPattern(it.value.pattern, options.replaceVariable)
+    }
 
     private var renameTaskFuture: ScheduledFuture<*>? = null
     private val safeRunner by lazy {
@@ -277,7 +280,7 @@ class SourceProcessor(
     }
 
     private fun tagFileAndReplaceFilenamePattern(fileContent: CoreFileContent): CoreFileContent {
-        val customTags = options.tagFilenamePattern.keys
+        val customTags = tagFilenamePattern.keys
         if (customTags.isEmpty()) {
             return fileContent
         }
@@ -560,7 +563,10 @@ private class SafeRunner(
     }
 }
 
-private class SourceHashingItemFilter(val sourceName: String, val processingStorage: ProcessingStorage) : SourceItemFilter {
+private class SourceHashingItemFilter(
+    val sourceName: String,
+    val processingStorage: ProcessingStorage
+) : SourceItemFilter {
     override fun test(item: SourceItem): Boolean {
         val processingContent = processingStorage.findByNameAndHash(sourceName, item.hashing())
         if (processingContent != null) {
