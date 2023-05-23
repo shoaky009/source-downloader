@@ -17,7 +17,7 @@ class SeasonParserChainTest {
     @Test
     fun should_all_expected() {
         val seasonChain = ParserChain.seasonChain()
-        Files.readAllLines(Path("src", "test", "resources", "season-test.data"))
+        Files.readAllLines(Path("src", "test", "resources", "season-test.csv"))
             .filter { it.isNullOrBlank().not() }
             .map {
                 val split = it.split("|")
