@@ -58,11 +58,6 @@ internal class ParserChain(
 
     companion object {
 
-        private val episodeParsers: List<ValueParser> =
-            listOf(
-                 EpisodeParser
-            )
-
         fun seasonChain(
             tmdbApiKey: String = System.getenv("TMDB_APIKEY_V3_AUTH")
             // 单独的账号无信息
@@ -73,10 +68,6 @@ internal class ParserChain(
                 TmdbSeasonParser(tmdbApiKey),
                 DefaultSeasonParser
             ), true)
-        }
-
-        fun episodeChain(): ParserChain {
-            return ParserChain(episodeParsers)
         }
 
         private val log = LoggerFactory.getLogger(ParserChain::class.java)

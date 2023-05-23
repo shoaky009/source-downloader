@@ -20,21 +20,6 @@ data class Result(
         return value?.toString()?.padStart(length, '0')
     }
 
-    fun intValue(): Int? {
-        return value?.toString()?.toIntOrNull()
-    }
-
-    fun padNumber(length: Int = 2): String? {
-        val str = value?.toString() ?: return null
-        if (str.contains(".")) {
-            val index = str.indexOf(".")
-            val substring = str.substring(0, index)
-            val padded = substring.padStart(length, '0')
-            return padded + str.substring(index)
-        }
-        return padValue(length)
-    }
-
     override fun compareTo(other: Result): Int {
         return accuracy.compareTo(other.accuracy)
     }

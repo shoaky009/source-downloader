@@ -3,12 +3,11 @@ package xyz.shoaky.sourcedownloader.component.provider
 import org.apache.commons.lang3.math.NumberUtils
 import xyz.shoaky.sourcedownloader.sdk.*
 import xyz.shoaky.sourcedownloader.sdk.component.VariableProvider
-import java.util.function.Function
 import kotlin.io.path.nameWithoutExtension
 
 object EpisodeVariableProvider : VariableProvider {
 
-    private val parserChain: List<Function<String, Number?>> = listOf(
+    private val parserChain: List<ValueParser> = listOf(
         RegexValueParser(Regex("第(\\d+)话")),
         RegexValueParser(Regex("第(\\d+)集")),
         RegexValueParser(Regex("第(\\d+)話")),
@@ -24,7 +23,7 @@ object EpisodeVariableProvider : VariableProvider {
     override fun createSourceGroup(sourceItem: SourceItem): SourceItemGroup {
         return FunctionalItemGroup { path ->
             val filename = path.nameWithoutExtension
-            val episode = parserChain.firstNotNullOfOrNull { it.apply(filename) }
+            val episode = parserChain.firstNotNullOfOrNull { it.parse(filename) }
 
             val vars = MapPatternVariables()
             padNumber(episode)?.run {
@@ -50,15 +49,19 @@ object EpisodeVariableProvider : VariableProvider {
     }
 }
 
+private interface ValueParser {
+    fun parse(value: String): Number?
+}
+
 private class RegexValueParser(
     private val regex: Regex
-) : Function<String, Number?> {
-    override fun apply(content: String): Number? {
-        return regex.find(content)?.groupValues?.lastOrNull()?.toInt()
+) : ValueParser {
+    override fun parse(value: String): Number? {
+        return regex.find(value)?.groupValues?.lastOrNull()?.toInt()
     }
 }
 
-private object CommonEpisodeValueParser : Function<String, Number?> {
+private object CommonEpisodeValueParser : ValueParser {
 
     private val pattern = Regex("(\\[?[^\\[\\]]*]?)")
 
@@ -74,7 +77,7 @@ private object CommonEpisodeValueParser : Function<String, Number?> {
         Regex("\\[(?!\\d+])[^\\[\\]]*?(.*?)]") to "",
     )
 
-    override fun apply(value: String): Number? {
+    override fun parse(value: String): Number? {
         val replace = pattern.replace(replace(value)) { "${it.value.trim()} " }
         val episode = replace.split(" ")
             .filter { it.isNotBlank() }
