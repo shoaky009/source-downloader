@@ -13,9 +13,7 @@ data class ComponentType(
         ?: throw ComponentException.unsupported("不支持的类型$type, 支持的类型有${componentTypes.keys}"))
 
     fun topType(): Components {
-        return Components.fromClass(topTypeClass)
-        // 不应该出现
-            ?: throw ComponentException.unsupported("不支持的类型${topTypeClass.simpleName}")
+        return Components.fromClass(topTypeClass).first()
     }
 
 

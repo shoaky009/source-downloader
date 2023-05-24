@@ -1,6 +1,8 @@
 package xyz.shoaky.sourcedownloader.component.supplier
 
 import xyz.shoaky.sourcedownloader.component.GeneralFileMover
+import xyz.shoaky.sourcedownloader.component.HardlinkFileMover
+import xyz.shoaky.sourcedownloader.component.downloader.MockDownloader
 import xyz.shoaky.sourcedownloader.component.source.SystemFileSource
 import xyz.shoaky.sourcedownloader.sdk.ComponentRule
 import xyz.shoaky.sourcedownloader.sdk.Properties
@@ -25,6 +27,8 @@ object SystemFileSourceSupplier : SdComponentSupplier<SystemFileSource> {
         return listOf(
             ComponentRule.allowSource(SystemFileSource::class),
             ComponentRule.allowDownloader(SystemFileSource::class),
+            ComponentRule.allowDownloader(MockDownloader::class),
+            ComponentRule.allowDownloader(HardlinkFileMover::class),
             ComponentRule.allowMover(GeneralFileMover::class),
         )
     }

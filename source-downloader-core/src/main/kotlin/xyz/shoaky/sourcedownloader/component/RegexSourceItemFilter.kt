@@ -5,7 +5,10 @@ import xyz.shoaky.sourcedownloader.sdk.SourceItem
 import xyz.shoaky.sourcedownloader.sdk.component.SourceItemFilter
 import java.util.function.Predicate
 
-class RegexSourceItemFilter(private val regexes: List<Regex>) : SourceItemFilter {
+class RegexSourceItemFilter(
+    private val regexes: List<Regex>
+) : SourceItemFilter {
+
     private val predicate: Predicate<SourceItem> =
         Predicate {
             this.regexes.any { regex ->

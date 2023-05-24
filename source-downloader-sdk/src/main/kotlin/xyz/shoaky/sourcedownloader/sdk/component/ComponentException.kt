@@ -28,5 +28,8 @@ private constructor(message: String, val type: String) : RuntimeException(messag
 
         @JvmStatic
         fun instanceExists(message: String) = ComponentException(message, "instance:exists")
+
+        @JvmStatic
+        fun other(message: String) = ComponentException(message, "other")
     }
 }

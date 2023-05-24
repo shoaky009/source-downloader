@@ -37,7 +37,9 @@ abstract class HookedApiClient : ApiClient {
             bodyPublisher(request)
         }
         requestBuilder.method(request.httpMethod.name, bodyPublisher)
-        request.setHeader(HttpHeaders.CONTENT_TYPE, request.mediaType)
+        request.mediaType?.let {
+            request.setHeader(HttpHeaders.CONTENT_TYPE, it)
+        }
         request.httpHeaders().forEach { (name, value) -> requestBuilder.header(name, value) }
 
         val httpRequest = requestBuilder.build()

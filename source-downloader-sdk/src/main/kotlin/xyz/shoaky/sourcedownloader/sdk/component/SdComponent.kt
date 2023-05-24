@@ -9,6 +9,7 @@ import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
 import kotlin.reflect.KClass
 import kotlin.reflect.full.allSuperclasses
+import kotlin.reflect.full.isSuperclassOf
 
 sealed interface SdComponent
 
@@ -49,13 +50,20 @@ enum class Components(
             it.names.map { name -> name to it }
         }.toMap()
 
-        fun fromClass(klass: KClass<out SdComponent>): Components? {
-            return values().firstOrNull { it.klass == klass }
+        fun fromClass(klass: KClass<out SdComponent>): List<Components> {
+            if (klass == SdComponent::class) {
+                throw ComponentException.other("can not create instance of SdComponent.class")
+            }
+
+            return values().filter {
+                it.klass.isSuperclassOf(klass)
+            }
         }
 
         fun fromName(name: String): Components? {
             return nameMapping[name]
         }
+
     }
 }
 

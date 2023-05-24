@@ -9,7 +9,6 @@ import org.projectnessie.cel.checker.Decls
 import org.projectnessie.cel.tools.Script
 import org.projectnessie.cel.tools.ScriptHost
 import xyz.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
-import xyz.shoaky.sourcedownloader.VariableMatcher
 import xyz.shoaky.sourcedownloader.sdk.PathPattern
 import xyz.shoaky.sourcedownloader.sdk.PathPattern.ExpressionResult
 import xyz.shoaky.sourcedownloader.sdk.PathPattern.ParseResult

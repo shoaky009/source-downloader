@@ -18,7 +18,7 @@ abstract class BaseRequest<T : Any> {
     abstract val httpMethod: HttpMethod
 
     @get:JsonIgnore
-    abstract val mediaType: MediaType
+    abstract val mediaType: MediaType?
 
     @JsonIgnore
     val queryString = mutableMapOf<String, Any>()

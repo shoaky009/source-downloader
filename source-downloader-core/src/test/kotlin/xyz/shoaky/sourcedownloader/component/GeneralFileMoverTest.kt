@@ -1,5 +1,6 @@
 package xyz.shoaky.sourcedownloader.component
 
+import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import xyz.shoaky.sourcedownloader.component.supplier.GeneralFileMoverSupplier
@@ -11,15 +12,12 @@ import xyz.shoaky.sourcedownloader.sdk.MapPatternVariables
 import xyz.shoaky.sourcedownloader.sdk.Properties
 import xyz.shoaky.sourcedownloader.sourceItem
 import java.nio.file.Files
-import kotlin.io.path.Path
-import kotlin.io.path.createDirectories
-import kotlin.io.path.deleteIfExists
+import kotlin.io.path.*
 
+@OptIn(ExperimentalPathApi::class)
 class GeneralFileMoverTest {
 
     private val mover = GeneralFileMoverSupplier.apply(Properties.fromMap(emptyMap()))
-    private val savePath = Path("src", "test", "resources", "target")
-    private val downloadPath = Path("src", "test", "resources", "downloads")
 
     private val testFilePaths = listOf(
         downloadPath.resolve("1.txt"),
@@ -28,6 +26,7 @@ class GeneralFileMoverTest {
 
     @BeforeEach
     fun setUp() {
+        downloadPath.createDirectories()
         testFilePaths
             .forEach {
                 it.createIfNotExists()
@@ -62,6 +61,19 @@ class GeneralFileMoverTest {
         assert(result)
         Files.deleteIfExists(file1.targetPath())
         Files.deleteIfExists(file2.targetPath())
+    }
+
+
+    companion object {
+        private val savePath = Path("src", "test", "resources", "target")
+        private val downloadPath = Path("src", "test", "resources", "downloads")
+
+        @JvmStatic
+        @AfterAll
+        fun clean() {
+            savePath.deleteRecursively()
+            downloadPath.deleteRecursively()
+        }
     }
 
 }

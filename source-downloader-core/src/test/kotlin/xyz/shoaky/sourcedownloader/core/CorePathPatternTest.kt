@@ -1,7 +1,6 @@
 package xyz.shoaky.sourcedownloader.core
 
 import org.junit.jupiter.api.Test
-import xyz.shoaky.sourcedownloader.RegexVariableMatcher
 import xyz.shoaky.sourcedownloader.sdk.MapPatternVariables
 import kotlin.test.assertEquals
 

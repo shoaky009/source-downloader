@@ -1,12 +1,10 @@
-import org.springframework.boot.gradle.tasks.bundling.BootBuildImage
-import org.springframework.boot.gradle.tasks.bundling.BootJar
-
 description = "source-downloader-core"
 
 plugins {
     id("maven-publish")
     id("org.springframework.boot")
     kotlin("plugin.spring")
+    id("jacoco-report-aggregation")
     // id("org.graalvm.buildtools.native") version "0.9.20"
 }
 
@@ -44,11 +42,11 @@ dependencies {
 
 }
 
-tasks.withType<BootBuildImage> {
+tasks.bootBuildImage {
     imageName.set("source-downloader")
 }
 
-tasks.withType<BootJar> {
+tasks.bootJar {
     layered {
         application {
             intoLayer("spring-boot-loader") {

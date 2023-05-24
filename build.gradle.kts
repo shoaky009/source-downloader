@@ -1,11 +1,10 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 group = "xyz.shoaky"
 version = "0.0.1-SNAPSHOT"
 
 plugins {
     id("io.spring.dependency-management") version "1.1.0"
     kotlin("jvm")
+    id("jacoco")
 }
 
 allprojects {
@@ -26,12 +25,18 @@ subprojects {
     apply(plugin = "org.jetbrains.kotlin.jvm")
     apply(plugin = "java")
     apply(plugin = "io.spring.dependency-management")
+    apply(plugin = "jacoco")
 
-    tasks.withType<Test> {
+    tasks.test {
         useJUnitPlatform()
+        finalizedBy(tasks.jacocoTestReport)
     }
 
-    tasks.withType<KotlinCompile> {
+    tasks.jacocoTestReport {
+        dependsOn(tasks.test)
+    }
+
+    tasks.compileKotlin {
         kotlinOptions {
             freeCompilerArgs = listOf("-Xjsr305=strict")
             jvmTarget = "17"

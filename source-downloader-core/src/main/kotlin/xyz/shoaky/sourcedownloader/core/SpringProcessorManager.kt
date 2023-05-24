@@ -55,7 +55,7 @@ class SpringProcessorManager(
         val cps = mutableListOf(source, downloader, mover)
         cps.addAll(providers)
         mutableListOf.forEach {
-            check(it, cps)
+            check(it, cps, config)
         }
 
         val fileFilters = config.options.sourceFileFilters.map {
@@ -140,12 +140,38 @@ class SpringProcessorManager(
     }
 
     // TODO 第二个参数应该给组件的描述对象
-    private fun check(componentType: ComponentType, components: List<SdComponent>) {
+    private fun check(componentType: ComponentType, components: List<SdComponent>, config: ProcessorConfig) {
         val supplier = componentManager.getSupplier(componentType)
-        val compatibilities = supplier.rules()
-        for (rule in compatibilities) {
-            components.forEach {
-                rule.verify(it)
+        val compatibilities = supplier.rules().groupBy { it.type }
+
+        val componentTypeMapping = components.groupBy {
+            Components.fromClass(it::class)
+        }.flatMap { (key, value) ->
+            key.map { it to value }
+        }.groupBy({ it.first }, { it.second })
+            .mapValues { it.value.flatten().distinct() }
+
+        for (rules in compatibilities) {
+            val typeComponents = componentTypeMapping[rules.key] ?: emptyList()
+            if (typeComponents.isEmpty()) {
+                continue
+            }
+            var exception: Exception? = null
+            val allow = rules.value.any { rule ->
+                components.map {
+                    try {
+                        rule.verify(it)
+                        return@map true
+                    } catch (ex: ComponentException) {
+                        exception = ex
+                        return@map false
+                    }
+                }.any()
+            }
+            if (allow.not()) {
+                exception?.let {
+                    throw ComponentException.compatibility("Processor:${config.name} ${it.message}")
+                }
             }
         }
     }

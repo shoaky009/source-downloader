@@ -1,18 +1,20 @@
 package xyz.shoaky.sourcedownloader.core
 
+import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Test
 import xyz.shoaky.sourcedownloader.core.file.CoreFileContent
 import xyz.shoaky.sourcedownloader.sdk.MapPatternVariables
 import xyz.shoaky.sourcedownloader.sdk.PathPattern
 import xyz.shoaky.sourcedownloader.testResourcePath
 import java.nio.file.Path
+import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.Path
+import kotlin.io.path.deleteRecursively
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
+@OptIn(ExperimentalPathApi::class)
 class CoreFileContentTest {
-
-    private val sourceSavePath = Path("src", "test", "resources", "target")
 
     @Test
     fun given_empty_should_filename_use_origin_name() {
@@ -106,7 +108,7 @@ class CoreFileContentTest {
         )
         assertNull(content.itemDownloadRootDirectory())
 
-        val downloadPath = Path("src", "test", "resources", "downloads")
+
         val content1 = content.copy(
             fileDownloadPath = Path("src", "test", "resources", "downloads", "easd", "222", "1.txt"),
             downloadPath = downloadPath
@@ -133,6 +135,18 @@ class CoreFileContentTest {
         val c2 = createFileContent()
         val d2 = c2.itemDownloadRootDirectory()
         assertEquals(null, d2)
+    }
+
+    companion object {
+        private val sourceSavePath = Path("src", "test", "resources", "target")
+        private val downloadPath = Path("src", "test", "resources", "downloads")
+
+        @JvmStatic
+        @AfterAll
+        fun clean() {
+            sourceSavePath.deleteRecursively()
+            downloadPath.deleteRecursively()
+        }
     }
 }
 

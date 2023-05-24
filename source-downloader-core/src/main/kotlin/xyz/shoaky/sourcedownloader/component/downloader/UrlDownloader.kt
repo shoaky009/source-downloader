@@ -7,7 +7,9 @@ import java.io.FileOutputStream
 import java.nio.channels.Channels
 import java.nio.file.Path
 
-class UrlDownloader(private val downloadPath: Path) : Downloader {
+class UrlDownloader(
+    private val downloadPath: Path
+) : Downloader {
 
     override fun submit(task: DownloadTask) {
         val uriResource = UrlResource(task.downloadUri())

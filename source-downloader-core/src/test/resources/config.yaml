@@ -7,7 +7,10 @@ components:
   downloader:
     - name: test-files
       type: system-file
-
+    - name: mock
+      type: mock
+      props:
+        download-path: src/test/resources/downloads
 
 processors:
   - name: NormalCase
@@ -19,15 +22,8 @@ processors:
     item-file-resolver: system-file
     save-path: src/test/resources/target
     options:
-      #完成后运行
-      run-after-completion:
-        - touch-item-directory
-      #可用变量具体看provider能提供什么
       save-path-pattern: "{sourceItemTitle}/{sourceItemDate}/"
-      #可用变量具体看provider能提供什么
       filename-pattern: "{filename} - {sequence}"
-      #重命名间隔时间,参考java.time.Duration的格式
-      rename-task-interval: PT1M
   - name: NormalCaseCopy
     triggers: [ ]
     source: "system-file:test-files"
@@ -37,12 +33,36 @@ processors:
     variable-providers: [ ]
     save-path: src/test/resources/target
     options:
-      #完成后运行
-      run-after-completion:
-        - touch-item-directory
-      #可用变量具体看provider能提供什么
       save-path-pattern: "{sourceItemTitle}/{sourceItemDate}/"
-      #可用变量具体看provider能提供什么
       filename-pattern: "{filename} - {sequence}"
-      #重命名间隔时间,参考java.time.Duration的格式
-      rename-task-interval: PT1M
+  - name: FileStatusCase
+    triggers: [ ]
+    source: "system-file:test-files"
+    downloader: "mock"
+    item-file-resolver: system-file
+    file-mover: general
+    variable-providers: [ ]
+    save-path: src/test/resources/target
+    options:
+      save-path-pattern: "{sourceItemTitle}"
+  - name: FileStatusCase2
+    triggers: [ ]
+    source: "system-file:test-files"
+    downloader: "mock"
+    item-file-resolver: system-file
+    file-mover: general
+    variable-providers: [ ]
+    save-path: src/test/resources/target
+    options:
+      save-path-pattern: "1"
+      filename-pattern: "1"
+  - name: PointerStorageCase
+    triggers: [ ]
+    source: "system-file:test-files"
+    downloader: "mock"
+    item-file-resolver: system-file
+    file-mover: general
+    variable-providers: [ ]
+    save-path: src/test/resources/target
+    options:
+      save-path-pattern: "{sourceItemTitle}"

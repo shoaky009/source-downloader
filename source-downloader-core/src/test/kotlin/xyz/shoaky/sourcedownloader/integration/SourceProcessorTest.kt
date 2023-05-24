@@ -1,29 +1,29 @@
-package xyz.shoaky.sourcedownloader
+package xyz.shoaky.sourcedownloader.integration
 
+import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
 import xyz.shoaky.sourcedownloader.core.ProcessorManager
+import xyz.shoaky.sourcedownloader.core.file.FileContentStatus
+import xyz.shoaky.sourcedownloader.createIfNotExists
 import xyz.shoaky.sourcedownloader.repo.jpa.ProcessingRecordRepository
-import java.nio.file.Files
-import java.nio.file.Path
+import xyz.shoaky.sourcedownloader.testResourcePath
 import kotlin.io.path.*
 import kotlin.test.assertEquals
 
 @SpringBootTest
 @ActiveProfiles("integration-test")
 @OptIn(ExperimentalPathApi::class)
-class SourceProcessorApplicationTest {
+class SourceProcessorTest {
 
     @Autowired
     lateinit var processingStorage: ProcessingRecordRepository
 
     @Autowired
     lateinit var processorManager: ProcessorManager
-    private val savePath = Path("src", "test", "resources", "target")
-    private val sourcePath = Path("src", "test", "resources", "sources")
 
     init {
         sourcePath.createDirectories()
@@ -31,7 +31,7 @@ class SourceProcessorApplicationTest {
     }
 
     @BeforeEach
-    fun beforeNormal() {
+    fun initFileSource() {
         savePath.deleteRecursively()
 
         sourcePath.resolve("test1.jpg").createIfNotExists()
@@ -65,7 +65,6 @@ class SourceProcessorApplicationTest {
         assert(savePath.resolve(Path("test-dir", d3, "test3 - 1.jpg")).exists())
         assert(savePath.resolve(Path("test-dir", d3, "test4 - 2.jpg")).exists())
 
-        savePath.deleteRecursively()
     }
 
     @Test
@@ -77,11 +76,61 @@ class SourceProcessorApplicationTest {
         assertEquals(3, contents.size)
         assertEquals(0, processingStorage.findByProcessorName("NormalCaseCopy").size)
     }
-}
 
-fun Path.createIfNotExists(): Path {
-    if (this.exists()) {
-        return this
+    @Test
+    fun test_file_status() {
+        val downloadedFile = downloadPath.resolve("test2.jpg").createIfNotExists()
+
+        val targetFile = savePath.resolve("test-dir")
+            .resolve("test3.jpg").createIfNotExists()
+
+        val processor = processorManager.getProcessor("FileStatusCase")
+            ?: throw IllegalStateException("Processor not found")
+
+        processor.run()
+        val records = processingStorage.findByProcessorName("FileStatusCase")
+
+        downloadedFile.deleteIfExists()
+        targetFile.deleteIfExists()
+
+        assertEquals(FileContentStatus.NORMAL, records[0].sourceContent.sourceFiles.first().status)
+        assertEquals(FileContentStatus.NORMAL, records[1].sourceContent.sourceFiles.first().status)
+        assertEquals(FileContentStatus.TARGET_EXISTS, records[2].sourceContent.sourceFiles[0].status)
     }
-    return Files.createFile(this)
+
+    @Test
+    fun test_file_status2() {
+        val processor = processorManager.getProcessor("FileStatusCase2")
+            ?: throw IllegalStateException("Processor not found")
+
+        processor.run()
+        val records = processingStorage.findByProcessorName("FileStatusCase2")
+
+        assertEquals(FileContentStatus.FILE_CONFLICT, records[2].sourceContent.sourceFiles[0].status)
+        assertEquals(FileContentStatus.FILE_CONFLICT, records[2].sourceContent.sourceFiles[1].status)
+    }
+
+    // 待测试场景
+    // 2.pointer存储
+    // 3.不同tag文件的pattern
+    // 4.saveContent option测试
+    // 5.variableConflictStrategy option测试
+    // 6.variableNameReplace option测试
+    // 7.tagFilenamePattern option测试
+    // 8.replaceVariable option测试
+
+    companion object {
+
+        private val savePath = testResourcePath.resolve("target")
+        private val sourcePath = testResourcePath.resolve("sources")
+        private val downloadPath = testResourcePath.resolve("downloads")
+
+        @JvmStatic
+        @AfterAll
+        fun clean() {
+            sourcePath.deleteRecursively()
+            savePath.deleteRecursively()
+            downloadPath.deleteRecursively()
+        }
+    }
 }

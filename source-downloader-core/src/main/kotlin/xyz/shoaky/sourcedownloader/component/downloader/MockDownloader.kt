@@ -9,7 +9,9 @@ import kotlin.io.path.createDirectories
 import kotlin.io.path.moveTo
 import kotlin.io.path.notExists
 
-class MockDownloader(private val downloadPath: Path) : TorrentDownloader {
+class MockDownloader(
+    private val downloadPath: Path
+) : TorrentDownloader {
 
     override fun isFinished(task: DownloadTask): Boolean {
         return true

@@ -127,11 +127,7 @@ class SourceProcessor(
     }
 
     fun dryRun(): List<ProcessingContent> {
-        val contents = process(true)
-        contents.forEach {
-            it.sourceContent.updateFileStatus(fileMover)
-        }
-        return contents
+        return process(true)
     }
 
     private fun process(dryRun: Boolean = false): List<ProcessingContent> {
@@ -230,6 +226,7 @@ class SourceProcessor(
         val sourceContent = createPersistentSourceContent(variablesAggregation, sourceItem)
         val contentStatus = probeContent(sourceContent)
 
+        sourceContent.updateFileStatus(fileMover)
         val downloadTask = createDownloadTask(sourceContent)
         if (contentStatus.first && dryRun.not()) {
             // NOTE 非异步下载会阻塞
@@ -433,7 +430,6 @@ class SourceProcessor(
     }
 
     private fun createDownloadTask(content: PersistentSourceContent): DownloadTask {
-        // val originFiles = content.sourceFiles.map { it.fileDownloadPath }
         val downloadFiles = content.sourceFiles
             .filter { it.status != FileContentStatus.TARGET_EXISTS }
             .map { it.fileDownloadPath }
@@ -484,7 +480,7 @@ class SourceProcessor(
 
 }
 
-private class LoggingRetryListener() : RetryListenerSupport() {
+private class LoggingRetryListener : RetryListenerSupport() {
 
     override fun <T : Any?, E : Throwable?> onError(
         context: RetryContext?,
@@ -495,7 +491,6 @@ private class LoggingRetryListener() : RetryListenerSupport() {
     }
 
     override fun <T : Any?, E : Throwable?> open(context: RetryContext?, callback: RetryCallback<T, E>?): Boolean {
-        log.info("onOpen")
         return super.open(context, callback)
     }
 
@@ -504,7 +499,6 @@ private class LoggingRetryListener() : RetryListenerSupport() {
         callback: RetryCallback<T, E>?,
         throwable: Throwable?
     ) {
-        log.info("onClose")
         super.close(context, callback, throwable)
     }
 }
