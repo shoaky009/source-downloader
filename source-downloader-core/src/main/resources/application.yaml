@@ -1,11 +1,13 @@
 spring:
+  application:
+    name: source-downloader
   main:
     banner-mode: off
     allow-bean-definition-overriding: true
   datasource:
     username: sd
     password: sd
-    url: jdbc:h2:file:${SOURCE_DOWNLOADER_DATA_LOCATION:./}source-downloader
+    url: jdbc:h2:file:${source-downloader.data-location}source-downloader
     driver-class-name: org.h2.Driver
   jpa:
     database: h2
@@ -18,7 +20,6 @@ spring:
 
 source-downloader:
   data-location: ${SOURCE_DOWNLOADER_DATA_LOCATION:./}
-
 ---
 spring:
   config:
@@ -50,3 +51,18 @@ spring:
 
 source-downloader:
   data-location: src/test/resources
+
+---
+spring:
+  config:
+    activate:
+      on-profile:
+        - production
+
+logging:
+  file:
+    name: ${source-downloader.data-location}logs/${spring.application.name}.log
+  logback:
+    rollingpolicy:
+      max-history: 2
+      max-file-size: 100MB

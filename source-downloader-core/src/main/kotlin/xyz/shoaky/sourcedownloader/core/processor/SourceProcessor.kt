@@ -1,11 +1,11 @@
 package xyz.shoaky.sourcedownloader.core.processor
 
+import org.slf4j.LoggerFactory
 import org.springframework.retry.RetryCallback
 import org.springframework.retry.RetryContext
 import org.springframework.retry.listener.RetryListenerSupport
 import org.springframework.retry.support.RetryTemplateBuilder
 import org.springframework.util.StopWatch
-import xyz.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
 import xyz.shoaky.sourcedownloader.component.provider.MetadataVariableProvider
 import xyz.shoaky.sourcedownloader.core.*
 import xyz.shoaky.sourcedownloader.core.file.CoreFileContent
@@ -479,6 +479,8 @@ class SourceProcessor(
     }
 
 }
+
+private val log = LoggerFactory.getLogger(SourceProcessor::class.java)
 
 private class LoggingRetryListener : RetryListenerSupport() {
 

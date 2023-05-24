@@ -7,7 +7,7 @@ FROM azul/zulu-openjdk-alpine:20-jre
 VOLUME /tmp
 
 ENV JAVA_OPTS="-Xmx512m -Xms64m"
-ENV SPRINGBOOT_OPTS=""
+ENV SPRINGBOOT_OPTS="--spring.profiles.active=production"
 ENV TZ=Asia/Shanghai
 ENV SOURCE_DOWNLOADER_DATA_LOCATION=/app/data/
 ENV SOURCE_DOWNLOADER_PLUGIN_LOCATION=/app/plugins/
