@@ -133,6 +133,7 @@ class SourceProcessor(
     private fun process(dryRun: Boolean = false): List<ProcessingContent> {
         val lastState = processingStorage.findProcessorSourceState(name, sourceId)
         val itemIterator = retry.execute<Iterator<PointedItem<SourceItemPointer>>, IOException> {
+            it.setAttribute("stage", ProcessStage("FetchSourceItems", lastState))
             val pointer = lastState?.resolvePointer(source::class)
             val iterator = source.fetch(pointer).iterator()
             iterator
@@ -152,6 +153,7 @@ class SourceProcessor(
             }
             val processingContent = kotlin.runCatching {
                 retry.execute<ProcessingContent, Throwable> {
+                    it.setAttribute("stage", ProcessStage("ProcessItem", item))
                     processItem(item.sourceItem, dryRun)
                 }
             }.onFailure {
@@ -187,7 +189,6 @@ class SourceProcessor(
     }
 
     private fun saveSourceState(lastPointedItem: PointedItem<SourceItemPointer>?, lastState: ProcessorSourceState?) {
-        log.info("Processor:$name update pointer Source:$sourceId lastPointedItem:$lastPointedItem")
         // not first time but no items
         if (lastState != null && lastPointedItem == null) {
             processingStorage.save(
@@ -202,6 +203,7 @@ class SourceProcessor(
             return
         }
 
+        log.info("Processor:$name update pointer Source:$sourceId lastPointedItem:$lastPointedItem")
         val latestPointer = Jackson.convert(lastPointedItem.pointer, PersistentItemPointer::class)
         val sourceState = lastState?.copy(
             processorName = name,
@@ -485,11 +487,12 @@ private val log = LoggerFactory.getLogger(SourceProcessor::class.java)
 private class LoggingRetryListener : RetryListenerSupport() {
 
     override fun <T : Any?, E : Throwable?> onError(
-        context: RetryContext?,
+        context: RetryContext,
         callback: RetryCallback<T, E>?,
         throwable: Throwable?
     ) {
-        log.error("重试失败", throwable)
+        val stage = context.getAttribute("stage")
+        log.info("第{}次重试失败, case:{}, stage:{}", context.retryCount, throwable?.message, stage)
     }
 
     override fun <T : Any?, E : Throwable?> open(context: RetryContext?, callback: RetryCallback<T, E>?): Boolean {
@@ -556,6 +559,15 @@ private class SafeRunner(
         } finally {
             running = false
         }
+    }
+}
+
+private class ProcessStage(
+    val stage: String,
+    val subject: Any?
+) {
+    override fun toString(): String {
+        return "RetryAttrs(operation='$stage', subject=$subject)"
     }
 }
 
