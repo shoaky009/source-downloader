@@ -125,7 +125,7 @@ class SpringProcessorManager(
         }
         processor.scheduleRenameTask(options.renameTaskInterval)
         if (options.deleteEmptyDirectory) {
-            val deleteEmptyDirectory = DeleteEmptyDirectorySupplier.apply(Properties.EMPTY)
+            val deleteEmptyDirectory = CleanEmptyDirectorySupplier.apply(Properties.EMPTY)
             processor.addRunAfterCompletion(deleteEmptyDirectory)
         }
         if (options.touchItemDirectory) {

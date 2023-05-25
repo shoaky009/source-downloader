@@ -7,12 +7,7 @@ class WarpBodyMapper<T : Any>(
         try {
             return bodyMapper.mapping(info)
         } catch (e: Exception) {
-            val inputStream = info.inputStream
-            if (inputStream.available() == 0) {
-                info.inputStream.reset()
-            }
-            val allBytes = info.inputStream.readAllBytes()
-            val body = String(allBytes, Charsets.UTF_8)
+            val body = String(info.bytes, Charsets.UTF_8)
             log.error("mapping error, body: $body", e)
             throw e
         }

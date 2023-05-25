@@ -5,7 +5,7 @@ import java.nio.file.Path
 interface SourceItemGroup {
 
     /**
-     * @return 源文件列表
+     * @return 位于DownloadPath下的相对路径
      */
     fun sourceFiles(paths: List<Path>): List<SourceFile>
 

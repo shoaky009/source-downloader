@@ -2,7 +2,7 @@ package xyz.shoaky.sourcedownloader.component
 
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Test
-import xyz.shoaky.sourcedownloader.component.supplier.DeleteEmptyDirectorySupplier
+import xyz.shoaky.sourcedownloader.component.supplier.CleanEmptyDirectorySupplier
 import xyz.shoaky.sourcedownloader.core.CorePathPattern
 import xyz.shoaky.sourcedownloader.core.file.CoreFileContent
 import xyz.shoaky.sourcedownloader.core.file.PersistentSourceContent
@@ -15,7 +15,7 @@ import kotlin.io.path.*
 @OptIn(ExperimentalPathApi::class)
 class DeleteEmptyDirectoryTest {
 
-    private val cp = DeleteEmptyDirectorySupplier.apply(Properties.EMPTY)
+    private val cp = CleanEmptyDirectorySupplier.apply(Properties.EMPTY)
 
     @Test
     fun given_empty() {

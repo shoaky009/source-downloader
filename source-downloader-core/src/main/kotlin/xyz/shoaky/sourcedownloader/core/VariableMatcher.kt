@@ -2,7 +2,7 @@ package xyz.shoaky.sourcedownloader.core
 
 interface VariableMatcher {
 
-    fun match(value: String): Boolean
+    fun match(key: String, value: String): Boolean
 
 }
 
@@ -10,7 +10,7 @@ class RegexVariableMatcher(
     private val regex: Regex
 ) : VariableMatcher {
 
-    override fun match(value: String): Boolean {
+    override fun match(key: String, value: String): Boolean {
         return regex.matches(value)
     }
 

@@ -334,6 +334,44 @@ class VariableProvidersAggregationTest {
         assertEquals("5", sourceFiles2[2].patternVariables().variables()["key4.1"])
 
     }
+
+    @Test
+    fun same_accuracy_in_order() {
+        val p1 = CustomProvider(
+            mapOf("season" to "00", "test1" to "2"),
+            listOf(
+                UniversalSourceFile(
+                    MapPatternVariables(mapOf("episode" to "01"))
+                ),
+                UniversalSourceFile(
+                    MapPatternVariables(mapOf("episode" to "02"))
+                ),
+                UniversalSourceFile(
+                    MapPatternVariables(mapOf("episode" to "04"))
+                )
+            ),
+            2
+        )
+        val p2 = CustomProvider(
+            mapOf("season" to "01", "test2" to "2"),
+            listOf(
+                UniversalSourceFile(
+                    MapPatternVariables(mapOf("episode" to "01", "key2" to "test2"))
+                ),
+                UniversalSourceFile(
+                    MapPatternVariables(mapOf("episode" to "02.5"))
+                ),
+                UniversalSourceFile(
+                    MapPatternVariables(mapOf("episode" to "04"))
+                )
+            ),
+            2
+        )
+
+        val aggregation = VariableProvidersAggregation(sourceItem(), listOf(p1, p2))
+        val sharedVariables = aggregation.sharedPatternVariables().variables()
+        assertEquals("00", sharedVariables["season"])
+    }
 }
 
 private class CustomProvider(

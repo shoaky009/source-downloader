@@ -13,6 +13,7 @@ class AnimeFileFilterTest {
         "[UHA-WINGS&VCB-Studio] Karakai Jouzu no Takagi-san 2 [Menu06][Ma10p_1080p][x265_flac].mkv" to false,
         "[UHA-WINGS&VCB-Studio] Karakai Jouzu no Takagi-san 2 [Blu-ray & DVD Selling CM][Ma10p_1080p][x265_flac].mkv" to false,
         "[UHA-WINGS&VCB-Studio] Karakai Jouzu no Takagi-san 2 [Blu-ray & DVD Selling CM][Ma10p_1080p][x265_flac].mkv" to false,
+        "NCOP" to false,
         "[UHA-WINGS&VCB-Studio] Karakai Jouzu no Takagi-san 2 [10][Ma10p_1080p][x265_flac].mkv" to true,
     )
 
@@ -20,7 +21,7 @@ class AnimeFileFilterTest {
     fun test() {
         for (datum in data) {
             val path = Path(datum.first)
-            assertEquals(datum.second, AnimeFileFilter.test(path))
+            assertEquals(datum.second, AnimeFileFilter.test(path), path.toString())
         }
     }
 }

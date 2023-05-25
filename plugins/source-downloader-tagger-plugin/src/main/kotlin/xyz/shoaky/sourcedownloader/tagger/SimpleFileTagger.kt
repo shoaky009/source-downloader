@@ -14,6 +14,9 @@ internal object SimpleFileTagger : FileTagger {
 
     override fun tag(fileContent: FileContent): String? {
         val name = fileContent.fileDownloadPath.name
+        if (name.lastIndexOf(".") < 0) {
+            return null
+        }
         return tag(name)
     }
 

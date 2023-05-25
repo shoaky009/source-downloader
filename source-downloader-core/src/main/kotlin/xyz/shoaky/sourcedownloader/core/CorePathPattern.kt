@@ -42,7 +42,7 @@ data class CorePathPattern(
         val pathBuilder = StringBuilder()
         val variables = provider.variables().mapValues { entry ->
             variableReplace.firstNotNullOfOrNull {
-                if (it.key.match(entry.value)) {
+                if (it.key.match(entry.key, entry.value)) {
                     return@mapValues it.value
                 }
             }

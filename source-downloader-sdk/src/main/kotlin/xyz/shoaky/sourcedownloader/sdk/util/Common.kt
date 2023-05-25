@@ -13,10 +13,10 @@ fun String.find(vararg regexes: Regex): String? {
     return null
 }
 
-fun String.replaces(replaces: List<String>, to: String): String {
+fun String.replaces(replaces: List<String>, to: String, ignoreCase: Boolean = true): String {
     var result = this
     for (replace in replaces) {
-        result = result.replace(replace, to)
+        result = result.replace(replace, to, ignoreCase)
     }
     return result
 }

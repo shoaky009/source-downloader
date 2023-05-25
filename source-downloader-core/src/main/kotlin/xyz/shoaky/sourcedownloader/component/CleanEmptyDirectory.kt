@@ -6,7 +6,7 @@ import java.nio.file.Files
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.deleteRecursively
 
-object DeleteEmptyDirectory : RunAfterCompletion {
+object CleanEmptyDirectory : RunAfterCompletion {
     @OptIn(ExperimentalPathApi::class)
     override fun accept(t: SourceContent) {
         t.sourceFiles.firstOrNull()?.run {
