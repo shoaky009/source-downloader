@@ -4,6 +4,7 @@ package xyz.shoaky.sourcedownloader.core
 // import io.swagger.v3.oas.annotations.media.SchemaProperty
 import com.fasterxml.jackson.annotation.*
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
+import xyz.shoaky.sourcedownloader.core.file.VariableErrorStrategy
 import xyz.shoaky.sourcedownloader.core.processor.VariableConflictStrategy
 import xyz.shoaky.sourcedownloader.sdk.DownloadOptions
 import xyz.shoaky.sourcedownloader.sdk.PathPattern
@@ -94,8 +95,8 @@ data class ProcessorConfig(
         val fileExpressionExclusions: List<String> = emptyList(),
         @JsonAlias("file-expression-inclusions")
         val fileExpressionInclusions: List<String> = emptyList(),
-        // @JsonAlias("parsing-failed-strategy")
-        // val parsingFailedStrategy: ParsingFailedStrategy = ParsingFailedStrategy.USE_ORIGINAL_FILENAME,
+        @JsonAlias("variable-error-strategy")
+        val variableErrorStrategy: VariableErrorStrategy = VariableErrorStrategy.STAY,
         @JsonAlias("touch-item-directory")
         val touchItemDirectory: Boolean = true,
         @JsonAlias("delete-empty-directory")

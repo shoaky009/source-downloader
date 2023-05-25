@@ -3,6 +3,7 @@ package xyz.shoaky.sourcedownloader.core
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Test
 import xyz.shoaky.sourcedownloader.core.file.CoreFileContent
+import xyz.shoaky.sourcedownloader.core.file.VariableErrorStrategy
 import xyz.shoaky.sourcedownloader.sdk.MapPatternVariables
 import xyz.shoaky.sourcedownloader.sdk.PathPattern
 import xyz.shoaky.sourcedownloader.testResourcePath
@@ -135,6 +136,65 @@ class CoreFileContentTest {
         val c2 = createFileContent()
         val d2 = c2.itemDownloadRootDirectory()
         assertEquals(null, d2)
+    }
+
+    @Test
+    fun test_variable_error_given_stay_strategy() {
+        val content = createFileContent(
+            patternVars = MapPatternVariables(mapOf("season" to "01")),
+            savePathPattern = CorePathPattern("{name}/S{season}"),
+            filenamePathPattern = CorePathPattern("{name} - {season}"),
+        )
+        content.setVariableErrorStrategy(VariableErrorStrategy.STAY)
+        assertEquals(content.fileDownloadPath, content.targetPath())
+    }
+
+    @Test
+    fun test_variable_error_given_pattern_strategy() {
+        val content = createFileContent(
+            patternVars = MapPatternVariables(mapOf("season" to "01")),
+            savePathPattern = CorePathPattern("{name}/S{season}"),
+            filenamePathPattern = CorePathPattern("{name} - {season}"),
+        )
+        content.setVariableErrorStrategy(VariableErrorStrategy.PATTERN)
+        println(content.targetPath())
+        val resolve = sourceSavePath.resolve("{name}").resolve("S01").resolve("{name} - 01.txt")
+        assertEquals(resolve, content.targetPath())
+    }
+
+    @Test
+    fun test_both_variable_error_given_original_strategy() {
+        val content = createFileContent(
+            patternVars = MapPatternVariables(mapOf("season" to "01")),
+            savePathPattern = CorePathPattern("{name}/S{season}"),
+            filenamePathPattern = CorePathPattern("{name} - {season}"),
+        )
+        content.setVariableErrorStrategy(VariableErrorStrategy.ORIGINAL)
+        println(content.targetPath())
+        assertEquals(content.fileDownloadPath, content.targetPath())
+    }
+
+    @Test
+    fun test_filename_variable_error_given_original_strategy() {
+        val content = createFileContent(
+            patternVars = MapPatternVariables(mapOf("season" to "01", "name" to "test")),
+            savePathPattern = CorePathPattern("{name}/S{season}"),
+            filenamePathPattern = CorePathPattern("{title} - {season}"),
+        )
+        content.setVariableErrorStrategy(VariableErrorStrategy.ORIGINAL)
+        val resolve = sourceSavePath.resolve("test").resolve("S01").resolve("1.txt")
+        assertEquals(resolve, content.targetPath())
+    }
+
+    @Test
+    fun test_save_path_variable_error_given_original_strategy() {
+        val content = createFileContent(
+            patternVars = MapPatternVariables(mapOf("season" to "01", "title" to "test 01")),
+            savePathPattern = CorePathPattern("{name}/S{season}"),
+            filenamePathPattern = CorePathPattern("{title} - {season}"),
+        )
+        content.setVariableErrorStrategy(VariableErrorStrategy.ORIGINAL)
+        assertEquals(downloadPath.resolve("test 01 - 01.txt"), content.targetPath())
     }
 
     companion object {

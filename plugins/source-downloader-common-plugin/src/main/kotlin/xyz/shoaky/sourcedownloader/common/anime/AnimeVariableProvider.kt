@@ -35,10 +35,10 @@ class AnimeVariableProvider(
                 "S01", "Season 1", "Season 01",
                 "BDBOX", "BD-BOX", "+"
             ), ""
-        ).replace(Regex("S(\\d+)"), "Season $1")
+        )
+            .replace(Regex("S(\\d+)"), "Season $1")
             .replace(Regex("\\[.*?]"), "")
             .trim()
-
 
         val hasJp = hasLanguage(title, Character.UnicodeScript.HIRAGANA, Character.UnicodeScript.KATAKANA)
         val hasChinese = hasLanguage(title, Character.UnicodeScript.HAN)

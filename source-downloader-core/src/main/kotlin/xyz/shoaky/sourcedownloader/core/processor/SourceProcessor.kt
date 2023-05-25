@@ -261,6 +261,7 @@ class SourceProcessor(
             res
         }
 
+        val sharedPatternVariables = sourceItemGroup.sharedPatternVariables()
         val sourceFiles = sourceItemGroup.sourceFiles(filteredFiles)
             .mapIndexed { index, sourceFile ->
                 val sourceFileContent = CoreFileContent(
@@ -271,11 +272,13 @@ class SourceProcessor(
                     fileSavePathPattern,
                     filenamePattern,
                 )
-                sourceFileContent.addSharedVariables(sourceItemGroup.sharedPatternVariables())
-                tagFileAndReplaceFilenamePattern(sourceFileContent)
+                // 这里坑，后面看怎么改
+                val tagged = tagFileAndReplaceFilenamePattern(sourceFileContent)
+                tagged.setVariableErrorStrategy(options.variableErrorStrategy)
+                tagged.addSharedVariables(sharedPatternVariables)
+                tagged
             }
-        val variables = sourceItemGroup.sharedPatternVariables()
-        return PersistentSourceContent(sourceItem, sourceFiles, MapPatternVariables(variables))
+        return PersistentSourceContent(sourceItem, sourceFiles, MapPatternVariables(sharedPatternVariables))
     }
 
     private fun tagFileAndReplaceFilenamePattern(fileContent: CoreFileContent): CoreFileContent {
@@ -381,7 +384,9 @@ class SourceProcessor(
         val sourceContent = pc.sourceContent
         val sourceFiles = sourceContent.sourceFiles
         sourceFiles.forEach {
+            // 这边设计不太好
             it.addSharedVariables(sourceContent.sharedPatternVariables)
+            it.setVariableErrorStrategy(options.variableErrorStrategy)
         }
 
         val targetPaths = sourceFiles.map { it.targetPath() }
@@ -489,10 +494,10 @@ private class LoggingRetryListener : RetryListenerSupport() {
     override fun <T : Any?, E : Throwable?> onError(
         context: RetryContext,
         callback: RetryCallback<T, E>?,
-        throwable: Throwable?
+        throwable: Throwable
     ) {
         val stage = context.getAttribute("stage")
-        log.info("第{}次重试失败, case:{}, stage:{}", context.retryCount, throwable?.message, stage)
+        log.info("第{}次重试失败, message:{}, stage:{}", context.retryCount, "${throwable::class.simpleName}:${throwable.message}", stage)
     }
 
     override fun <T : Any?, E : Throwable?> open(context: RetryContext?, callback: RetryCallback<T, E>?): Boolean {
@@ -567,7 +572,7 @@ private class ProcessStage(
     val subject: Any?
 ) {
     override fun toString(): String {
-        return "RetryAttrs(operation='$stage', subject=$subject)"
+        return "operation='$stage', subject=$subject"
     }
 }
 

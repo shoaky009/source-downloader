@@ -22,8 +22,10 @@ data class CoreFileContent(
     var status: FileContentStatus = FileContentStatus.NORMAL
 ) : FileContent {
 
+    private var variableErrorStrategy: VariableErrorStrategy = VariableErrorStrategy.STAY
+
     @Transient
-    private val sharedVariables = SharedPatternVariables(patternVariables)
+    private val allVariables = MapPatternVariables(patternVariables)
 
     @Transient
     private val tags: MutableSet<String> = mutableSetOf()
@@ -32,24 +34,41 @@ data class CoreFileContent(
         saveDirectoryPath().resolve(targetFilename())
     }
 
+    fun setVariableErrorStrategy(strategy: VariableErrorStrategy) {
+        variableErrorStrategy = strategy
+    }
+
     override fun targetPath(): Path {
         return targetPath
     }
 
     override fun saveDirectoryPath(): Path {
-        val parse = fileSavePathPattern.parse(sharedVariables)
-        return sourceSavePath.resolve(parse.path)
+        val parse = fileSavePathPattern.parse(allVariables)
+        if (parse.success()) {
+            return sourceSavePath.resolve(parse.path)
+        }
+
+        return when (variableErrorStrategy) {
+            VariableErrorStrategy.ORIGINAL,
+            VariableErrorStrategy.STAY -> {
+                fileDownloadPath.parent
+            }
+
+            VariableErrorStrategy.PATTERN -> {
+                sourceSavePath.resolve(parse.path)
+            }
+        }
     }
 
     fun addSharedVariables(shared: PatternVariables) {
-        sharedVariables.addShared(shared)
+        allVariables.addVariables(shared)
     }
 
     fun targetFilename(): String {
         if (filenamePattern == CorePathPattern.ORIGIN) {
             return fileDownloadPath.name
         }
-        val parse = filenamePattern.parse(sharedVariables)
+        val parse = filenamePattern.parse(allVariables)
         val success = parse.success()
         if (success) {
             val targetFilename = parse.path
@@ -64,7 +83,21 @@ data class CoreFileContent(
             return "$targetFilename.$extension"
         }
 
-        return fileDownloadPath.name
+        return when (variableErrorStrategy) {
+            VariableErrorStrategy.STAY,
+            VariableErrorStrategy.ORIGINAL -> {
+                fileDownloadPath.name
+            }
+
+            VariableErrorStrategy.PATTERN -> {
+                val target = parse.path
+                val extension = fileDownloadPath.extension
+                if (target.endsWith(extension)) {
+                    return target
+                }
+                "$target.$extension"
+            }
+        }
     }
 
     override fun itemSaveRootDirectory(): Path? {
@@ -108,6 +141,6 @@ data class CoreFileContent(
     }
 
     fun currentVariables(): PatternVariables {
-        return sharedVariables
+        return allVariables
     }
 }

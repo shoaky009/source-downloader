@@ -47,6 +47,6 @@ data class PersistentSourceContent(
             updateFileStatus(fileMover)
             updated = true
         }
-        return sourceFiles.filter { it.status == FileContentStatus.NORMAL }
+        return sourceFiles.filter { it.status == FileContentStatus.NORMAL }.filter { it.fileDownloadPath != it.targetPath() }
     }
 }
