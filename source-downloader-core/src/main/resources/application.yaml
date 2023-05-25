@@ -58,7 +58,7 @@ spring:
     activate:
       on-profile:
         - production
-
+        - debug
 logging:
   file:
     name: ${source-downloader.data-location}logs/${spring.application.name}.log

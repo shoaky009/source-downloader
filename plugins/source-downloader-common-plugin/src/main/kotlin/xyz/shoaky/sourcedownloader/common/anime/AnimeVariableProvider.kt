@@ -1,5 +1,7 @@
 package xyz.shoaky.sourcedownloader.common.anime
 
+import com.google.common.cache.CacheBuilder
+import com.google.common.cache.CacheLoader
 import org.slf4j.LoggerFactory
 import xyz.shoaky.sourcedownloader.external.anilist.AnilistClient
 import xyz.shoaky.sourcedownloader.external.anilist.Search
@@ -18,6 +20,13 @@ class AnimeVariableProvider(
     private val anilistClient: AnilistClient
 ) : VariableProvider {
 
+    private val searchCache =
+        CacheBuilder.newBuilder().maximumSize(500).build(object : CacheLoader<String, PatternVariables>() {
+            override fun load(title: String): PatternVariables {
+                return searchAnime(title)
+            }
+        })
+
     override fun createSourceGroup(sourceItem: SourceItem): SourceItemGroup {
         val create = create(sourceItem)
         return AnimeSourceGroup(create)
@@ -27,7 +36,10 @@ class AnimeVariableProvider(
 
     private fun create(sourceItem: SourceItem): PatternVariables {
         val title = extractTitle(sourceItem)
+        return searchCache.get(title)
+    }
 
+    private fun searchAnime(title: String): PatternVariables {
         val hasJp = hasLanguage(title, Character.UnicodeScript.HIRAGANA, Character.UnicodeScript.KATAKANA)
         val hasChinese = hasLanguage(title, Character.UnicodeScript.HAN)
         if (hasJp || hasChinese.not()) {
@@ -74,7 +86,8 @@ class AnimeVariableProvider(
         ).replaces(
             listOf(")", "】", "）"), "]"
         ).replaces(
-            listOf("~", "！", "～", "SP", "TV", "-",
+            listOf(
+                "~", "！", "～", "SP", "TV", "-",
                 "S01", "Season 1", "Season 01",
                 "BDBOX", "BD-BOX", "+"
             ), ""
