@@ -5,8 +5,8 @@ import org.springframework.http.HttpStatus
 import xyz.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
 import xyz.shoaky.sourcedownloader.sdk.SourceContent
 import xyz.shoaky.sourcedownloader.sdk.component.FileMover
-import xyz.shoaky.sourcedownloader.sdk.util.Http
 import xyz.shoaky.sourcedownloader.sdk.util.encodeBase64
+import xyz.shoaky.sourcedownloader.sdk.util.http.httpClient
 import java.net.URI
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
@@ -37,7 +37,7 @@ open class HttpFileMover(
             builder.header(HttpHeaders.AUTHORIZATION, "Basic $authorization")
         }
         builder.PUT(HttpRequest.BodyPublishers.ofFile(filePath))
-        return Http.client.send(builder.build(), HttpResponse.BodyHandlers.ofString())
+        return httpClient.send(builder.build(), HttpResponse.BodyHandlers.ofString())
     }
 
 }

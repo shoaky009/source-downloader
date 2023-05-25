@@ -6,9 +6,9 @@ import xyz.shoaky.sourcedownloader.sdk.SourceItem
 import xyz.shoaky.sourcedownloader.sdk.SourceItemGroup
 import xyz.shoaky.sourcedownloader.sdk.UniversalSourceFile
 import xyz.shoaky.sourcedownloader.sdk.component.VariableProvider
-import xyz.shoaky.sourcedownloader.sdk.util.Http
 import xyz.shoaky.sourcedownloader.sdk.util.find
-import xyz.shoaky.sourcedownloader.sdk.util.httpGetRequest
+import xyz.shoaky.sourcedownloader.sdk.util.http.httpClient
+import xyz.shoaky.sourcedownloader.sdk.util.http.httpGetRequest
 import java.net.URI
 import java.net.http.HttpResponse
 import java.time.LocalDate
@@ -35,7 +35,7 @@ internal class DlsiteVariableProvider(
             URI("https://www.dlsite.com/home/work/=/product_id/$dlsiteId.html"),
             mapOf("Cookie" to "locale=$locale; adultchecked=1")
         )
-        val body = Http.client.send(request, HttpResponse.BodyHandlers.ofString()).body()
+        val body = httpClient.send(request, HttpResponse.BodyHandlers.ofString()).body()
         return parseWorkInfo(body, dlsiteId)
     }
 

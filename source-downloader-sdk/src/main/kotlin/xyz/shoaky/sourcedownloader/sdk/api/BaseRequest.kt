@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import com.google.common.net.MediaType
-import xyz.shoaky.sourcedownloader.sdk.util.Http
+import xyz.shoaky.sourcedownloader.sdk.util.http.CommonBodyHandler
 
 abstract class BaseRequest<T : Any> {
 
@@ -26,8 +26,8 @@ abstract class BaseRequest<T : Any> {
     @JsonIgnore
     protected val httpHeaders = mutableMapOf<String, String>()
 
-    open fun bodyHandler(): Http.CommonBodyHandler<T> {
-        return Http.CommonBodyHandler(this.responseBodyType)
+    open fun bodyHandler(): CommonBodyHandler<T> {
+        return CommonBodyHandler(this.responseBodyType)
     }
 
     protected fun addQueryParameter(name: String, value: Any) {

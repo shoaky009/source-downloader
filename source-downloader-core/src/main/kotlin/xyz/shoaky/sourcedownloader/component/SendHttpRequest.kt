@@ -5,8 +5,8 @@ import org.springframework.web.util.UriComponentsBuilder
 import xyz.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
 import xyz.shoaky.sourcedownloader.sdk.SourceContent
 import xyz.shoaky.sourcedownloader.sdk.component.RunAfterCompletion
-import xyz.shoaky.sourcedownloader.sdk.util.Http
 import xyz.shoaky.sourcedownloader.sdk.util.Jackson
+import xyz.shoaky.sourcedownloader.sdk.util.http.httpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpRequest.BodyPublishers
 import java.net.http.HttpResponse.BodyHandlers
@@ -27,7 +27,7 @@ class SendHttpRequest(
             .method(props.method.name(), bodyPublishers)
 
         props.headers.forEach(request::setHeader)
-        val response = Http.client.send(request.build(), BodyHandlers.discarding())
+        val response = httpClient.send(request.build(), BodyHandlers.discarding())
         if (response.statusCode() != 200) {
             log.warn("send http request to $uri, response code is ${response.statusCode()}")
         }
