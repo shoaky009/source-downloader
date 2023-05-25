@@ -28,8 +28,8 @@ class CommonBodyHandler<T : Any>(
         { inputStream: InputStream ->
             val subtype = mediaType.subtype()
             for (entry in bodyMapperSuppliers) {
-                val rp = MappingInfo(type, subtype, inputStream.readAllBytes())
                 if (subtype == entry.key) {
+                    val rp = MappingInfo(type, subtype, inputStream.readAllBytes())
                     return@mapping entry.value.get().mapping(rp)
                 }
             }
