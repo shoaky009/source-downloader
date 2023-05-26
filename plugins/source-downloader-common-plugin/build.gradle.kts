@@ -26,6 +26,7 @@ dependencies {
     implementation("com.apptasticsoftware:rssreader:3.3.0")
     implementation("com.dgtlrepublic:anitomyJ:0.0.7")
     implementation("com.github.atomashpolskiy:bt-core:1.10")
+    implementation("com.github.atomashpolskiy:bt-dht:1.10")
     compileOnly("org.springframework:spring-web:6.0.8")
 }
 

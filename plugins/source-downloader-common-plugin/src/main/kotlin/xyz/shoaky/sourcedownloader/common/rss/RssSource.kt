@@ -7,6 +7,7 @@ import xyz.shoaky.sourcedownloader.sdk.SourceItem
 import java.net.URI
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.*
 
 class RssSource(private val url: String) : AlwaysLatestSource() {
 
@@ -37,7 +38,8 @@ class RssSource(private val url: String) : AlwaysLatestSource() {
 }
 
 private val dateTimePatterns = listOf(
-    DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+    DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"),
+    DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss Z", Locale.ENGLISH),
 )
 
 fun parseTime(pubDateText: String): LocalDateTime {
@@ -46,7 +48,9 @@ fun parseTime(pubDateText: String): LocalDateTime {
         LocalDateTime.parse(pubDateText)
     } catch (e: Exception) {
         for (pattern in dateTimePatterns) {
-            return LocalDateTime.parse(pubDateText, pattern)
+            runCatching {
+                return LocalDateTime.parse(pubDateText, pattern)
+            }
         }
         throw RuntimeException("解析日期$pubDateText 失败")
     }

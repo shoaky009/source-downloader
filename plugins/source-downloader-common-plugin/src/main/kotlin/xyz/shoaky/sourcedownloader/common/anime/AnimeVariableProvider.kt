@@ -26,19 +26,7 @@ class AnimeVariableProvider(
     override fun support(item: SourceItem): Boolean = true
 
     private fun create(sourceItem: SourceItem): PatternVariables {
-        val title = sourceItem.title.replaces(
-            listOf("(", "【", "（"), "["
-        ).replaces(
-            listOf(")", "】", "）"), "]"
-        ).replaces(
-            listOf("~", "！", "～", "SP", "TV", "-",
-                "S01", "Season 1", "Season 01",
-                "BDBOX", "BD-BOX", "+"
-            ), ""
-        )
-            .replace(Regex("S(\\d+)"), "Season $1")
-            .replace(Regex("\\[.*?]"), "")
-            .trim()
+        val title = extractTitle(sourceItem)
 
         val hasJp = hasLanguage(title, Character.UnicodeScript.HIRAGANA, Character.UnicodeScript.KATAKANA)
         val hasChinese = hasLanguage(title, Character.UnicodeScript.HAN)
@@ -80,12 +68,58 @@ class AnimeVariableProvider(
         )
     }
 
+    private fun extractTitle(sourceItem: SourceItem): String {
+        val text = sourceItem.title.replaces(
+            listOf("(", "【", "（"), "["
+        ).replaces(
+            listOf(")", "】", "）"), "]"
+        ).replaces(
+            listOf("~", "！", "～", "SP", "TV", "-",
+                "S01", "Season 1", "Season 01",
+                "BDBOX", "BD-BOX", "+"
+            ), ""
+        )
+            .replace(Regex("S(\\d+)"), "Season $1")
+            .replace(Regex("\\[.*?]"), "")
+            .trim()
+
+        if (text.length > 12) {
+            val sp = listOf("/", "|").firstOrNull {
+                text.contains(it)
+            } ?: return text
+
+            // 优先选择日语，最后是中文尽可能用anilist搜索
+            return text.split(sp)
+                .map { TitleScore(it) }
+                .maxBy { it.score }.title
+        }
+        return text
+    }
+
     private fun hasLanguage(text: String, vararg unicode: Character.UnicodeScript): Boolean {
         return text.codePoints().anyMatch {
             unicode.contains(Character.UnicodeScript.of(it))
         }
     }
 
+}
+
+private class TitleScore(
+    val title: String,
+) {
+
+    val score: Int = byLanguage(title)
+
+    private fun byLanguage(title: String): Int {
+        return title.codePoints().map {
+            when (Character.UnicodeScript.of(it)) {
+                Character.UnicodeScript.HAN -> 1
+                Character.UnicodeScript.HIRAGANA -> 3
+                Character.UnicodeScript.KATAKANA -> 3
+                else -> 1
+            }
+        }.sum()
+    }
 }
 
 private val log = LoggerFactory.getLogger(AnimeSourceGroup::class.java)
