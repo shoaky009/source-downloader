@@ -114,8 +114,8 @@ private class TitleScore(
         return title.codePoints().map {
             when (Character.UnicodeScript.of(it)) {
                 Character.UnicodeScript.HAN -> 1
-                Character.UnicodeScript.HIRAGANA -> 3
-                Character.UnicodeScript.KATAKANA -> 3
+                Character.UnicodeScript.HIRAGANA -> 10
+                Character.UnicodeScript.KATAKANA -> 10
                 else -> 1
             }
         }.sum()
