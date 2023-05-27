@@ -72,10 +72,8 @@ class CorePathPatternTest {
     fun test_replacement() {
         val pathPattern = CorePathPattern(
             "{title}-{source}",
-            mapOf(
-                RegexVariableMatcher("BDRIP".toRegex(RegexOption.IGNORE_CASE)) to "BD"
-            )
         )
+        pathPattern.addReplacer(RegexVariableReplacer("BDRIP".toRegex(RegexOption.IGNORE_CASE), "BD"))
 
         val parse1 = pathPattern.parse(MapPatternVariables(mapOf(
             "title" to "111",

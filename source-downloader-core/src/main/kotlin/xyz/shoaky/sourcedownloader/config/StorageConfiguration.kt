@@ -18,7 +18,7 @@ class StorageConfiguration(
 
     @Bean
     fun yamlConfigStorage(): YamlConfigStorage {
-        val dataLocation = Path(props.dataLocation)
+        val dataLocation = props.dataLocation
         val configPath = dataLocation.resolve("config.yaml")
         if (configPath.exists()) {
             return YamlConfigStorage(configPath)

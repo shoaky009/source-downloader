@@ -17,7 +17,7 @@ import java.nio.file.Path
 
 class AnimeVariableProvider(
     private val bgmTvApiClient: BgmTvApiClient,
-    private val anilistClient: AnilistClient
+    private val anilistClient: AnilistClient,
 ) : VariableProvider {
 
     private val searchCache =

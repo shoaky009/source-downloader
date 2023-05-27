@@ -9,7 +9,6 @@ import xyz.shoaky.sourcedownloader.core.processor.VariableConflictStrategy
 import xyz.shoaky.sourcedownloader.sdk.DownloadOptions
 import xyz.shoaky.sourcedownloader.sdk.PathPattern
 import xyz.shoaky.sourcedownloader.sdk.component.*
-import xyz.shoaky.sourcedownloader.util.jackson.VariableMatcherDeserializer
 import java.nio.file.Path
 import java.time.Duration
 
@@ -108,9 +107,9 @@ data class ProcessorConfig(
         @JsonAlias("tag-filename-pattern")
         @JsonDeserialize(contentAs = CorePathPattern::class)
         val tagFilenamePattern: Map<String, PathPattern> = emptyMap(),
-        @JsonAlias("variable-replacement")
-        @JsonDeserialize(keyUsing = VariableMatcherDeserializer::class)
-        val variableReplacement: Map<VariableMatcher, String> = emptyMap()
+        @JsonAlias("variable-replacers")
+        @JsonDeserialize(contentAs = RegexVariableReplacer::class)
+        val variableReplacers: List<VariableReplacer> = emptyList()
     )
 
 }

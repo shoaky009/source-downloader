@@ -10,7 +10,7 @@ import java.net.http.HttpResponse
 
 class AnilistClient(
     private val endpoint: URI = URI("https://graphql.anilist.co"),
-    private val autoLimit: Boolean = true
+    private val autoLimit: Boolean = false
 ) : HookedApiClient() {
 
     fun <R : BaseRequest<T>, T : Any> execute(request: R): HttpResponse<T> {

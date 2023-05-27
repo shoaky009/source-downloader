@@ -10,7 +10,7 @@ object AnimeVariableProviderSupplier : SdComponentSupplier<AnimeVariableProvider
     override fun apply(props: Properties): AnimeVariableProvider {
         return AnimeVariableProvider(
             BgmTvApiClient(props.getOrNull("bgm-token")),
-            AnilistClient()
+            AnilistClient(autoLimit = props.getOrDefault("auto-limit", false))
         )
     }
 

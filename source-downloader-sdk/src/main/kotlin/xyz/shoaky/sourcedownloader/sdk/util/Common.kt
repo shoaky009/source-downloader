@@ -1,5 +1,6 @@
 package xyz.shoaky.sourcedownloader.sdk.util
 
+import java.net.URI
 import java.util.*
 
 
@@ -23,4 +24,12 @@ fun String.replaces(replaces: List<String>, to: String, ignoreCase: Boolean = tr
 
 fun String.encodeBase64(): String {
     return Base64.getEncoder().encodeToString(this.toByteArray())
+}
+
+
+fun URI.queryMap(): Map<String, String> {
+    return query.split("&").associate {
+        val split = it.split("=")
+        split[0] to split[1]
+    }
 }

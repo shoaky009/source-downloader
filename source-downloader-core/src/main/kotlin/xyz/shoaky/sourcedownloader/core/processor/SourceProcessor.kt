@@ -51,9 +51,19 @@ class SourceProcessor(
 
     private val downloadPath = downloader.defaultDownloadPath()
     private val fileSavePathPattern: PathPattern = options.savePathPattern
-    private val filenamePattern: PathPattern = CorePathPattern(options.filenamePattern.pattern, options.variableReplacement)
+
+    private val variableReplacers: MutableList<VariableReplacer> = mutableListOf(
+        *options.variableReplacers.toTypedArray(), WindowsPathReplacer
+    )
+    private val filenamePattern: PathPattern = CorePathPattern(
+        options.filenamePattern.pattern,
+        variableReplacers
+    )
     private val tagFilenamePattern = options.tagFilenamePattern.mapValues {
-        CorePathPattern(it.value.pattern, options.variableReplacement)
+        CorePathPattern(
+            it.value.pattern,
+            variableReplacers
+        )
     }
 
     private var renameTaskFuture: ScheduledFuture<*>? = null
@@ -165,9 +175,11 @@ class SourceProcessor(
                 // 也许有一直失败的会卡住整体，暂时先这样处理
                 lastPointedItem = item
             }.getOrElse {
-                ProcessingContent(name, PersistentSourceContent(
-                    item.sourceItem, emptyList(), MapPatternVariables()
-                )).copy(status = ProcessingContent.Status.FAILURE, failureReason = it.message)
+                ProcessingContent(
+                    name, PersistentSourceContent(
+                        item.sourceItem, emptyList(), MapPatternVariables()
+                    )
+                ).copy(status = ProcessingContent.Status.FAILURE, failureReason = it.message)
             }
 
             if (options.saveContent && dryRun.not()) {
@@ -251,7 +263,10 @@ class SourceProcessor(
         return ProcessingContent(name, sourceContent).copy(status = status)
     }
 
-    private fun createPersistentSourceContent(sourceItemGroup: SourceItemGroup, sourceItem: SourceItem): PersistentSourceContent {
+    private fun createPersistentSourceContent(
+        sourceItemGroup: SourceItemGroup,
+        sourceItem: SourceItem
+    ): PersistentSourceContent {
         val resolveFiles = itemFileResolver.resolveFiles(sourceItem)
         val filteredFiles = resolveFiles.filter { path ->
             val res = sourceFileFilters.all { it.test(path) }
@@ -361,10 +376,12 @@ class SourceProcessor(
         contentGrouping[DownloadStatus.NOT_FOUND]?.forEach { pc ->
             kotlin.runCatching {
                 log.info("Processing下载任务不存在, record:${Jackson.toJsonString(pc)}")
-                processingStorage.save(pc.copy(
-                    status = ProcessingContent.Status.DOWNLOAD_FAILED,
-                    modifyTime = LocalDateTime.now(),
-                ))
+                processingStorage.save(
+                    pc.copy(
+                        status = ProcessingContent.Status.DOWNLOAD_FAILED,
+                        modifyTime = LocalDateTime.now(),
+                    )
+                )
             }.onFailure {
                 log.error("Processing更新状态出错, record:${Jackson.toJsonString(pc)}", it)
             }
@@ -383,12 +400,13 @@ class SourceProcessor(
     private fun processRenameTask(pc: ProcessingContent) {
         val sourceContent = pc.sourceContent
         val sourceFiles = sourceContent.sourceFiles
+        val replacers = variableReplacers.toTypedArray()
         sourceFiles.forEach {
             // 这边设计不太好
             it.addSharedVariables(sourceContent.sharedPatternVariables)
             it.setVariableErrorStrategy(options.variableErrorStrategy)
             val corePathPattern = it.filenamePattern as CorePathPattern
-            corePathPattern.setVariableReplacement(options.variableReplacement)
+            corePathPattern.addReplacer(*replacers)
         }
 
         val targetPaths = sourceFiles.map { it.targetPath() }
@@ -499,7 +517,12 @@ private class LoggingRetryListener : RetryListenerSupport() {
         throwable: Throwable
     ) {
         val stage = context.getAttribute("stage")
-        log.info("第{}次重试失败, message:{}, stage:{}", context.retryCount, "${throwable::class.simpleName}:${throwable.message}", stage)
+        log.info(
+            "第{}次重试失败, message:{}, stage:{}",
+            context.retryCount,
+            "${throwable::class.simpleName}:${throwable.message}",
+            stage
+        )
     }
 
     override fun <T : Any?, E : Throwable?> open(context: RetryContext?, callback: RetryCallback<T, E>?): Boolean {

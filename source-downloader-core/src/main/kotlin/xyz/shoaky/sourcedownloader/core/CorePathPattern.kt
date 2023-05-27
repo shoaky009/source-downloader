@@ -25,7 +25,7 @@ data class CorePathPattern(
      * 不在[PatternVariables]装饰替换的原因是不想做成全局的，而是每个[PathPattern]有自己独立的替换规则
      */
     @JsonIgnore
-    private var variableReplacement: Map<VariableMatcher, String> = emptyMap()
+    private var variableReplacers: MutableList<VariableReplacer> = mutableListOf()
 ) : PathPattern {
 
     private val expressions: List<Expression> by lazy {
@@ -37,20 +37,21 @@ data class CorePathPattern(
         expressions
     }
 
-    fun setVariableReplacement(setVariableReplacement: Map<VariableMatcher, String>) {
-        this.variableReplacement = setVariableReplacement
+    fun addReplacer(vararg  variableReplacers: VariableReplacer) {
+        this.variableReplacers.addAll(variableReplacers)
     }
 
     override fun parse(provider: PatternVariables): ParseResult {
         val matcher = variablePatternRegex.matcher(pattern)
         val pathBuilder = StringBuilder()
         val variables = provider.variables().mapValues { entry ->
-            variableReplacement.firstNotNullOfOrNull {
-                if (it.key.match(entry.key, entry.value)) {
-                    return@mapValues it.value
-                }
+            var text = entry.value
+            variableReplacers.forEach {
+                val before = text
+                text = it.replace(entry.key, text)
+                log.debug("replace variable '{}' from '{}' to '{}'", entry.key, before, text)
             }
-            entry.value
+            text
         }
 
         val variableResults = mutableListOf<ExpressionResult>()
