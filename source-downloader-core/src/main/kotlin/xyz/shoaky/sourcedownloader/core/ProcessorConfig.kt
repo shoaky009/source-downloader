@@ -108,9 +108,9 @@ data class ProcessorConfig(
         @JsonAlias("tag-filename-pattern")
         @JsonDeserialize(contentAs = CorePathPattern::class)
         val tagFilenamePattern: Map<String, PathPattern> = emptyMap(),
-        @JsonAlias("replace-variable")
+        @JsonAlias("variable-replacement")
         @JsonDeserialize(keyUsing = VariableMatcherDeserializer::class)
-        val replaceVariable: Map<VariableMatcher, String> = emptyMap()
+        val variableReplacement: Map<VariableMatcher, String> = emptyMap()
     )
 
 }

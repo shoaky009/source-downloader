@@ -51,9 +51,9 @@ class SourceProcessor(
 
     private val downloadPath = downloader.defaultDownloadPath()
     private val fileSavePathPattern: PathPattern = options.savePathPattern
-    private val filenamePattern: PathPattern = CorePathPattern(options.filenamePattern.pattern, options.replaceVariable)
+    private val filenamePattern: PathPattern = CorePathPattern(options.filenamePattern.pattern, options.variableReplacement)
     private val tagFilenamePattern = options.tagFilenamePattern.mapValues {
-        CorePathPattern(it.value.pattern, options.replaceVariable)
+        CorePathPattern(it.value.pattern, options.variableReplacement)
     }
 
     private var renameTaskFuture: ScheduledFuture<*>? = null
@@ -387,6 +387,8 @@ class SourceProcessor(
             // 这边设计不太好
             it.addSharedVariables(sourceContent.sharedPatternVariables)
             it.setVariableErrorStrategy(options.variableErrorStrategy)
+            val corePathPattern = it.filenamePattern as CorePathPattern
+            corePathPattern.setVariableReplacement(options.variableReplacement)
         }
 
         val targetPaths = sourceFiles.map { it.targetPath() }
