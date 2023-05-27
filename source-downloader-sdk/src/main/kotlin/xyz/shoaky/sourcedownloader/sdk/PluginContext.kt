@@ -1,8 +1,17 @@
 package xyz.shoaky.sourcedownloader.sdk
 
 import xyz.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
+import java.nio.file.Path
 
 interface PluginContext {
+
+    /**
+     * In general if environment variable SOURCE_DOWNLOADER_HOME is set, then use it as the base directory.
+     * otherwise use the current working directory as the base directory.
+     *
+     * @return the path to the directory where the application data is stored.
+     */
+    fun getPersistentDataPath(): Path
 
     fun registerSupplier(vararg suppliers: SdComponentSupplier<*>)
 

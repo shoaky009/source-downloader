@@ -2,6 +2,7 @@ package xyz.shoaky.sourcedownloader.core
 
 import org.springframework.core.io.support.SpringFactoriesLoader
 import org.springframework.stereotype.Component
+import xyz.shoaky.sourcedownloader.config.SourceDownloaderProperties
 import xyz.shoaky.sourcedownloader.sdk.InstanceManager
 import xyz.shoaky.sourcedownloader.sdk.Plugin
 import java.util.*
@@ -10,10 +11,16 @@ import java.util.*
 class PluginManager(
     componentManager: SdComponentManager,
     instanceManager: InstanceManager,
-    cacheManager: MemoryCacheManager
+    cacheManager: MemoryCacheManager,
+    applicationProps: SourceDownloaderProperties
 ) {
 
-    private val pluginContext = DefaultPluginContext(componentManager, instanceManager, cacheManager)
+    private val pluginContext = DefaultPluginContext(
+        componentManager,
+        instanceManager,
+        cacheManager,
+        applicationProps
+    )
     private val plugins = Collections.synchronizedList(mutableListOf<Plugin>())
     private val pluginLoader = ServiceLoaderPluginLoader
     fun loadPlugins() {

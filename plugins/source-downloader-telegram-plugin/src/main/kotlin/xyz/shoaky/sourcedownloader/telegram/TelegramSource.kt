@@ -1,13 +1,7 @@
 package xyz.shoaky.sourcedownloader.telegram
 
-import it.tdlight.client.GenericResultHandler
-import it.tdlight.client.Result
 import it.tdlight.client.SimpleTelegramClient
 import it.tdlight.jni.TdApi
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withTimeoutOrNull
 import xyz.shoaky.sourcedownloader.sdk.OffsetPointer
 import xyz.shoaky.sourcedownloader.sdk.OffsetSource
 import xyz.shoaky.sourcedownloader.sdk.PointedItem
@@ -22,59 +16,78 @@ class TelegramSource(
 ) : OffsetSource {
 
     override fun fetch(pointer: OffsetPointer?, limit: Int): Iterable<PointedItem<OffsetPointer>> {
-        val blockingResultHandler = BlockingResultHandler()
+        val blockingResultHandler = BlockingResultHandler<TdApi.Messages>()
+        val fromMessageId = pointer?.offset ?: 1
+        val offset = -limit
         client.send(
-            TdApi.GetChatHistory(chatId, 0, 0, limit, false),
+            TdApi.GetChatHistory(chatId, fromMessageId, offset, limit, false),
             blockingResultHandler
         )
 
-        val result = blockingResultHandler.get()
-        val iterator = result.get().messages.asSequence().map { message ->
-            val sourceItem = messageToSourceItem(message)
+        val result = blockingResultHandler.future.join()
+        val iterator = result.get().messages.map { message ->
+            val sourceItem = messageToSourceItem(message) ?: return@map null
             PointedItem(sourceItem, OffsetPointer(message.id))
-        }.asIterable()
+        }.filterNotNull().reversed()
 
         return iterator
     }
 
-    private fun messageToSourceItem(message: TdApi.Message): SourceItem {
+    private fun messageToSourceItem(message: TdApi.Message): SourceItem? {
+        val info: FileMessage = when (val content = message.content) {
+            is TdApi.MessageDocument -> {
+                val document = content.document
+                FileMessage(
+                    document.fileName,
+                    document.mimeType,
+                    listOf(document.document.id)
+                )
+            }
+
+            is TdApi.MessageVideo -> {
+                val video = content.video
+                FileMessage(
+                    video.fileName,
+                    video.mimeType,
+                    listOf(video.video.id)
+                )
+            }
+
+            is TdApi.MessageAudio -> {
+                val audio = content.audio
+                FileMessage(
+                    audio.fileName,
+                    audio.mimeType,
+                    listOf(audio.audio.id)
+                )
+            }
+
+            is TdApi.MessagePhoto -> {
+                val photo = content.photo.sizes
+                FileMessage(
+                    content.caption.text,
+                    photo.first().type,
+                    photo.map { it.photo.id }
+                )
+            }
+
+            else -> null
+        } ?: return null
+
         val uri = URI("telegram://${message.chatId}/${message.id}")
-        val messageDateTime = Instant.ofEpochSecond(message.date.toLong()).atZone(zoneId)
-            .toLocalDateTime()
-        return SourceItem(message.content.toString(), uri, messageDateTime, "telegram/message", uri)
+        val downloadUri = URI("$uri?fileIds=${info.fileIds.joinToString(",")}")
+        val messageDateTime = Instant.ofEpochSecond(message.date.toLong()).atZone(zoneId).toLocalDateTime()
+        return SourceItem(info.subject, uri, messageDateTime, info.mimeType, downloadUri)
     }
 
     companion object {
         private val zoneId = ZoneId.systemDefault()
     }
-
-    class BlockingResultHandler(
-        private val timeout: Long = 10000
-    ) : GenericResultHandler<TdApi.Messages> {
-
-        private lateinit var result: Result<TdApi.Messages>
-        private var job: Job? = null
-        override fun onResult(result: Result<TdApi.Messages>) {
-            this.result = result
-        }
-
-        fun get(): Result<TdApi.Messages> = runBlocking {
-            if (job == null) {
-                job = launch {
-                    while (!::result.isInitialized) {
-                        Thread.onSpinWait()
-                    }
-                }
-            }
-
-            withTimeoutOrNull(timeout) {
-                job?.join()
-                this@BlockingResultHandler.result
-            }
-
-            job?.cancel()
-            result
-        }
-    }
-
 }
+
+private data class FileMessage(
+    val subject: String,
+    val mimeType: String,
+    val fileIds: List<Int>
+)
+

@@ -7,7 +7,7 @@ import xyz.shoaky.sourcedownloader.sdk.PluginDescription
 
 internal class TelegramPlugin : Plugin {
     override fun init(pluginContext: PluginContext) {
-        pluginContext.registerInstanceFactory(SimpleTelegramClientInstanceFactory)
+        pluginContext.registerInstanceFactory(SimpleTelegramClientInstanceFactory(pluginContext.getPersistentDataPath()))
         pluginContext.registerSupplier(TelegramSourceSupplier(pluginContext))
     }
 

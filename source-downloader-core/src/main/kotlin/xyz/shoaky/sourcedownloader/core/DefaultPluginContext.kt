@@ -2,15 +2,24 @@ package xyz.shoaky.sourcedownloader.core
 
 import com.google.common.cache.CacheBuilder
 import org.springframework.stereotype.Component
+import xyz.shoaky.sourcedownloader.config.SourceDownloaderProperties
 import xyz.shoaky.sourcedownloader.sdk.*
 import xyz.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
+import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
 
 class DefaultPluginContext(
     private val componentManager: SdComponentManager,
     private val instanceManager: InstanceManager,
-    private val cacheManager: MemoryCacheManager
+    private val cacheManager: MemoryCacheManager,
+    // 这个不应该这样注入, 不过暂时没有其他应用级别的需求
+    private val applicationProps: SourceDownloaderProperties
 ) : PluginContext {
+
+    override fun getPersistentDataPath(): Path {
+        return applicationProps.dataLocation
+    }
+
     override fun registerSupplier(vararg suppliers: SdComponentSupplier<*>) {
         componentManager.registerSupplier(*suppliers)
     }

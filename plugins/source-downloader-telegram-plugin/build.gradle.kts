@@ -24,7 +24,7 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.2")
     testImplementation("org.junit.jupiter:junit-jupiter-engine:5.9.2")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
+    testImplementation("org.mockito:mockito-junit-jupiter:5.3.1")
 
     implementation("com.google.zxing:core:3.5.1")
     implementation(platform("it.tdlight:tdlight-java-bom:3.0.8+td.1.8.14"))
