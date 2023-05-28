@@ -11,7 +11,7 @@ import java.util.*
 
 class RssSource(private val url: String) : AlwaysLatestSource() {
 
-    private val rssReader = RssReader()
+    private val rssReader = defaultRssReader
     override fun fetch(): Iterable<SourceItem> {
         return rssReader.read(url)
             .map {
@@ -41,6 +41,8 @@ private val dateTimePatterns = listOf(
     DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"),
     DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss Z", Locale.ENGLISH),
 )
+
+internal val defaultRssReader: RssReader = RssReader()
 
 fun parseTime(pubDateText: String): LocalDateTime {
 

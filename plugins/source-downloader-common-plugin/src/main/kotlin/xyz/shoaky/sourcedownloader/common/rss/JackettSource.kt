@@ -1,6 +1,5 @@
 package xyz.shoaky.sourcedownloader.common.rss
 
-import com.apptasticsoftware.rssreader.RssReader
 import xyz.shoaky.sourcedownloader.sdk.AlwaysLatestSource
 import xyz.shoaky.sourcedownloader.sdk.SourceItem
 import java.net.URI
@@ -12,7 +11,7 @@ class JackettSource(
     private val url: String
 ) : AlwaysLatestSource() {
 
-    private val rssReader = RssReader()
+    private val rssReader = defaultRssReader
 
     override fun fetch(): Iterable<SourceItem> {
         return rssReader.read(url)

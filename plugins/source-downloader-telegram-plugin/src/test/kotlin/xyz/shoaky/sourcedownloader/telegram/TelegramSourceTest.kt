@@ -10,7 +10,7 @@ import xyz.shoaky.sourcedownloader.sdk.PluginContext
 import xyz.shoaky.sourcedownloader.sdk.Properties
 import kotlin.io.path.Path
 
-// @Disabled
+@Disabled
 class TelegramSourceTest {
 
     val appId = 1

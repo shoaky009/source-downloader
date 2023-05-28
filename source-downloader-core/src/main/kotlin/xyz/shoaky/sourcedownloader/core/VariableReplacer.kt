@@ -35,14 +35,13 @@ object WindowsPathReplacer : VariableReplacer {
     )
 
     override fun replace(key: String, value: String): String {
-        var result = value
-        charReplacements.forEach { (t, u) ->
-            if (result.contains(t)) {
-                result = result.replace(t, u)
-            }
-
+        val stringBuilder = StringBuilder()
+        val charArray = value.toCharArray()
+        for (char in charArray) {
+            val c = charReplacements.getOrDefault(char, char)
+            stringBuilder.append(c)
         }
-        return result
+        return stringBuilder.toString()
     }
 
 }

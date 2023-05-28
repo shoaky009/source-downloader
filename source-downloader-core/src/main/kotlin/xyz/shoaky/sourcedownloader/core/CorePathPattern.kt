@@ -37,7 +37,7 @@ data class CorePathPattern(
         expressions
     }
 
-    fun addReplacer(vararg  variableReplacers: VariableReplacer) {
+    fun addReplacer(vararg variableReplacers: VariableReplacer) {
         this.variableReplacers.addAll(variableReplacers)
     }
 

@@ -3,6 +3,7 @@ package xyz.shoaky.sourcedownloader.common.mikan
 import com.apptasticsoftware.rssreader.Item
 import com.apptasticsoftware.rssreader.RssReader
 import org.slf4j.LoggerFactory
+import xyz.shoaky.sourcedownloader.common.rss.defaultRssReader
 import xyz.shoaky.sourcedownloader.common.rss.parseTime
 import xyz.shoaky.sourcedownloader.sdk.PointedItem
 import xyz.shoaky.sourcedownloader.sdk.SourceItem
@@ -18,9 +19,8 @@ internal class MikanSource(
     private val mikanSupport: MikanSupport = MikanSupport(null)
 ) : Source<MikanPointer> {
 
-
     companion object {
-        private val defaultRssReader: RssReader = RssReader()
+
         private val log = LoggerFactory.getLogger(MikanSource::class.java)
 
         private fun fromRssItem(rssItem: Item): SourceItem {
@@ -64,14 +64,14 @@ internal class MikanSource(
                 }.toList()
                 .sortedBy { it.sourceItem.date }
             if (pointedItems.contains(pi).not()) {
-                log.info("item不在RSS列表中:{}", pi)
+                log.debug("Item不在RSS列表中:{}", pi)
                 pointedItems = pointedItems.toMutableList()
                 pointedItems.add(pi)
             }
             pointedItems
         }
 
-        log.debug("fetching mikan source pointer is:{}", pointer)
+        log.debug("Fetching mikan source pointer is:{}", pointer)
         return expander.asSequence().flatten().asIterable()
     }
 
@@ -103,6 +103,5 @@ class Expander<T : SourceItemPointer>(
         counting += next.size
         return next
     }
-
 
 }
