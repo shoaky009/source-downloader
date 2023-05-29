@@ -27,7 +27,12 @@ class RunCommand(
         if (withSubjectSummary) {
             cmds.add(sourceContent.summaryContent())
         }
+
+        if (log.isDebugEnabled) {
+            log.debug("run command: ${cmds.joinToString(" ")}")
+        }
         val processBuilder = ProcessBuilder(*cmds.toTypedArray())
+        processBuilder.redirectError(ProcessBuilder.Redirect.INHERIT)
         return processBuilder.start()
     }
 

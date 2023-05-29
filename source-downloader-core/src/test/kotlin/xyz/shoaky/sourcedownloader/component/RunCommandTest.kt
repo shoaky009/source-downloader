@@ -11,6 +11,9 @@ import xyz.shoaky.sourcedownloader.sourceItem
 import kotlin.io.path.Path
 import kotlin.test.assertEquals
 
+/**
+ * This test may fail on Windows, because security policy may prevent running PowerShell scripts.
+ */
 class RunCommandTest {
     private val command = if (System.getProperty("os.name").contains("windows", true))
         listOf("powershell.exe", Path("src", "test", "resources", "script", "test.ps1").toAbsolutePath().toString(), "test1")
@@ -32,7 +35,6 @@ class RunCommandTest {
 
     @Test
     fun run_command() {
-
         val process = runCommand.run(PersistentSourceContent(sourceItem("1"), listOf(content), MapPatternVariables()))
         assertEquals(0, process.waitFor())
         val result = process.inputStream.bufferedReader().readText()
