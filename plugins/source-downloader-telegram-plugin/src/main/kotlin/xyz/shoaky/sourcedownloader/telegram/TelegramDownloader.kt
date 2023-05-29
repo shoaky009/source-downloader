@@ -1,17 +1,14 @@
 package xyz.shoaky.sourcedownloader.telegram
 
-import it.tdlight.client.Result
 import it.tdlight.client.SimpleTelegramClient
-import it.tdlight.jni.TdApi.*
+import it.tdlight.jni.TdApi.DownloadFile
+import it.tdlight.jni.TdApi.File
 import xyz.shoaky.sourcedownloader.sdk.DownloadTask
 import xyz.shoaky.sourcedownloader.sdk.component.Downloader
 import xyz.shoaky.sourcedownloader.sdk.util.queryMap
-import java.net.URI
 import java.nio.file.Path
-import java.nio.file.StandardOpenOption.*
 import kotlin.io.path.Path
 import kotlin.io.path.moveTo
-import kotlin.io.path.outputStream
 
 class TelegramDownloader(
     private val client: SimpleTelegramClient,

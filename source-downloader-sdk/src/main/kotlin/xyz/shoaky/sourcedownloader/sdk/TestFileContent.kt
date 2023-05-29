@@ -13,6 +13,7 @@ data class TestFileContent(
     val targetPath: Path = fileDownloadPath,
     val itemSaveRootDirectory: Path = fileDownloadPath,
     val itemDownloadRootDirectory: Path = fileDownloadPath,
+    override val attributes: Map<String, Any> = emptyMap()
 ) : FileContent {
 
     override fun targetPath(): Path = targetPath
