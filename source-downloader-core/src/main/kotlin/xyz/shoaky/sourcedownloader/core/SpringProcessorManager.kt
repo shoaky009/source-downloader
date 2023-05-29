@@ -59,14 +59,14 @@ class SpringProcessorManager(
         }
 
         val fileFilters = config.options.sourceFileFilters.map {
-            val instanceName = it.getInstanceName(SourceFileFilter::class)
-            applicationContext.getBean(instanceName, SourceFileFilter::class.java)
+            val instanceName = it.getInstanceName(FileContentFilter::class)
+            applicationContext.getBean(instanceName, FileContentFilter::class.java)
         }.toTypedArray()
         processor.addFileFilter(*fileFilters)
 
         val itemFilters = config.options.sourceItemFilters.map {
-            val instanceName = it.getInstanceName(SourceFileFilter::class)
-            applicationContext.getBean(instanceName, SourceFileFilter::class.java)
+            val instanceName = it.getInstanceName(FileContentFilter::class)
+            applicationContext.getBean(instanceName, FileContentFilter::class.java)
         }.toTypedArray()
         processor.addFileFilter(*itemFilters)
 

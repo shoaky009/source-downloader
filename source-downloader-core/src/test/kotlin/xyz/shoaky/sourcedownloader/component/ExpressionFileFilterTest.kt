@@ -2,6 +2,7 @@ package xyz.shoaky.sourcedownloader.component
 
 import org.junit.jupiter.api.Test
 import xyz.shoaky.sourcedownloader.component.supplier.ExpressionFileFilterSupplier
+import xyz.shoaky.sourcedownloader.sdk.TestFileContent
 import kotlin.io.path.Path
 import kotlin.test.assertEquals
 
@@ -11,8 +12,11 @@ class ExpressionFileFilterTest {
         val filter = ExpressionFileFilterSupplier.expressions(
             listOf("#filename == '1.txt'")
         )
-        assertEquals(false, filter.test(Path("1.txt")))
-        assertEquals(true, filter.test(Path("2.txt")))
+        val testFileContent1 = TestFileContent(Path("1.txt"))
+        assertEquals(false, filter.test(testFileContent1))
+
+        val testFileContent2 = TestFileContent(Path("2.txt"))
+        assertEquals(true, filter.test(testFileContent2))
     }
 
     @Test
@@ -20,8 +24,11 @@ class ExpressionFileFilterTest {
         val filter = ExpressionFileFilterSupplier.expressions(
             inclusions = listOf("#filename == '1.txt'")
         )
-        assertEquals(true, filter.test(Path("1.txt")))
-        assertEquals(false, filter.test(Path("2.txt")))
+        val testFileContent1 = TestFileContent(Path("1.txt"))
+        assertEquals(true, filter.test(testFileContent1))
+
+        val testFileContent2 = TestFileContent(Path("2.txt"))
+        assertEquals(false, filter.test(testFileContent2))
     }
 
     @Test
@@ -36,10 +43,10 @@ class ExpressionFileFilterTest {
                 "#filename matches '.*Test.*'"
             ),
         )
-        assertEquals(true,
-            filter.test(Path("src", "test", "kotlin", "xyz", "shoaky",
-                "sourcedownloader", "core", "component", "ExpressionFileFilterTest.kt")
-            )
-        )
+
+        val path = Path("src", "test", "kotlin", "xyz", "shoaky",
+            "sourcedownloader", "core", "component", "ExpressionFileFilterTest.kt")
+
+        assertEquals(true, filter.test(TestFileContent(path)))
     }
 }

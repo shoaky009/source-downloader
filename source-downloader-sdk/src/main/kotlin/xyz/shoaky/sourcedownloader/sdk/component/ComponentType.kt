@@ -44,7 +44,7 @@ data class ComponentType(
         fun run(type: String) = ComponentType(type, RunAfterCompletion::class)
 
         @JvmStatic
-        fun fileFilter(type: String) = ComponentType(type, SourceFileFilter::class)
+        fun fileFilter(type: String) = ComponentType(type, FileContentFilter::class)
 
         @JvmStatic
         fun fileTagger(type: String): ComponentType {

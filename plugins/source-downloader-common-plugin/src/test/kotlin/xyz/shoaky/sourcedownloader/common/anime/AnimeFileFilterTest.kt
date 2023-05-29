@@ -2,6 +2,7 @@ package xyz.shoaky.sourcedownloader.common.anime
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import xyz.shoaky.sourcedownloader.sdk.TestFileContent
 import kotlin.io.path.Path
 
 class AnimeFileFilterTest {
@@ -21,7 +22,8 @@ class AnimeFileFilterTest {
     fun test() {
         for (datum in data) {
             val path = Path(datum.first)
-            assertEquals(datum.second, AnimeFileFilter.test(path), path.toString())
+            val fileContent = TestFileContent(path)
+            assertEquals(datum.second, AnimeFileFilter.test(fileContent), path.toString())
         }
     }
 }

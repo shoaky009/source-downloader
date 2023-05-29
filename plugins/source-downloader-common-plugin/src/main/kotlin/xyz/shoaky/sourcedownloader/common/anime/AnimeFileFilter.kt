@@ -1,12 +1,13 @@
 package xyz.shoaky.sourcedownloader.common.anime
 
-import xyz.shoaky.sourcedownloader.sdk.component.SourceFileFilter
+import xyz.shoaky.sourcedownloader.sdk.FileContent
+import xyz.shoaky.sourcedownloader.sdk.component.FileContentFilter
 import xyz.shoaky.sourcedownloader.sdk.util.replaces
 import java.nio.file.Path
 import kotlin.io.path.name
 import kotlin.io.path.nameWithoutExtension
 
-object AnimeFileFilter : SourceFileFilter {
+object AnimeFileFilter : FileContentFilter {
 
     private val replaces = listOf("-", "_", "[", "]", "(", ")", ".")
 
@@ -25,7 +26,8 @@ object AnimeFileFilter : SourceFileFilter {
         "sps", "sp", "special", "ncop", "nced", "menu", "pv", "cm", "cd", "cds"
     )
 
-    override fun test(path: Path): Boolean {
+    override fun test(content: FileContent): Boolean {
+        val path = content.fileDownloadPath
         val isInSpecialDir = isInSpecialDir(path)
         val regexes = if (isInSpecialDir) {
             spRegexes

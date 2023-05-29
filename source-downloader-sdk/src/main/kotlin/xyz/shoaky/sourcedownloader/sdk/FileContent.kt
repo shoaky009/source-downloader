@@ -5,15 +5,18 @@ import java.nio.file.Path
 interface FileContent {
 
     /**
-     * 保存文件的根目录
+     * 保存文件的根目录 e.g. /mnt/downloads
      */
     val downloadPath: Path
 
     /**
-     * 文件全路径
+     * 文件全路径 e.g. /mnt/downloads/test.txt
      */
     val fileDownloadPath: Path
+
     val patternVariables: PatternVariables
+
+    val tags: Set<String>
 
     fun targetPath(): Path
 

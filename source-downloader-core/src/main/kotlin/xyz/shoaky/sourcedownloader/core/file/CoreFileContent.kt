@@ -28,7 +28,7 @@ data class CoreFileContent(
     private val allVariables = MapPatternVariables(patternVariables)
 
     @Transient
-    private val tags: MutableSet<String> = mutableSetOf()
+    override val tags: MutableSet<String> = mutableSetOf()
 
     private val targetPath: Path by lazy {
         saveDirectoryPath().resolve(targetFilename())

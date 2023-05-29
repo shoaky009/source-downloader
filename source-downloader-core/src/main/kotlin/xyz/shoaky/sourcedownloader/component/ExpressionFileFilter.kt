@@ -5,20 +5,21 @@ import org.springframework.expression.BeanResolver
 import org.springframework.expression.Expression
 import org.springframework.expression.spel.support.StandardEvaluationContext
 import org.springframework.util.unit.DataSize
-import xyz.shoaky.sourcedownloader.sdk.component.SourceFileFilter
+import xyz.shoaky.sourcedownloader.sdk.FileContent
+import xyz.shoaky.sourcedownloader.sdk.component.FileContentFilter
 import xyz.shoaky.sourcedownloader.util.creationTime
 import xyz.shoaky.sourcedownloader.util.fileDataSize
 import xyz.shoaky.sourcedownloader.util.lastModifiedTime
 import java.nio.file.Files
-import java.nio.file.Path
 import kotlin.io.path.name
 
 
 class ExpressionFileFilter(
     private val exclusions: List<Expression>,
     private val inclusions: List<Expression>
-) : SourceFileFilter {
-    override fun test(path: Path): Boolean {
+) : FileContentFilter {
+    override fun test(content: FileContent): Boolean {
+        val path = content.fileDownloadPath
         val creationTime = path.creationTime()
         val lastModifiedTime = path.lastModifiedTime()
         val variables = mapOf(

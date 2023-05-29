@@ -34,7 +34,7 @@ enum class Components(
     FILE_MOVER(FileMover::class, listOf("mover", "file-mover", "fileMover")),
     RUN_AFTER_COMPLETION(RunAfterCompletion::class, listOf("run-after-completion", "run", "runAfterCompletion")),
     SOURCE_ITEM_FILTER(SourceItemFilter::class, listOf("source-item-filter", "item-filter", "sourceItemFilter", "itemFilter")),
-    SOURCE_FILE_FILTER(SourceFileFilter::class, listOf("source-file-filter", "file-filter", "sourceFileFilter", "fileFilter")),
+    FILE_CONTENT_FILTER(FileContentFilter::class, listOf("file-content-filter", "file-filter", "fileContentFilter", "fileFilter")),
     TAGGER(FileTagger::class, listOf("file-tagger", "tagger")),
     ;
 
@@ -97,11 +97,6 @@ interface Downloader : SdComponent {
 
     fun defaultDownloadPath(): Path
 
-    // /**
-    //  * Resolve files from item
-    //  * @return Relative paths in the download path
-    //  */
-    // fun resolveFiles(sourceItem: SourceItem): List<Path>
 }
 
 interface ItemFileResolver : SdComponent {
@@ -150,7 +145,7 @@ interface RunAfterCompletion : SdComponent, Consumer<SourceContent>
  */
 interface SourceItemFilter : SdComponent, Predicate<SourceItem>
 
-interface SourceFileFilter : SdComponent, Predicate<Path>
+interface FileContentFilter : SdComponent, Predicate<FileContent>
 
 interface FileTagger : SdComponent {
 

@@ -44,7 +44,7 @@ class SourceProcessor(
 ) : Runnable {
 
     private val sourceItemFilters: MutableList<SourceItemFilter> = mutableListOf()
-    private val sourceFileFilters: MutableList<SourceFileFilter> = mutableListOf()
+    private val fileContentFilters: MutableList<FileContentFilter> = mutableListOf()
     private val variableProviders = variableProviders.toMutableList()
     private val runAfterCompletion: MutableList<RunAfterCompletion> = mutableListOf()
     private val taggers: MutableList<FileTagger> = mutableListOf()
@@ -97,7 +97,7 @@ class SourceProcessor(
             "RunAfterCompletion" to runAfterCompletion.map { it::class.simpleName },
             "DownloadPath" to downloadPath,
             "SourceSavePath" to sourceSavePath,
-            "SourceFileFilter" to sourceFileFilters.map { it::class.simpleName },
+            "SourceFileFilter" to fileContentFilters.map { it::class.simpleName },
             "Taggers" to taggers.map { it::class.simpleName },
             "Options" to options,
         )
@@ -177,8 +177,8 @@ class SourceProcessor(
             }.getOrElse {
                 ProcessingContent(
                     name, PersistentSourceContent(
-                        item.sourceItem, emptyList(), MapPatternVariables()
-                    )
+                    item.sourceItem, emptyList(), MapPatternVariables()
+                )
                 ).copy(status = ProcessingContent.Status.FAILURE, failureReason = it.message)
             }
 
@@ -268,19 +268,11 @@ class SourceProcessor(
         sourceItem: SourceItem
     ): PersistentSourceContent {
         val resolveFiles = itemFileResolver.resolveFiles(sourceItem)
-        val filteredFiles = resolveFiles.filter { path ->
-            val res = sourceFileFilters.all { it.test(path) }
-            if (res.not()) {
-                log.debug("Filtered file:{}", path)
-            }
-            res
-        }
-
         val sharedPatternVariables = sourceItemGroup.sharedPatternVariables()
-        val sourceFiles = sourceItemGroup.sourceFiles(filteredFiles)
+        val sourceFiles = sourceItemGroup.sourceFiles(resolveFiles)
             .mapIndexed { index, sourceFile ->
                 val sourceFileContent = CoreFileContent(
-                    downloadPath.resolve(filteredFiles[index]),
+                    downloadPath.resolve(resolveFiles[index]),
                     sourceSavePath,
                     downloadPath,
                     MapPatternVariables(sourceFile.patternVariables().variables()),
@@ -292,6 +284,12 @@ class SourceProcessor(
                 tagged.setVariableErrorStrategy(options.variableErrorStrategy)
                 tagged.addSharedVariables(sharedPatternVariables)
                 tagged
+            }.filter { path ->
+                val filter = fileContentFilters.all { it.test(path) }
+                if (filter.not()) {
+                    log.debug("Filtered file:{}", path)
+                }
+                filter
             }
         return PersistentSourceContent(sourceItem, sourceFiles, MapPatternVariables(sharedPatternVariables))
     }
@@ -448,8 +446,8 @@ class SourceProcessor(
         sourceItemFilters.addAll(filters)
     }
 
-    fun addFileFilter(vararg filters: SourceFileFilter) {
-        sourceFileFilters.addAll(filters)
+    fun addFileFilter(vararg filters: FileContentFilter) {
+        fileContentFilters.addAll(filters)
     }
 
     fun safeTask(): Runnable {
