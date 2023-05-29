@@ -5,7 +5,6 @@ import xyz.shoaky.sourcedownloader.sdk.*
 import xyz.shoaky.sourcedownloader.sdk.component.VariableProvider
 import xyz.shoaky.sourcedownloader.sdk.util.Jackson
 import java.net.URI
-import java.nio.file.Path
 import kotlin.io.path.name
 
 class OpenAiVariableProvider(
@@ -13,7 +12,6 @@ class OpenAiVariableProvider(
     private val openAiClient: OpenAiClient,
     private val systemRole: ChatMessage
 ) : VariableProvider {
-
 
     override fun createSourceGroup(sourceItem: SourceItem): SourceItemGroup {
         return AiSourceGroup(openAiClient, systemRole, openAiBaseUri, sourceItem)
@@ -40,15 +38,16 @@ private class AiSourceGroup(
     val uri: URI,
     val sourceItem: SourceItem,
 ) : SourceItemGroup {
-    override fun sourceFiles(paths: List<Path>): List<SourceFile> {
-        return paths.map { path ->
+    override fun filePatternVariables(paths: List<SourceFile>): List<FileVariable> {
+        return paths.map { file ->
+            val path = file.path
             val chatCompletion = ChatCompletion(
                 listOf(systemRole, ChatMessage.ofUser("${sourceItem.title} ${path.name}"))
             )
             val response = openAiClient.execute(uri, chatCompletion).body()
             val first = response.choices.map { it.message }.first()
             val variables = Jackson.fromJson(first.content, jacksonTypeRef<Map<String, String>>())
-            UniversalSourceFile(MapPatternVariables(variables))
+            UniversalFileVariable(MapPatternVariables(variables))
         }
     }
 }

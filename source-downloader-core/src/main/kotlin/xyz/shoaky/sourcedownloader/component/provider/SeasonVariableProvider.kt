@@ -28,7 +28,7 @@ object SeasonVariableProvider : VariableProvider {
                 }
             }
             val season = seasonNumber.toString().padStart(2, '0')
-            UniversalSourceFile(Season(season))
+            UniversalFileVariable(Season(season))
         }
     }
 

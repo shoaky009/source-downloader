@@ -15,7 +15,7 @@ class AnitomVariableProvider : VariableProvider {
                         it.category.name.removePrefix("kElement")
                     )
                 }, { it.value })
-            UniversalSourceFile(MapPatternVariables(parse))
+            UniversalFileVariable(MapPatternVariables(parse))
         }
     }
 

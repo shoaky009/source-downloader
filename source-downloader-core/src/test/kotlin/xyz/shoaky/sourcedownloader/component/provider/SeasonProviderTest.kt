@@ -3,6 +3,7 @@ package xyz.shoaky.sourcedownloader.component.provider
 import org.junit.jupiter.api.Test
 import xyz.shoaky.sourcedownloader.component.supplier.SeasonProviderSupplier
 import xyz.shoaky.sourcedownloader.sdk.Properties
+import xyz.shoaky.sourcedownloader.sdk.SourceFile
 import xyz.shoaky.sourcedownloader.sourceItem
 import java.nio.file.Files
 import kotlin.io.path.Path
@@ -21,8 +22,8 @@ class SeasonProviderTest {
             .forEach {
                 val name = it.second
                 val group = sp.createSourceGroup(sourceItem(title = name))
-                val sourceFiles = group.sourceFiles(
-                    listOf(Path(it.third))
+                val sourceFiles = group.filePatternVariables(
+                    SourceFile(Path(it.third))
                 )
                 val season = sourceFiles.first().patternVariables().variables()["season"]
                 assertEquals(it.first, season, "name:${name}")

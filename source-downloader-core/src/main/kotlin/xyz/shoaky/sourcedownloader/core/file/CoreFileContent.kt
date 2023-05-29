@@ -19,6 +19,7 @@ data class CoreFileContent(
     val fileSavePathPattern: PathPattern,
     @JsonDeserialize(`as` = CorePathPattern::class)
     val filenamePattern: PathPattern,
+    val attributes: Map<String, Any> = emptyMap(),
     var status: FileContentStatus = FileContentStatus.NORMAL
 ) : FileContent {
 

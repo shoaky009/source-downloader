@@ -1,8 +1,8 @@
 package xyz.shoaky.sourcedownloader.sdk
 
-class UniversalSourceFile(
+class UniversalFileVariable(
     private val patternVariables: PatternVariables
-) : SourceFile {
+) : FileVariable {
     override fun patternVariables(): PatternVariables {
         return patternVariables
     }
@@ -11,4 +11,9 @@ class UniversalSourceFile(
         return "UniversalSourceFile(patternVariables=$patternVariables)"
     }
 
+    companion object {
+        fun fromMap(variables: Map<String, String>): UniversalFileVariable {
+            return UniversalFileVariable(MapPatternVariables(variables))
+        }
+    }
 }

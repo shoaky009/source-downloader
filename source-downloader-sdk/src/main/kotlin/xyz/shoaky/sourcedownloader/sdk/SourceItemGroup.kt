@@ -1,13 +1,15 @@
 package xyz.shoaky.sourcedownloader.sdk
 
-import java.nio.file.Path
-
 interface SourceItemGroup {
 
     /**
      * @return 位于DownloadPath下的相对路径
      */
-    fun sourceFiles(paths: List<Path>): List<SourceFile>
+    fun filePatternVariables(paths: List<SourceFile>): List<FileVariable>
+
+    fun filePatternVariables(vararg sourceFileV2: SourceFile): List<FileVariable> {
+        return filePatternVariables(sourceFileV2.toList())
+    }
 
     /**
      * @return 和SourceFile共享的变量
@@ -16,7 +18,7 @@ interface SourceItemGroup {
 
     companion object {
         val EMPTY = object : SourceItemGroup {
-            override fun sourceFiles(paths: List<Path>): List<SourceFile> = paths.map { SourceFile.EMPTY }
+            override fun filePatternVariables(paths: List<SourceFile>): List<FileVariable> = paths.map { FileVariable.EMPTY }
         }
     }
 }

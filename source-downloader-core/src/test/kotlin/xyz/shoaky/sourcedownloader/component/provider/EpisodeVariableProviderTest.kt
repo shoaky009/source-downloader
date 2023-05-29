@@ -1,9 +1,10 @@
 package xyz.shoaky.sourcedownloader.component.provider
 
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import xyz.shoaky.sourcedownloader.component.supplier.EpisodeVariableProviderSupplier
 import xyz.shoaky.sourcedownloader.sdk.Properties
+import xyz.shoaky.sourcedownloader.sdk.SourceFile
 import xyz.shoaky.sourcedownloader.sourceItem
 import java.nio.file.Files
 import kotlin.io.path.Path
@@ -25,7 +26,7 @@ class EpisodeVariableProviderTest {
             .forEach {
                 val name = it.second
                 val group = provider.createSourceGroup(sourceItem())
-                val file = group.sourceFiles(listOf(Path(name))).first()
+                val file = group.filePatternVariables(SourceFile(Path(name))).first()
                 assertEquals(it.first, file.patternVariables().variables()["episode"])
             }
     }

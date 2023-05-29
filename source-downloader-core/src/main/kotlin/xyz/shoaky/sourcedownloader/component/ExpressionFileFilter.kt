@@ -1,5 +1,8 @@
 package xyz.shoaky.sourcedownloader.component
 
+import org.projectnessie.cel.checker.Decls
+import org.projectnessie.cel.tools.Script
+import org.projectnessie.cel.tools.ScriptHost
 import org.slf4j.LoggerFactory
 import org.springframework.expression.BeanResolver
 import org.springframework.expression.Expression
@@ -22,6 +25,8 @@ class ExpressionFileFilter(
         val path = content.fileDownloadPath
         val creationTime = path.creationTime()
         val lastModifiedTime = path.lastModifiedTime()
+
+        content.patternVariables.variables()
         val variables = mapOf(
             "filename" to path.name,
             "size" to path.fileDataSize(),
@@ -53,3 +58,36 @@ class ExpressionFileFilter(
 
 }
 
+class ExpressionFileV2(
+    exclusions: List<String>,
+    inclusions: List<String>
+) : FileContentFilter {
+
+    private val exclusionScripts: List<Script> by lazy {
+        exclusions.map {
+            buildScript(it)
+        }
+    }
+    private val inclusionScripts: List<Script> by lazy {
+        inclusions.map { buildScript(it) }
+    }
+
+    override fun test(content: FileContent): Boolean {
+        return true
+    }
+
+    companion object {
+        private val scriptHost = ScriptHost.newBuilder().build()
+        private fun buildScript(expression: String): Script {
+            return scriptHost.buildScript(expression)
+                .withDeclarations(
+                    Decls.newVar("filename", Decls.String),
+                    Decls.newVar("tags", Decls.newListType(Decls.String)),
+                    Decls.newVar("extension", Decls.String),
+                    // short for patternVariables
+                    Decls.newVar("pv", Decls.newMapType(Decls.String, Decls.String)),
+                )
+                .build()
+        }
+    }
+}

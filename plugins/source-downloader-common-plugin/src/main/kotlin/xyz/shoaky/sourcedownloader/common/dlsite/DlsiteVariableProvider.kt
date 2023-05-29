@@ -4,7 +4,7 @@ import org.jsoup.Jsoup
 import xyz.shoaky.sourcedownloader.sdk.FunctionalItemGroup
 import xyz.shoaky.sourcedownloader.sdk.SourceItem
 import xyz.shoaky.sourcedownloader.sdk.SourceItemGroup
-import xyz.shoaky.sourcedownloader.sdk.UniversalSourceFile
+import xyz.shoaky.sourcedownloader.sdk.UniversalFileVariable
 import xyz.shoaky.sourcedownloader.sdk.component.VariableProvider
 import xyz.shoaky.sourcedownloader.sdk.util.find
 import xyz.shoaky.sourcedownloader.sdk.util.http.httpClient
@@ -23,7 +23,7 @@ internal class DlsiteVariableProvider(
         val workInfo = getWorkInfo(dlsiteId)
         return FunctionalItemGroup(
             workInfo,
-        ) { UniversalSourceFile(workInfo) }
+        ) { UniversalFileVariable(workInfo) }
     }
 
     private fun getWorkInfo(

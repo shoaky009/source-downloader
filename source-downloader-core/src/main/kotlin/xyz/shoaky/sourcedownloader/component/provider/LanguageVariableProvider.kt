@@ -21,10 +21,10 @@ object LanguageVariableProvider : VariableProvider {
             function = {
                 val name = it.nameWithoutExtension.replaces(replaces, " ")
                 val language = languages.entries.firstOrNull { (regex, _) -> regex.containsMatchIn(name) }?.value
-                    ?: return@FunctionalItemGroup SourceFile.EMPTY
+                    ?: return@FunctionalItemGroup FileVariable.EMPTY
 
                 val variables = MapPatternVariables(mapOf("language" to language))
-                UniversalSourceFile(variables)
+                UniversalFileVariable(variables)
             }
         )
     }

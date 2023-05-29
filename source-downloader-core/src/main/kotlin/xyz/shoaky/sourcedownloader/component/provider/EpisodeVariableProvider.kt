@@ -29,7 +29,7 @@ object EpisodeVariableProvider : VariableProvider {
             padNumber(episode)?.run {
                 vars.addVariable("episode", this)
             }
-            UniversalSourceFile(vars)
+            UniversalFileVariable(vars)
         }
     }
 

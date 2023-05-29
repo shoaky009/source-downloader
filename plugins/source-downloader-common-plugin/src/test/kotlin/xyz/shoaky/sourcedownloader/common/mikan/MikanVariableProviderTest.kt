@@ -7,6 +7,7 @@ import xyz.shoaky.sourcedownloader.common.torrent.R
 import xyz.shoaky.sourcedownloader.external.bangumi.BangumiRequest
 import xyz.shoaky.sourcedownloader.external.bangumi.BgmTvApiClient
 import xyz.shoaky.sourcedownloader.external.bangumi.Subject
+import xyz.shoaky.sourcedownloader.sdk.SourceFile
 import xyz.shoaky.sourcedownloader.sdk.SourceItem
 import java.net.URI
 import java.time.LocalDate
@@ -47,7 +48,8 @@ class MikanVariableProviderTest {
             URI("https://mikanani.me/Download/20221214/324b70bd8a170bcf13d7f5bdf9d3e8df4065f682.torrent")
         )
         val sourceGroup = mikanVariableProvider.createSourceGroup(sourceItem)
-        val sourceFiles = sourceGroup.sourceFiles(listOf(Path("[ANi] 前進吧！登山少女  Next Summit（僅限港澳台地區） - 11 [1080P][Bilibili][WEB-DL][AAC AVC][CHT CHS].mp4")))
+        val sourceFile = SourceFile(Path("[ANi] 前進吧！登山少女  Next Summit（僅限港澳台地區） - 11 [1080P][Bilibili][WEB-DL][AAC AVC][CHT CHS].mp4"))
+        val sourceFiles = sourceGroup.filePatternVariables(sourceFile)
         assertEquals(1, sourceFiles.size)
 
         val bangumiInfo = sourceGroup.sharedPatternVariables() as BangumiInfo
@@ -65,7 +67,7 @@ class MikanVariableProviderTest {
             URI("https://mikanani.me/Download/20221214/324b70bd8a170bcf13d7f5bdf9d3e8df4065f682.torrent")
         )
         val sourceGroup = mikanVariableProvider.createSourceGroup(sourceItem)
-        val sourceFiles = sourceGroup.sourceFiles(listOf(Path("[ANi] 前進吧！登山少女  Next Summit（僅限港澳台地區） - 11 [1080P][Bilibili][WEB-DL][AAC AVC][CHT CHS].mp4")))
+        val sourceFiles = sourceGroup.filePatternVariables(SourceFile(Path("[ANi] 前進吧！登山少女  Next Summit（僅限港澳台地區） - 11 [1080P][Bilibili][WEB-DL][AAC AVC][CHT CHS].mp4")))
         assertEquals(1, sourceFiles.size)
 
         val bangumiInfo = sourceGroup.sharedPatternVariables() as BangumiInfo

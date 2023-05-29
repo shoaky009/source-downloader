@@ -9,10 +9,10 @@ import bt.metainfo.Torrent
 import bt.runtime.BtClient
 import bt.runtime.BtRuntime
 import bt.runtime.Config
+import xyz.shoaky.sourcedownloader.sdk.SourceFile
 import xyz.shoaky.sourcedownloader.sdk.SourceItem
 import xyz.shoaky.sourcedownloader.sdk.component.ItemFileResolver
 import java.net.URI
-import java.nio.file.Path
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
@@ -21,7 +21,7 @@ import kotlin.io.path.Path
 object TorrentFileResolver : ItemFileResolver {
 
     private val metadataService = MetadataService()
-    override fun resolveFiles(sourceItem: SourceItem): List<Path> {
+    override fun resolveFiles(sourceItem: SourceItem): List<SourceFile> {
         val downloadUri = sourceItem.downloadUri
         val torrent = if (downloadUri.scheme == "magnet") {
             val pureMagnet = removeBlankParams(downloadUri)
@@ -32,14 +32,19 @@ object TorrentFileResolver : ItemFileResolver {
         }
 
         if (torrent.files.size == 1) {
-            return torrent.files.map { it.pathElements.joinToString("/") }
-                .map { Path(it) }
+            return torrent.files
+                .map {
+                    val path = Path(it.pathElements.joinToString("/"))
+                    SourceFile(path, mapOf("size" to it.size))
+                }
         }
         val parent = Path(torrent.name)
         return torrent.files
             .filter { it.size > 0 }
-            .map { it.pathElements.joinToString("/") }
-            .map { parent.resolve(it) }
+            .map {
+                val path = parent.resolve(it.pathElements.joinToString("/"))
+                SourceFile(path, mapOf("size" to it.size))
+            }
     }
 
     private fun removeBlankParams(uri: URI): String {

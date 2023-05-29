@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Test
 import xyz.shoaky.sourcedownloader.sdk.*
 import xyz.shoaky.sourcedownloader.sdk.component.VariableProvider
 import xyz.shoaky.sourcedownloader.sourceItem
-import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.test.assertEquals
 
@@ -15,13 +14,13 @@ class VariableProvidersAggregationTest {
         val p1 = CustomProvider(
             mapOf("seasonNumber" to "01", "test1" to "2"),
             listOf(
-                UniversalSourceFile(
+                UniversalFileVariable(
                     MapPatternVariables(mapOf("episode" to "01"))
                 ),
-                UniversalSourceFile(
+                UniversalFileVariable(
                     MapPatternVariables(mapOf("episode" to "02"))
                 ),
-                UniversalSourceFile(
+                UniversalFileVariable(
                     MapPatternVariables(mapOf("episode" to "03"))
                 )
             )
@@ -30,13 +29,13 @@ class VariableProvidersAggregationTest {
         val p2 = CustomProvider(
             mapOf("seasonNumber" to "01", "test2" to "2"),
             listOf(
-                UniversalSourceFile(
+                UniversalFileVariable(
                     MapPatternVariables(mapOf("episode" to "01"))
                 ),
-                UniversalSourceFile(
+                UniversalFileVariable(
                     MapPatternVariables(mapOf("episode" to "02.5"))
                 ),
-                UniversalSourceFile(
+                UniversalFileVariable(
                     MapPatternVariables(mapOf("episode" to "03"))
                 )
             )
@@ -45,13 +44,13 @@ class VariableProvidersAggregationTest {
         val p3 = CustomProvider(
             mapOf("season" to "02", "test3" to "2"),
             listOf(
-                UniversalSourceFile(
+                UniversalFileVariable(
                     MapPatternVariables(mapOf("episode" to "01"))
                 ),
-                UniversalSourceFile(
+                UniversalFileVariable(
                     MapPatternVariables(mapOf("episode" to "02.5"))
                 ),
-                UniversalSourceFile(
+                UniversalFileVariable(
                     MapPatternVariables(mapOf("episode" to "03", "test" to "111"))
                 )
             )
@@ -68,9 +67,11 @@ class VariableProvidersAggregationTest {
         assertEquals(4, variables.size)
         assertEquals("01", variables["season"])
 
-        val sourceFiles = aggregation.sourceFiles(listOf(
-            Path(""), Path(""), Path("")
-        ))
+        val sourceFiles = aggregation.filePatternVariables(
+            SourceFile(Path("")),
+            SourceFile(Path("")),
+            SourceFile(Path("")),
+        )
 
         assertEquals("01", sourceFiles[0].patternVariables().variables()["episode"])
         assertEquals("02.5", sourceFiles[1].patternVariables().variables()["episode"])
@@ -85,13 +86,13 @@ class VariableProvidersAggregationTest {
         val p1 = CustomProvider(
             mapOf("season" to "01", "test1" to "2"),
             listOf(
-                UniversalSourceFile(
+                UniversalFileVariable(
                     MapPatternVariables(mapOf("episode" to "01"))
                 ),
-                UniversalSourceFile(
+                UniversalFileVariable(
                     MapPatternVariables(mapOf("episode" to "02"))
                 ),
-                UniversalSourceFile(
+                UniversalFileVariable(
                     MapPatternVariables(mapOf("episode" to "04"))
                 )
             ),
@@ -101,13 +102,13 @@ class VariableProvidersAggregationTest {
         val p2 = CustomProvider(
             mapOf("season" to "01", "test2" to "2"),
             listOf(
-                UniversalSourceFile(
+                UniversalFileVariable(
                     MapPatternVariables(mapOf("episodeNumber" to "01", "test1" to "test1"))
                 ),
-                UniversalSourceFile(
+                UniversalFileVariable(
                     MapPatternVariables(mapOf("episode" to "02.5"))
                 ),
-                UniversalSourceFile(
+                UniversalFileVariable(
                     MapPatternVariables(mapOf("episode" to "04"))
                 )
             ),
@@ -117,13 +118,13 @@ class VariableProvidersAggregationTest {
         val p3 = CustomProvider(
             mapOf("seasonNumber" to "02", "test3" to "2"),
             listOf(
-                UniversalSourceFile(
+                UniversalFileVariable(
                     MapPatternVariables(mapOf("episodeNumber" to "01"))
                 ),
-                UniversalSourceFile(
+                UniversalFileVariable(
                     MapPatternVariables(mapOf("episode" to "02.5"))
                 ),
-                UniversalSourceFile(
+                UniversalFileVariable(
                     MapPatternVariables(mapOf("episode" to "03", "test" to "111"))
                 )
             ),
@@ -133,13 +134,13 @@ class VariableProvidersAggregationTest {
         val p4 = CustomProvider(
             mapOf("season" to "01", "test4" to "4"),
             listOf(
-                UniversalSourceFile(
+                UniversalFileVariable(
                     MapPatternVariables(mapOf("episode" to "01", "dddd" to "4444"))
                 ),
-                UniversalSourceFile(
+                UniversalFileVariable(
                     MapPatternVariables(mapOf("episodeNumber" to "02"))
                 ),
-                UniversalSourceFile(
+                UniversalFileVariable(
                     MapPatternVariables(mapOf("episodeNumber" to "04"))
                 )
             ),
@@ -158,9 +159,11 @@ class VariableProvidersAggregationTest {
         assertEquals("02", sharedVariables["season"])
         assertEquals("2", sharedVariables["test3"])
 
-        val sourceFiles = aggregation.sourceFiles(listOf(
-            Path(""), Path(""), Path("")
-        ))
+        val sourceFiles = aggregation.filePatternVariables(
+            SourceFile(Path("")),
+            SourceFile(Path("")),
+            SourceFile(Path("")),
+        )
 
         assertEquals("01", sourceFiles[0].patternVariables().variables()["episode"])
         assertEquals("03", sourceFiles[2].patternVariables().variables()["episode"])
@@ -172,13 +175,13 @@ class VariableProvidersAggregationTest {
         val p1 = CustomProvider(
             mapOf("season" to "01", "test1" to "2"),
             listOf(
-                UniversalSourceFile(
+                UniversalFileVariable(
                     MapPatternVariables(mapOf("episode" to "01"))
                 ),
-                UniversalSourceFile(
+                UniversalFileVariable(
                     MapPatternVariables(mapOf("episode" to "02"))
                 ),
-                UniversalSourceFile(
+                UniversalFileVariable(
                     MapPatternVariables(mapOf("episode" to "04"))
                 )
             ),
@@ -188,13 +191,13 @@ class VariableProvidersAggregationTest {
         val p2 = CustomProvider(
             mapOf("season" to "02", "test2" to "2"),
             listOf(
-                UniversalSourceFile(
+                UniversalFileVariable(
                     MapPatternVariables(mapOf("episode" to "01", "key2" to "test2"))
                 ),
-                UniversalSourceFile(
+                UniversalFileVariable(
                     MapPatternVariables(mapOf("episode" to "02.5"))
                 ),
-                UniversalSourceFile(
+                UniversalFileVariable(
                     MapPatternVariables(mapOf("episode" to "04"))
                 )
             ),
@@ -206,9 +209,12 @@ class VariableProvidersAggregationTest {
         assertEquals(3, sharedVariables1.size)
         assertEquals("02", sharedVariables1["season"])
 
-        val sourceFiles1 = aggregation1.sourceFiles(listOf(
-            Path(""), Path(""), Path("")
-        ))
+        val sourceFiles1 = aggregation1.filePatternVariables(
+            SourceFile(Path("")),
+            SourceFile(Path("")),
+            SourceFile(Path("")),
+        )
+
         assertEquals(2, sourceFiles1[0].patternVariables().variables().size)
         assertEquals("test2", sourceFiles1[0].patternVariables().variables()["key2"])
         assertEquals("02.5", sourceFiles1[1].patternVariables().variables()["episode"])
@@ -220,9 +226,12 @@ class VariableProvidersAggregationTest {
         assertEquals(3, sharedVariables2.size)
         assertEquals("02", sharedVariables2["season"])
 
-        val sourceFiles2 = aggregation2.sourceFiles(listOf(
-            Path(""), Path(""), Path("")
-        ))
+        val sourceFiles2 = aggregation2.filePatternVariables(
+            SourceFile(Path("")),
+            SourceFile(Path("")),
+            SourceFile(Path("")),
+        )
+
         assertEquals(2, sourceFiles2[0].patternVariables().variables().size)
         assertEquals("test2", sourceFiles2[0].patternVariables().variables()["key2"])
         assertEquals("02.5", sourceFiles2[1].patternVariables().variables()["episode"])
@@ -235,13 +244,13 @@ class VariableProvidersAggregationTest {
         val p1 = CustomProvider(
             mapOf("season" to "00", "test1" to "2"),
             listOf(
-                UniversalSourceFile(
+                UniversalFileVariable(
                     MapPatternVariables(mapOf("episode" to "01"))
                 ),
-                UniversalSourceFile(
+                UniversalFileVariable(
                     MapPatternVariables(mapOf("episode" to "02"))
                 ),
-                UniversalSourceFile(
+                UniversalFileVariable(
                     MapPatternVariables(mapOf("episode" to "04"))
                 )
             ),
@@ -251,13 +260,13 @@ class VariableProvidersAggregationTest {
         val p2 = CustomProvider(
             mapOf("season" to "01", "test2" to "2"),
             listOf(
-                UniversalSourceFile(
+                UniversalFileVariable(
                     MapPatternVariables(mapOf("episode" to "01", "key2" to "test2"))
                 ),
-                UniversalSourceFile(
+                UniversalFileVariable(
                     MapPatternVariables(mapOf("episode" to "02.5"))
                 ),
-                UniversalSourceFile(
+                UniversalFileVariable(
                     MapPatternVariables(mapOf("episode" to "04"))
                 )
             ),
@@ -267,13 +276,13 @@ class VariableProvidersAggregationTest {
         val p3 = CustomProvider(
             mapOf("season" to "02", "test2" to "2"),
             listOf(
-                UniversalSourceFile(
+                UniversalFileVariable(
                     MapPatternVariables(mapOf("episode" to "01", "key2" to "test2"))
                 ),
-                UniversalSourceFile(
+                UniversalFileVariable(
                     MapPatternVariables(mapOf("episode" to "02.5"))
                 ),
-                UniversalSourceFile(
+                UniversalFileVariable(
                     MapPatternVariables(mapOf("episode" to "04", "key4.1" to "5"))
                 )
             ),
@@ -283,13 +292,13 @@ class VariableProvidersAggregationTest {
         val p4 = CustomProvider(
             mapOf("season" to "02", "test2" to "2"),
             listOf(
-                UniversalSourceFile(
+                UniversalFileVariable(
                     MapPatternVariables(mapOf("episode" to "01", "key2" to "test2"))
                 ),
-                UniversalSourceFile(
+                UniversalFileVariable(
                     MapPatternVariables(mapOf("episode" to "02.5"))
                 ),
-                UniversalSourceFile(
+                UniversalFileVariable(
                     MapPatternVariables(mapOf("episode" to "04", "key4" to "2", "key4.1" to "4"))
                 )
             ),
@@ -299,9 +308,9 @@ class VariableProvidersAggregationTest {
         val p5 = CustomProvider(
             mapOf("season" to "02", "test2" to "3"),
             listOf(
-                UniversalSourceFile(MapPatternVariables()),
-                UniversalSourceFile(MapPatternVariables()),
-                UniversalSourceFile(MapPatternVariables())
+                UniversalFileVariable(MapPatternVariables()),
+                UniversalFileVariable(MapPatternVariables()),
+                UniversalFileVariable(MapPatternVariables())
             ),
             4
         )
@@ -312,8 +321,10 @@ class VariableProvidersAggregationTest {
         assertEquals("02", sharedVariables1["season"])
         assertEquals("3", sharedVariables1["test2"])
 
-        val sourceFiles1 = aggregation1.sourceFiles(listOf(
-            Path(""), Path(""), Path("")
+        val sourceFiles1 = aggregation1.filePatternVariables(listOf(
+            SourceFile(Path("")),
+            SourceFile(Path("")),
+            SourceFile(Path("")),
         ))
         assertEquals(2, sourceFiles1[0].patternVariables().variables().size)
         assertEquals(3, sourceFiles1[2].patternVariables().variables().size)
@@ -326,9 +337,11 @@ class VariableProvidersAggregationTest {
         assertEquals("02", sharedVariables2["season"])
         assertEquals("3", sharedVariables1["test2"])
 
-        val sourceFiles2 = aggregation2.sourceFiles(listOf(
-            Path(""), Path(""), Path("")
-        ))
+        val sourceFiles2 = aggregation2.filePatternVariables(
+            SourceFile(Path("")),
+            SourceFile(Path("")),
+            SourceFile(Path("")),
+        )
         assertEquals(2, sourceFiles2[0].patternVariables().variables().size)
         assertEquals(3, sourceFiles2[2].patternVariables().variables().size)
         assertEquals("5", sourceFiles2[2].patternVariables().variables()["key4.1"])
@@ -340,13 +353,13 @@ class VariableProvidersAggregationTest {
         val p1 = CustomProvider(
             mapOf("season" to "00", "test1" to "2"),
             listOf(
-                UniversalSourceFile(
+                UniversalFileVariable(
                     MapPatternVariables(mapOf("episode" to "01"))
                 ),
-                UniversalSourceFile(
+                UniversalFileVariable(
                     MapPatternVariables(mapOf("episode" to "02"))
                 ),
-                UniversalSourceFile(
+                UniversalFileVariable(
                     MapPatternVariables(mapOf("episode" to "04"))
                 )
             ),
@@ -355,13 +368,13 @@ class VariableProvidersAggregationTest {
         val p2 = CustomProvider(
             mapOf("season" to "01", "test2" to "2"),
             listOf(
-                UniversalSourceFile(
+                UniversalFileVariable(
                     MapPatternVariables(mapOf("episode" to "01", "key2" to "test2"))
                 ),
-                UniversalSourceFile(
+                UniversalFileVariable(
                     MapPatternVariables(mapOf("episode" to "02.5"))
                 ),
-                UniversalSourceFile(
+                UniversalFileVariable(
                     MapPatternVariables(mapOf("episode" to "04"))
                 )
             ),
@@ -376,13 +389,13 @@ class VariableProvidersAggregationTest {
 
 private class CustomProvider(
     val variables: Map<String, String>,
-    val files: List<UniversalSourceFile>,
+    val files: List<UniversalFileVariable>,
     override val accuracy: Int = 2
 ) : VariableProvider {
 
     override fun createSourceGroup(sourceItem: SourceItem): SourceItemGroup {
         return object : SourceItemGroup {
-            override fun sourceFiles(paths: List<Path>): List<SourceFile> {
+            override fun filePatternVariables(paths: List<SourceFile>): List<FileVariable> {
                 return files
             }
 

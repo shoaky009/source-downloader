@@ -7,13 +7,9 @@ import xyz.shoaky.sourcedownloader.external.anilist.AnilistClient
 import xyz.shoaky.sourcedownloader.external.anilist.Search
 import xyz.shoaky.sourcedownloader.external.bangumi.BgmTvApiClient
 import xyz.shoaky.sourcedownloader.external.bangumi.SearchSubjectRequest
-import xyz.shoaky.sourcedownloader.sdk.PatternVariables
-import xyz.shoaky.sourcedownloader.sdk.SourceFile
-import xyz.shoaky.sourcedownloader.sdk.SourceItem
-import xyz.shoaky.sourcedownloader.sdk.SourceItemGroup
+import xyz.shoaky.sourcedownloader.sdk.*
 import xyz.shoaky.sourcedownloader.sdk.component.VariableProvider
 import xyz.shoaky.sourcedownloader.sdk.util.replaces
-import java.nio.file.Path
 
 class AnimeVariableProvider(
     private val bgmTvApiClient: BgmTvApiClient,
@@ -145,8 +141,8 @@ internal class AnimeSourceGroup(
         return shared
     }
 
-    override fun sourceFiles(paths: List<Path>): List<SourceFile> {
-        return paths.map { SourceFile.EMPTY }
+    override fun filePatternVariables(paths: List<SourceFile>): List<FileVariable> {
+        return paths.map { FileVariable.EMPTY }
     }
 
 }

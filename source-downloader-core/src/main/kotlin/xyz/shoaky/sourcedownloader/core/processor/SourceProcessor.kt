@@ -269,10 +269,10 @@ class SourceProcessor(
     ): PersistentSourceContent {
         val resolveFiles = itemFileResolver.resolveFiles(sourceItem)
         val sharedPatternVariables = sourceItemGroup.sharedPatternVariables()
-        val sourceFiles = sourceItemGroup.sourceFiles(resolveFiles)
+        val sourceFiles = sourceItemGroup.filePatternVariables(resolveFiles)
             .mapIndexed { index, sourceFile ->
                 val sourceFileContent = CoreFileContent(
-                    downloadPath.resolve(resolveFiles[index]),
+                    downloadPath.resolve(resolveFiles[index].path),
                     sourceSavePath,
                     downloadPath,
                     MapPatternVariables(sourceFile.patternVariables().variables()),

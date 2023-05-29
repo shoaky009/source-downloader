@@ -105,7 +105,7 @@ interface ItemFileResolver : SdComponent {
      * Resolve files from item
      * @return Relative paths in the download path
      */
-    fun resolveFiles(sourceItem: SourceItem): List<Path>
+    fun resolveFiles(sourceItem: SourceItem): List<SourceFile>
 }
 
 interface VariableProvider : SdComponent {

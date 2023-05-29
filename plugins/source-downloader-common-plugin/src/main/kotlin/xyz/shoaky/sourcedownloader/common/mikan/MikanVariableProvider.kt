@@ -8,13 +8,9 @@ import xyz.shoaky.sourcedownloader.external.bangumi.BgmTvApiClient
 import xyz.shoaky.sourcedownloader.external.bangumi.GetSubjectRequest
 import xyz.shoaky.sourcedownloader.external.bangumi.Subject
 import xyz.shoaky.sourcedownloader.external.tmdb.TmdbClient
-import xyz.shoaky.sourcedownloader.sdk.PatternVariables
-import xyz.shoaky.sourcedownloader.sdk.SourceFile
-import xyz.shoaky.sourcedownloader.sdk.SourceItem
-import xyz.shoaky.sourcedownloader.sdk.SourceItemGroup
+import xyz.shoaky.sourcedownloader.sdk.*
 import xyz.shoaky.sourcedownloader.sdk.component.VariableProvider
 import java.net.URI
-import java.nio.file.Path
 
 /**
  * Mikan变量提供器
@@ -89,7 +85,7 @@ class MikanVariableProvider(
             subject.date.monthValue,
             season
         )
-        return MikanSourceGroup(bangumiInfo, subjectContent)
+        return MikanSourceGroup(bangumiInfo)
     }
 
     override fun support(item: SourceItem): Boolean {
@@ -100,12 +96,11 @@ class MikanVariableProvider(
 
 private class MikanSourceGroup(
     private val bangumiInfo: BangumiInfo,
-    private val subject: SubjectContent,
 ) : SourceItemGroup {
 
-    override fun sourceFiles(paths: List<Path>): List<SourceFile> {
-        return paths.map { path ->
-            BangumiFile(path, subject, bangumiInfo)
+    override fun filePatternVariables(paths: List<SourceFile>): List<FileVariable> {
+        return paths.map {
+            BangumiFile(bangumiInfo)
         }
     }
 
