@@ -7,8 +7,8 @@ interface SourceItemGroup {
      */
     fun filePatternVariables(paths: List<SourceFile>): List<FileVariable>
 
-    fun filePatternVariables(vararg sourceFileV2: SourceFile): List<FileVariable> {
-        return filePatternVariables(sourceFileV2.toList())
+    fun filePatternVariables(vararg sourceFiles: SourceFile): List<FileVariable> {
+        return filePatternVariables(sourceFiles.toList())
     }
 
     /**

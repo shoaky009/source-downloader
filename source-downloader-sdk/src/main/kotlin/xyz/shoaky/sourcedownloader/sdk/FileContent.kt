@@ -18,6 +18,8 @@ interface FileContent {
 
     val tags: Set<String>
 
+    val attributes: Map<String, Any>
+
     fun targetPath(): Path
 
     fun saveDirectoryPath(): Path {

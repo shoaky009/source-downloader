@@ -271,13 +271,15 @@ class SourceProcessor(
         val sharedPatternVariables = sourceItemGroup.sharedPatternVariables()
         val sourceFiles = sourceItemGroup.filePatternVariables(resolveFiles)
             .mapIndexed { index, sourceFile ->
+                val resolveFile = resolveFiles[index]
                 val sourceFileContent = CoreFileContent(
-                    downloadPath.resolve(resolveFiles[index].path),
+                    downloadPath.resolve(resolveFile.path),
                     sourceSavePath,
                     downloadPath,
                     MapPatternVariables(sourceFile.patternVariables().variables()),
                     fileSavePathPattern,
                     filenamePattern,
+                    resolveFile.attributes
                 )
                 // 这里坑，后面看怎么改
                 val tagged = tagFileAndReplaceFilenamePattern(sourceFileContent)

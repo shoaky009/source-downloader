@@ -2,7 +2,7 @@ package xyz.shoaky.sourcedownloader.telegram
 
 import it.tdlight.jni.TdApi
 
-data class FileMessage(
+internal data class FileMessage(
     val subject: String,
     val mimeType: String,
     val fileIds: List<Int>,
