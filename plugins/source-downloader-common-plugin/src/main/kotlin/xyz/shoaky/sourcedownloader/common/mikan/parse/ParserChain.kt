@@ -1,13 +1,12 @@
 package xyz.shoaky.sourcedownloader.common.mikan.parse
 
 import org.slf4j.LoggerFactory
-import xyz.shoaky.sourcedownloader.external.bangumi.Subject
 
 internal class ParserChain(
     private val parsers: List<ValueParser>,
     private val any: Boolean = false
 ) {
-    fun apply(subject: SubjectContent, filename: String): Result {
+    fun apply(subject: String, filename: String): Result {
         return if (any) {
             anyValue(subject, filename)
         } else {
@@ -15,7 +14,7 @@ internal class ParserChain(
         }
     }
 
-    private fun anyValue(subject: SubjectContent, filename: String): Result {
+    private fun anyValue(subject: String, filename: String): Result {
         for (parser in parsers) {
             val res = parser.apply(subject, filename)
             if (res.value != null) {
@@ -25,7 +24,7 @@ internal class ParserChain(
         return Result()
     }
 
-    private fun voteValue(subject: SubjectContent, filename: String): Result {
+    private fun voteValue(subject: String, filename: String): Result {
         val results = mutableMapOf<String, Result>()
         for (parse in parsers) {
             parse.runCatching {
@@ -60,16 +59,5 @@ internal class ParserChain(
 
 
         private val log = LoggerFactory.getLogger(ParserChain::class.java)
-    }
-}
-
-data class SubjectContent(val subject: Subject, val mikanTitle: String) {
-
-    fun episodeLength(): Int {
-        return subject.totalEpisodes.toString().length
-    }
-
-    fun nonEmptyName(): String {
-        return subject.nameCn.takeIf { it.isNotBlank() } ?: subject.name
     }
 }

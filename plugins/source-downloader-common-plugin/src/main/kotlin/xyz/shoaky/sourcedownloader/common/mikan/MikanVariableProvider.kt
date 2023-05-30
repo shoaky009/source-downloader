@@ -3,7 +3,10 @@ package xyz.shoaky.sourcedownloader.common.mikan
 import com.google.common.cache.CacheBuilder
 import com.google.common.cache.CacheLoader
 import org.slf4j.LoggerFactory
-import xyz.shoaky.sourcedownloader.common.mikan.parse.*
+import xyz.shoaky.sourcedownloader.common.mikan.parse.CommonSeasonParser
+import xyz.shoaky.sourcedownloader.common.mikan.parse.DefaultValueSeasonParser
+import xyz.shoaky.sourcedownloader.common.mikan.parse.ParserChain
+import xyz.shoaky.sourcedownloader.common.mikan.parse.TmdbSeasonParser
 import xyz.shoaky.sourcedownloader.external.bangumi.BgmTvApiClient
 import xyz.shoaky.sourcedownloader.external.bangumi.GetSubjectRequest
 import xyz.shoaky.sourcedownloader.external.bangumi.Subject
@@ -25,7 +28,7 @@ class MikanVariableProvider(
 
     override val accuracy: Int = 3
 
-    private val parserChain = ParserChain(
+    private val seasonParserChain = ParserChain(
         listOf(
             CommonSeasonParser,
             TmdbSeasonParser(tmdbClient),
@@ -69,16 +72,16 @@ class MikanVariableProvider(
 
         val bangumiTitle = pageInfo.bangumiTitle!!
         val subject = bangumiCache.get(pageInfo.mikanHref)
-        val subjectContent = SubjectContent(subject, bangumiTitle)
+        // 有些纯字母的没有中文名
+        val searchContent = subject.nameCn.takeIf { it.isNotBlank() } ?: subject.name
 
         // 暂时没看到文件跨季度的情况
-        val result = parserChain.apply(subjectContent, sourceItem.title)
+        val result = seasonParserChain.apply(searchContent, sourceItem.title)
 
         val season = result.padValue() ?: "01"
         val bangumiInfo = BangumiInfo(
             subject.name,
-            // 有些纯字母的没有中文名
-            subjectContent.nonEmptyName(),
+            searchContent,
             bangumiTitle,
             subject.date.toString(),
             subject.date.year,

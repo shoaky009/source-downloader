@@ -4,18 +4,12 @@ import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import xyz.shoaky.sourcedownloader.common.torrent.R
-import xyz.shoaky.sourcedownloader.external.bangumi.Subject
 import xyz.shoaky.sourcedownloader.external.tmdb.*
 import xyz.shoaky.sourcedownloader.sdk.util.Jackson
 import java.nio.file.Files
-import java.time.LocalDate
 import kotlin.io.path.Path
 import kotlin.test.assertEquals
 
-fun create(name: String): SubjectContent {
-    val subject = Subject(1, name, name, LocalDate.now(), 12)
-    return SubjectContent(subject, name)
-}
 
 class SeasonParserChainTest {
 
@@ -23,15 +17,11 @@ class SeasonParserChainTest {
     fun should_all_expected() {
         val tmdbClient = Mockito.mock(TmdbClient::class.java)
 
-        // val tmdbClient = TmdbClient(TmdbClient.DEFAULT_TOKEN)
-
         val parserChain = ParserChain(listOf(
             CommonSeasonParser,
             TmdbSeasonParser(tmdbClient),
             DefaultValueSeasonParser
         ), true)
-
-        val mockingDetails = Mockito.mockingDetails(tmdbClient)
 
         Files.readAllLines(Path("src", "test", "resources", "season-test.csv"))
             .filter { it.isNullOrBlank().not() }
@@ -56,22 +46,20 @@ class SeasonParserChainTest {
                 )
             }
             .forEach {
-                if (mockingDetails.isMock) {
-                    if (it.tmdbSearchMockData != null) {
-                        val split = it.name.split(" ")
-                        val search = split.first()
-                        Mockito.`when`(tmdbClient.execute(Mockito.eq(SearchTvShow(search))))
-                            .thenReturn(R(pageResult(it.tmdbSearchMockData)))
-                    }
-                    if (it.tmdbTvShowMockData != null) {
-                        val data = it.tmdbTvShowMockData
-                        Mockito.`when`(tmdbClient.execute(Mockito.eq(GetTvShow(data.id))))
-                            .thenReturn(R(data))
-                    }
+                if (it.tmdbSearchMockData != null) {
+                    val split = it.name.split(" ")
+                    val search = split.first()
+                    Mockito.`when`(tmdbClient.execute(Mockito.eq(SearchTvShow(search))))
+                        .thenReturn(R(pageResult(it.tmdbSearchMockData)))
+                }
+                if (it.tmdbTvShowMockData != null) {
+                    val data = it.tmdbTvShowMockData
+                    Mockito.`when`(tmdbClient.execute(Mockito.eq(GetTvShow(data.id))))
+                        .thenReturn(R(data))
                 }
 
                 val name = it.name
-                val season = parserChain.apply(create(name), it.filename).value
+                val season = parserChain.apply(name, it.filename).value
                 assertEquals(it.expect, season, "name:${name}")
             }
     }

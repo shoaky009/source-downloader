@@ -2,16 +2,18 @@ package xyz.shoaky.sourcedownloader.common.mikan.parse
 
 import org.apache.commons.lang3.CharUtils
 import org.apache.commons.lang3.math.NumberUtils
+import java.nio.file.Path
 import java.util.function.Function
+import kotlin.io.path.name
 
 internal object CommonSeasonParser : ValueParser {
 
     override val name: String = "CommonSeasonParser"
 
-    override fun apply(subjectContent: SubjectContent, filename: String): Result {
-        val subjectName = subjectContent.nonEmptyName().trim()
+    override fun apply(content: String, file: Path): Result {
+        val filename = file.name
         for (rule in rules) {
-            val res = rule.ifMatchConvert(subjectName)
+            val res = rule.ifMatchConvert(content)
                 ?: rule.ifMatchConvert(filename)
             if (res != null) {
                 return Result(res, accuracy = Result.Accuracy.ACCURATE)

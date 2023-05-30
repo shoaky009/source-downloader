@@ -1,9 +1,15 @@
 package xyz.shoaky.sourcedownloader.common.mikan.parse
 
+import java.nio.file.Path
+
 internal interface ValueParser {
 
     val name: String
-    fun apply(subjectContent: SubjectContent, filename: String): Result
+    fun apply(content: String, filename: String): Result {
+        return apply(content, Path.of(filename))
+    }
+
+    fun apply(content: String, file: Path): Result
 }
 
 data class Result(

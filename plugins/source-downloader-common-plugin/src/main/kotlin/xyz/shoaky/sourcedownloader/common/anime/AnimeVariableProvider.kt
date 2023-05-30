@@ -17,8 +17,8 @@ class AnimeVariableProvider(
 ) : VariableProvider {
 
     private val searchCache =
-        CacheBuilder.newBuilder().maximumSize(500).build(object : CacheLoader<String, PatternVariables>() {
-            override fun load(title: String): PatternVariables {
+        CacheBuilder.newBuilder().maximumSize(500).build(object : CacheLoader<String, Anime>() {
+            override fun load(title: String): Anime {
                 return searchAnime(title)
             }
         })
@@ -30,18 +30,18 @@ class AnimeVariableProvider(
 
     override fun support(item: SourceItem): Boolean = true
 
-    private fun create(sourceItem: SourceItem): PatternVariables {
+    private fun create(sourceItem: SourceItem): Anime {
         val title = extractTitle(sourceItem)
         return searchCache.get(title)
     }
 
-    private fun searchAnime(title: String): PatternVariables {
+    private fun searchAnime(title: String): Anime {
         val hasJp = hasLanguage(title, Character.UnicodeScript.HIRAGANA, Character.UnicodeScript.KATAKANA)
         val hasChinese = hasLanguage(title, Character.UnicodeScript.HAN)
         if (hasJp || hasChinese.not()) {
             val response = anilistClient.execute(Search(title)).body()
             if (response.errors.isNotEmpty()) {
-                return PatternVariables.EMPTY
+                return Anime()
             }
             val anime = response.data.page.medias.firstOrNull()
             if (anime == null) {
@@ -56,7 +56,7 @@ class AnimeVariableProvider(
         val subjectItem = body.list.firstOrNull()
         if (subjectItem == null) {
             log.warn("searching anime: $title no result")
-            return PatternVariables.EMPTY
+            return Anime()
         }
 
         val response = anilistClient.execute(Search(subjectItem.name)).body()
@@ -134,11 +134,11 @@ private class TitleScore(
 private val log = LoggerFactory.getLogger(AnimeSourceGroup::class.java)
 
 internal class AnimeSourceGroup(
-    private val shared: PatternVariables
+    private val anime: Anime,
 ) : SourceItemGroup {
 
     override fun sharedPatternVariables(): PatternVariables {
-        return shared
+        return anime
     }
 
     override fun filePatternVariables(paths: List<SourceFile>): List<FileVariable> {
