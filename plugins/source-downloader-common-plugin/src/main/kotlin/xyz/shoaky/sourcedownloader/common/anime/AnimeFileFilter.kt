@@ -15,7 +15,7 @@ object AnimeFileFilter : FileContentFilter {
      * 如果在special中的文件夹下，匹配规则可以宽松些
      */
     private val spRegexes = listOf(
-        "NCOP|NCED|MENU|PV|CM|Fonts|IV".toRegex(RegexOption.IGNORE_CASE),
+        "NCOP|NCED|MENU|PV|CM|Fonts|IV|Scan".toRegex(RegexOption.IGNORE_CASE),
     )
 
     private val normalRegexes = listOf(
@@ -23,7 +23,7 @@ object AnimeFileFilter : FileContentFilter {
     )
 
     private val specialDirNames = setOf(
-        "sps", "sp", "special", "ncop", "nced", "menu", "pv", "cm", "cd", "cds"
+        "sps", "sp", "special", "ncop", "nced", "menu", "pv", "cm", "cd", "cds", "scan", "scans", "extra"
     )
 
     override fun test(content: FileContent): Boolean {

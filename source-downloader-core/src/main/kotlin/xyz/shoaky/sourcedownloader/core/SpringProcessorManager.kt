@@ -3,7 +3,10 @@ package xyz.shoaky.sourcedownloader.core
 import org.springframework.beans.factory.support.DefaultListableBeanFactory
 import org.springframework.stereotype.Component
 import xyz.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
-import xyz.shoaky.sourcedownloader.component.supplier.*
+import xyz.shoaky.sourcedownloader.component.supplier.CleanEmptyDirectorySupplier
+import xyz.shoaky.sourcedownloader.component.supplier.ExpressionFileFilterSupplier
+import xyz.shoaky.sourcedownloader.component.supplier.ExpressionItemFilterSupplier
+import xyz.shoaky.sourcedownloader.component.supplier.TouchItemDirectorySupplier
 import xyz.shoaky.sourcedownloader.core.processor.SourceProcessor
 import xyz.shoaky.sourcedownloader.sdk.Properties
 import xyz.shoaky.sourcedownloader.sdk.SourceItemPointer
@@ -100,11 +103,6 @@ class SpringProcessorManager(
     }
 
     private fun initOptions(options: ProcessorConfig.Options, processor: SourceProcessor) {
-        if (options.regexFilters.isNotEmpty()) {
-            processor.addItemFilter(
-                RegexSourceItemFilterSupplier.regexes(options.regexFilters)
-            )
-        }
         if (options.itemExpressionExclusions.isNotEmpty() || options.itemExpressionInclusions.isNotEmpty()) {
             processor.addItemFilter(ExpressionItemFilterSupplier.expressions(
                 options.itemExpressionExclusions,

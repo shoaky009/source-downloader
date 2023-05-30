@@ -2,10 +2,10 @@ package xyz.shoaky.sourcedownloader.component
 
 import org.projectnessie.cel.checker.Decls
 import org.projectnessie.cel.tools.Script
-import org.projectnessie.cel.tools.ScriptHost
 import org.slf4j.LoggerFactory
 import xyz.shoaky.sourcedownloader.sdk.FileContent
 import xyz.shoaky.sourcedownloader.sdk.component.FileContentFilter
+import xyz.shoaky.sourcedownloader.util.scriptHost
 import kotlin.io.path.extension
 import kotlin.io.path.name
 
@@ -29,7 +29,7 @@ class ExpressionFileFilter(
             "filename" to content.fileDownloadPath.name,
             "tags" to content.tags.toList(),
             "ext" to content.fileDownloadPath.extension,
-            "pv" to content.patternVariables.variables(),
+            "vars" to content.patternVariables.variables(),
             "attr" to content.attributes
         )
 
@@ -48,7 +48,6 @@ class ExpressionFileFilter(
     }
 
     companion object {
-        private val scriptHost = ScriptHost.newBuilder().build()
         private val log = LoggerFactory.getLogger(ExpressionFileFilter::class.java)
         private fun buildScript(expression: String): Script {
             return scriptHost.buildScript(expression)
@@ -58,7 +57,7 @@ class ExpressionFileFilter(
                     // short for extension
                     Decls.newVar("ext", Decls.String),
                     // short for patternVariables
-                    Decls.newVar("pv", Decls.newMapType(Decls.String, Decls.String)),
+                    Decls.newVar("vars", Decls.newMapType(Decls.String, Decls.String)),
                     Decls.newVar("attr", Decls.newMapType(Decls.String, Decls.Any)),
                 )
                 .build()

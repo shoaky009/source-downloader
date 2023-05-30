@@ -5,7 +5,6 @@ import xyz.shoaky.sourcedownloader.sdk.Properties
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentType
 import xyz.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
 import xyz.shoaky.sourcedownloader.sdk.component.SourceItemFilter
-import xyz.shoaky.sourcedownloader.util.SpringExpression
 
 object ExpressionItemFilterSupplier : SdComponentSupplier<ExpressionItemFilter> {
 
@@ -16,10 +15,7 @@ object ExpressionItemFilterSupplier : SdComponentSupplier<ExpressionItemFilter> 
     }
 
     fun expressions(exclusions: List<String> = emptyList(), inclusions: List<String> = emptyList()): ExpressionItemFilter {
-        return ExpressionItemFilter(
-            exclusions.map { SpringExpression.parseExpression(it) },
-            inclusions.map { SpringExpression.parseExpression(it) }
-        )
+        return ExpressionItemFilter(exclusions, inclusions)
     }
 
     override fun supplyTypes(): List<ComponentType> {

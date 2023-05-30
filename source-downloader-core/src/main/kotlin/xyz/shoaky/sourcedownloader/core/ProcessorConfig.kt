@@ -84,8 +84,6 @@ data class ProcessorConfig(
         val provideMetadataVariables: Boolean = true,
         @JsonAlias("save-content")
         val saveContent: Boolean = true,
-        @JsonAlias("regex-filters")
-        val regexFilters: List<String> = emptyList(),
         @JsonAlias("item-expression-exclusions")
         val itemExpressionExclusions: List<String> = emptyList(),
         @JsonAlias("item-expression-inclusions")

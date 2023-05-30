@@ -1,8 +1,6 @@
 package xyz.shoaky.sourcedownloader.util
 
-import org.springframework.expression.Expression
-import org.springframework.expression.ExpressionParser
-import org.springframework.expression.spel.standard.SpelExpressionParser
+import org.projectnessie.cel.tools.ScriptHost
 import org.springframework.util.unit.DataSize
 import java.nio.file.Files
 import java.nio.file.Path
@@ -13,14 +11,7 @@ import kotlin.io.path.notExists
 import kotlin.io.path.readAttributes
 
 
-object SpringExpression {
-
-    private val expressionParser: ExpressionParser = SpelExpressionParser()
-    fun parseExpression(expressionText: String): Expression {
-        return expressionParser.parseExpression(expressionText)
-    }
-
-}
+internal val scriptHost = ScriptHost.newBuilder().build()
 
 
 fun Path.creationTime(): LocalDateTime? {

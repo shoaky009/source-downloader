@@ -1,6 +1,5 @@
 package xyz.shoaky.sourcedownloader.component
 
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import xyz.shoaky.sourcedownloader.component.supplier.ExpressionFileFilterSupplier
 import xyz.shoaky.sourcedownloader.sdk.MapPatternVariables
@@ -61,7 +60,7 @@ class ExpressionFileFilterTest {
                 filename.contains('test') && 
                 'video' in tags &&
                 ext == 'txt' &&
-                pv['test'] == 'test' &&
+                vars['test'] == 'test' &&
                 attr['size'] > 10
             """.trimIndent())
         )

@@ -1,35 +1,48 @@
 package xyz.shoaky.sourcedownloader.component
 
+import com.google.protobuf.Timestamp
+import org.projectnessie.cel.checker.Decls
+import org.projectnessie.cel.tools.Script
 import org.slf4j.LoggerFactory
-import org.springframework.expression.BeanResolver
-import org.springframework.expression.Expression
-import org.springframework.expression.spel.support.StandardEvaluationContext
 import xyz.shoaky.sourcedownloader.sdk.SourceItem
 import xyz.shoaky.sourcedownloader.sdk.component.SourceItemFilter
-import java.time.LocalDate
+import xyz.shoaky.sourcedownloader.util.scriptHost
+import java.time.Instant
+import java.time.ZoneOffset
+
 
 class ExpressionItemFilter(
-    private val exclusions: List<Expression>,
-    private val inclusions: List<Expression>
+    exclusions: List<String>,
+    inclusions: List<String>
 ) : SourceItemFilter {
 
+    private val exclusionScripts: List<Script> by lazy {
+        exclusions.map {
+            buildScript(it)
+        }
+    }
+    private val inclusionScripts: List<Script> by lazy {
+        inclusions.map { buildScript(it) }
+    }
+
     override fun test(item: SourceItem): Boolean {
+        val instant: Instant = item.date.toInstant(ZoneOffset.UTC)
         val variables = mapOf(
             "title" to item.title,
             "contentType" to item.contentType,
-            "date" to item.date.toLocalDate(),
+            "date" to Timestamp.newBuilder()
+                .setSeconds(instant.epochSecond)
+                .setNanos(instant.nano)
+                .build(),
             "link" to item.link
         )
-        val ctx = StandardEvaluationContext()
-        ctx.setBeanResolver(dateBeanResolver)
-        ctx.setVariables(variables)
 
-        val all = exclusions.map { it.getValue(ctx, Boolean::class.java) == true }
+        val all = exclusionScripts.map { it.execute(Boolean::class.java, variables) == true }
         if (all.isNotEmpty() && all.any { it }) {
             log.debug("Item {} is excluded by expressions", item)
             return false
         }
-        val any = inclusions.map { it.getValue(ctx, Boolean::class.java) == true }.all { it }
+        val any = inclusionScripts.map { it.execute(Boolean::class.java, variables) == true }.all { it }
         if (any) {
             log.debug("Item {} is included by expressions", item)
             return true
@@ -39,9 +52,15 @@ class ExpressionItemFilter(
 
     companion object {
         private val log = LoggerFactory.getLogger(ExpressionItemFilter::class.java)
-        private val dateBeanResolver = BeanResolver { _, beanName ->
-            val text = beanName.removePrefix("&")
-            LocalDate.parse(text)
+        private fun buildScript(expression: String): Script {
+            return scriptHost.buildScript(expression)
+                .withDeclarations(
+                    Decls.newVar("title", Decls.String),
+                    Decls.newVar("contentType", Decls.newListType(Decls.String)),
+                    Decls.newVar("link", Decls.String),
+                    Decls.newVar("date", Decls.Timestamp),
+                )
+                .build()
         }
     }
 
