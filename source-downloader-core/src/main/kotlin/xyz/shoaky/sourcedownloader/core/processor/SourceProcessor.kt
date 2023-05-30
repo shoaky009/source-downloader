@@ -97,7 +97,7 @@ class SourceProcessor(
             "RunAfterCompletion" to runAfterCompletion.map { it::class.simpleName },
             "DownloadPath" to downloadPath,
             "SourceSavePath" to sourceSavePath,
-            "SourceFileFilter" to fileContentFilters.map { it::class.simpleName },
+            "FileContentFilter" to fileContentFilters.map { it::class.simpleName },
             "Taggers" to taggers.map { it::class.simpleName },
             "Options" to options,
         )

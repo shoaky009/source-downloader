@@ -58,7 +58,7 @@ class SpringProcessorManager(
             check(it, cps, config)
         }
 
-        val fileFilters = config.options.sourceFileFilters.map {
+        val fileFilters = config.options.fileContentFilters.map {
             val instanceName = it.getInstanceName(FileContentFilter::class)
             applicationContext.getBean(instanceName, FileContentFilter::class.java)
         }.toTypedArray()
