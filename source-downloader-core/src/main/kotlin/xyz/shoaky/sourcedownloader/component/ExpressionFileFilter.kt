@@ -25,12 +25,14 @@ class ExpressionFileFilter(
     }
 
     override fun test(content: FileContent): Boolean {
+        val paths = content.itemDownloadRelativeParentDirectory()?.toList()?.map { it.name } ?: emptyList()
         val variables = mapOf(
             "filename" to content.fileDownloadPath.name,
             "tags" to content.tags.toList(),
-            "ext" to content.fileDownloadPath.extension,
+            "ext" to content.fileDownloadPath.extension.lowercase(),
             "vars" to content.patternVariables.variables(),
-            "attr" to content.attributes
+            "attr" to content.attributes,
+            "paths" to paths
         )
 
         val all = exclusionScripts.map { it.execute(Boolean::class.java, variables) == true }
@@ -59,6 +61,7 @@ class ExpressionFileFilter(
                     // short for patternVariables
                     Decls.newVar("vars", Decls.newMapType(Decls.String, Decls.String)),
                     Decls.newVar("attr", Decls.newMapType(Decls.String, Decls.Any)),
+                    Decls.newVar("paths", Decls.newListType(Decls.String)),
                 )
                 .build()
         }

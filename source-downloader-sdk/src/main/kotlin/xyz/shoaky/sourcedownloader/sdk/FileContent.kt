@@ -38,5 +38,23 @@ interface FileContent {
      * Returns:
      * null如果item的文件是保存在downloadPath下
      */
-    fun itemDownloadRootDirectory(): Path?
+    fun itemDownloadRootDirectory(): Path? {
+        if (fileDownloadPath.parent == downloadPath) {
+            return null
+        }
+
+        var path = fileDownloadPath.parent
+        while (path.parent != downloadPath) {
+            path = path.parent
+        }
+        return path
+    }
+
+    /**
+     * 获取item文件对应的相对目录e.g. fileDownloadPath=/mnt/bangumi/FATE/Season 01/EP01.mp4 返回 FATE/Season 01
+     */
+    fun itemDownloadRelativeParentDirectory(): Path? {
+        val relativize = downloadPath.relativize(fileDownloadPath)
+        return relativize.parent
+    }
 }

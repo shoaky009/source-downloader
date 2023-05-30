@@ -117,18 +117,6 @@ data class CoreFileContent(
         return res
     }
 
-    override fun itemDownloadRootDirectory(): Path? {
-        if (fileDownloadPath.parent == downloadPath) {
-            return null
-        }
-
-        var path = fileDownloadPath.parent
-        while (path.parent != downloadPath) {
-            path = path.parent
-        }
-        return path
-    }
-
     fun tag(tags: List<String>) {
         this.tags.addAll(tags)
     }

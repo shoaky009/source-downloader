@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test
 import xyz.shoaky.sourcedownloader.component.supplier.ExpressionFileFilterSupplier
 import xyz.shoaky.sourcedownloader.sdk.MapPatternVariables
 import xyz.shoaky.sourcedownloader.sdk.TestFileContent
+import xyz.shoaky.sourcedownloader.testResourcePath
 import kotlin.io.path.Path
 import kotlin.io.path.fileSize
 import kotlin.test.assertEquals
@@ -61,12 +62,14 @@ class ExpressionFileFilterTest {
                 'video' in tags &&
                 ext == 'txt' &&
                 vars['test'] == 'test' &&
-                attr['size'] > 10
+                attr['size'] > 10 &&
+                'book' in paths
             """.trimIndent())
         )
-
+        val downloadPath = testResourcePath.resolve("downloads")
         val testFileContent = TestFileContent(
-            fileDownloadPath = Path("test.txt"),
+            fileDownloadPath = downloadPath.resolve(Path("book", "test.txt")),
+            downloadPath = downloadPath,
             tags = setOf("video"),
             patternVariables = MapPatternVariables(mapOf("test" to "test")),
             attributes = mapOf("size" to 100)

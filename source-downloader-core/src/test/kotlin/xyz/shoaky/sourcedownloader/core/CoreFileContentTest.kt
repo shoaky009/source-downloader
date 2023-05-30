@@ -197,6 +197,15 @@ class CoreFileContentTest {
         assertEquals(downloadPath.resolve("test 01 - 01.txt"), content.targetPath())
     }
 
+    @Test
+    fun test_item_download_relative_parent_directory() {
+        val content = createFileContent(
+            testResourcePath.resolve("downloads").resolve("FATE")
+                .resolve("Season 01").resolve("EP01.mp4")
+        )
+        assertEquals(Path("FATE", "Season 01"), content.itemDownloadRelativeParentDirectory())
+    }
+
     companion object {
         private val sourceSavePath = Path("src", "test", "resources", "target")
         private val downloadPath = Path("src", "test", "resources", "downloads")

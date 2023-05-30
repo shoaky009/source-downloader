@@ -7,7 +7,7 @@ import java.nio.file.Path
  */
 data class TestFileContent(
     override val fileDownloadPath: Path,
-    override val downloadPath: Path = fileDownloadPath,
+    override val downloadPath: Path = fileDownloadPath.parent,
     override val patternVariables: PatternVariables = PatternVariables.EMPTY,
     override val tags: Set<String> = emptySet(),
     val targetPath: Path = fileDownloadPath,

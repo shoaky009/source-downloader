@@ -15,7 +15,7 @@ object AnimeFileFilter : FileContentFilter {
      * 如果在special中的文件夹下，匹配规则可以宽松些
      */
     private val spRegexes = listOf(
-        "NCOP|NCED|MENU|PV|CM|Fonts|IV|Scan".toRegex(RegexOption.IGNORE_CASE),
+        "NCOP|NCED|MENU|PV|CM|Fonts|IV|Scan|Event|Lecture".toRegex(RegexOption.IGNORE_CASE),
     )
 
     private val normalRegexes = listOf(
