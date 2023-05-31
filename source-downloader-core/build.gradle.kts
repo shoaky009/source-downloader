@@ -16,7 +16,10 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     implementation("org.flywaydb:flyway-core")
-    runtimeOnly("com.h2database:h2")
+    implementation("org.xerial:sqlite-jdbc:3.42.0.0")
+    implementation("org.hibernate.orm:hibernate-community-dialects:6.2.3.Final")
+    implementation("org.hibernate.orm:hibernate-core:6.2.3.Final")
+    // runtimeOnly("com.h2database:h2")
     // kotlin
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")

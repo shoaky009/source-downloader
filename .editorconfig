@@ -1,6 +1,6 @@
 root = true
 
-[*.{adoc,bat,groovy,html,java,js,jsp,kt,kts,md,properties,py,rb,sh,sql,svg,txt,xml,xsd}]
+[*.{adoc,bat,groovy,html,java,js,jsp,kt,kts,md,properties,py,rb,sh,sql,svg,txt,xml,xsd,yaml,yml}]
 charset = utf-8
 
 [*.{groovy,java,kt,kts,xml,xsd}]
@@ -14,3 +14,6 @@ ij_any_line_comment_add_space_on_reformat = true
 [*.{yaml,yml}]
 indent_style = space
 indent_size = 2
+ij_any_line_comment_at_first_column = false
+ij_any_line_comment_add_space = true
+ij_any_line_comment_add_space_on_reformat = true

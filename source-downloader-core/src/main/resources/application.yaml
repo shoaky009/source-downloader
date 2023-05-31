@@ -7,11 +7,14 @@ spring:
   datasource:
     username: sd
     password: sd
-    url: jdbc:h2:file:${source-downloader.data-location}source-downloader
-    driver-class-name: org.h2.Driver
+    url: jdbc:sqlite:${source-downloader.data-location}source-downloader.db
+    #driver-class-name: org.h2.Driver
+    driver-class-name: org.sqlite.JDBC
   jpa:
-    database: h2
     open-in-view: false
+    database-platform: org.hibernate.community.dialect.SQLiteDialect
+    hibernate:
+      ddl-auto: none
   flyway:
     locations:
       - classpath:/db/migration
@@ -47,7 +50,7 @@ spring:
       on-profile:
         - integration-test
   datasource:
-    url: jdbc:h2:mem:testdb;DB_CLOSE_ON_EXIT=FALSE
+    url: jdbc:sqlite:test.db
 
 source-downloader:
   data-location: src/test/resources

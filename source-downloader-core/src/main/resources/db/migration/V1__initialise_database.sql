@@ -1,32 +1,34 @@
-CREATE TABLE TARGET_PATH_RECORD
+CREATE TABLE target_path_record
 (
-    ID          CHARACTER VARYING PRIMARY KEY,
-    CREATE_TIME DATETIME
+    id            CHARACTER VARYING PRIMARY KEY,
+    processing_id INTEGER NULL,
+    create_time   DATETIME
 );
 
-CREATE TABLE PROCESSING_RECORD
+CREATE TABLE processing_record
 (
-    ID                  BIGINT PRIMARY KEY,
-    PROCESSOR_NAME      VARCHAR(255) NOT NULL,
-    SOURCE_ITEM_HASHING VARCHAR(64)  NOT NULL,
-    SOURCE_CONTENT      JSON,
-    RENAME_TIMES        INT      DEFAULT 0,
-    STATUS              INT      DEFAULT 0,
-    MODIFY_TIME         DATETIME DEFAULT NULL,
-    CREATE_TIME         DATETIME
+    ID                  INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    processor_name      VARCHAR(255)                      NOT NULL,
+    source_item_hashing VARCHAR(64)                       NOT NULL,
+    source_content      JSON,
+    rename_times        INT      DEFAULT 0,
+    status              INT      DEFAULT 0,
+    failure_reason      TEXT                              NULL,
+    modify_time         DATETIME DEFAULT NULL,
+    create_time         DATETIME
 );
-CREATE UNIQUE INDEX UIDX_PROCESSORNAME_SOURCEITEMHASHING ON PROCESSING_RECORD (PROCESSOR_NAME, SOURCE_ITEM_HASHING);
-CREATE SEQUENCE processing_record_seq START WITH 1 INCREMENT BY 50;
+CREATE UNIQUE INDEX uidx_processorname_sourceitemhashing ON processing_record (processor_name, source_item_hashing);
+-- CREATE SEQUENCE processing_record_seq START WITH 1 INCREMENT BY 50;
 
-CREATE TABLE PROCESSOR_SOURCE_STATE_RECORD
+CREATE TABLE processor_source_state_record
 (
-    ID               BIGINT PRIMARY KEY,
-    PROCESSOR_NAME   VARCHAR(255) NOT NULL,
-    SOURCE_ID        VARCHAR(64)  NOT NULL,
-    LAST_POINTER     JSON,
-    RETRY_TIMES      INT DEFAULT 0,
-    LAST_ACTIVE_TIME DATETIME
+    id               INTEGER PRIMARY KEY AUTOINCREMENT,
+    processor_name   VARCHAR(255) NOT NULL,
+    source_id        VARCHAR(64)  NOT NULL,
+    last_pointer     JSON,
+    retry_times      INT DEFAULT 0,
+    last_active_time DATETIME
 );
 
-CREATE UNIQUE INDEX UIDX_PROCESSORNAME_SOURCEID ON PROCESSOR_SOURCE_STATE_RECORD (PROCESSOR_NAME, SOURCE_ID);
-CREATE SEQUENCE processor_source_state_record_seq START WITH 1 INCREMENT BY 50;
+CREATE UNIQUE INDEX uidx_processorname_sourceid ON processor_source_state_record (processor_name, source_id);
+-- CREATE processor_source_state_record_seq START WITH 1 INCREMENT BY 50;

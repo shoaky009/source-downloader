@@ -7,16 +7,24 @@ import xyz.shoaky.sourcedownloader.core.PersistentItemPointer
 import java.time.LocalDateTime
 
 @Entity
-@Table(uniqueConstraints = [
-    UniqueConstraint(name = "UIDX_PROCESSORNAME_SOURCEID", columnNames = ["processorName", "sourceId"])
-])
+@Table(
+    name = "processor_source_state_record",
+    uniqueConstraints = [
+        UniqueConstraint(name = "uidx_processorname_sourceid", columnNames = ["processor_name", "source_id"])
+    ])
 class ProcessorSourceStateRecord {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    @SequenceGenerator(name = "PROCESSING_RECORD_SEQ", sequenceName = "PROCESSING_RECORD_SEQ")
+    @GeneratedValue(generator = "processor_source_state_record")
+    // @SequenceGenerator(name = "sqlite_sequence", sequenceName = "processor_source_state_seq")
+    @TableGenerator(name = "processor_source_state_record", table = "sqlite_sequence", valueColumnName = "seq",
+        pkColumnName = "name", pkColumnValue = "processor_source_state_record")
     var id: Long? = null
+
+    @Column(name = "processor_name")
     lateinit var processorName: String
+
+    @Column(name = "source_id")
     lateinit var sourceId: String
 
     @Type(JsonType::class)

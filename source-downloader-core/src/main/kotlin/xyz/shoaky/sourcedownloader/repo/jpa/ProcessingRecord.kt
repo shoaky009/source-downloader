@@ -7,16 +7,24 @@ import xyz.shoaky.sourcedownloader.core.file.PersistentSourceContent
 import java.time.LocalDateTime
 
 @Entity
-@Table(uniqueConstraints = [
-    UniqueConstraint(name = "UIDX_PROCESSORNAME_SOURCEITEMHASHING", columnNames = ["processorName", "sourceItemHashing"])
-])
+@Table(
+    name = "processing_record",
+    uniqueConstraints = [
+        UniqueConstraint(name = "uidx_processorname_sourceitemhashing", columnNames = ["processor_name", "source_item_hashing"])
+    ])
 class ProcessingRecord {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    @SequenceGenerator(name = "PROCESSING_RECORD_SEQ", sequenceName = "PROCESSING_RECORD_SEQ")
+    @GeneratedValue(generator = "processing_record")
+    // @SequenceGenerator(name = "sqlite_sequence", sequenceName = "processing_record_seq")
+    @TableGenerator(name = "processing_record", table = "sqlite_sequence", valueColumnName = "seq",
+        pkColumnName = "name", pkColumnValue = "processing_record")
     var id: Long? = null
+
+    @Column(name = "processor_name")
     lateinit var processorName: String
+
+    @Column(name = "source_item_hashing")
     lateinit var sourceItemHashing: String
 
     @Type(JsonType::class)

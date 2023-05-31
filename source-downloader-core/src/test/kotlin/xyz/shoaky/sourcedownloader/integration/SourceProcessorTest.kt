@@ -131,6 +131,7 @@ class SourceProcessorTest {
             sourcePath.deleteRecursively()
             savePath.deleteRecursively()
             downloadPath.deleteRecursively()
+            Path("test.db").deleteIfExists()
         }
     }
 }
