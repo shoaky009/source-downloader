@@ -10,6 +10,7 @@ import java.time.LocalDateTime
 class TargetPathRecord {
     @Id
     lateinit var id: String
-    var processingId: Long? = null
+    var processorName: String? = null
+    var itemHashing: String? = null
     lateinit var createTime: LocalDateTime
 }

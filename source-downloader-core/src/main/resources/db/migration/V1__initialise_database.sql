@@ -1,8 +1,9 @@
 CREATE TABLE target_path_record
 (
-    id            CHARACTER VARYING PRIMARY KEY,
-    processing_id INTEGER NULL,
-    create_time   DATETIME
+    id             CHARACTER VARYING PRIMARY KEY,
+    processor_name VARCHAR(255) NULL,
+    item_hashing   VARCHAR(64)  NULL,
+    create_time    DATETIME
 );
 
 CREATE TABLE processing_record

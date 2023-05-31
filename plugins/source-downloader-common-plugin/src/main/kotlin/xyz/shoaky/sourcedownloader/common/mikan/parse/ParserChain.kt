@@ -6,7 +6,7 @@ internal class ParserChain(
     private val parsers: List<ValueParser>,
     private val any: Boolean = false
 ) {
-    fun apply(subject: String, filename: String): Result {
+    fun apply(subject: SubjectContent, filename: String): Result {
         return if (any) {
             anyValue(subject, filename)
         } else {
@@ -14,7 +14,7 @@ internal class ParserChain(
         }
     }
 
-    private fun anyValue(subject: String, filename: String): Result {
+    private fun anyValue(subject: SubjectContent, filename: String): Result {
         for (parser in parsers) {
             val res = parser.apply(subject, filename)
             if (res.value != null) {
@@ -24,7 +24,7 @@ internal class ParserChain(
         return Result()
     }
 
-    private fun voteValue(subject: String, filename: String): Result {
+    private fun voteValue(subject: SubjectContent, filename: String): Result {
         val results = mutableMapOf<String, Result>()
         for (parse in parsers) {
             parse.runCatching {

@@ -12,8 +12,11 @@ data class SourceItem(
     val downloadUri: URI,
 ) {
     fun hashing(): String {
-        return Hashing.sha256()
+        return Hashing.goodFastHash(128)
             .hashString("$title-$link-$contentType-$downloadUri", Charsets.UTF_8)
             .toString()
+        // return Hashing.sha256()
+        //     .hashString("$title-$link-$contentType-$downloadUri", Charsets.UTF_8)
+        //     .toString()
     }
 }

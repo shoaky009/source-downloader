@@ -16,7 +16,6 @@ class ProcessorSourceStateRecord {
 
     @Id
     @GeneratedValue(generator = "processor_source_state_record")
-    // @SequenceGenerator(name = "sqlite_sequence", sequenceName = "processor_source_state_seq")
     @TableGenerator(name = "processor_source_state_record", table = "sqlite_sequence", valueColumnName = "seq",
         pkColumnName = "name", pkColumnValue = "processor_source_state_record")
     var id: Long? = null

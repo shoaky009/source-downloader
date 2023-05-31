@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component
 import xyz.shoaky.sourcedownloader.core.ProcessingContent
 import xyz.shoaky.sourcedownloader.core.ProcessingStorage
 import xyz.shoaky.sourcedownloader.core.ProcessorSourceState
+import xyz.shoaky.sourcedownloader.core.processor.ProcessingTargetPaths
 import xyz.shoaky.sourcedownloader.util.fromValue
 import java.nio.file.Path
 import java.time.LocalDateTime
@@ -78,11 +79,15 @@ class JpaProcessingStorage(
         }
     }
 
-    override fun saveTargetPath(paths: List<Path>) {
+    override fun saveTargetPath(paths: ProcessingTargetPaths) {
         val now = LocalDateTime.now()
-        val map = paths.map {
+        val processingId = paths.itemHashing
+        val processorName = paths.processorName
+        val map = paths.targetPaths.map {
             val rc = TargetPathRecord()
             rc.id = it.toString()
+            rc.processorName = processorName
+            rc.itemHashing = processingId
             rc.createTime = now
             rc
         }

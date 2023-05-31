@@ -32,7 +32,12 @@ data class CoreFileContent(
     override val tags: MutableSet<String> = mutableSetOf()
 
     private val targetPath: Path by lazy {
-        saveDirectoryPath().resolve(targetFilename())
+        val saveDirectoryPath = saveDirectoryPath()
+        val result = targetFilename0()
+        if (result.second.not() && variableErrorStrategy == VariableErrorStrategy.STAY) {
+            return@lazy fileDownloadPath
+        }
+        saveDirectoryPath.resolve(result.first)
     }
 
     fun setVariableErrorStrategy(strategy: VariableErrorStrategy) {
@@ -65,40 +70,44 @@ data class CoreFileContent(
         allVariables.addVariables(shared)
     }
 
-    fun targetFilename(): String {
+    private fun targetFilename0(): Pair<String, Boolean> {
         if (filenamePattern == CorePathPattern.ORIGIN) {
-            return fileDownloadPath.name
+            return fileDownloadPath.name to true
         }
         val parse = filenamePattern.parse(allVariables)
         val success = parse.success()
         if (success) {
             val targetFilename = parse.path
             if (targetFilename.isBlank()) {
-                return fileDownloadPath.name
+                return fileDownloadPath.name to true
             }
 
             val extension = fileDownloadPath.extension
             if (targetFilename.endsWith(extension)) {
-                return targetFilename
+                return targetFilename to true
             }
-            return "$targetFilename.$extension"
+            return "$targetFilename.$extension" to true
         }
 
         return when (variableErrorStrategy) {
             VariableErrorStrategy.STAY,
             VariableErrorStrategy.ORIGINAL -> {
-                fileDownloadPath.name
+                fileDownloadPath.name to false
             }
 
             VariableErrorStrategy.PATTERN -> {
                 val target = parse.path
                 val extension = fileDownloadPath.extension
                 if (target.endsWith(extension)) {
-                    return target
+                    return target to false
                 }
-                "$target.$extension"
+                "$target.$extension" to false
             }
         }
+    }
+
+    fun targetFilename(): String {
+        return targetFilename0().first
     }
 
     override fun itemSaveRootDirectory(): Path? {

@@ -18,20 +18,20 @@ internal class TmdbSeasonParser(
 
     override val name: String = "TmdbParser"
 
-    override fun apply(content: String, file: Path): Result {
+    override fun apply(content: SubjectContent, file: Path): Result {
         val season = tmdbCache.get(content)
         if (season < 1) {
             log.info("从TMDB获取季度失败name:${content}")
             return Result()
         }
-        log.debug("从TMDB获取季度成功name:${content},season:$season")
+        log.debug("从TMDB获取季度成功name:{},season:{}", content, season)
         return Result(season, accuracy = Result.Accuracy.ACCURATE)
     }
 
     private val tmdbCache = CacheBuilder.newBuilder().maximumSize(500).build(
-        object : CacheLoader<String, Int>() {
-            override fun load(content: String): Int {
-                val split = content.split(" ")
+        object : CacheLoader<SubjectContent, Int>() {
+            override fun load(content: SubjectContent): Int {
+                val split = content.originName.split(" ")
                 val search = split.first()
                 val results = tmdbClient.execute(SearchTvShow(search)).body().results
                 val firstSearchResult = results.firstOrNull() ?: return -1

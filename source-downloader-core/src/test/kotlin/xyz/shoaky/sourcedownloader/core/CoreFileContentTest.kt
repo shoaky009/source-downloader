@@ -150,6 +150,18 @@ class CoreFileContentTest {
     }
 
     @Test
+    fun test_variable_error_given_stay_strategy2() {
+        val content = createFileContent(
+            patternVars = MapPatternVariables(mapOf("season" to "01")),
+            savePathPattern = CorePathPattern("S{season}"),
+            filenamePathPattern = CorePathPattern("{name} - {season}"),
+        )
+        content.setVariableErrorStrategy(VariableErrorStrategy.STAY)
+        assertEquals(content.fileDownloadPath, content.targetPath())
+    }
+
+
+    @Test
     fun test_variable_error_given_pattern_strategy() {
         val content = createFileContent(
             patternVars = MapPatternVariables(mapOf("season" to "01")),

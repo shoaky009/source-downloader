@@ -75,7 +75,7 @@ class SourceProcessor(
     }
 
     init {
-        if (options.saveContent) {
+        if (options.saveProcessingContent) {
             addItemFilter(SourceHashingItemFilter(name, processingStorage))
         }
         if (options.provideMetadataVariables) {
@@ -172,17 +172,16 @@ class SourceProcessor(
                 if (dryRun) {
                     result.add(it)
                 }
-                // 也许有一直失败的会卡住整体，暂时先这样处理
+                // 也许有一直失败的会卡住整体，暂时先这样处理后面用retryTimes来判断
                 lastPointedItem = item
             }.getOrElse {
                 ProcessingContent(
                     name, PersistentSourceContent(
                     item.sourceItem, emptyList(), MapPatternVariables()
-                )
-                ).copy(status = ProcessingContent.Status.FAILURE, failureReason = it.message)
+                )).copy(status = ProcessingContent.Status.FAILURE, failureReason = it.message)
             }
 
-            if (options.saveContent && dryRun.not()) {
+            if (options.saveProcessingContent && dryRun.not()) {
                 processingStorage.save(processingContent)
             }
 
@@ -241,12 +240,14 @@ class SourceProcessor(
         val contentStatus = probeContent(sourceContent)
 
         sourceContent.updateFileStatus(fileMover)
-        val downloadTask = createDownloadTask(sourceContent)
+
         if (contentStatus.first && dryRun.not()) {
+            val downloadTask = createDownloadTask(sourceContent)
             // NOTE 非异步下载会阻塞
             this.downloader.submit(downloadTask)
             log.info("提交下载任务成功, Processor:${name} sourceItem:${sourceItem.title}")
-            processingStorage.saveTargetPath(sourceContent.allTargetPaths())
+            val targetPaths = sourceContent.getDownloadFiles(fileMover).map { it.targetPath() }
+            saveTargetPaths(sourceItem, targetPaths)
             Events.post(ProcessorSubmitDownloadEvent(name, sourceContent))
         }
 
@@ -309,7 +310,7 @@ class SourceProcessor(
         }
         log.debug("Processor:{} 文件:{} 标签:{}", name, fileContent.fileDownloadPath, tagged)
         val pathPatterns = tagged.mapNotNull {
-            options.tagFilenamePattern[it]
+            tagFilenamePattern[it]
         }
         if (pathPatterns.isEmpty()) {
             return fileContent
@@ -423,9 +424,8 @@ class SourceProcessor(
 
         val allSuccess = rename(sourceContent)
         if (allSuccess) {
-            val paths = sourceContent.sourceFiles.map { it.targetPath() }
-            // 如果失败了, 一些成功一些失败??
-            processingStorage.saveTargetPath(paths)
+            // val paths = sourceContent.sourceFiles.map { it.targetPath() }
+            // saveTargetPaths(sourceContent.sourceItem, paths)
             runAfterCompletions(sourceContent)
         } else {
             log.warn("有部分文件重命名失败record:${Jackson.toJsonString(pc)}")
@@ -442,6 +442,15 @@ class SourceProcessor(
             modifyTime = LocalDateTime.now()
         )
         processingStorage.save(toUpdate)
+    }
+
+    private fun saveTargetPaths(sourceItem: SourceItem, paths: List<Path>) {
+        val processingTargetPaths = if (options.fileReplacementStrategy == "NEVER") {
+            ProcessingTargetPaths(paths)
+        } else {
+            ProcessingTargetPaths(paths, name, sourceItem.hashing())
+        }
+        processingStorage.saveTargetPath(processingTargetPaths)
     }
 
     fun addItemFilter(vararg filters: SourceItemFilter) {
@@ -463,7 +472,12 @@ class SourceProcessor(
         if (log.isDebugEnabled) {
             log.debug("{} 创建下载任务文件, files:{}", content.sourceItem.title, downloadFiles)
         }
-        return DownloadTask(content.sourceItem, downloadFiles, downloadPath, options.downloadOptions)
+        return DownloadTask(
+            content.sourceItem,
+            downloadFiles,
+            downloadPath,
+            options.downloadOptions
+        )
     }
 
     private fun rename(content: PersistentSourceContent): Boolean {

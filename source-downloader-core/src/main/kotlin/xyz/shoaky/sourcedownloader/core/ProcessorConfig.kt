@@ -82,8 +82,8 @@ data class ProcessorConfig(
         val renameTimesThreshold: Int = 3,
         @JsonAlias("provide-metadata-variables")
         val provideMetadataVariables: Boolean = true,
-        @JsonAlias("save-content")
-        val saveContent: Boolean = true,
+        @JsonAlias("save-content", "save-processing-content")
+        val saveProcessingContent: Boolean = true,
         @JsonAlias("item-expression-exclusions")
         val itemExpressionExclusions: List<String> = emptyList(),
         @JsonAlias("item-expression-inclusions")
@@ -107,7 +107,9 @@ data class ProcessorConfig(
         val tagFilenamePattern: Map<String, PathPattern> = emptyMap(),
         @JsonAlias("variable-replacers")
         @JsonDeserialize(contentAs = RegexVariableReplacer::class)
-        val variableReplacers: List<VariableReplacer> = emptyList()
+        val variableReplacers: List<VariableReplacer> = emptyList(),
+        @JsonAlias("file-replacement-strategy")
+        val fileReplacementStrategy: String = "NEVER"
     )
 
 }

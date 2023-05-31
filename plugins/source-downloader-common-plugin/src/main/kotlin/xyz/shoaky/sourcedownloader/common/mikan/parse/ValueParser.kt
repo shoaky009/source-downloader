@@ -5,11 +5,11 @@ import java.nio.file.Path
 internal interface ValueParser {
 
     val name: String
-    fun apply(content: String, filename: String): Result {
+    fun apply(content: SubjectContent, filename: String): Result {
         return apply(content, Path.of(filename))
     }
 
-    fun apply(content: String, file: Path): Result
+    fun apply(content: SubjectContent, file: Path): Result
 }
 
 data class Result(

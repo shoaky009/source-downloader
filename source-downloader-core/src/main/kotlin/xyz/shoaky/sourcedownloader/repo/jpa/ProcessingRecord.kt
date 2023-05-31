@@ -10,13 +10,15 @@ import java.time.LocalDateTime
 @Table(
     name = "processing_record",
     uniqueConstraints = [
-        UniqueConstraint(name = "uidx_processorname_sourceitemhashing", columnNames = ["processor_name", "source_item_hashing"])
+        UniqueConstraint(
+            name = "uidx_processorname_sourceitemhashing",
+            columnNames = ["processor_name", "source_item_hashing"]
+        )
     ])
 class ProcessingRecord {
 
     @Id
     @GeneratedValue(generator = "processing_record")
-    // @SequenceGenerator(name = "sqlite_sequence", sequenceName = "processing_record_seq")
     @TableGenerator(name = "processing_record", table = "sqlite_sequence", valueColumnName = "seq",
         pkColumnName = "name", pkColumnValue = "processing_record")
     var id: Long? = null

@@ -6,7 +6,7 @@ object DefaultValueSeasonParser : ValueParser {
 
     override val name: String = "default"
 
-    override fun apply(content: String, file: Path): Result {
+    override fun apply(content: SubjectContent, file: Path): Result {
         return Result(1, Result.Accuracy.LOW)
     }
 }

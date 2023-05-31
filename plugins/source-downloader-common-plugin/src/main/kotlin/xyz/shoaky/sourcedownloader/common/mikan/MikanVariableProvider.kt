@@ -3,8 +3,8 @@ package xyz.shoaky.sourcedownloader.common.mikan
 import com.google.common.cache.CacheBuilder
 import com.google.common.cache.CacheLoader
 import org.slf4j.LoggerFactory
+import xyz.shoaky.sourcedownloader.common.mikan.parse.*
 import xyz.shoaky.sourcedownloader.common.mikan.parse.CommonSeasonParser
-import xyz.shoaky.sourcedownloader.common.mikan.parse.DefaultValueSeasonParser
 import xyz.shoaky.sourcedownloader.common.mikan.parse.ParserChain
 import xyz.shoaky.sourcedownloader.common.mikan.parse.TmdbSeasonParser
 import xyz.shoaky.sourcedownloader.external.bangumi.BgmTvApiClient
@@ -76,7 +76,7 @@ class MikanVariableProvider(
         val searchContent = subject.nameCn.takeIf { it.isNotBlank() } ?: subject.name
 
         // 暂时没看到文件跨季度的情况
-        val result = seasonParserChain.apply(searchContent, sourceItem.title)
+        val result = seasonParserChain.apply(SubjectContent(subject.name, subject.nameCn), sourceItem.title)
 
         val season = result.padValue() ?: "01"
         val bangumiInfo = BangumiInfo(

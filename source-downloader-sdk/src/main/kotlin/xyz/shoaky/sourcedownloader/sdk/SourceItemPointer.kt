@@ -9,7 +9,11 @@ import xyz.shoaky.sourcedownloader.sdk.component.Source
  */
 interface SourceItemPointer
 
-object NullPointer : SourceItemPointer
+object NullPointer : SourceItemPointer {
+    override fun toString(): String {
+        return "null"
+    }
+}
 
 data class OffsetPointer(
     val offset: Long

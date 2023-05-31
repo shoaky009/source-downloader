@@ -88,7 +88,7 @@ class SourceProcessorTest {
             ?: throw IllegalStateException("Processor not found")
 
         processor.run()
-        val records = processingStorage.findByProcessorName("FileStatusCase")
+        val records = processingStorage.findByProcessorName("FileStatusCase").sortedBy { it.id }
 
         downloadedFile.deleteIfExists()
         targetFile.deleteIfExists()
@@ -104,13 +104,13 @@ class SourceProcessorTest {
             ?: throw IllegalStateException("Processor not found")
 
         processor.run()
-        val records = processingStorage.findByProcessorName("FileStatusCase2")
-
+        val records = processingStorage.findByProcessorName("FileStatusCase2").sortedBy { it.id }
         assertEquals(FileContentStatus.FILE_CONFLICT, records[2].sourceContent.sourceFiles[0].status)
         assertEquals(FileContentStatus.FILE_CONFLICT, records[2].sourceContent.sourceFiles[1].status)
     }
 
     // 待测试场景
+    // 1.processing_record中的status
     // 2.pointer存储
     // 3.不同tag文件的pattern
     // 4.saveContent option测试

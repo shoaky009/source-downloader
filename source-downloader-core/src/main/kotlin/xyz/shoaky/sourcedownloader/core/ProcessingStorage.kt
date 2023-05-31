@@ -1,5 +1,6 @@
 package xyz.shoaky.sourcedownloader.core
 
+import xyz.shoaky.sourcedownloader.core.processor.ProcessingTargetPaths
 import java.nio.file.Path
 
 interface ProcessingStorage {
@@ -12,7 +13,10 @@ interface ProcessingStorage {
 
     fun findByNameAndHash(processorName: String, itemHashing: String): ProcessingContent?
 
-    fun saveTargetPath(paths: List<Path>)
+    /**
+     * 需要从targetPath获取到[ProcessingContent]，从而目标文件存在时提供上下文信息做出决策
+     */
+    fun saveTargetPath(paths: ProcessingTargetPaths)
 
     fun targetPathExists(paths: List<Path>): Boolean
 

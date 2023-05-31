@@ -10,10 +10,11 @@ internal object CommonSeasonParser : ValueParser {
 
     override val name: String = "CommonSeasonParser"
 
-    override fun apply(content: String, file: Path): Result {
+    override fun apply(content: SubjectContent, file: Path): Result {
+        val subjectName = content.nameCn ?: content.originName
         val filename = file.name
         for (rule in rules) {
-            val res = rule.ifMatchConvert(content)
+            val res = rule.ifMatchConvert(subjectName)
                 ?: rule.ifMatchConvert(filename)
             if (res != null) {
                 return Result(res, accuracy = Result.Accuracy.ACCURATE)

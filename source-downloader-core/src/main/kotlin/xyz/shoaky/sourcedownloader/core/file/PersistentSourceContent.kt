@@ -47,6 +47,14 @@ data class PersistentSourceContent(
             updateFileStatus(fileMover)
             updated = true
         }
-        return sourceFiles.filter { it.status == FileContentStatus.NORMAL }.filter { it.fileDownloadPath != it.targetPath() }
+        return sourceFiles.filter { it.status == FileContentStatus.NORMAL && it.fileDownloadPath != it.targetPath() }
+    }
+
+    fun getDownloadFiles(fileMover: FileMover): List<CoreFileContent> {
+        if (!updated) {
+            updateFileStatus(fileMover)
+            updated = true
+        }
+        return sourceFiles.filter { it.status != FileContentStatus.TARGET_EXISTS }
     }
 }

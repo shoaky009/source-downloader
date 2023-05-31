@@ -5,7 +5,9 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import xyz.shoaky.sourcedownloader.common.torrent.R
 import xyz.shoaky.sourcedownloader.external.tmdb.*
+import xyz.shoaky.sourcedownloader.external.tmdb.TmdbClient.Companion.DEFAULT_TOKEN
 import xyz.shoaky.sourcedownloader.sdk.util.Jackson
+import java.net.URL
 import java.nio.file.Files
 import kotlin.io.path.Path
 import kotlin.test.assertEquals
@@ -59,7 +61,7 @@ class SeasonParserChainTest {
                 }
 
                 val name = it.name
-                val season = parserChain.apply(name, it.filename).value
+                val season = parserChain.apply(SubjectContent(name), it.filename.trim()).value
                 assertEquals(it.expect, season, "name:${name}")
             }
     }
