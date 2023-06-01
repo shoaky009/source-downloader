@@ -1,17 +1,23 @@
-package xyz.shoaky.sourcedownloader.telegram
+package xyz.shoaky.sourcedownloader.telegram.other
 
-import it.tdlight.client.SimpleTelegramClient
-import it.tdlight.jni.TdApi
+import telegram4j.core.MTProtoTelegramClient
+import telegram4j.core.`object`.Message
+import telegram4j.core.`object`.MessageMedia
+import telegram4j.core.util.Id
+import telegram4j.tl.ImmutableInputMessageID
 import xyz.shoaky.sourcedownloader.sdk.PointedItem
 import xyz.shoaky.sourcedownloader.sdk.SourceItem
 import xyz.shoaky.sourcedownloader.sdk.SourceItemPointer
 import xyz.shoaky.sourcedownloader.sdk.component.Source
 import java.net.URI
-import java.time.Instant
+import java.time.Duration
 import java.time.ZoneId
+import java.util.stream.IntStream
+import kotlin.jvm.optionals.getOrDefault
+import kotlin.jvm.optionals.getOrNull
 
 class TelegramSource(
-    private val client: SimpleTelegramClient,
+    private val client: MTProtoTelegramClient,
     private val chatIds: List<Long>,
 ) : Source<TelegramPointer> {
 
@@ -22,20 +28,19 @@ class TelegramSource(
         val result: MutableList<PointedItem<TelegramPointer>> = mutableListOf()
         for (chatPointer in chatPointers) {
             val fromMessageId = chatPointer.fromMessageId
-            val offset = -limit
-            val blockingResultHandler = BlockingResultHandler<TdApi.Messages>()
-            client.send(
-                // fromMessageId代表上一次已经完成的，所以要跳过这一条需要+1
-                TdApi.GetChatHistory(chatPointer.chatId, fromMessageId + 1, offset, limit, false),
-                blockingResultHandler
-            )
+            val messages = client.getMessages(
+                Id.ofChat(chatPointer.chatId),
+                IntStream.range(fromMessageId, fromMessageId + limit)
+                    .mapToObj { ImmutableInputMessageID.of(it) }.toList()
+            ).blockOptional(Duration.ofSeconds(10L)).getOrNull()?.messages ?: return emptyList()
 
-            val messages = blockingResultHandler.get().messages.map { message ->
-                val sourceItem = mediaMessageToSourceItem(message) ?: return@map null
+            val items = messages.mapNotNull { message ->
+                val sourceItem = mediaMessageToSourceItem(message) ?: return@mapNotNull null
                 val update = telegramPointer.update(chatPointer.copy(fromMessageId = message.id))
                 PointedItem(sourceItem, update)
-            }.filterNotNull().reversed()
-            result.addAll(messages)
+            }
+
+            result.addAll(items)
             if (messages.size > limit) {
                 break
             }
@@ -43,13 +48,15 @@ class TelegramSource(
         return result
     }
 
-    private fun mediaMessageToSourceItem(message: TdApi.Message): SourceItem? {
-        val fileMessage = FileMessage.fromMessageContent(message.content) ?: return null
-
-        val uri = URI("telegram://?chatId=${message.chatId}&messageId=${message.id}")
-        val downloadUri = URI("$uri&fileIds=${fileMessage.fileIds.joinToString(",")}")
-        val messageDateTime = Instant.ofEpochSecond(message.date.toLong()).atZone(zoneId).toLocalDateTime()
-        return SourceItem(fileMessage.subject, uri, messageDateTime, fileMessage.mimeType, downloadUri)
+    private fun mediaMessageToSourceItem(message: Message): SourceItem? {
+        val media = message.media.getOrNull() ?: return null
+        val document = media as? MessageMedia.Document ?: return null
+        val dc = document.document.get()
+        val fileReferenceId = dc.fileReferenceId
+        val uri = URI("telegram://?chatId=${message.chatId.asLong()}&messageId=${message.id}")
+        val downloadUri = URI("$uri&fileIds=${fileReferenceId.documentId}")
+        val messageDateTime = message.createTimestamp.atZone(zoneId).toLocalDateTime()
+        return SourceItem(dc.fileName.getOrDefault(""), uri, messageDateTime, media.type.name, downloadUri)
     }
 
     companion object {
@@ -65,7 +72,7 @@ data class TelegramPointer(
     fun refreshChats(chatIds: List<Long>): TelegramPointer {
         val chatLastMessage = pointers.associateBy { it.chatId }.mapValues { it.value.fromMessageId }
         val chatPointers = chatIds.map {
-            ChatPointer(it, chatLastMessage.getOrDefault(it, 0L))
+            ChatPointer(it, chatLastMessage.getOrDefault(it, 1))
         }
         return TelegramPointer(chatPointers)
     }
@@ -85,5 +92,5 @@ data class TelegramPointer(
 
 data class ChatPointer(
     val chatId: Long,
-    var fromMessageId: Long,
+    var fromMessageId: Int,
 )

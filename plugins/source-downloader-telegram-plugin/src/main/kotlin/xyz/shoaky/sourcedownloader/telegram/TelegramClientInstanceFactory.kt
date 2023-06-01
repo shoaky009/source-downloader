@@ -1,5 +1,6 @@
 package xyz.shoaky.sourcedownloader.telegram
 
+import com.fasterxml.jackson.annotation.JsonAlias
 import it.tdlight.client.*
 import it.tdlight.jni.TdApi
 import xyz.shoaky.sourcedownloader.sdk.InstanceFactory
@@ -7,7 +8,7 @@ import xyz.shoaky.sourcedownloader.sdk.Properties
 import java.net.URI
 import java.nio.file.Path
 
-class SimpleTelegramClientInstanceFactory(
+class TelegramClientInstanceFactory(
     private val applicationDataPath: Path
 ) : InstanceFactory<SimpleTelegramClient> {
 
@@ -40,9 +41,13 @@ class SimpleTelegramClientInstanceFactory(
     }
 
     data class ClientConfig(
+        @JsonAlias("api-id")
         val apiId: Int,
+        @JsonAlias("api-hash")
         val apiHash: String,
+        @JsonAlias("metadata-path")
         val databasePath: Path,
+        @JsonAlias("download-path")
         val downloadPath: Path,
         val proxy: URI?,
     )

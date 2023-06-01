@@ -1,5 +1,6 @@
 package xyz.shoaky.sourcedownloader.telegram
 
+import it.tdlight.ResultHandler
 import it.tdlight.client.GenericResultHandler
 import it.tdlight.client.Result
 import it.tdlight.jni.TdApi
@@ -8,7 +9,7 @@ import java.util.concurrent.TimeUnit
 
 class BlockingResultHandler<T : TdApi.Object>(
     timeout: Long = 10000
-) : GenericResultHandler<T> {
+) : GenericResultHandler<T>, ResultHandler<T> {
 
     val future: CompletableFuture<Result<T>> = CompletableFuture<Result<T>>()
 
@@ -27,6 +28,10 @@ class BlockingResultHandler<T : TdApi.Object>(
     }
 
     fun get(): T {
-        return future.get().get()
+        return future.join().get()
+    }
+
+    override fun onResult(`object`: TdApi.Object?) {
+        onResult(Result.of(`object`))
     }
 }
