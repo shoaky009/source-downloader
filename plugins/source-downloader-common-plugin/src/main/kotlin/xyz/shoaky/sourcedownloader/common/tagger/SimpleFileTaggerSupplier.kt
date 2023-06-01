@@ -1,4 +1,4 @@
-package xyz.shoaky.sourcedownloader.tagger
+package xyz.shoaky.sourcedownloader.common.tagger
 
 import xyz.shoaky.sourcedownloader.sdk.Properties
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentType

@@ -1,4 +1,4 @@
-package xyz.shoaky.sourcedownloader.ai
+package xyz.shoaky.sourcedownloader.external.openai
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty

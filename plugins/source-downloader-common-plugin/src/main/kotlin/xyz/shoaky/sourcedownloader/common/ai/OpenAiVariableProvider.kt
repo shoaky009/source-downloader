@@ -1,6 +1,9 @@
-package xyz.shoaky.sourcedownloader.ai
+package xyz.shoaky.sourcedownloader.common.ai
 
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
+import xyz.shoaky.sourcedownloader.external.openai.ChatCompletion
+import xyz.shoaky.sourcedownloader.external.openai.ChatMessage
+import xyz.shoaky.sourcedownloader.external.openai.OpenAiClient
 import xyz.shoaky.sourcedownloader.sdk.*
 import xyz.shoaky.sourcedownloader.sdk.component.VariableProvider
 import xyz.shoaky.sourcedownloader.sdk.util.Jackson

@@ -1,4 +1,4 @@
-package xyz.shoaky.sourcedownloader.tagger
+package xyz.shoaky.sourcedownloader.common.tagger
 
 import org.junit.jupiter.api.Test
 import xyz.shoaky.sourcedownloader.sdk.Properties

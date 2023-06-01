@@ -1,4 +1,4 @@
-package xyz.shoaky.sourcedownloader.ai
+package xyz.shoaky.sourcedownloader.external.openai
 
 import xyz.shoaky.sourcedownloader.sdk.api.BaseRequest
 import xyz.shoaky.sourcedownloader.sdk.api.HookedApiClient

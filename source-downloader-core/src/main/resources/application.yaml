@@ -50,6 +50,7 @@ spring:
       on-profile:
         - integration-test
   datasource:
+    # FIXME Windows下会错误
     url: jdbc:sqlite:test.db
 
 source-downloader:

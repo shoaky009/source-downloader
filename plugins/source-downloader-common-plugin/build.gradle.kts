@@ -28,6 +28,7 @@ dependencies {
     implementation("com.github.atomashpolskiy:bt-core:1.10")
     implementation("com.github.atomashpolskiy:bt-dht:1.10")
     compileOnly("org.springframework:spring-web:6.0.8")
+    implementation("org.apache.tika:tika-core:2.7.0")
 }
 
 tasks.withType<KotlinCompile> {

@@ -1,5 +1,6 @@
 package xyz.shoaky.sourcedownloader.common
 
+import xyz.shoaky.sourcedownloader.common.ai.OpenaiVariableProviderSupplier
 import xyz.shoaky.sourcedownloader.common.anime.AnimeFileFilterSupplier
 import xyz.shoaky.sourcedownloader.common.anime.AnimeVariableProviderSupplier
 import xyz.shoaky.sourcedownloader.common.anitom.AnitomVariableProviderSupplier
@@ -8,6 +9,7 @@ import xyz.shoaky.sourcedownloader.common.mikan.MikanSourceSupplier
 import xyz.shoaky.sourcedownloader.common.mikan.MikanVariableProviderSupplier
 import xyz.shoaky.sourcedownloader.common.rss.JackettSourceSupplier
 import xyz.shoaky.sourcedownloader.common.rss.RssSourceSupplier
+import xyz.shoaky.sourcedownloader.common.tagger.SimpleFileTaggerSupplier
 import xyz.shoaky.sourcedownloader.common.torrent.QbittorrentClientInstanceFactory
 import xyz.shoaky.sourcedownloader.common.torrent.QbittorrentDownloaderSupplier
 import xyz.shoaky.sourcedownloader.common.torrent.TorrentFileResolverSupplier
@@ -32,6 +34,8 @@ internal class CommonPlugin : Plugin {
             TransmissionDownloaderSupplier,
             MikanSourceSupplier,
             AnimeVariableProviderSupplier,
+            OpenaiVariableProviderSupplier,
+            SimpleFileTaggerSupplier,
         )
     }
 

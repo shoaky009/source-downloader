@@ -1,4 +1,4 @@
-package xyz.shoaky.sourcedownloader.tagger
+package xyz.shoaky.sourcedownloader.common.tagger
 
 import org.apache.tika.Tika
 import org.apache.tika.mime.MimeTypes
