@@ -109,7 +109,11 @@ data class ProcessorConfig(
         @JsonDeserialize(contentAs = RegexVariableReplacer::class)
         val variableReplacers: List<VariableReplacer> = emptyList(),
         @JsonAlias("file-replacement-strategy")
-        val fileReplacementStrategy: String = "NEVER"
+        val fileReplacementStrategy: String = "NEVER",
+        @JsonAlias("fetch-limit")
+        val fetchLimit: Int = 50,
+        @JsonAlias("pointer-batch-mode")
+        val pointerBatchMode: Boolean = true,
     )
 
 }

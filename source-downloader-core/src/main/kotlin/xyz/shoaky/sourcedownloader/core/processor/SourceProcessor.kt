@@ -141,11 +141,11 @@ class SourceProcessor(
     }
 
     private fun process(dryRun: Boolean = false): List<ProcessingContent> {
-        val lastState = processingStorage.findProcessorSourceState(name, sourceId)
+        var lastState = processingStorage.findProcessorSourceState(name, sourceId)
         val itemIterator = retry.execute<Iterator<PointedItem<SourceItemPointer>>, IOException> {
             it.setAttribute("stage", ProcessStage("FetchSourceItems", lastState))
             val pointer = lastState?.resolvePointer(source::class)
-            val iterator = source.fetch(pointer).iterator()
+            val iterator = source.fetch(pointer, options.fetchLimit).iterator()
             iterator
         }
 
@@ -174,6 +174,10 @@ class SourceProcessor(
                 }
                 // 也许有一直失败的会卡住整体，暂时先这样处理后面用retryTimes来判断
                 lastPointedItem = item
+                if (options.pointerBatchMode.not() && dryRun.not()) {
+                    saveSourceState(lastPointedItem, lastState)
+                    lastState = processingStorage.findProcessorSourceState(name, sourceId)
+                }
             }.getOrElse {
                 ProcessingContent(
                     name, PersistentSourceContent(
