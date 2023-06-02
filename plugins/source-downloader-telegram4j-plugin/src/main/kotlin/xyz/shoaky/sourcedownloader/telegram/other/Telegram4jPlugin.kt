@@ -8,7 +8,11 @@ import xyz.shoaky.sourcedownloader.sdk.PluginDescription
 class Telegram4jPlugin : Plugin {
     override fun init(pluginContext: PluginContext) {
         pluginContext.registerInstanceFactory(TelegramClientInstanceFactory)
-        pluginContext.registerSupplier(TelegramSourceSupplier(pluginContext))
+        pluginContext.registerSupplier(
+            TelegramSourceSupplier(pluginContext),
+            TelegramIntegrationSupplier(pluginContext),
+            TelegramDocumentTaggerSupplier
+        )
     }
 
     override fun destroy(pluginContext: PluginContext) {

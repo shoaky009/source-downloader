@@ -41,4 +41,8 @@ object QbittorrentClientInstanceFactory : InstanceFactory<QbittorrentClient> {
         return QbittorrentClient(parse)
     }
 
+    override fun type(): Class<QbittorrentClient> {
+        return QbittorrentClient::class.java
+    }
+
 }

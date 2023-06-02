@@ -19,6 +19,7 @@ import telegram4j.mtproto.store.StoreLayoutImpl
 import telegram4j.tl.json.TlModule
 import xyz.shoaky.sourcedownloader.sdk.InstanceFactory
 import xyz.shoaky.sourcedownloader.sdk.Properties
+import xyz.shoaky.sourcedownloader.telegram.other.auth.QrCodeAuthorization
 import java.net.InetSocketAddress
 import java.net.URI
 import java.nio.file.Path
@@ -31,11 +32,15 @@ object TelegramClientInstanceFactory : InstanceFactory<MTProtoTelegramClient> {
         val mapper = ObjectMapper().registerModule(TlModule())
         val metadataPath = config.metadataPath.resolve("telegram4j.bin")
 
-        val bootstrap = MTProtoTelegramClient.create(config.apiId, config.apiHash, CodeAuthorization::authorize)
+        val bootstrap = MTProtoTelegramClient.create(config.apiId, config.apiHash, QrCodeAuthorization::authorize)
         config.proxy?.let { proxy ->
             bootstrap.setTcpClient(TcpClient.newConnection().proxy {
-                it.type(ProxyProvider.Proxy.valueOf(proxy.scheme.uppercase()))
+                val builder = it.type(ProxyProvider.Proxy.valueOf(proxy.scheme.uppercase()))
                     .address(InetSocketAddress.createUnresolved(proxy.host, proxy.port))
+                proxy.userInfo?.apply {
+                    val split = this.split(":")
+                    builder.username(split[0]).password { split[1] }
+                }
             })
         }
         bootstrap
@@ -48,7 +53,6 @@ object TelegramClientInstanceFactory : InstanceFactory<MTProtoTelegramClient> {
             .setStoreLayout(
                 FileStoreLayout(
                     StoreLayoutImpl(Function.identity()),
-                    // Path.of("plugins/source-downloader-telegram-plugin/src/test/resources/t4j.bin")
                     metadataPath
                 )
             )
@@ -63,18 +67,23 @@ object TelegramClientInstanceFactory : InstanceFactory<MTProtoTelegramClient> {
                         true)
                 )
             }
-        bootstrap.withConnection {
-            it.mtProtoClientGroup.main().updates().asFlux()
-                .publishOn(Schedulers.boundedElastic())
-                .flatMap { u -> Mono.fromCallable { mapper.writeValueAsString(u) } }
-                .doOnNext(log::info)
-                .then()
-        }.subscribe()
+            .withConnection {
+                it.mtProtoClientGroup.main().updates().asFlux()
+                    .publishOn(Schedulers.boundedElastic())
+                    .flatMap { u -> Mono.fromCallable { mapper.writeValueAsString(u) } }
+                    .doOnNext(log::info)
+                    .then()
+            }
         return bootstrap.connect().blockOptional().get()
     }
 
-    private val log = LoggerFactory.getLogger("Telegram4j")
+    override fun type(): Class<MTProtoTelegramClient> {
+        return MTProtoTelegramClient::class.java
+    }
+
 }
+
+internal val log = LoggerFactory.getLogger("Telegram4j")
 
 private data class ClientConfig(
     @JsonAlias("api-id")

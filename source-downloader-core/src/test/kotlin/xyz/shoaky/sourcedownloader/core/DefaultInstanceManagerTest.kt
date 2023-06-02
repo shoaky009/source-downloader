@@ -29,6 +29,10 @@ object TestFactory : InstanceFactory<TestInstance> {
     override fun create(props: Properties): TestInstance {
         return TestInstance(props.get<Int>("appId"))
     }
+
+    override fun type(): Class<TestInstance> {
+        return TestInstance::class.java
+    }
 }
 
 class TestInstance(

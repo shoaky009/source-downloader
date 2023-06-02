@@ -5,8 +5,6 @@ import xyz.shoaky.sourcedownloader.sdk.InstanceFactory
 import xyz.shoaky.sourcedownloader.sdk.InstanceManager
 import xyz.shoaky.sourcedownloader.sdk.Properties
 import java.util.concurrent.ConcurrentHashMap
-import kotlin.reflect.full.declaredMemberFunctions
-import kotlin.reflect.jvm.jvmErasure
 
 class DefaultInstanceManager(
     private val instanceConfigStorage: InstanceConfigStorage
@@ -41,14 +39,12 @@ class DefaultInstanceManager(
 
     override fun registerInstanceFactory(vararg factories: InstanceFactory<*>) {
         for (factory in factories) {
-            val type = factory::class.declaredMemberFunctions.filter {
-                "create" == it.name
-            }.map { it.returnType.jvmErasure }.first()
-            val instanceFactory = instanceFactories[type.java]
+            val type = factory.type()
+            val instanceFactory = instanceFactories[type]
             if (instanceFactory != null) {
                 throw RuntimeException("instance factory for $type already exists")
             }
-            instanceFactories[type.java] = factory
+            instanceFactories[type] = factory
         }
     }
 

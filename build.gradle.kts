@@ -10,11 +10,10 @@ plugins {
 allprojects {
     repositories {
         mavenLocal()
-        maven {
-            url = uri("https://repo.huaweicloud.com/repository/maven/")
-        }
+        maven { url = uri("https://repo.huaweicloud.com/repository/maven/") }
         mavenCentral()
         gradlePluginPortal()
+        maven { url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots") }
     }
 }
 

@@ -27,7 +27,9 @@ class MetadataSourceItemGroup(val sourceItem: SourceItem) : SourceItemGroup {
             vars.addVariable("sourceItemTitle", sourceItem.title)
             vars.addVariable("sourceItemDate", sourceItem.date.toLocalDate().toString())
             vars.addVariable("sequence", "${index + 1}".padStart(length, '0'))
-            vars.addVariable("parent", path.parent.name)
+            path.parent?.apply {
+                vars.addVariable("parent", path.parent.name)
+            }
             UniversalFileVariable(vars)
         }
     }

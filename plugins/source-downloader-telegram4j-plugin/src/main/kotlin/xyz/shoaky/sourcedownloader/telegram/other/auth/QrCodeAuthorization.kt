@@ -1,4 +1,4 @@
-package xyz.shoaky.sourcedownloader.telegram.other
+package xyz.shoaky.sourcedownloader.telegram.other.auth
 
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.EncodeHintType
@@ -79,9 +79,9 @@ object QrCodeAuthorization {
                                             )
                                         }
                                 }
-                                .flatMap<MainMTProtoClient> { dc: DataCenter -> clientGroup.setMain(dc) }
-                                .flatMap<LoginToken> { client: MainMTProtoClient ->
-                                    client.sendAwait<LoginToken, ImmutableImportLoginToken>(
+                                .flatMap<MainMTProtoClient> { clientGroup.setMain(it) }
+                                .flatMap<LoginToken> {
+                                    it.sendAwait<LoginToken, ImmutableImportLoginToken>(
                                         ImmutableImportLoginToken.of(migrate.token())
                                     )
                                 }
@@ -99,9 +99,10 @@ object QrCodeAuthorization {
                                 .filter(RpcException.isErrorMessage("PASSWORD_HASH_INVALID"))
                         )
                 }
-                .cast(BaseAuthorization::class.java)
-                .doOnNext { l: BaseAuthorization ->
-                    val b = l.user() as BaseUser
+                .cast(LoginTokenSuccess::class.java)
+                .doOnNext {
+                    val authorization = it.authorization() as BaseAuthorization
+                    val b = authorization.user() as BaseUser
                     val j = StringJoiner(" ")
                     Optional.ofNullable(b.firstName()).ifPresent(j::add)
                     Optional.ofNullable(b.lastName()).ifPresent(j::add)
@@ -109,7 +110,7 @@ object QrCodeAuthorization {
                     log.info("Successfully login as {}", name)
                     complete.set(true)
                     inter.dispose()
-                    sink.success(l)
+                    sink.success(authorization)
                 }
                 .subscribe()
             inter.start(Duration.ofMinutes(1)) // stub period
@@ -121,16 +122,16 @@ object QrCodeAuthorization {
                     )
                 }
                 .cast(BaseLoginToken::class.java)
-                .doOnNext { b: BaseLoginToken ->
-                    val dur: Duration = Duration.ofSeconds(b.expires() - System.currentTimeMillis() / 1000)
-                    val token = Base64.getUrlEncoder().encodeToString(CryptoUtil.toByteArray(b.token()))
+                .doOnNext {
+                    val duration = Duration.ofSeconds(it.expires() - System.currentTimeMillis() / 1000)
+                    val token = Base64.getUrlEncoder().encodeToString(CryptoUtil.toByteArray(it.token()))
                     val url = "tg://login?token=$token"
                     synchronized(System.out) {
-                        println("QR code (you have " + dur.seconds + " seconds):")
+                        println("QR code (you have " + duration.seconds + " seconds):")
                         println(generateQr(url))
                         println()
                     }
-                    inter.start(dur, dur)
+                    inter.start(duration, duration)
                 }
                 .subscribe()
             sink.onCancel(Disposables.composite(listenTokens, qrDisplay))

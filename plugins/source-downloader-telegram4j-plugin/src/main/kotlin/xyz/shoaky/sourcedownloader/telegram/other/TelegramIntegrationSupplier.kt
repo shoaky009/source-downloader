@@ -6,27 +6,29 @@ import xyz.shoaky.sourcedownloader.sdk.PluginContext
 import xyz.shoaky.sourcedownloader.sdk.Properties
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentType
 import xyz.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
+import java.nio.file.Path
 
-class TelegramSourceSupplier(
+class TelegramIntegrationSupplier(
     private val pluginContext: PluginContext
-) : SdComponentSupplier<TelegramSource> {
-    override fun apply(props: Properties): TelegramSource {
-        val chats = props.get<List<ChatConfig>>("chats")
+) : SdComponentSupplier<TelegramIntegration> {
+    override fun apply(props: Properties): TelegramIntegration {
         val clientName = props.get<String>("client")
-        val client = pluginContext.load(clientName, MTProtoTelegramClient::class.java)
-        return TelegramSource(client, chats)
+        val downloadPath = props.get<Path>("download-path")
+        val load = pluginContext.getInstanceManager().load(clientName, MTProtoTelegramClient::class.java)
+        return TelegramIntegration(load, downloadPath)
     }
 
     override fun supplyTypes(): List<ComponentType> {
         return listOf(
-            ComponentType.source("telegram"),
+            ComponentType.provider("telegram"),
+            ComponentType.fileResolver("telegram"),
+            ComponentType.downloader("telegram"),
         )
     }
 
     override fun rules(): List<ComponentRule> {
         return listOf(
-            ComponentRule.allowDownloader(TelegramSource::class),
+            ComponentRule.allowSource(TelegramSource::class)
         )
     }
-
 }

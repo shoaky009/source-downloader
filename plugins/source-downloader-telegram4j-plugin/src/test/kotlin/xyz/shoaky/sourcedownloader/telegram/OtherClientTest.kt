@@ -1,21 +1,20 @@
 package xyz.shoaky.sourcedownloader.telegram
 
 import io.netty.util.ResourceLeakDetector
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import reactor.core.publisher.Hooks
-import telegram4j.core.util.Id
-import telegram4j.tl.ImmutableInputMessageID
-import telegram4j.tl.InputMessage
+import xyz.shoaky.sourcedownloader.sdk.DownloadTask
 import xyz.shoaky.sourcedownloader.sdk.Properties
+import xyz.shoaky.sourcedownloader.telegram.other.ChatConfig
 import xyz.shoaky.sourcedownloader.telegram.other.TelegramClientInstanceFactory
-import xyz.shoaky.sourcedownloader.telegram.other.TelegramPointer
+import xyz.shoaky.sourcedownloader.telegram.other.TelegramIntegration
 import xyz.shoaky.sourcedownloader.telegram.other.TelegramSource
-import java.util.stream.IntStream
+import kotlin.io.path.Path
 
 
-// @Disabled
+@Disabled
 class OtherClientTest {
-
 
     @Test
     fun name() {
@@ -33,16 +32,20 @@ class OtherClientTest {
             )
         )
 
-        client.getMessages(Id.ofChat(-1001896478509L), listOf(ImmutableInputMessageID.of(1)))
-            .blockOptional().get()
-            .messages.forEach {
-                println(it)
-            }
-        // val source = TelegramSource(client, listOf(-1001724819878))
-        //
-        // val fetch = source.fetch(null).toList()
-        // fetch.forEach {
-        //     println(it)
-        // }
+        val integration = TelegramIntegration(client, Path("/Users/shoaky/temp/downloads"))
+        val source = TelegramSource(client, listOf(ChatConfig(775236548L)))
+        val fetch = source.fetch(null).toList()
+        for (pointedItem in fetch) {
+            val sourceItem = pointedItem.sourceItem
+            println(sourceItem)
+            val resolveFiles = integration.resolveFiles(sourceItem)
+            println(resolveFiles)
+            println(integration.createSourceGroup(sourceItem).sharedPatternVariables().variables())
+
+            val task = DownloadTask(sourceItem,
+                resolveFiles.map { Path("/Users/shoaky/temp/downloads").resolve(it.path) },
+                Path("/Users/shoaky/temp/downloads"))
+            // integration.submit(task)
+        }
     }
 }

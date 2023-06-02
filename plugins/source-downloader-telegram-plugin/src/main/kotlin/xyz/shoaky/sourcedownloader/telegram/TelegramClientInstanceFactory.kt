@@ -40,6 +40,10 @@ class TelegramClientInstanceFactory(
         return client
     }
 
+    override fun type(): Class<SimpleTelegramClient> {
+        return SimpleTelegramClient::class.java
+    }
+
     data class ClientConfig(
         @JsonAlias("api-id")
         val apiId: Int,

@@ -1,4 +1,4 @@
-package xyz.shoaky.sourcedownloader.telegram.other
+package xyz.shoaky.sourcedownloader.telegram.other.auth
 
 import org.reactivestreams.Publisher
 import reactor.core.publisher.Flux

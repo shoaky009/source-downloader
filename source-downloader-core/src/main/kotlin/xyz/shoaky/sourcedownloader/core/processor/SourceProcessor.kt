@@ -487,6 +487,7 @@ class SourceProcessor(
     private fun rename(content: PersistentSourceContent): Boolean {
         val renameFiles = content.getRenameFiles(fileMover)
         if (renameFiles.isEmpty()) {
+            log.warn("Processor:$name item:${content.sourceItem.title} no available files to rename")
             return true
         }
         renameFiles.map { it.saveDirectoryPath() }
