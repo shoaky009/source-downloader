@@ -3,6 +3,7 @@ package xyz.shoaky.sourcedownloader.api
 import org.springframework.stereotype.Service
 import org.springframework.web.bind.annotation.*
 import xyz.shoaky.sourcedownloader.core.*
+import xyz.shoaky.sourcedownloader.sdk.ComponentStateful
 import xyz.shoaky.sourcedownloader.sdk.Properties
 import xyz.shoaky.sourcedownloader.sdk.component.*
 
@@ -24,23 +25,33 @@ private class ComponentController(
                 type == null || it.key == type
             }
             .flatMap { entry ->
-                val key = entry.key
+                val componentName = entry.key
                 entry.value
                     .filter {
                         typeName == null || it.type == typeName
                     }.filter {
                         name == null || it.name == name
                     }.map {
-                        ComponentInfo(key, it.type, it.name, it.props, ComponentDetail())
+                        val stateful = componentManager.getComponent(it.name) as? ComponentStateful
+                        ComponentInfo(
+                            componentName,
+                            it.type,
+                            it.name,
+                            it.props,
+                            ComponentDetail(),
+                            stateful?.stateDetail()
+                        )
                     }
             }
     }
 
     @PostMapping("/{type}/{typeName}/{name}")
-    fun createComponent(@PathVariable type: Components,
-                        @PathVariable typeName: String,
-                        @PathVariable name: String,
-                        @RequestBody body: Map<String, Any>) {
+    fun createComponent(
+        @PathVariable type: Components,
+        @PathVariable typeName: String,
+        @PathVariable name: String,
+        @RequestBody body: Map<String, Any>
+    ) {
         val props = Properties.fromMap(body)
         val componentType = ComponentType(typeName, type.klass)
         componentManager.createComponent(name, componentType, props)
@@ -82,7 +93,8 @@ private data class ComponentInfo(
     val typeName: String,
     val name: String,
     val props: Map<String, Any>,
-    val detail: ComponentDetail
+    val detail: ComponentDetail,
+    val stateDetail: Any? = null,
 )
 
 

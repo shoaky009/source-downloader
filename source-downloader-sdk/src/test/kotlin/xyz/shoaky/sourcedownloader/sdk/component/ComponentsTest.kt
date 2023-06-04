@@ -24,34 +24,34 @@ class ComponentsTest {
 
 private class DownloaderCp : Downloader {
     override fun submit(task: DownloadTask) {
-        TODO("Not yet implemented")
+        throw NotImplementedError()
     }
 
     override fun defaultDownloadPath(): Path {
-        TODO("Not yet implemented")
+        throw NotImplementedError()
     }
 
 }
 
 private class MultiCp : TorrentDownloader, FileTagger {
     override fun isFinished(task: DownloadTask): Boolean? {
-        TODO("Not yet implemented")
+        throw NotImplementedError()
     }
 
     override fun submit(task: DownloadTask) {
-        TODO("Not yet implemented")
+        throw NotImplementedError()
     }
 
     override fun defaultDownloadPath(): Path {
-        TODO("Not yet implemented")
+        throw NotImplementedError()
     }
 
     override fun rename(sourceContent: SourceContent): Boolean {
-        TODO("Not yet implemented")
+        throw NotImplementedError()
     }
 
     override fun tag(fileContent: FileContent): String? {
-        TODO("Not yet implemented")
+        throw NotImplementedError()
     }
 
 }

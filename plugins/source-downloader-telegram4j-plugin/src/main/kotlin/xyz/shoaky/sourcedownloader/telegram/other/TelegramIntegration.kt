@@ -9,17 +9,27 @@ import xyz.shoaky.sourcedownloader.sdk.component.Downloader
 import xyz.shoaky.sourcedownloader.sdk.component.ItemFileResolver
 import xyz.shoaky.sourcedownloader.sdk.component.VariableProvider
 import xyz.shoaky.sourcedownloader.sdk.util.queryMap
+import java.nio.ByteBuffer
+import java.nio.channels.ByteChannel
 import java.nio.channels.FileChannel
+import java.nio.channels.SeekableByteChannel
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
+import java.text.NumberFormat
+import java.util.concurrent.ConcurrentHashMap
+import kotlin.concurrent.fixedRateTimer
 import kotlin.io.path.Path
 import kotlin.io.path.createDirectories
+import kotlin.io.path.moveTo
+import kotlin.io.path.name
 import kotlin.jvm.optionals.getOrNull
 
 class TelegramIntegration(
     private val client: MTProtoTelegramClient,
     private val downloadPath: Path
-) : VariableProvider, ItemFileResolver, Downloader {
+) : VariableProvider, ItemFileResolver, Downloader, ComponentStateful {
+
+    private val progresses: MutableMap<String, ProgressiveChannel> = ConcurrentHashMap()
 
     override fun createSourceGroup(sourceItem: SourceItem): SourceItemGroup {
         val queryMap = sourceItem.link.queryMap()
@@ -70,9 +80,11 @@ class TelegramIntegration(
             return
         }
         val chatPointer = ChatPointer(chatId, 0)
-        val documentOp = client.getMessages(chatPointer.createId(), listOf(
-            ImmutableInputMessageID.of(messageId)
-        ))
+        val documentOp = client.getMessages(
+            chatPointer.createId(), listOf(
+                ImmutableInputMessageID.of(messageId)
+            )
+        )
             .mapNotNull { it.messages.firstOrNull()?.media?.getOrNull() as? MessageMedia.Document }
             .mapNotNull { it?.document?.get() }
             .blockOptional()
@@ -85,23 +97,50 @@ class TelegramIntegration(
         fileDownloadPath.parent.createDirectories()
         val document = documentOp.get()
 
-        val fileChannel = FileChannel.open(
-            fileDownloadPath,
-            StandardOpenOption.WRITE,
-            StandardOpenOption.CREATE,
+        val tempDownloadPath = fileDownloadPath.resolveSibling("${fileDownloadPath.name}.tmp")
+        val monitoredChannel = ProgressiveChannel(
+            document.size.get(),
+            FileChannel.open(
+                tempDownloadPath,
+                StandardOpenOption.WRITE,
+                StandardOpenOption.CREATE,
+            )
         )
+
+        progresses[fileDownloadPath.name] = monitoredChannel
         client.downloadFile(document.fileReferenceId)
             .publishOn(Schedulers.boundedElastic())
-            .collect({ fileChannel }, { fc, filePart ->
+            .collect({ monitoredChannel }, { fc, filePart ->
                 fc.write(filePart.bytes.nioBuffer())
             })
             .doFinally {
-                fileChannel.close()
-            }.block()
+                runCatching {
+                    monitoredChannel.close()
+                }.onFailure {
+                    log.error("Error closing file channel", it)
+                }
+                progresses.remove(fileDownloadPath.name)
+                tempDownloadPath.moveTo(fileDownloadPath)
+            }
+            .doOnError {
+                log.error("Error downloading file", it)
+            }
+            .block()
     }
 
     override fun defaultDownloadPath(): Path {
         return downloadPath
+    }
+
+    override fun stateDetail(): Any {
+        return progresses.map {
+            mapOf(
+                "path" to it.key,
+                "totalSize" to it.value.formatTotalSize(),
+                "progress" to it.value.formatProgress(),
+                "rate" to it.value.formatRate(),
+            )
+        }
     }
 }
 
@@ -110,3 +149,82 @@ private data class MessageVariable(
     val messageId: Int?,
     val chatName: String?,
 ) : PatternVariables
+
+
+class ProgressiveChannel(
+    private val totalSize: Long,
+    private val ch: SeekableByteChannel
+) : ByteChannel by ch {
+
+    private var current = 0L
+    private var rate = .0
+    private var previousSize = 0L
+
+    private val timer = fixedRateTimer(initialDelay = 1000, period = 1000) {
+        rate = (current - previousSize) / 1000.0
+        previousSize = current
+    }
+
+    override fun write(src: ByteBuffer): Int {
+        val write = ch.write(src)
+        current += write
+        return write
+    }
+
+    fun formatProgress(): String {
+        return NumberFormat.getPercentInstance().format(current.toDouble() / totalSize.toDouble())
+    }
+
+    fun formatRate(): String {
+        return when {
+            rate > gigabyte -> {
+                "${rate / gigabyte} GB/s"
+            }
+
+            rate > megabyte -> {
+                "${rate / megabyte} MB/s"
+            }
+
+            rate > kilobyte -> {
+                "${rate / kilobyte} KB/s"
+            }
+
+            else -> {
+                "$rate B/s"
+            }
+        }
+    }
+
+    fun formatTotalSize(): String {
+        return when {
+            totalSize > gigabyte -> {
+                "${totalSize / gigabyte} GB"
+            }
+
+            totalSize > megabyte -> {
+                "${totalSize / megabyte} MB"
+            }
+
+            totalSize > kilobyte -> {
+                "${totalSize / kilobyte} KB"
+            }
+
+            else -> {
+                "$totalSize B"
+            }
+        }
+    }
+
+    override fun close() {
+        runCatching {
+            timer.cancel()
+        }
+        ch.close()
+    }
+
+    companion object {
+        private const val kilobyte = 1024
+        private const val megabyte = kilobyte * 1024
+        private const val gigabyte = megabyte * 1024
+    }
+}
