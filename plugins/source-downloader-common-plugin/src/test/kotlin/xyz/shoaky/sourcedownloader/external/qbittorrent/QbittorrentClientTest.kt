@@ -1,4 +1,4 @@
-package xyz.shoaky.sourcedownloader.api.qbitorrent
+package xyz.shoaky.sourcedownloader.external.qbittorrent
 
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test

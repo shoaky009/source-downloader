@@ -6,7 +6,7 @@ import com.sun.net.httpserver.HttpServer
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Test
 import xyz.shoaky.sourcedownloader.component.supplier.SendHttpRequestSupplier
-import xyz.shoaky.sourcedownloader.core.file.PersistentSourceContent
+import xyz.shoaky.sourcedownloader.core.file.CoreSourceContent
 import xyz.shoaky.sourcedownloader.sdk.MapPatternVariables
 import xyz.shoaky.sourcedownloader.sdk.Properties
 import xyz.shoaky.sourcedownloader.sourceItem
@@ -38,7 +38,7 @@ class SendHttpRequestTest {
             )
         )
 
-        apply.accept(PersistentSourceContent(
+        apply.accept(CoreSourceContent(
             sourceItem("test"),
             listOf(),
             MapPatternVariables()
@@ -67,7 +67,7 @@ class SendHttpRequestTest {
             )
         )
 
-        apply.accept(PersistentSourceContent(
+        apply.accept(CoreSourceContent(
             sourceItem("test"),
             listOf(),
             MapPatternVariables()
@@ -101,7 +101,7 @@ class SendHttpRequestTest {
             )
         )
 
-        apply.accept(PersistentSourceContent(
+        apply.accept(CoreSourceContent(
             sourceItem("test"),
             listOf(),
             MapPatternVariables()

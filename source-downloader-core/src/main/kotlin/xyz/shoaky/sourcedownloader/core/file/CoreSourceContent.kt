@@ -5,7 +5,7 @@ import xyz.shoaky.sourcedownloader.sdk.SourceContent
 import xyz.shoaky.sourcedownloader.sdk.SourceItem
 import xyz.shoaky.sourcedownloader.sdk.component.FileMover
 
-data class PersistentSourceContent(
+data class CoreSourceContent(
     override val sourceItem: SourceItem,
     override val sourceFiles: List<CoreFileContent>,
     val sharedPatternVariables: MapPatternVariables

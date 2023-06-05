@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test
 import xyz.shoaky.sourcedownloader.component.supplier.CleanEmptyDirectorySupplier
 import xyz.shoaky.sourcedownloader.core.CorePathPattern
 import xyz.shoaky.sourcedownloader.core.file.CoreFileContent
-import xyz.shoaky.sourcedownloader.core.file.PersistentSourceContent
+import xyz.shoaky.sourcedownloader.core.file.CoreSourceContent
 import xyz.shoaky.sourcedownloader.sdk.MapPatternVariables
 import xyz.shoaky.sourcedownloader.sdk.Properties
 import xyz.shoaky.sourcedownloader.sourceItem
@@ -25,7 +25,7 @@ class DeleteEmptyDirectoryTest {
         itemDownloadPath.resolve("test").createDirectories()
         itemDownloadPath.resolve("daaaa").createDirectories()
 
-        val sc = PersistentSourceContent(
+        val sc = CoreSourceContent(
             sourceItem(),
             listOf(
                 CoreFileContent(
@@ -47,7 +47,7 @@ class DeleteEmptyDirectoryTest {
     fun given_not_empty() {
         val itemDownloadPath = testResourcePath.resolve("mockito-extensions")
 
-        val sc = PersistentSourceContent(
+        val sc = CoreSourceContent(
             sourceItem(),
             listOf(
                 CoreFileContent(

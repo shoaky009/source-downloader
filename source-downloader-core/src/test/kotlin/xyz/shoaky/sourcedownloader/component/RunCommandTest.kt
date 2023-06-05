@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test
 import xyz.shoaky.sourcedownloader.component.supplier.RunCommandSupplier
 import xyz.shoaky.sourcedownloader.core.CorePathPattern
 import xyz.shoaky.sourcedownloader.core.file.CoreFileContent
-import xyz.shoaky.sourcedownloader.core.file.PersistentSourceContent
+import xyz.shoaky.sourcedownloader.core.file.CoreSourceContent
 import xyz.shoaky.sourcedownloader.sdk.MapPatternVariables
 import xyz.shoaky.sourcedownloader.sdk.Properties
 import xyz.shoaky.sourcedownloader.sourceItem
@@ -35,7 +35,7 @@ class RunCommandTest {
 
     @Test
     fun run_command() {
-        val process = runCommand.run(PersistentSourceContent(sourceItem("1"), listOf(content), MapPatternVariables()))
+        val process = runCommand.run(CoreSourceContent(sourceItem("1"), listOf(content), MapPatternVariables()))
         assertEquals(0, process.waitFor())
         val result = process.inputStream.bufferedReader().readText()
         assertEquals("test1", result)
@@ -50,7 +50,7 @@ class RunCommandTest {
                 ))
         )
 
-        val process = apply.run(PersistentSourceContent(sourceItem("1"), listOf(content), MapPatternVariables()))
+        val process = apply.run(CoreSourceContent(sourceItem("1"), listOf(content), MapPatternVariables()))
         assertEquals(0, process.waitFor())
         val result = process.inputStream.bufferedReader().readText()
         assertEquals("test1 test.txt", result)

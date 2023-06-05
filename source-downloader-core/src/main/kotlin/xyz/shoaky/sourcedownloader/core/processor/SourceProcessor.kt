@@ -9,8 +9,8 @@ import org.springframework.util.StopWatch
 import xyz.shoaky.sourcedownloader.component.provider.MetadataVariableProvider
 import xyz.shoaky.sourcedownloader.core.*
 import xyz.shoaky.sourcedownloader.core.file.CoreFileContent
+import xyz.shoaky.sourcedownloader.core.file.CoreSourceContent
 import xyz.shoaky.sourcedownloader.core.file.FileContentStatus
-import xyz.shoaky.sourcedownloader.core.file.PersistentSourceContent
 import xyz.shoaky.sourcedownloader.sdk.*
 import xyz.shoaky.sourcedownloader.sdk.component.*
 import xyz.shoaky.sourcedownloader.sdk.util.Jackson
@@ -180,7 +180,7 @@ class SourceProcessor(
                 }
             }.getOrElse {
                 ProcessingContent(
-                    name, PersistentSourceContent(
+                    name, CoreSourceContent(
                     item.sourceItem, emptyList(), MapPatternVariables()
                 )).copy(status = ProcessingContent.Status.FAILURE, failureReason = it.message)
             }
@@ -271,7 +271,7 @@ class SourceProcessor(
     private fun createPersistentSourceContent(
         sourceItemGroup: SourceItemGroup,
         sourceItem: SourceItem
-    ): PersistentSourceContent {
+    ): CoreSourceContent {
         val resolveFiles = itemFileResolver.resolveFiles(sourceItem)
         val sharedPatternVariables = sourceItemGroup.sharedPatternVariables()
         val sourceFiles = sourceItemGroup.filePatternVariables(resolveFiles)
@@ -298,7 +298,7 @@ class SourceProcessor(
                 }
                 filter
             }
-        return PersistentSourceContent(sourceItem, sourceFiles, MapPatternVariables(sharedPatternVariables))
+        return CoreSourceContent(sourceItem, sourceFiles, MapPatternVariables(sharedPatternVariables))
     }
 
     private fun tagFileAndReplaceFilenamePattern(fileContent: CoreFileContent): CoreFileContent {
@@ -327,7 +327,7 @@ class SourceProcessor(
         return copy
     }
 
-    private fun probeContent(sc: PersistentSourceContent): Pair<Boolean, ProcessingContent.Status> {
+    private fun probeContent(sc: CoreSourceContent): Pair<Boolean, ProcessingContent.Status> {
         val files = sc.sourceFiles
         if (files.isEmpty()) {
             return false to ProcessingContent.Status.NO_FILES
@@ -469,7 +469,7 @@ class SourceProcessor(
         return safeRunner
     }
 
-    private fun createDownloadTask(content: PersistentSourceContent): DownloadTask {
+    private fun createDownloadTask(content: CoreSourceContent): DownloadTask {
         val downloadFiles = content.sourceFiles
             .filter { it.status != FileContentStatus.TARGET_EXISTS }
             .map { it.fileDownloadPath }
@@ -484,7 +484,7 @@ class SourceProcessor(
         )
     }
 
-    private fun rename(content: PersistentSourceContent): Boolean {
+    private fun rename(content: CoreSourceContent): Boolean {
         val renameFiles = content.getRenameFiles(fileMover)
         if (renameFiles.isEmpty()) {
             log.warn("Processor:$name item:${content.sourceItem.title} no available files to rename")

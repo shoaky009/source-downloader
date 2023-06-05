@@ -128,6 +128,9 @@ interface FileMover : SdComponent {
 
     fun rename(sourceContent: SourceContent): Boolean
 
+    /**
+     * @param paths the target paths
+     */
     fun exists(paths: List<Path>): Boolean {
         return paths.all { it.exists() }
     }
@@ -150,7 +153,7 @@ interface FileContentFilter : SdComponent, Predicate<FileContent>
 interface FileTagger : SdComponent {
 
     /**
-     * 只允许标记一个
+     * @return the tag of the file, null if no tag
      */
     fun tag(fileContent: FileContent): String?
 }

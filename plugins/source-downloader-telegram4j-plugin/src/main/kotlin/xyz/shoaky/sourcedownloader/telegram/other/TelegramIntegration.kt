@@ -16,6 +16,7 @@ import java.nio.channels.SeekableByteChannel
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
 import java.text.NumberFormat
+import java.time.Duration
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.concurrent.fixedRateTimer
 import kotlin.io.path.Path
@@ -82,8 +83,8 @@ class TelegramIntegration(
         val chatPointer = ChatPointer(chatId, 0)
         val documentOp = client.getMessages(
             chatPointer.createId(), listOf(
-                ImmutableInputMessageID.of(messageId)
-            )
+            ImmutableInputMessageID.of(messageId)
+        )
         )
             .mapNotNull { it.messages.firstOrNull()?.media?.getOrNull() as? MessageMedia.Document }
             .mapNotNull { it?.document?.get() }
@@ -134,11 +135,13 @@ class TelegramIntegration(
 
     override fun stateDetail(): Any {
         return progresses.map {
+            val channel = it.value
             mapOf(
                 "path" to it.key,
-                "totalSize" to it.value.formatTotalSize(),
-                "progress" to it.value.formatProgress(),
-                "rate" to it.value.formatRate(),
+                "totalSize" to channel.formatTotalSize(),
+                "progress" to channel.formatProgress(),
+                "rate" to channel.formatRate(),
+                "duration" to channel.getDuration()
             )
         }
     }
@@ -159,6 +162,7 @@ class ProgressiveChannel(
     private var current = 0L
     private var rate = .0
     private var previousSize = 0L
+    private val startTime = System.currentTimeMillis()
 
     private val timer = fixedRateTimer(initialDelay = 1000, period = 1000) {
         rate = (current - previousSize) / 1000.0
@@ -213,6 +217,10 @@ class ProgressiveChannel(
                 "$totalSize B"
             }
         }
+    }
+
+    fun getDuration(): Long {
+        return Duration.ofMillis(System.currentTimeMillis() - startTime).seconds
     }
 
     override fun close() {

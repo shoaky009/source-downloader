@@ -54,7 +54,7 @@ fun DependencyHandlerScope.resolveBuildInPlugins() {
                 }
         }.forEach {
             println("Add built-in plugin: $it")
-            implementation(project(":plugins:$it"))
+            runtimeOnly(project(":plugins:$it"))
         }
     } else {
         // 这里为了平时开发方便，如果没有指定插件就默认加载所有插件

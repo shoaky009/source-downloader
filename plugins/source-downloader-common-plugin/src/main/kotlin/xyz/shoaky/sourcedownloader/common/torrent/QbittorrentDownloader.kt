@@ -116,8 +116,8 @@ class QbittorrentDownloader(
     }
 
     companion object {
-        private val log = LoggerFactory.getLogger(QbittorrentDownloader::class.java)
 
+        private val log = LoggerFactory.getLogger(QbittorrentDownloader::class.java)
 
         fun <T> retry(block: () -> T, times: Int = 3): T {
             var count = 0

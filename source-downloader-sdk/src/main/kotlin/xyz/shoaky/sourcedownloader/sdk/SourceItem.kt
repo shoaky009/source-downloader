@@ -11,6 +11,15 @@ data class SourceItem(
     val contentType: String,
     val downloadUri: URI,
 ) {
+
+    constructor(
+        title: String,
+        link: String,
+        date: LocalDateTime,
+        contentType: String,
+        downloadUri: String,
+    ) : this(title, URI(link), date, contentType, URI(downloadUri))
+
     fun hashing(): String {
         return Hashing.goodFastHash(128)
             .hashString("$title-$link-$contentType-$downloadUri", Charsets.UTF_8)

@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test
 import xyz.shoaky.sourcedownloader.component.supplier.GeneralFileMoverSupplier
 import xyz.shoaky.sourcedownloader.core.CorePathPattern
 import xyz.shoaky.sourcedownloader.core.file.CoreFileContent
-import xyz.shoaky.sourcedownloader.core.file.PersistentSourceContent
+import xyz.shoaky.sourcedownloader.core.file.CoreSourceContent
 import xyz.shoaky.sourcedownloader.createIfNotExists
 import xyz.shoaky.sourcedownloader.sdk.MapPatternVariables
 import xyz.shoaky.sourcedownloader.sdk.Properties
@@ -56,7 +56,7 @@ class GeneralFileMoverTest {
             CorePathPattern.ORIGIN,
         )
 
-        val sourceContent = PersistentSourceContent(sourceItem(), listOf(file1, file2), MapPatternVariables())
+        val sourceContent = CoreSourceContent(sourceItem(), listOf(file1, file2), MapPatternVariables())
         val result = mover.rename(sourceContent)
         assert(result)
         Files.deleteIfExists(file1.targetPath())
