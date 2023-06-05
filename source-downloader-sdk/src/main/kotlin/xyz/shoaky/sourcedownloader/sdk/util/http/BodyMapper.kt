@@ -7,7 +7,7 @@ import java.net.http.HttpRequest
 
 
 val httpClient: HttpClient = HttpClient.newBuilder().build()
-internal val log = LoggerFactory.getLogger("Http")
+internal val log = LoggerFactory.getLogger("HTTP")
 
 fun httpGetRequest(
     uri: URI,

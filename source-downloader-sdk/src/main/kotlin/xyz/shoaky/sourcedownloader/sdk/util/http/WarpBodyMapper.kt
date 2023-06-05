@@ -8,7 +8,7 @@ class WarpBodyMapper<T : Any>(
             return bodyMapper.mapping(info)
         } catch (e: Exception) {
             val body = String(info.bytes, Charsets.UTF_8)
-            log.error("mapping error, body: $body", e)
+            log.warn("Failed to mapping body:$body", e)
             throw e
         }
     }
