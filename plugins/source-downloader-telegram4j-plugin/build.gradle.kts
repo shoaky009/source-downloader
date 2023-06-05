@@ -26,7 +26,7 @@ dependencies {
     testImplementation("org.mockito:mockito-junit-jupiter:5.3.1")
 
     implementation("com.google.zxing:core:3.5.1")
-    api("com.telegram4j:telegram4j-core:0.1.0-SNAPSHOT")
+    implementation("com.telegram4j:telegram4j-core:0.1.0-SNAPSHOT")
 }
 
 tasks.withType<KotlinCompile> {

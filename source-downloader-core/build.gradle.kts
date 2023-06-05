@@ -37,10 +37,30 @@ dependencies {
     implementation(enforcedPlatform("org.projectnessie.cel:cel-bom:0.3.15"))
     implementation("org.projectnessie.cel:cel-tools")
 
-    // 内置插件，单纯为了方便
-    implementation(project(":plugins:source-downloader-common-plugin"))
-    implementation(project(":plugins:source-downloader-telegram4j-plugin"))
+    resolveBuildInPlugins()
+}
 
+fun DependencyHandlerScope.resolveBuildInPlugins() {
+    if (project.hasProperty("sdPlugins")) {
+        val sdPlugins = project.property("sdPlugins").toString()
+        println("Prepare built-in plugins: $sdPlugins")
+        if (sdPlugins == "all") {
+            project(":plugins").dependencyProject.childProjects.map { it.key }
+        } else {
+            sdPlugins.split(",")
+                .filter { it.isNotBlank() }
+                .map {
+                    "source-downloader-$it-plugin"
+                }
+        }.forEach {
+            println("Add built-in plugin: $it")
+            implementation(project(":plugins:$it"))
+        }
+    } else {
+        // 这里为了平时开发方便，如果没有指定插件就默认加载所有插件
+        runtimeOnly(project(":plugins:source-downloader-common-plugin"))
+        runtimeOnly(project(":plugins:source-downloader-telegram4j-plugin"))
+    }
 }
 
 tasks.bootBuildImage {
@@ -48,6 +68,7 @@ tasks.bootBuildImage {
 }
 
 tasks.bootJar {
+    exclude("config.yaml")
     layered {
         application {
             intoLayer("spring-boot-loader") {
