@@ -15,13 +15,13 @@ import java.time.Duration
 @JsonInclude(JsonInclude.Include.NON_DEFAULT)
 data class ProcessorConfig(
     val name: String,
-    val triggers: List<ComponentId>,
+    val triggers: List<ComponentId> = emptyList(),
     val source: ComponentId,
     @JsonAlias("variable-providers", "providers")
     val variableProviders: List<ComponentId> = emptyList(),
     @JsonAlias("item-file-resolver", "file-resolver")
     val itemFileResolver: ComponentId,
-    val downloader: ComponentId = ComponentId("downloader:url"),
+    val downloader: ComponentId,
     @JsonAlias("file-mover", "mover")
     val fileMover: ComponentId = ComponentId("mover:general"),
     @JsonAlias("save-path")

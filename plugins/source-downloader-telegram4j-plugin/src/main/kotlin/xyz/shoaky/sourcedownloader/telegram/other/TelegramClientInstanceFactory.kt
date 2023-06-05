@@ -2,7 +2,9 @@ package xyz.shoaky.sourcedownloader.telegram.other
 
 import com.fasterxml.jackson.annotation.JsonAlias
 import com.fasterxml.jackson.databind.ObjectMapper
+import io.netty.util.ResourceLeakDetector
 import org.slf4j.LoggerFactory
+import reactor.core.publisher.Hooks
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
 import reactor.netty.tcp.TcpClient
@@ -23,7 +25,9 @@ import xyz.shoaky.sourcedownloader.telegram.other.auth.QrCodeAuthorization
 import java.net.InetSocketAddress
 import java.net.URI
 import java.nio.file.Path
+import java.time.Duration
 import java.util.function.Function
+import kotlin.io.path.createDirectories
 
 
 object TelegramClientInstanceFactory : InstanceFactory<MTProtoTelegramClient> {
@@ -31,6 +35,7 @@ object TelegramClientInstanceFactory : InstanceFactory<MTProtoTelegramClient> {
         val config = props.parse<ClientConfig>()
         val mapper = ObjectMapper().registerModule(TlModule())
         val metadataPath = config.metadataPath.resolve("telegram4j.bin")
+        config.metadataPath.createDirectories()
 
         val bootstrap = MTProtoTelegramClient.create(config.apiId, config.apiHash, QrCodeAuthorization::authorize)
         config.proxy?.let { proxy ->
@@ -74,7 +79,12 @@ object TelegramClientInstanceFactory : InstanceFactory<MTProtoTelegramClient> {
                     .doOnNext(log::info)
                     .then()
             }
-        return bootstrap.connect().blockOptional().get()
+        if (config.debug) {
+            Hooks.onOperatorDebug()
+            ResourceLeakDetector.setLevel(ResourceLeakDetector.Level.PARANOID)
+        }
+
+        return bootstrap.connect().blockOptional(Duration.ofMinutes(2)).get()
     }
 
     override fun type(): Class<MTProtoTelegramClient> {
@@ -93,4 +103,5 @@ private data class ClientConfig(
     @JsonAlias("metadata-path")
     val metadataPath: Path,
     val proxy: URI?,
+    val debug: Boolean = false
 )

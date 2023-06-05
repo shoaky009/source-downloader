@@ -28,7 +28,7 @@ class TelegramSource(
 
         val result: MutableList<PointedItem<TelegramPointer>> = mutableListOf()
         for (chatPointer in chatPointers) {
-            val beginDate = chatMapping[chatPointer.getRawChatId()]?.beginDate
+            val beginDate = chatMapping[chatPointer.chatId]?.beginDate
             val messages = getMessages(chatPointer, limit)
             val items = messages.mapNotNull { message ->
                 val sourceItem = mediaMessageToSourceItem(message, chatPointer) ?: return@mapNotNull null
@@ -55,24 +55,24 @@ class TelegramSource(
             .offsetDate(0)
 
         val inputPeer: InputPeer = if (isChannel) {
-            val user = client.getUserMinById(client.selfId).blockOptional().get()
+            val user = client.getUserMinById(client.selfId).blockOptional(timeout).get()
             val inputChannel = ImmutableBaseInputChannel.builder()
-                .channelId(chatPointer.getChatId())
+                .channelId(chatPointer.paserChatId())
                 .accessHash(user.id.accessHash.get())
                 .build()
-            val channel = client.serviceHolder.chatService.getChannel(inputChannel).blockOptional().get() as Channel
+            val channel = client.serviceHolder.chatService.getChannel(inputChannel).blockOptional(timeout).get() as Channel
             InputPeerChannel.builder()
                 .channelId(channel.id())
                 .accessHash(channel.accessHash()!!)
                 .build()
         } else {
             InputPeerChat.builder()
-                .chatId(chatPointer.getChatId())
+                .chatId(chatPointer.paserChatId())
                 .build()
         }
         val getHistory = getHistoryBuilder.peer(inputPeer).build()
         val historyMessage = client.serviceHolder.chatService.getHistory(getHistory)
-            .blockOptional(Duration.ofSeconds(10)).get()
+            .blockOptional(timeout).get()
         if (historyMessage is ChannelMessages) {
             return historyMessage.messages().filterIsInstance<BaseMessage>().reversed()
         }
@@ -84,8 +84,8 @@ class TelegramSource(
 
     private fun mediaMessageToSourceItem(message: BaseMessage, chatPointer: ChatPointer): SourceItem? {
         val media = message.media() ?: return null
-        val chatId = chatPointer.getChatId()
-        val uri = URI("telegram://?chatId=${chatPointer.getRawChatId()}&messageId=${message.id()}")
+        val chatId = chatPointer.paserChatId()
+        val uri = URI("telegram://?chatId=${chatPointer.chatId}&messageId=${message.id()}")
         val messageDateTime = Instant.ofEpochSecond(message.date().toLong()).atZone(zoneId).toLocalDateTime()
         when (media) {
             is MessageMediaPhoto -> {
@@ -107,6 +107,7 @@ class TelegramSource(
 
     companion object {
         private val zoneId = ZoneId.systemDefault()
+        private val timeout: Duration = Duration.ofSeconds(5L)
     }
 }
 

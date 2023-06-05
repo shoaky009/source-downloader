@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping
 import org.springframework.web.util.pattern.PathPatternParser
+import kotlin.concurrent.thread
 
 class WebhookTrigger(
     private val path: String,
@@ -21,7 +22,9 @@ class WebhookTrigger(
     @Suppress("UNUSED")
     fun endpoint(): ResponseEntity<Any> {
         for (task in tasks) {
-            task.run()
+            thread {
+                task.run()
+            }
         }
         return ResponseEntity.noContent().build()
     }

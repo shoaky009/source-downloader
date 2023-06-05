@@ -9,8 +9,7 @@ data class ComponentType(
     val topTypeClass: KClass<out SdComponent>
 ) {
 
-    constructor(type: String, name: String) : this(name, componentTypes[type]
-        ?: throw ComponentException.unsupported("不支持的类型$type, 支持的类型有${componentTypes.keys}"))
+    constructor(typeName: String, type: Components) : this(typeName, type.klass)
 
     fun topType(): Components {
         return Components.fromClass(topTypeClass).first()

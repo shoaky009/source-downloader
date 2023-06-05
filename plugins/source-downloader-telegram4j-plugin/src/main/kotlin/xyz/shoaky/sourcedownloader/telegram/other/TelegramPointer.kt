@@ -7,7 +7,7 @@ data class TelegramPointer(
 ) : SourceItemPointer {
 
     fun refreshChats(chatIds: List<Long>): TelegramPointer {
-        val chatLastMessage = pointers.associateBy { it.getChatId() }.mapValues { it.value.fromMessageId }
+        val chatLastMessage = pointers.associateBy { it.chatId }.mapValues { it.value.fromMessageId }
         val chatPointers = chatIds.map {
             ChatPointer(it, chatLastMessage.getOrDefault(it, 1))
         }
@@ -17,7 +17,7 @@ data class TelegramPointer(
     fun update(chatPointer: ChatPointer): TelegramPointer {
         val updateChats = pointers.toMutableList()
         updateChats.replaceAll { pointer ->
-            if (pointer.getChatId() == chatPointer.getChatId()) {
+            if (pointer.paserChatId() == chatPointer.paserChatId()) {
                 chatPointer
             } else {
                 pointer

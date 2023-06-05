@@ -3,6 +3,9 @@ package xyz.shoaky.sourcedownloader.common.mikan
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
+import xyz.shoaky.sourcedownloader.common.anime.BangumiInfo
+import xyz.shoaky.sourcedownloader.common.anime.MikanSupport
+import xyz.shoaky.sourcedownloader.common.anime.MikanVariableProvider
 import xyz.shoaky.sourcedownloader.common.torrent.R
 import xyz.shoaky.sourcedownloader.external.bangumi.BangumiRequest
 import xyz.shoaky.sourcedownloader.external.bangumi.BgmTvApiClient

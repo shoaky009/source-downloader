@@ -1,4 +1,4 @@
-package xyz.shoaky.sourcedownloader.common.mikan
+package xyz.shoaky.sourcedownloader.common.anime
 
 import xyz.shoaky.sourcedownloader.sdk.FileVariable
 import xyz.shoaky.sourcedownloader.sdk.MapPatternVariables

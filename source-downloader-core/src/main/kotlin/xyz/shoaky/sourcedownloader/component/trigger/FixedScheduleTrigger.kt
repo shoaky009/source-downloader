@@ -3,6 +3,7 @@ package xyz.shoaky.sourcedownloader.component.trigger
 import org.slf4j.LoggerFactory
 import java.time.Duration
 import java.util.*
+import kotlin.concurrent.thread
 import kotlin.concurrent.timerTask
 
 class FixedScheduleTrigger(
@@ -21,7 +22,9 @@ class FixedScheduleTrigger(
         timer.scheduleAtFixedRate(timerTask(), interval.toMillis(), interval.toMillis())
         if (onStartRunTasks) {
             tasks.forEach {
-                it.run()
+                thread {
+                    it.run()
+                }
             }
         }
     }

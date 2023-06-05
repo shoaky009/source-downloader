@@ -1,4 +1,4 @@
-package xyz.shoaky.sourcedownloader.common.mikan.parse
+package xyz.shoaky.sourcedownloader.common.anime.parse
 
 import org.slf4j.LoggerFactory
 

@@ -67,7 +67,7 @@ enum class Components(
     }
 }
 
-interface Trigger : SdComponent {
+interface Trigger : SdComponent, AutoCloseable {
     fun addTask(task: Runnable)
 
     fun start()
@@ -77,6 +77,10 @@ interface Trigger : SdComponent {
     fun restart() {
         stop()
         start()
+    }
+
+    override fun close() {
+        stop()
     }
 
     fun removeTask(task: Runnable)

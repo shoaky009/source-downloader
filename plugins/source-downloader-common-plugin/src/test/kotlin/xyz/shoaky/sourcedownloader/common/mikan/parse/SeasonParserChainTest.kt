@@ -3,11 +3,10 @@ package xyz.shoaky.sourcedownloader.common.mikan.parse
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
+import xyz.shoaky.sourcedownloader.common.anime.parse.*
 import xyz.shoaky.sourcedownloader.common.torrent.R
 import xyz.shoaky.sourcedownloader.external.tmdb.*
-import xyz.shoaky.sourcedownloader.external.tmdb.TmdbClient.Companion.DEFAULT_TOKEN
 import xyz.shoaky.sourcedownloader.sdk.util.Jackson
-import java.net.URL
 import java.nio.file.Files
 import kotlin.io.path.Path
 import kotlin.test.assertEquals

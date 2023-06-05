@@ -2,7 +2,10 @@ package xyz.shoaky.sourcedownloader.telegram.other
 
 import reactor.core.scheduler.Schedulers
 import telegram4j.core.MTProtoTelegramClient
+import telegram4j.core.`object`.Document
 import telegram4j.core.`object`.MessageMedia
+import telegram4j.core.`object`.Photo
+import telegram4j.core.`object`.media.PhotoThumbnail
 import telegram4j.tl.ImmutableInputMessageID
 import xyz.shoaky.sourcedownloader.sdk.*
 import xyz.shoaky.sourcedownloader.sdk.component.Downloader
@@ -18,19 +21,19 @@ import java.nio.file.StandardOpenOption
 import java.text.NumberFormat
 import java.time.Duration
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.concurrent.fixedRateTimer
-import kotlin.io.path.Path
-import kotlin.io.path.createDirectories
-import kotlin.io.path.moveTo
-import kotlin.io.path.name
+import kotlin.io.path.*
+import kotlin.jvm.optionals.getOrDefault
 import kotlin.jvm.optionals.getOrNull
 
 class TelegramIntegration(
     private val client: MTProtoTelegramClient,
     private val downloadPath: Path
-) : VariableProvider, ItemFileResolver, Downloader, ComponentStateful {
+) : VariableProvider, ItemFileResolver, Downloader, ComponentStateful, AutoCloseable {
 
-    private val progresses: MutableMap<String, ProgressiveChannel> = ConcurrentHashMap()
+    private val progresses: MutableMap<Path, ProgressiveChannel> = ConcurrentHashMap()
+    private val downloadCounting = AtomicInteger(0)
 
     override fun createSourceGroup(sourceItem: SourceItem): SourceItemGroup {
         val queryMap = sourceItem.link.queryMap()
@@ -84,8 +87,7 @@ class TelegramIntegration(
         val documentOp = client.getMessages(
             chatPointer.createId(), listOf(
             ImmutableInputMessageID.of(messageId)
-        )
-        )
+        ))
             .mapNotNull { it.messages.firstOrNull()?.media?.getOrNull() as? MessageMedia.Document }
             .mapNotNull { it?.document?.get() }
             .blockOptional()
@@ -100,7 +102,7 @@ class TelegramIntegration(
 
         val tempDownloadPath = fileDownloadPath.resolveSibling("${fileDownloadPath.name}.tmp")
         val monitoredChannel = ProgressiveChannel(
-            document.size.get(),
+            getSize(document),
             FileChannel.open(
                 tempDownloadPath,
                 StandardOpenOption.WRITE,
@@ -108,7 +110,7 @@ class TelegramIntegration(
             )
         )
 
-        progresses[fileDownloadPath.name] = monitoredChannel
+        progresses[fileDownloadPath] = monitoredChannel
         client.downloadFile(document.fileReferenceId)
             .publishOn(Schedulers.boundedElastic())
             .collect({ monitoredChannel }, { fc, filePart ->
@@ -120,8 +122,11 @@ class TelegramIntegration(
                 }.onFailure {
                     log.error("Error closing file channel", it)
                 }
-                progresses.remove(fileDownloadPath.name)
+                progresses.remove(fileDownloadPath)
                 tempDownloadPath.moveTo(fileDownloadPath)
+            }
+            .doOnSuccess {
+                downloadCounting.incrementAndGet()
             }
             .doOnError {
                 log.error("Error downloading file", it)
@@ -129,20 +134,44 @@ class TelegramIntegration(
             .block()
     }
 
+    private fun getSize(document: Document): Long {
+        if (document is Photo) {
+            return document.thumbs.getOrDefault(emptyList())
+                .filterIsInstance<PhotoThumbnail>().maxOfOrNull {
+                    it.size.toLong()
+                } ?: 0L
+        }
+        return document.size.getOrDefault(0)
+    }
+
     override fun defaultDownloadPath(): Path {
         return downloadPath
     }
 
     override fun stateDetail(): Any {
-        return progresses.map {
-            val channel = it.value
-            mapOf(
-                "path" to it.key,
-                "totalSize" to channel.formatTotalSize(),
-                "progress" to channel.formatProgress(),
-                "rate" to channel.formatRate(),
-                "duration" to channel.getDuration()
-            )
+        return mapOf(
+            "downloaded" to downloadCounting.get(),
+            "downloading" to progresses.map {
+                val channel = it.value
+                mapOf(
+                    "path" to it.key,
+                    "totalSize" to channel.formatTotalSize(),
+                    "progress" to channel.formatProgress(),
+                    "rate" to channel.formatRate(),
+                    "duration" to channel.getDuration()
+                )
+            },
+        )
+    }
+
+    override fun close() {
+        progresses.forEach { (t, u) ->
+            runCatching {
+                u.close()
+                t.resolveSibling("${t.name}.tmp").deleteIfExists()
+            }.onFailure {
+                log.error("Error closing downloader", it)
+            }
         }
     }
 }

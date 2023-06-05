@@ -1,6 +1,6 @@
 package xyz.shoaky.sourcedownloader.common.supplier
 
-import xyz.shoaky.sourcedownloader.common.mikan.MikanVariableProvider
+import xyz.shoaky.sourcedownloader.common.anime.MikanVariableProvider
 import xyz.shoaky.sourcedownloader.sdk.ComponentRule
 import xyz.shoaky.sourcedownloader.sdk.Properties
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentType

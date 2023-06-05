@@ -1,4 +1,4 @@
-package xyz.shoaky.sourcedownloader.common.mikan
+package xyz.shoaky.sourcedownloader.common.anime
 
 import org.jsoup.Jsoup
 import java.net.URI

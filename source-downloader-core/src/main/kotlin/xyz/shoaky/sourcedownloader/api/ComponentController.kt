@@ -32,7 +32,8 @@ private class ComponentController(
                     }.filter {
                         name == null || it.name == name
                     }.map {
-                        val stateful = componentManager.getComponent(it.name) as? ComponentStateful
+                        val instanceName = ComponentType(it.type, componentName).instanceName(it.name)
+                        val stateful = componentManager.getComponent(instanceName) as? ComponentStateful
                         ComponentInfo(
                             componentName,
                             it.type,

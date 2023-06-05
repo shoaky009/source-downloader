@@ -49,7 +49,9 @@ data class CorePathPattern(
             variableReplacers.forEach {
                 val before = text
                 text = it.replace(entry.key, text)
-                log.debug("replace variable '{}' from '{}' to '{}'", entry.key, before, text)
+                if (before != text) {
+                    log.debug("replace variable '{}' from '{}' to '{}'", entry.key, before, text)
+                }
             }
             text
         }

@@ -1,7 +1,7 @@
 package xyz.shoaky.sourcedownloader.common.supplier
 
-import xyz.shoaky.sourcedownloader.common.mikan.MikanSource
-import xyz.shoaky.sourcedownloader.common.mikan.MikanSupport
+import xyz.shoaky.sourcedownloader.common.anime.MikanSource
+import xyz.shoaky.sourcedownloader.common.anime.MikanSupport
 import xyz.shoaky.sourcedownloader.sdk.Properties
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentType
 import xyz.shoaky.sourcedownloader.sdk.component.SdComponentSupplier

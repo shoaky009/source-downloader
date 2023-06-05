@@ -5,6 +5,9 @@ import com.apptasticsoftware.rssreader.RssReader
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
+import xyz.shoaky.sourcedownloader.common.anime.MikanPointer
+import xyz.shoaky.sourcedownloader.common.anime.MikanSource
+import xyz.shoaky.sourcedownloader.common.anime.MikanSupport
 import xyz.shoaky.sourcedownloader.sdk.PointedItem
 import xyz.shoaky.sourcedownloader.sdk.util.Jackson
 import java.net.URI

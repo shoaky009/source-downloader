@@ -1,4 +1,4 @@
-package xyz.shoaky.sourcedownloader.common.mikan
+package xyz.shoaky.sourcedownloader.common.anime
 
 import com.apptasticsoftware.rssreader.Item
 import com.apptasticsoftware.rssreader.RssReader

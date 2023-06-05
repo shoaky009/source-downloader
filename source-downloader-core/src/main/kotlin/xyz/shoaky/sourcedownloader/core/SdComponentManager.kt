@@ -1,5 +1,6 @@
 package xyz.shoaky.sourcedownloader.core
 
+import org.springframework.beans.factory.DisposableBean
 import org.springframework.beans.factory.support.DefaultListableBeanFactory
 import org.springframework.stereotype.Component
 import xyz.shoaky.sourcedownloader.core.processor.SourceProcessor
@@ -57,7 +58,7 @@ interface SdComponentManager {
 @Component
 class SpringSdComponentManager(
     private val applicationContext: DefaultListableBeanFactory,
-) : SdComponentManager {
+) : SdComponentManager, DisposableBean {
 
     private val sdComponentSuppliers: MutableMap<ComponentType, SdComponentSupplier<*>> = ConcurrentHashMap()
 
@@ -127,8 +128,8 @@ class SpringSdComponentManager(
     override fun destroy(instanceName: String) {
         if (applicationContext.containsSingleton(instanceName)) {
             val bean = applicationContext.getBean(instanceName)
-            if (bean is Trigger) {
-                bean.stop()
+            if (bean is AutoCloseable) {
+                bean.close()
             }
             applicationContext.destroySingleton(instanceName)
         }
@@ -176,4 +177,11 @@ class SpringSdComponentManager(
                 it.value.simpleName!!
             )
         }
+
+    override fun destroy() {
+        val componentNames = getAllComponentNames()
+        for (name in componentNames) {
+            destroy(name)
+        }
+    }
 }

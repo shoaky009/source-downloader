@@ -1,12 +1,9 @@
-package xyz.shoaky.sourcedownloader.common.mikan
+package xyz.shoaky.sourcedownloader.common.anime
 
 import com.google.common.cache.CacheBuilder
 import com.google.common.cache.CacheLoader
 import org.slf4j.LoggerFactory
-import xyz.shoaky.sourcedownloader.common.mikan.parse.*
-import xyz.shoaky.sourcedownloader.common.mikan.parse.CommonSeasonParser
-import xyz.shoaky.sourcedownloader.common.mikan.parse.ParserChain
-import xyz.shoaky.sourcedownloader.common.mikan.parse.TmdbSeasonParser
+import xyz.shoaky.sourcedownloader.common.anime.parse.*
 import xyz.shoaky.sourcedownloader.external.bangumi.BgmTvApiClient
 import xyz.shoaky.sourcedownloader.external.bangumi.GetSubjectRequest
 import xyz.shoaky.sourcedownloader.external.bangumi.Subject
