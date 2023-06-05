@@ -57,7 +57,7 @@ class TelegramSource(
         val inputPeer: InputPeer = if (isChannel) {
             val user = client.getUserMinById(client.selfId).blockOptional(timeout).get()
             val inputChannel = ImmutableBaseInputChannel.builder()
-                .channelId(chatPointer.paserChatId())
+                .channelId(chatPointer.parseChatId())
                 .accessHash(user.id.accessHash.get())
                 .build()
             val channel = client.serviceHolder.chatService.getChannel(inputChannel).blockOptional(timeout).get() as Channel
@@ -67,7 +67,7 @@ class TelegramSource(
                 .build()
         } else {
             InputPeerChat.builder()
-                .chatId(chatPointer.paserChatId())
+                .chatId(chatPointer.parseChatId())
                 .build()
         }
         val getHistory = getHistoryBuilder.peer(inputPeer).build()
@@ -84,7 +84,7 @@ class TelegramSource(
 
     private fun mediaMessageToSourceItem(message: BaseMessage, chatPointer: ChatPointer): SourceItem? {
         val media = message.media() ?: return null
-        val chatId = chatPointer.paserChatId()
+        val chatId = chatPointer.parseChatId()
         val uri = URI("telegram://?chatId=${chatPointer.chatId}&messageId=${message.id()}")
         val messageDateTime = Instant.ofEpochSecond(message.date().toLong()).atZone(zoneId).toLocalDateTime()
         when (media) {

@@ -9,17 +9,19 @@ data class ChatPointer(
     var fromMessageId: Int,
 ) {
 
+    constructor(chatId: Long) : this(chatId, 0)
+
     private val realChatId = abs(chatId)
 
     @JsonIgnore
     fun isChannel(): Boolean = chatId < 0
-    fun paserChatId(): Long = realChatId
+    fun parseChatId(): Long = realChatId
 
     fun createId(): Id {
         return if (isChannel()) {
-            Id.ofChannel(paserChatId())
+            Id.ofChannel(parseChatId())
         } else {
-            Id.ofChat(paserChatId())
+            Id.ofChat(parseChatId())
         }
     }
 }

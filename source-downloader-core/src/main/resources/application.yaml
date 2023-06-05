@@ -40,6 +40,8 @@ spring:
 
 logging:
   level:
+    telegram4j: debug
+    reactor: debug
     xyz.shoaky.sourcedownloader: debug
     org.hibernate.orm.jdbc.bind: trace
 

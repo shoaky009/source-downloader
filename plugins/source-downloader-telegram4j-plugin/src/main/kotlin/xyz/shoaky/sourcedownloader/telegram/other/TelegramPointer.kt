@@ -17,7 +17,7 @@ data class TelegramPointer(
     fun update(chatPointer: ChatPointer): TelegramPointer {
         val updateChats = pointers.toMutableList()
         updateChats.replaceAll { pointer ->
-            if (pointer.paserChatId() == chatPointer.paserChatId()) {
+            if (pointer.parseChatId() == chatPointer.parseChatId()) {
                 chatPointer
             } else {
                 pointer

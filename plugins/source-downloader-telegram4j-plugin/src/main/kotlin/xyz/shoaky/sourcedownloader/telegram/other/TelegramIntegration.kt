@@ -27,6 +27,7 @@ import kotlin.io.path.*
 import kotlin.jvm.optionals.getOrDefault
 import kotlin.jvm.optionals.getOrNull
 
+
 class TelegramIntegration(
     private val client: MTProtoTelegramClient,
     private val downloadPath: Path
@@ -34,19 +35,18 @@ class TelegramIntegration(
 
     private val progresses: MutableMap<Path, ProgressiveChannel> = ConcurrentHashMap()
     private val downloadCounting = AtomicInteger(0)
-
     override fun createSourceGroup(sourceItem: SourceItem): SourceItemGroup {
         val queryMap = sourceItem.link.queryMap()
         val chatId = queryMap["chatId"]?.toLong()
         val messageId = queryMap["messageId"]?.toInt()
 
         val chat = chatId?.let {
-            client.getChatMinById(ChatPointer(it, 0).createId())
+            client.getChatMinById(ChatPointer(it).createId())
                 .blockOptional().getOrNull()
         }
 
         val messageVariable = MessageVariable(
-            chatId,
+            chat?.id?.asLong(),
             messageId,
             chat?.name
         )
@@ -83,14 +83,15 @@ class TelegramIntegration(
             log.error("Invalid download uri: ${task.downloadUri()}")
             return
         }
-        val chatPointer = ChatPointer(chatId, 0)
+
+        val chatPointer = ChatPointer(chatId)
         val documentOp = client.getMessages(
             chatPointer.createId(), listOf(
             ImmutableInputMessageID.of(messageId)
         ))
             .mapNotNull { it.messages.firstOrNull()?.media?.getOrNull() as? MessageMedia.Document }
             .mapNotNull { it?.document?.get() }
-            .blockOptional()
+            .blockOptional(Duration.ofSeconds(5L))
 
         if (!documentOp.isPresent) {
             log.warn("SourceItem document not found: ${task.sourceItem}")
@@ -112,6 +113,9 @@ class TelegramIntegration(
 
         progresses[fileDownloadPath] = monitoredChannel
         client.downloadFile(document.fileReferenceId)
+            .doFirst {
+                log.info("Start downloading file: $fileDownloadPath")
+            }
             .publishOn(Schedulers.boundedElastic())
             .collect({ monitoredChannel }, { fc, filePart ->
                 fc.write(filePart.bytes.nioBuffer())
@@ -123,10 +127,12 @@ class TelegramIntegration(
                     log.error("Error closing file channel", it)
                 }
                 progresses.remove(fileDownloadPath)
-                tempDownloadPath.moveTo(fileDownloadPath)
             }
             .doOnSuccess {
                 downloadCounting.incrementAndGet()
+                tempDownloadPath.moveTo(fileDownloadPath)
+                println(progresses[fileDownloadPath])
+                log.info("Downloaded file: $fileDownloadPath")
             }
             .doOnError {
                 log.error("Error downloading file", it)

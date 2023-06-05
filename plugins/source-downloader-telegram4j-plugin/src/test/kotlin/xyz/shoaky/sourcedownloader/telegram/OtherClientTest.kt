@@ -13,11 +13,11 @@ import xyz.shoaky.sourcedownloader.telegram.other.TelegramSource
 import kotlin.io.path.Path
 
 
-@Disabled
+@Disabled("just a demo")
 class OtherClientTest {
 
     @Test
-    fun name() {
+    fun test() {
         Hooks.onOperatorDebug()
         ResourceLeakDetector.setLevel(ResourceLeakDetector.Level.PARANOID)
 
@@ -26,26 +26,24 @@ class OtherClientTest {
                 mapOf(
                     "api-id" to "1",
                     "api-hash" to "1",
-                    "proxy" to "http://localhost:8888",
+                    //"proxy" to "http://localhost:8888",
                     "metadata-path" to "src/test/resources"
                 )
             )
         )
 
-        val integration = TelegramIntegration(client, Path("/Users/shoaky/temp/downloads"))
+        val downloadPath = Path("/Users/shoaky/temp/downloads")
+        val integration = TelegramIntegration(client, downloadPath)
         val source = TelegramSource(client, listOf(ChatConfig(775236548L)))
         val fetch = source.fetch(null).toList()
         for (pointedItem in fetch) {
             val sourceItem = pointedItem.sourceItem
-            println(sourceItem)
             val resolveFiles = integration.resolveFiles(sourceItem)
-            println(resolveFiles)
-            println(integration.createSourceGroup(sourceItem).sharedPatternVariables().variables())
 
             val task = DownloadTask(sourceItem,
-                resolveFiles.map { Path("/Users/shoaky/temp/downloads").resolve(it.path) },
-                Path("/Users/shoaky/temp/downloads"))
-            // integration.submit(task)
+                resolveFiles.map { downloadPath.resolve(it.path) },
+                downloadPath)
+            integration.submit(task)
         }
     }
 }
