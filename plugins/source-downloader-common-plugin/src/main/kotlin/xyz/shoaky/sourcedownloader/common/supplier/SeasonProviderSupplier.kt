@@ -1,6 +1,6 @@
-package xyz.shoaky.sourcedownloader.component.supplier
+package xyz.shoaky.sourcedownloader.common.supplier
 
-import xyz.shoaky.sourcedownloader.component.provider.SeasonVariableProvider
+import xyz.shoaky.sourcedownloader.common.SeasonVariableProvider
 import xyz.shoaky.sourcedownloader.sdk.Properties
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentType
 import xyz.shoaky.sourcedownloader.sdk.component.SdComponentSupplier

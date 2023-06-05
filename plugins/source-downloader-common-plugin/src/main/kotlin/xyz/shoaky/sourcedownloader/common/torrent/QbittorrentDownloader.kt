@@ -109,12 +109,6 @@ class QbittorrentDownloader(
         return allSuccess && setLocationResponse.statusCode() == HttpStatus.OK.value()
     }
 
-    override fun exists(paths: List<Path>): Boolean {
-        // TODO 尝试获取文件列表,判断是否存在
-        // 目前实现的缺点，假如qBittorrent在不同的文件系统上和路径不一样，就会出现判断错误
-        return super.exists(paths)
-    }
-
     companion object {
 
         private val log = LoggerFactory.getLogger(QbittorrentDownloader::class.java)
@@ -135,8 +129,6 @@ class QbittorrentDownloader(
             }
             throw RuntimeException("max retry times")
         }
-
-
     }
 
 }

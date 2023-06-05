@@ -1,41 +1,18 @@
 package xyz.shoaky.sourcedownloader.common
 
-import xyz.shoaky.sourcedownloader.common.ai.OpenaiVariableProviderSupplier
-import xyz.shoaky.sourcedownloader.common.anime.AnimeFileFilterSupplier
-import xyz.shoaky.sourcedownloader.common.anime.AnimeVariableProviderSupplier
-import xyz.shoaky.sourcedownloader.common.anitom.AnitomVariableProviderSupplier
-import xyz.shoaky.sourcedownloader.common.dlsite.DlsiteVariableProviderSupplier
-import xyz.shoaky.sourcedownloader.common.mikan.MikanSourceSupplier
-import xyz.shoaky.sourcedownloader.common.mikan.MikanVariableProviderSupplier
-import xyz.shoaky.sourcedownloader.common.rss.JackettSourceSupplier
-import xyz.shoaky.sourcedownloader.common.rss.RssSourceSupplier
-import xyz.shoaky.sourcedownloader.common.tagger.SimpleFileTaggerSupplier
 import xyz.shoaky.sourcedownloader.common.torrent.QbittorrentClientInstanceFactory
 import xyz.shoaky.sourcedownloader.common.torrent.QbittorrentDownloaderSupplier
-import xyz.shoaky.sourcedownloader.common.torrent.TorrentFileResolverSupplier
-import xyz.shoaky.sourcedownloader.common.torrent.TransmissionDownloaderSupplier
 import xyz.shoaky.sourcedownloader.sdk.Plugin
 import xyz.shoaky.sourcedownloader.sdk.PluginContext
 import xyz.shoaky.sourcedownloader.sdk.PluginDescription
+import xyz.shoaky.sourcedownloader.sdk.util.getObjectSuppliers
 
 internal class CommonPlugin : Plugin {
     override fun init(pluginContext: PluginContext) {
         pluginContext.registerInstanceFactory(QbittorrentClientInstanceFactory)
-
         pluginContext.registerSupplier(
-            AnitomVariableProviderSupplier,
-            DlsiteVariableProviderSupplier,
-            JackettSourceSupplier,
-            RssSourceSupplier,
-            AnimeFileFilterSupplier,
-            TorrentFileResolverSupplier,
-            MikanVariableProviderSupplier,
+            *getObjectSuppliers("xyz.shoaky.sourcedownloader.common.supplier"),
             QbittorrentDownloaderSupplier(pluginContext.getInstanceManager()),
-            TransmissionDownloaderSupplier,
-            MikanSourceSupplier,
-            AnimeVariableProviderSupplier,
-            OpenaiVariableProviderSupplier,
-            SimpleFileTaggerSupplier,
         )
     }
 

@@ -1,5 +1,6 @@
 package xyz.shoaky.sourcedownloader
 
+// import xyz.shoaky.sourcedownloader.external.qbittorrent.QbittorrentConfig
 import com.google.common.reflect.ClassPath
 import com.vladmihalcea.hibernate.type.json.JsonType
 import jakarta.annotation.PreDestroy
@@ -19,13 +20,12 @@ import xyz.shoaky.sourcedownloader.component.*
 import xyz.shoaky.sourcedownloader.component.supplier.*
 import xyz.shoaky.sourcedownloader.config.SourceDownloaderProperties
 import xyz.shoaky.sourcedownloader.core.*
-// import xyz.shoaky.sourcedownloader.external.qbittorrent.QbittorrentConfig
 import xyz.shoaky.sourcedownloader.sdk.InstanceManager
 import xyz.shoaky.sourcedownloader.sdk.PathPattern
 import xyz.shoaky.sourcedownloader.sdk.Properties
 import xyz.shoaky.sourcedownloader.sdk.component.*
+import xyz.shoaky.sourcedownloader.sdk.util.getObjectSuppliers
 import java.net.URL
-import kotlin.reflect.KClass
 
 @SpringBootApplication
 @ImportRuntimeHints(SourceDownloaderApplication.ApplicationRuntimeHints::class)
@@ -83,7 +83,7 @@ class SourceDownloaderApplication(
             *componentSupplier.toTypedArray()
         )
         componentManager.registerSupplier(
-            *getObjectSuppliers().toTypedArray()
+            *getObjectSuppliers("xyz.shoaky.sourcedownloader.component.supplier")
         )
         val types = componentManager.getSuppliers()
             .map { it.supplyTypes() }
@@ -201,17 +201,5 @@ class SourceDownloaderApplication(
 
         createComponents()
         createProcessors()
-    }
-
-    // FIXME native image会失败，后面再看
-    private fun getObjectSuppliers(): List<SdComponentSupplier<*>> {
-        return ClassPath.from(this::class.java.classLoader)
-            .getTopLevelClasses("xyz.shoaky.sourcedownloader.component.supplier")
-            .filter { it.simpleName.contains("supplier", true) }
-            .map { it.load().kotlin }
-            .filterIsInstance<KClass<SdComponentSupplier<*>>>()
-            .mapNotNull {
-                it.objectInstance
-            }
     }
 }

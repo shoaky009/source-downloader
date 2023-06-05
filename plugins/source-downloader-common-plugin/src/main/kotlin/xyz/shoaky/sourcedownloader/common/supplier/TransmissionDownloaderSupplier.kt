@@ -1,5 +1,6 @@
-package xyz.shoaky.sourcedownloader.common.torrent
+package xyz.shoaky.sourcedownloader.common.supplier
 
+import xyz.shoaky.sourcedownloader.common.torrent.TransmissionDownloader
 import xyz.shoaky.sourcedownloader.external.transmission.TransmissionClient
 import xyz.shoaky.sourcedownloader.sdk.Properties
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentType

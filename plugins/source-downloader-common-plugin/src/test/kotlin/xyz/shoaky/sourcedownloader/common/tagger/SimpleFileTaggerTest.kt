@@ -1,6 +1,7 @@
 package xyz.shoaky.sourcedownloader.common.tagger
 
 import org.junit.jupiter.api.Test
+import xyz.shoaky.sourcedownloader.common.supplier.SimpleFileTaggerSupplier
 import xyz.shoaky.sourcedownloader.sdk.Properties
 import kotlin.test.assertEquals
 

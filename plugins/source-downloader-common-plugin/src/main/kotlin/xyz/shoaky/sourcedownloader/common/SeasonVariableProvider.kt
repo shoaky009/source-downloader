@@ -1,4 +1,4 @@
-package xyz.shoaky.sourcedownloader.component.provider
+package xyz.shoaky.sourcedownloader.common
 
 import org.apache.commons.lang3.CharUtils
 import org.apache.commons.lang3.math.NumberUtils

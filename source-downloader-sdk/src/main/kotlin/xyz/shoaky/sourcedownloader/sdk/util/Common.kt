@@ -1,7 +1,10 @@
 package xyz.shoaky.sourcedownloader.sdk.util
 
+import com.google.common.reflect.ClassPath
+import xyz.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
 import java.net.URI
 import java.util.*
+import kotlin.reflect.KClass
 
 
 fun String.find(vararg regexes: Regex): String? {
@@ -32,4 +35,23 @@ fun URI.queryMap(): Map<String, String> {
         val split = it.split("=")
         split[0] to split[1]
     }
+}
+
+
+// TODO native image会失败，后面再看
+fun getObjectSuppliers(
+    vararg packages: String,
+    classLoader: ClassLoader = Thread.currentThread().contextClassLoader
+): Array<SdComponentSupplier<*>> {
+    return packages.map {
+        ClassPath.from(classLoader)
+            .getTopLevelClasses(it)
+    }
+        .flatten()
+        .filter { it.simpleName.contains("supplier", true) }
+        .map { it.load().kotlin }
+        .filterIsInstance<KClass<SdComponentSupplier<*>>>()
+        .mapNotNull {
+            it.objectInstance
+        }.toTypedArray()
 }

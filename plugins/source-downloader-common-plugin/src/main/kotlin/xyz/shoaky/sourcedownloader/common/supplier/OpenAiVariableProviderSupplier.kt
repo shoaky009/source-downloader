@@ -1,12 +1,13 @@
-package xyz.shoaky.sourcedownloader.common.ai
+package xyz.shoaky.sourcedownloader.common.supplier
 
+import xyz.shoaky.sourcedownloader.common.ai.OpenAiVariableProvider
 import xyz.shoaky.sourcedownloader.external.openai.ChatMessage
 import xyz.shoaky.sourcedownloader.external.openai.OpenAiClient
 import xyz.shoaky.sourcedownloader.sdk.Properties
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentType
 import xyz.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
 
-object OpenaiVariableProviderSupplier : SdComponentSupplier<OpenAiVariableProvider> {
+object OpenAiVariableProviderSupplier : SdComponentSupplier<OpenAiVariableProvider> {
     override fun apply(props: Properties): OpenAiVariableProvider {
         val config = props.parse<OpenAiVariableProvider.OpenAiConfig>()
         val client = OpenAiClient(

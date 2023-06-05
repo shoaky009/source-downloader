@@ -1,11 +1,12 @@
-package xyz.shoaky.sourcedownloader.component.provider
+package xyz.shoaky.sourcedownloader.common
 
 import org.junit.jupiter.api.Test
-import xyz.shoaky.sourcedownloader.component.supplier.LanguageVariableProviderSupplier
+import xyz.shoaky.sourcedownloader.common.supplier.LanguageVariableProviderSupplier
 import xyz.shoaky.sourcedownloader.sdk.Properties
 import xyz.shoaky.sourcedownloader.sdk.SourceFile
 import xyz.shoaky.sourcedownloader.sourceItem
 import kotlin.io.path.Path
+import kotlin.test.assertContentEquals
 
 class LanguageVariableProviderTest {
 
@@ -21,6 +22,9 @@ class LanguageVariableProviderTest {
             SourceFile(Path("dsadsad[CHS].ass")),
             SourceFile(Path("dsadsad_CHS.ass")),
         ))
-        println(sourceFiles)
+        val langs = sourceFiles.map {
+            it.patternVariables().variables()["language"].toString()
+        }
+        assertContentEquals(listOf("zh-CHS", "zh-CHS", "zh-CHS"), langs)
     }
 }

@@ -1,4 +1,4 @@
-package xyz.shoaky.sourcedownloader.component.provider
+package xyz.shoaky.sourcedownloader.common
 
 import xyz.shoaky.sourcedownloader.sdk.*
 import xyz.shoaky.sourcedownloader.sdk.component.VariableProvider

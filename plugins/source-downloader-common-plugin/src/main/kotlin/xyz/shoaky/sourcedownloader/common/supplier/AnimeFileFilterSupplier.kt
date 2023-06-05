@@ -1,5 +1,6 @@
-package xyz.shoaky.sourcedownloader.common.anime
+package xyz.shoaky.sourcedownloader.common.supplier
 
+import xyz.shoaky.sourcedownloader.common.anime.AnimeFileFilter
 import xyz.shoaky.sourcedownloader.sdk.Properties
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentType
 import xyz.shoaky.sourcedownloader.sdk.component.SdComponentSupplier

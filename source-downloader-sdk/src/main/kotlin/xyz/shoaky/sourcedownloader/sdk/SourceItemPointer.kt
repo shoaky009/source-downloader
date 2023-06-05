@@ -13,6 +13,10 @@ object NullPointer : SourceItemPointer {
     override fun toString(): String {
         return "null"
     }
+
+    override fun equals(other: Any?): Boolean {
+        return other is NullPointer
+    }
 }
 
 data class OffsetPointer(

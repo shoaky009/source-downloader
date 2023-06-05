@@ -1,5 +1,6 @@
-package xyz.shoaky.sourcedownloader.common.anime
+package xyz.shoaky.sourcedownloader.common.supplier
 
+import xyz.shoaky.sourcedownloader.common.anime.AnimeVariableProvider
 import xyz.shoaky.sourcedownloader.external.anilist.AnilistClient
 import xyz.shoaky.sourcedownloader.external.bangumi.BgmTvApiClient
 import xyz.shoaky.sourcedownloader.sdk.Properties

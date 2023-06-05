@@ -1,18 +1,19 @@
-package xyz.shoaky.sourcedownloader.common.rss
+package xyz.shoaky.sourcedownloader.common.supplier
 
+import xyz.shoaky.sourcedownloader.common.rss.RssSource
 import xyz.shoaky.sourcedownloader.sdk.Properties
 import xyz.shoaky.sourcedownloader.sdk.component.ComponentType
 import xyz.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
 import xyz.shoaky.sourcedownloader.sdk.component.Source
 
-object JackettSourceSupplier : SdComponentSupplier<JackettSource> {
-    override fun apply(props: Properties): JackettSource {
-        return JackettSource(props.get("url"))
+object RssSourceSupplier : SdComponentSupplier<RssSource> {
+    override fun apply(props: Properties): RssSource {
+        return RssSource(props.get("url"))
     }
 
     override fun supplyTypes(): List<ComponentType> {
         return listOf(
-            ComponentType("jackett", Source::class)
+            ComponentType("rss", Source::class)
         )
     }
 

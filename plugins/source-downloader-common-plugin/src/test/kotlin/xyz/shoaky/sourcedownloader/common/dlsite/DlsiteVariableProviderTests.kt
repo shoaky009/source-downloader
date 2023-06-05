@@ -1,6 +1,7 @@
 package xyz.shoaky.sourcedownloader.common.dlsite
 
 import org.junit.jupiter.api.Test
+import xyz.shoaky.sourcedownloader.common.supplier.DlsiteVariableProviderSupplier
 import xyz.shoaky.sourcedownloader.sdk.Properties
 import xyz.shoaky.sourcedownloader.sdk.SourceItem
 import java.net.URI
