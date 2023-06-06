@@ -1,31 +1,23 @@
 package xyz.shoaky.sourcedownloader.telegram.other
 
 import com.fasterxml.jackson.annotation.JsonAlias
-import com.fasterxml.jackson.databind.ObjectMapper
 import io.netty.util.ResourceLeakDetector
 import org.slf4j.LoggerFactory
 import reactor.core.publisher.Hooks
-import reactor.core.publisher.Mono
-import reactor.core.scheduler.Schedulers
-import reactor.netty.tcp.TcpClient
-import reactor.netty.transport.ProxyProvider
 import telegram4j.core.MTProtoTelegramClient
 import telegram4j.core.event.DefaultUpdatesManager
 import telegram4j.core.retriever.EntityRetrievalStrategy
 import telegram4j.core.retriever.PreferredEntityRetriever
-import telegram4j.mtproto.MTProtoRetrySpec
-import telegram4j.mtproto.MethodPredicate
-import telegram4j.mtproto.ResponseTransformer
+import telegram4j.mtproto.*
 import telegram4j.mtproto.store.FileStoreLayout
 import telegram4j.mtproto.store.StoreLayoutImpl
-import telegram4j.tl.json.TlModule
 import xyz.shoaky.sourcedownloader.sdk.InstanceFactory
 import xyz.shoaky.sourcedownloader.sdk.Properties
 import xyz.shoaky.sourcedownloader.telegram.other.auth.QrCodeAuthorization
-import java.net.InetSocketAddress
 import java.net.URI
 import java.nio.file.Path
 import java.time.Duration
+import java.util.*
 import java.util.function.Function
 import kotlin.io.path.createDirectories
 
@@ -33,27 +25,21 @@ import kotlin.io.path.createDirectories
 object TelegramClientInstanceFactory : InstanceFactory<MTProtoTelegramClient> {
     override fun create(props: Properties): MTProtoTelegramClient {
         val config = props.parse<ClientConfig>()
-        val mapper = ObjectMapper().registerModule(TlModule())
         val metadataPath = config.metadataPath.resolve("telegram4j.bin")
         config.metadataPath.createDirectories()
 
-        val bootstrap = MTProtoTelegramClient.create(config.apiId, config.apiHash, QrCodeAuthorization::authorize)
-        config.proxy?.let { proxy ->
-            bootstrap.setTcpClient(TcpClient.newConnection().proxy {
-                val builder = it.type(ProxyProvider.Proxy.valueOf(proxy.scheme.uppercase()))
-                    .address(InetSocketAddress.createUnresolved(proxy.host, proxy.port))
-                proxy.userInfo?.apply {
-                    val split = this.split(":")
-                    builder.username(split[0]).password { split[1] }
-                }
-            })
-        }
+        val bootstrap = MTProtoTelegramClient.create(
+            config.apiId,
+            config.apiHash,
+            QrCodeAuthorization::authorize
+        )
         bootstrap
             .setEntityRetrieverStrategy(
                 EntityRetrievalStrategy.preferred(
                     EntityRetrievalStrategy.STORE_FALLBACK_RPC,
                     PreferredEntityRetriever.Setting.FULL,
-                    PreferredEntityRetriever.Setting.FULL)
+                    PreferredEntityRetriever.Setting.FULL
+                )
             )
             .setStoreLayout(
                 FileStoreLayout(
@@ -62,29 +48,31 @@ object TelegramClientInstanceFactory : InstanceFactory<MTProtoTelegramClient> {
                 )
             )
             .addResponseTransformer(
-                ResponseTransformer.retryFloodWait(MethodPredicate.all(),
-                    MTProtoRetrySpec.max({ it.seconds < 30 }, Long.MAX_VALUE))
+                ResponseTransformer.retryFloodWait(
+                    MethodPredicate.all(),
+                    MTProtoRetrySpec.max({ it.seconds < 30 }, Long.MAX_VALUE)
+                )
             )
             .setUpdatesManager {
                 DefaultUpdatesManager(it,
-                    DefaultUpdatesManager.Options(DefaultUpdatesManager.Options.DEFAULT_CHECKIN,
+                    DefaultUpdatesManager.Options(
+                        DefaultUpdatesManager.Options.DEFAULT_CHECKIN,
                         DefaultUpdatesManager.Options.MAX_USER_CHANNEL_DIFFERENCE,
-                        true)
+                        true
+                    )
                 )
             }
-            .withConnection {
-                it.mtProtoClientGroup.main().updates().asFlux()
-                    .publishOn(Schedulers.boundedElastic())
-                    .flatMap { u -> Mono.fromCallable { mapper.writeValueAsString(u) } }
-                    .doOnNext(log::info)
-                    .then()
-            }
+
         if (config.debug) {
             Hooks.onOperatorDebug()
             ResourceLeakDetector.setLevel(ResourceLeakDetector.Level.PARANOID)
         }
 
-        return bootstrap.connect().blockOptional(Duration.ofMinutes(2)).get()
+        return bootstrap.connect()
+            .doOnError {
+                log.error("Error while connecting to Telegram", it)
+            }
+            .blockOptional(Duration.ofSeconds(10)).get()
     }
 
     override fun type(): Class<MTProtoTelegramClient> {

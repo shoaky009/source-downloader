@@ -11,7 +11,7 @@ class BlockingResultHandler<T : TdApi.Object>(
     timeout: Long = 10000
 ) : GenericResultHandler<T>, ResultHandler<T> {
 
-    val future: CompletableFuture<Result<T>> = CompletableFuture<Result<T>>()
+    private val future: CompletableFuture<Result<T>> = CompletableFuture<Result<T>>()
 
     init {
         if (timeout > 0) {

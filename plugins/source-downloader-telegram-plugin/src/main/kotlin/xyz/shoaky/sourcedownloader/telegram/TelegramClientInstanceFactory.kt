@@ -20,10 +20,10 @@ class TelegramClientInstanceFactory(
         val client = clientFactory.builder(settings)
             .build(AuthenticationSupplier.qrCode())
         // 不清楚这个path需不需要apiId区分
-        if (config.databasePath.isAbsolute) {
-            settings.databaseDirectoryPath = config.databasePath
+        if (config.metadataPath.isAbsolute) {
+            settings.databaseDirectoryPath = config.metadataPath
         } else {
-            settings.databaseDirectoryPath = applicationDataPath.resolve(config.databasePath)
+            settings.databaseDirectoryPath = applicationDataPath.resolve(config.metadataPath)
         }
         settings.downloadedFilesDirectoryPath = config.downloadPath
 
@@ -50,7 +50,7 @@ class TelegramClientInstanceFactory(
         @JsonAlias("api-hash")
         val apiHash: String,
         @JsonAlias("metadata-path")
-        val databasePath: Path,
+        val metadataPath: Path,
         @JsonAlias("download-path")
         val downloadPath: Path,
         val proxy: URI?,

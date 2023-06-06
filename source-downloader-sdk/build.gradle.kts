@@ -22,7 +22,6 @@ dependencies {
 
     api("com.google.guava:guava:31.1-jre")
     api("org.apache.commons:commons-lang3:3.12.0")
-    api("org.jsoup:jsoup:1.15.4")
 }
 
 publishing {

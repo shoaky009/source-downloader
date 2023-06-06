@@ -1,5 +1,7 @@
 package xyz.shoaky.sourcedownloader.telegram
 
+import com.fasterxml.jackson.annotation.JsonAlias
+import com.fasterxml.jackson.annotation.JsonIgnore
 import it.tdlight.client.SimpleTelegramClient
 import it.tdlight.jni.TdApi
 import xyz.shoaky.sourcedownloader.sdk.PointedItem
@@ -8,20 +10,25 @@ import xyz.shoaky.sourcedownloader.sdk.SourceItemPointer
 import xyz.shoaky.sourcedownloader.sdk.component.Source
 import java.net.URI
 import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneId
+import kotlin.math.abs
 
 class TelegramSource(
     private val client: SimpleTelegramClient,
-    private val chatIds: List<Long>,
+    private val chats: List<ChatConfig>,
 ) : Source<TelegramPointer> {
 
     override fun fetch(pointer: TelegramPointer?, limit: Int): Iterable<PointedItem<TelegramPointer>> {
+        val chatMapping = chats.associateBy { it.chatId }
+        val chatIds = chatMapping.keys.toList()
         val telegramPointer = pointer?.refreshChats(chatIds) ?: TelegramPointer().refreshChats(chatIds)
         val chatPointers = telegramPointer.pointers
 
         val result: MutableList<PointedItem<TelegramPointer>> = mutableListOf()
         for (chatPointer in chatPointers) {
             val fromMessageId = chatPointer.fromMessageId
+            val beginDate = chatMapping[chatPointer.chatId]?.beginDate
             val offset = -limit
             val blockingResultHandler = BlockingResultHandler<TdApi.Messages>()
             client.send(
@@ -34,7 +41,10 @@ class TelegramSource(
                 val sourceItem = mediaMessageToSourceItem(message) ?: return@map null
                 val update = telegramPointer.update(chatPointer.copy(fromMessageId = message.id))
                 PointedItem(sourceItem, update)
-            }.filterNotNull().reversed()
+            }
+                .filterNotNull()
+                .filter { beginDate == null || beginDate <= it.sourceItem.date.toLocalDate() }
+                .reversed()
             result.addAll(messages)
             if (messages.size > limit) {
                 break
@@ -44,10 +54,10 @@ class TelegramSource(
     }
 
     private fun mediaMessageToSourceItem(message: TdApi.Message): SourceItem? {
-        val fileMessage = FileMessage.fromMessageContent(message.content) ?: return null
+        val fileMessage = FileMessage.fromMessageContent(message) ?: return null
 
         val uri = URI("telegram://?chatId=${message.chatId}&messageId=${message.id}")
-        val downloadUri = URI("$uri&fileIds=${fileMessage.fileIds.joinToString(",")}")
+        val downloadUri = URI("$uri&fileId=${fileMessage.fileId}")
         val messageDateTime = Instant.ofEpochSecond(message.date.toLong()).atZone(zoneId).toLocalDateTime()
         return SourceItem(fileMessage.subject, uri, messageDateTime, fileMessage.mimeType, downloadUri)
     }
@@ -86,4 +96,21 @@ data class TelegramPointer(
 data class ChatPointer(
     val chatId: Long,
     var fromMessageId: Long,
+) {
+
+    constructor(chatId: Long) : this(chatId, 0)
+
+    private val realChatId = abs(chatId)
+
+    @JsonIgnore
+    fun isChannel(): Boolean = chatId < 0
+    fun parseChatId(): Long = realChatId
+
+}
+
+data class ChatConfig(
+    @JsonAlias("chat-id")
+    val chatId: Long,
+    @JsonAlias("begin-date")
+    val beginDate: LocalDate? = null
 )

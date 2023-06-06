@@ -432,8 +432,6 @@ class SourceProcessor(
             log.error("重命名出错, record:${Jackson.toJsonString(pc)}", it)
         }.getOrDefault(false)
         if (allSuccess) {
-            // val paths = sourceContent.sourceFiles.map { it.targetPath() }
-            // saveTargetPaths(sourceContent.sourceItem, paths)
             runAfterCompletions(sourceContent)
         } else {
             log.warn("有部分文件重命名失败record:${Jackson.toJsonString(pc)}")

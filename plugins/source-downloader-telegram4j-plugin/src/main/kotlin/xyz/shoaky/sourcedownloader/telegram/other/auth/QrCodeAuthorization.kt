@@ -20,7 +20,6 @@ import telegram4j.mtproto.DcId
 import telegram4j.mtproto.DcOptions
 import telegram4j.mtproto.RpcException
 import telegram4j.mtproto.client.MTProtoClientGroup
-import telegram4j.mtproto.client.MainMTProtoClient
 import telegram4j.mtproto.store.StoreLayout
 import telegram4j.mtproto.util.CryptoUtil
 import telegram4j.mtproto.util.ResettableInterval
@@ -49,7 +48,7 @@ object QrCodeAuthorization {
             val apiId = authResources.apiId
             val apiHash = authResources.apiHash
             val inter = ResettableInterval(Schedulers.boundedElastic())
-            val listenTokens = clientGroup.main().updates().asFlux()
+            val listenTokens = clientGroup.updates().all()
                 .takeUntil { complete.get() }
                 .ofType(UpdateShort::class.java)
                 .filter { u: UpdateShort -> u.update().identifier() == UpdateLoginToken.ID }
@@ -79,7 +78,7 @@ object QrCodeAuthorization {
                                             )
                                         }
                                 }
-                                .flatMap<MainMTProtoClient> { clientGroup.setMain(it) }
+                                .flatMap { clientGroup.setMain(it) }
                                 .flatMap<LoginToken> {
                                     it.sendAwait<LoginToken, ImmutableImportLoginToken>(
                                         ImmutableImportLoginToken.of(migrate.token())

@@ -12,7 +12,6 @@ import telegram4j.mtproto.DataCenter
 import telegram4j.mtproto.DcOptions
 import telegram4j.mtproto.RpcException
 import telegram4j.mtproto.client.MTProtoClientGroup
-import telegram4j.mtproto.client.MainMTProtoClient
 import telegram4j.mtproto.store.StoreLayout
 import telegram4j.tl.ImmutableCodeSettings
 import telegram4j.tl.auth.Authorization
@@ -80,7 +79,7 @@ class CodeAuthorization(
                                                     + " for redirecting main client")
                                             }
                                     }
-                                    .flatMap<MainMTProtoClient> { dc: DataCenter? -> clientGroup.setMain(dc!!) }
+                                    .flatMap { clientGroup.setMain(it) }
                                     .then<SentCode?>(Mono.fromRunnable<SentCode?> { state.emitNext(State.SEND_CODE, FAIL_FAST) })
                             } // TODO: why new subtype of SentCode was added?
                             .cast<BaseSentCode>(BaseSentCode::class.java)

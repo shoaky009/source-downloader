@@ -11,10 +11,10 @@ class TelegramSourceSupplier(
     private val pluginContext: PluginContext
 ) : SdComponentSupplier<TelegramSource> {
     override fun apply(props: Properties): TelegramSource {
-        val chatIds = props.get<List<Long>>("chat-ids")
+        val chats = props.get<List<ChatConfig>>("chats")
         val clientName = props.get<String>("client")
         val client = pluginContext.load(clientName, SimpleTelegramClient::class.java)
-        return TelegramSource(client, chatIds)
+        return TelegramSource(client, chats)
     }
 
     override fun supplyTypes(): List<ComponentType> {

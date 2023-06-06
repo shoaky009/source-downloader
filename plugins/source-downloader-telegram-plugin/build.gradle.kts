@@ -27,13 +27,13 @@ dependencies {
     testImplementation("org.mockito:mockito-junit-jupiter:5.3.1")
 
     implementation("com.google.zxing:core:3.5.1")
-    implementation(platform("it.tdlight:tdlight-java-bom:3.0.8+td.1.8.14"))
-    implementation("it.tdlight:tdlight-java")
+    implementation(platform("it.tdlight:tdlight-java-bom:3.0.9+td.1.8.14"))
+    implementation("it.tdlight:tdlight-java:3.0.9+td.1.8.14")
 
     val os = OperatingSystem.current()
     // val familyName = os.familyName.replace(" ", "")
     val arch = System.getProperty("os.arch")
-    // TODO 忽略不存在的依赖错误
+    println("resolve tdlight-natives os: $os, arch: $arch")
     // implementation("it.tdlight:tdlight-natives-$familyName-$arch")
     if (os.isWindows && "amd64" == arch) {
         implementation(group = "it.tdlight", name = "tdlight-natives", classifier = "windows_amd64")

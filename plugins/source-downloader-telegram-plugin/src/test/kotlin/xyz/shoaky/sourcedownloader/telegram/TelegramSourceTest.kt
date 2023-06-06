@@ -21,10 +21,7 @@ class TelegramSourceTest {
     @Disabled
     fun test() {
         val client = simpleTelegramClient()
-
-        val source = TelegramSource(client, listOf(-1001896478509, -1001903190090))
-
-
+        val source = TelegramSource(client, listOf(ChatConfig(-1001896478509), ChatConfig(-1001903190090)))
         val fetch = source.fetch(TelegramPointer(
             listOf(
                 ChatPointer(-1001896478509, 29360128)
@@ -55,7 +52,7 @@ class TelegramSourceTest {
     @Disabled
     fun name() {
         val client = mock(SimpleTelegramClient::class.java, withSettings().serializable().mockMaker(MockMakers.INLINE))
-        val source = TelegramSource(client, listOf(1, 2, 3))
+        val source = TelegramSource(client, listOf(ChatConfig(1), ChatConfig(2), ChatConfig(3)))
 
         `when`(
             client.send(eq(GetChatHistory())) {

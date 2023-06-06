@@ -5,17 +5,17 @@ import it.tdlight.jni.TdApi
 internal data class FileMessage(
     val subject: String,
     val mimeType: String,
-    val fileIds: List<Int>,
+    val fileId: Int,
 ) {
     companion object {
-        fun fromMessageContent(content: TdApi.MessageContent): FileMessage? {
-            return when (content) {
+        fun fromMessageContent(message: TdApi.Message): FileMessage? {
+            return when (val content = message.content) {
                 is TdApi.MessageDocument -> {
                     val document = content.document
                     FileMessage(
                         document.fileName,
                         document.mimeType,
-                        listOf(document.document.id)
+                        document.document.id
                     )
                 }
 
@@ -24,7 +24,7 @@ internal data class FileMessage(
                     FileMessage(
                         video.fileName,
                         video.mimeType,
-                        listOf(video.video.id)
+                        video.video.id
                     )
                 }
 
@@ -33,16 +33,18 @@ internal data class FileMessage(
                     FileMessage(
                         audio.fileName,
                         audio.mimeType,
-                        listOf(audio.audio.id)
+                        audio.audio.id
                     )
                 }
 
                 is TdApi.MessagePhoto -> {
                     val photo = content.photo.sizes
+                    val chatId = message.chatId
+                    val messageId = message.id
                     FileMessage(
-                        content.caption.text,
-                        "image",
-                        photo.map { it.photo.id }
+                        content.caption.text.ifBlank { "$chatId-$messageId" },
+                        "image/jpg",
+                        photo.maxBy { it.photo.expectedSize }.photo.id
                     )
                 }
 

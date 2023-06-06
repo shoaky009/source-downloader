@@ -111,7 +111,9 @@ class TelegramIntegration(
             )
         )
 
-        progresses[fileDownloadPath] = monitoredChannel
+        progresses.computeIfPresent(fileDownloadPath) { _, _ ->
+            throw IllegalStateException("File already downloading: $fileDownloadPath")
+        }
         client.downloadFile(document.fileReferenceId)
             .doFirst {
                 log.info("Start downloading file: $fileDownloadPath")
@@ -195,12 +197,12 @@ class ProgressiveChannel(
 ) : ByteChannel by ch {
 
     private var current = 0L
-    private var rate = .0
+    private var flowSize = 0L
     private var previousSize = 0L
     private val startTime = System.currentTimeMillis()
 
     private val timer = fixedRateTimer(initialDelay = 1000, period = 1000) {
-        rate = (current - previousSize) / 1000.0
+        flowSize = current - previousSize
         previousSize = current
     }
 
@@ -216,36 +218,36 @@ class ProgressiveChannel(
 
     fun formatRate(): String {
         return when {
-            rate > gigabyte -> {
-                "${rate / gigabyte} GB/s"
+            flowSize > GIGABYTE -> {
+                "${flowSize / GIGABYTE} GiB/s"
             }
 
-            rate > megabyte -> {
-                "${rate / megabyte} MB/s"
+            flowSize > MEGABYTE -> {
+                "${flowSize / MEGABYTE} MiB/s"
             }
 
-            rate > kilobyte -> {
-                "${rate / kilobyte} KB/s"
+            flowSize > KILOBYTE -> {
+                "${flowSize / KILOBYTE} KiB/s"
             }
 
             else -> {
-                "$rate B/s"
+                "$flowSize B/s"
             }
         }
     }
 
     fun formatTotalSize(): String {
         return when {
-            totalSize > gigabyte -> {
-                "${totalSize / gigabyte} GB"
+            totalSize > GIGABYTE -> {
+                "${totalSize / GIGABYTE} GiB"
             }
 
-            totalSize > megabyte -> {
-                "${totalSize / megabyte} MB"
+            totalSize > MEGABYTE -> {
+                "${totalSize / MEGABYTE} MiB"
             }
 
-            totalSize > kilobyte -> {
-                "${totalSize / kilobyte} KB"
+            totalSize > KILOBYTE -> {
+                "${totalSize / KILOBYTE} KiB"
             }
 
             else -> {
@@ -266,8 +268,8 @@ class ProgressiveChannel(
     }
 
     companion object {
-        private const val kilobyte = 1024
-        private const val megabyte = kilobyte * 1024
-        private const val gigabyte = megabyte * 1024
+        private const val KILOBYTE = 1024
+        private const val MEGABYTE = KILOBYTE * 1024
+        private const val GIGABYTE = MEGABYTE * 1024
     }
 }
