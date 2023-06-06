@@ -426,7 +426,11 @@ class SourceProcessor(
             return
         }
 
-        val allSuccess = rename(sourceContent)
+        val allSuccess = runCatching {
+            rename(sourceContent)
+        }.onFailure {
+            log.error("重命名出错, record:${Jackson.toJsonString(pc)}", it)
+        }.getOrDefault(false)
         if (allSuccess) {
             // val paths = sourceContent.sourceFiles.map { it.targetPath() }
             // saveTargetPaths(sourceContent.sourceItem, paths)
