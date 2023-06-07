@@ -28,7 +28,9 @@ class TelegramIntegrationSupplier(
 
     override fun rules(): List<ComponentRule> {
         return listOf(
-            ComponentRule.allowSource(TelegramSource::class)
+            ComponentRule.allowSource(TelegramSource::class),
+            ComponentRule.allowFileResolver(TelegramIntegration::class),
+            ComponentRule.allowDownloader(TelegramIntegration::class),
         )
     }
 }

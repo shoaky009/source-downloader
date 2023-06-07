@@ -5,7 +5,7 @@ plugins {
     id("org.springframework.boot")
     kotlin("plugin.spring")
     id("jacoco-report-aggregation")
-    // id("org.graalvm.buildtools.native") version "0.9.20"
+    id("org.graalvm.buildtools.native") version "0.9.21"
 }
 
 dependencies {
@@ -53,7 +53,7 @@ fun DependencyHandlerScope.resolveBuildInPlugins() {
                     "source-downloader-$it-plugin"
                 }
         }.forEach {
-            println("Add built-in plugin: $it")
+            println("Add built-in plugin $it")
             runtimeOnly(project(":plugins:$it"))
         }
     } else {
@@ -89,10 +89,10 @@ tasks.bootJar {
     }
 }
 
-// graalvmNative {
-//     binaries.all {
-//         resources.includedPatterns.add(".*.yaml")
-//         resources.includedPatterns.add(".*.yml")
-//         resources.autodetect()
-//     }
-// }
+graalvmNative {
+    binaries.all {
+        resources.includedPatterns.add(".*.yaml")
+        resources.includedPatterns.add(".*.yml")
+        resources.autodetect()
+    }
+}

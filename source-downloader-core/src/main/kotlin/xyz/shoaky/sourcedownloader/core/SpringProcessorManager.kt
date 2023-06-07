@@ -55,7 +55,7 @@ class SpringProcessorManager(
             config.variableProviders.map { it.getComponentType(VariableProvider::class) }
         )
 
-        val cps = mutableListOf(source, downloader, mover)
+        val cps = mutableListOf(source, downloader, mover, resolver)
         cps.addAll(providers)
         mutableListOf.forEach {
             check(it, cps, config)
@@ -78,10 +78,11 @@ class SpringProcessorManager(
         applicationContext.registerSingleton(processorBeanName, processor)
         log.info("处理器初始化完成:$processor")
 
+        val task = processor.safeTask()
         config.triggerInstanceNames().map {
             applicationContext.getBean(it, Trigger::class.java)
         }.forEach {
-            it.addTask(processor.safeTask())
+            it.addTask(task)
         }
         return processor
     }
