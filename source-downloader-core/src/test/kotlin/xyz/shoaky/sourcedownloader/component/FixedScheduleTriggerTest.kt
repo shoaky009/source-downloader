@@ -21,6 +21,7 @@ class FixedScheduleTriggerTest {
         }
         trigger.addTask(task)
         trigger.start()
+        Thread.sleep(10)
         assert(run)
     }
 
