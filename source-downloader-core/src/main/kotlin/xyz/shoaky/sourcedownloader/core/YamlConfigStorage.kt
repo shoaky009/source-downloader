@@ -1,14 +1,9 @@
 package xyz.shoaky.sourcedownloader.core
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator
-import com.fasterxml.jackson.dataformat.yaml.YAMLMapper
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import xyz.shoaky.sourcedownloader.sdk.Properties
-import xyz.shoaky.sourcedownloader.sdk.component.Components
+import xyz.shoaky.sourcedownloader.sdk.component.ComponentTopType
+import xyz.shoaky.sourcedownloader.util.jackson.yamlMapper
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.inputStream
@@ -56,30 +51,13 @@ class YamlConfigStorage(
     }
 
     @Synchronized
-    override fun deleteComponent(topType: Components, type: String, name: String) {
+    override fun deleteComponent(topType: ComponentTopType, type: String, name: String) {
         TODO()
     }
 
     @Synchronized
     override fun deleteProcessor(name: String) {
         TODO()
-    }
-
-    companion object {
-        private val yamlMapper = YAMLMapper()
-
-        init {
-            yamlMapper
-                .registerModule(KotlinModule.Builder().build())
-                .registerModule(JavaTimeModule())
-            yamlMapper
-                .disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER)
-                .enable(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT)
-                .enable(DeserializationFeature.FAIL_ON_INVALID_SUBTYPE)
-                .enable(DeserializationFeature.FAIL_ON_MISSING_EXTERNAL_TYPE_ID_PROPERTY)
-                .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-                .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
-        }
     }
 
     override fun getInstanceProps(name: String): Properties {

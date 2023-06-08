@@ -144,7 +144,7 @@ class SpringProcessorManager(
         val compatibilities = supplier.rules().groupBy { it.type }
 
         val componentTypeMapping = components.groupBy {
-            Components.fromClass(it::class)
+            ComponentTopType.fromClass(it::class)
         }.flatMap { (key, value) ->
             key.map { it to value }
         }.groupBy({ it.first }, { it.second })

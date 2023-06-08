@@ -12,13 +12,16 @@ class ComponentsTest {
 
     @Test
     fun test() {
-        val components = Components.fromClass(DownloaderCp::class)
+        val components = ComponentTopType.fromClass(DownloaderCp::class)
         assertEquals(1, components.size)
-        assertEquals(Components.DOWNLOADER, components.first())
+        assertEquals(ComponentTopType.DOWNLOADER, components.first())
 
-        val components1 = Components.fromClass(MultiCp::class)
+        val components1 = ComponentTopType.fromClass(MultiCp::class)
         assertEquals(3, components1.size)
-        assertContentEquals(listOf(Components.DOWNLOADER, Components.FILE_MOVER, Components.TAGGER), components1)
+        assertContentEquals(
+            listOf(ComponentTopType.DOWNLOADER, ComponentTopType.FILE_MOVER, ComponentTopType.TAGGER),
+            components1
+        )
     }
 }
 

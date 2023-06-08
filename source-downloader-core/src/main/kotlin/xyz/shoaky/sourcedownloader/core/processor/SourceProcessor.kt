@@ -3,11 +3,12 @@ package xyz.shoaky.sourcedownloader.core.processor
 import org.slf4j.LoggerFactory
 import org.springframework.retry.RetryCallback
 import org.springframework.retry.RetryContext
-import org.springframework.retry.listener.RetryListenerSupport
+import org.springframework.retry.RetryListener
 import org.springframework.retry.support.RetryTemplateBuilder
 import org.springframework.util.StopWatch
 import xyz.shoaky.sourcedownloader.component.provider.MetadataVariableProvider
 import xyz.shoaky.sourcedownloader.core.*
+import xyz.shoaky.sourcedownloader.core.ProcessingContent.Status.*
 import xyz.shoaky.sourcedownloader.core.file.CoreFileContent
 import xyz.shoaky.sourcedownloader.core.file.CoreSourceContent
 import xyz.shoaky.sourcedownloader.core.file.FileContentStatus
@@ -50,11 +51,18 @@ class SourceProcessor(
     private val taggers: MutableList<FileTagger> = mutableListOf()
 
     private val downloadPath = downloader.defaultDownloadPath()
-    private val fileSavePathPattern: PathPattern = options.savePathPattern
 
     private val variableReplacers: MutableList<VariableReplacer> = mutableListOf(
         *options.variableReplacers.toTypedArray(), WindowsPathReplacer
     )
+
+    private val fileSavePathPattern: PathPattern = kotlin.run {
+        CorePathPattern(
+            options.savePathPattern.pattern,
+            variableReplacers
+        )
+    }
+
     private val filenamePattern: PathPattern = CorePathPattern(
         options.filenamePattern.pattern,
         variableReplacers
@@ -181,8 +189,9 @@ class SourceProcessor(
             }.getOrElse {
                 ProcessingContent(
                     name, CoreSourceContent(
-                    item.sourceItem, emptyList(), MapPatternVariables()
-                )).copy(status = ProcessingContent.Status.FAILURE, failureReason = it.message)
+                        item.sourceItem, emptyList(), MapPatternVariables()
+                    )
+                ).copy(status = FAILURE, failureReason = it.message)
             }
 
             if (options.saveProcessingContent && dryRun.not()) {
@@ -255,10 +264,10 @@ class SourceProcessor(
             Events.post(ProcessorSubmitDownloadEvent(name, sourceContent))
         }
 
-        var status = ProcessingContent.Status.WAITING_TO_RENAME
+        var status = WAITING_TO_RENAME
         if (downloader !is AsyncDownloader && dryRun.not()) {
             rename(sourceContent)
-            status = ProcessingContent.Status.RENAMED
+            status = RENAMED
         }
 
         if (contentStatus.first.not() && downloader is AsyncDownloader) {
@@ -330,28 +339,28 @@ class SourceProcessor(
     private fun probeContent(sc: CoreSourceContent): Pair<Boolean, ProcessingContent.Status> {
         val files = sc.sourceFiles
         if (files.isEmpty()) {
-            return false to ProcessingContent.Status.NO_FILES
+            return false to NO_FILES
         }
 
         val targetPaths = files.map { it.targetPath() }
         // 预防这一批次的Item有相同的目标，并且是AsyncDownloader的情况下会重复下载
         if (processingStorage.targetPathExists(targetPaths)) {
-            return false to ProcessingContent.Status.TARGET_ALREADY_EXISTS
+            return false to TARGET_ALREADY_EXISTS
         }
 
         if (fileMover.exists(targetPaths)) {
-            return false to ProcessingContent.Status.TARGET_ALREADY_EXISTS
+            return false to TARGET_ALREADY_EXISTS
         }
 
         val current = files.map { it.fileDownloadPath.exists() }
         if (current.all { it }) {
-            return false to ProcessingContent.Status.WAITING_TO_RENAME
+            return false to WAITING_TO_RENAME
         }
         val any = current.any { it.not() }
         if (any) {
-            return true to ProcessingContent.Status.WAITING_TO_RENAME
+            return true to WAITING_TO_RENAME
         }
-        return false to ProcessingContent.Status.DOWNLOADED
+        return false to DOWNLOADED
     }
 
     private fun runAfterCompletions(taskContent: SourceContent) {
@@ -383,7 +392,7 @@ class SourceProcessor(
                 log.info("Processing下载任务不存在, record:${Jackson.toJsonString(pc)}")
                 processingStorage.save(
                     pc.copy(
-                        status = ProcessingContent.Status.DOWNLOAD_FAILED,
+                        status = DOWNLOAD_FAILED,
                         modifyTime = LocalDateTime.now(),
                     )
                 )
@@ -418,7 +427,7 @@ class SourceProcessor(
         if (fileMover.exists(targetPaths)) {
             val toUpdate = pc.copy(
                 renameTimes = pc.renameTimes.inc(),
-                status = ProcessingContent.Status.TARGET_ALREADY_EXISTS,
+                status = TARGET_ALREADY_EXISTS,
                 modifyTime = LocalDateTime.now(),
             )
             processingStorage.save(toUpdate)
@@ -444,7 +453,7 @@ class SourceProcessor(
 
         val toUpdate = pc.copy(
             renameTimes = pc.renameTimes.inc(),
-            status = ProcessingContent.Status.RENAMED,
+            status = RENAMED,
             modifyTime = LocalDateTime.now()
         )
         processingStorage.save(toUpdate)
@@ -489,7 +498,7 @@ class SourceProcessor(
     private fun rename(content: CoreSourceContent): Boolean {
         val renameFiles = content.getRenameFiles(fileMover)
         if (renameFiles.isEmpty()) {
-            log.warn("Processor:$name item:${content.sourceItem.title} no available files to rename")
+            log.info("Processor:$name item:'${content.sourceItem.title}' no available files to rename")
             return true
         }
         renameFiles.map { it.saveDirectoryPath() }
@@ -530,7 +539,7 @@ class SourceProcessor(
 
 private val log = LoggerFactory.getLogger(SourceProcessor::class.java)
 
-private class LoggingRetryListener : RetryListenerSupport() {
+private class LoggingRetryListener : RetryListener {
 
     override fun <T : Any?, E : Throwable?> onError(
         context: RetryContext,

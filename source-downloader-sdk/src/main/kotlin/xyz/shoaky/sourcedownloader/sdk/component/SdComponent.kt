@@ -1,5 +1,6 @@
 package xyz.shoaky.sourcedownloader.sdk.component
 
+import com.fasterxml.jackson.annotation.JsonValue
 import com.google.common.base.CaseFormat
 import xyz.shoaky.sourcedownloader.sdk.*
 import java.nio.file.Path
@@ -21,7 +22,7 @@ fun <T : SdComponent> KClass<T>.componentSuperClasses(): List<KClass<out SdCompo
     return result.toList()
 }
 
-enum class Components(
+enum class ComponentTopType(
     val klass: KClass<out SdComponent>,
     val names: List<String>
 ) {
@@ -29,7 +30,10 @@ enum class Components(
     TRIGGER(Trigger::class, listOf("trigger")),
     SOURCE(Source::class, listOf("source")),
     DOWNLOADER(Downloader::class, listOf("downloader")),
-    ITEM_FILE_RESOLVER(ItemFileResolver::class, listOf("item-file-resolver", "file-resolver", "itemFileResolver", "fileResolver")),
+    ITEM_FILE_RESOLVER(
+        ItemFileResolver::class,
+        listOf("item-file-resolver", "file-resolver", "itemFileResolver", "fileResolver")
+    ),
     VARIABLE_PROVIDER(VariableProvider::class, listOf("provider", "variable-provider", "variableProvider")),
     FILE_MOVER(FileMover::class, listOf("mover", "file-mover", "fileMover")),
     RUN_AFTER_COMPLETION(RunAfterCompletion::class, listOf("run-after-completion", "run", "runAfterCompletion")),
@@ -38,6 +42,7 @@ enum class Components(
     TAGGER(FileTagger::class, listOf("file-tagger", "tagger")),
     ;
 
+    @JsonValue
     fun lowerHyphenName(): String {
         return CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_HYPHEN,
             this.name
@@ -46,11 +51,11 @@ enum class Components(
 
     companion object {
 
-        private val nameMapping: Map<String, Components> = values().flatMap {
+        private val nameMapping: Map<String, ComponentTopType> = values().flatMap {
             it.names.map { name -> name to it }
         }.toMap()
 
-        fun fromClass(klass: KClass<out SdComponent>): List<Components> {
+        fun fromClass(klass: KClass<out SdComponent>): List<ComponentTopType> {
             if (klass == SdComponent::class) {
                 throw ComponentException.other("can not create instance of SdComponent.class")
             }
@@ -60,7 +65,7 @@ enum class Components(
             }
         }
 
-        fun fromName(name: String): Components? {
+        fun fromName(name: String): ComponentTopType? {
             return nameMapping[name]
         }
 

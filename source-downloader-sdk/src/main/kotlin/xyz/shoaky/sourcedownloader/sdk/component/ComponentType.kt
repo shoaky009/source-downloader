@@ -9,10 +9,10 @@ data class ComponentType(
     val topTypeClass: KClass<out SdComponent>
 ) {
 
-    constructor(typeName: String, type: Components) : this(typeName, type.klass)
+    constructor(typeName: String, type: ComponentTopType) : this(typeName, type.klass)
 
-    fun topType(): Components {
-        return Components.fromClass(topTypeClass).first()
+    fun topType(): ComponentTopType {
+        return ComponentTopType.fromClass(topTypeClass).first()
     }
 
 

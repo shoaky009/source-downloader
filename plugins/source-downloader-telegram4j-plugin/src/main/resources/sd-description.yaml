@@ -1,0 +1,31 @@
+instance:
+  - id: telegram4j.core.MTProtoTelegramClient
+    description: |
+      Telegram客户端
+    properties:
+      - name: api-id
+        description: ApiId
+        required: true
+      - name: api-hash
+        description: ApiHash
+        required: true
+      - name: metadata-path
+        description: 客户端元数据存储路径
+        required: true
+        example: /app/data/telegram
+      - name: proxy
+        description: 代理URI
+        required: false
+        example: "http://localhost:7890"
+
+component:
+  - id: xyz.shoaky.sourcedownloader.telegram.other.TelegramSourceSupplier
+    description: |
+      从Telegram中获取文件信息，私聊类型chatId为正数，频道为负数
+    properties:
+      - name: client
+        description: Telegram客户端引用名称
+        required: true
+      - name: chats
+        description: Chats
+        required: true

@@ -1,0 +1,27 @@
+component:
+  - id: xyz.shoaky.sourcedownloader.common.supplier.MikanVariableProviderSupplier
+    description: |
+      根据蜜柑RSS的link，爬取番剧对应页面获取到对应的bgm.tv的信息
+      季度则会从bgm.tv的中标题，文件名，原标题+TMDB解析，如果都没有符合规则的则默认01
+      因此该变量提供是非常准确和稳定的，只有season存在不准确的情况
+    properties:
+      - name: token
+        description: 蜜柑的token，有些番剧需要登陆才能到番剧详情页面推荐填写
+        required: false
+    variables:
+      - name: name
+        description: bgm.tv 番剧原名
+      - name: nameCn
+        description: bgm.tv 番剧中文名
+      - name: mikanTitle
+        description: 蜜柑番剧名
+      - name: date
+        description: bgm.tv 番剧放送日期
+        example: 2022-01-01
+      - name: year
+        description: 年份
+      - name: month
+        description: 月份
+      - name: season
+        description: 动画季度
+        example: 01

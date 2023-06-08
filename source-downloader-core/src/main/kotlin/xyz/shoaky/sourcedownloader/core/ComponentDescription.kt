@@ -1,7 +1,7 @@
 package xyz.shoaky.sourcedownloader.core
 
 import com.fasterxml.jackson.annotation.JsonInclude
-import xyz.shoaky.sourcedownloader.sdk.component.Components
+import xyz.shoaky.sourcedownloader.sdk.component.ComponentTopType
 
 
 @Retention(AnnotationRetention.RUNTIME)
@@ -21,22 +21,21 @@ annotation class VariableDescription(
 )
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-data class ComponentDescription(
+data class ComponentDescriptionDep(
     val name: String,
     val types: List<TypeDescription>,
     val props: List<ComponentProp>,
-    val rules: List<RuleDescription> = emptyList(),
+    val rules: List<RuleDescriptor> = emptyList(),
     val variableDescriptions: List<VariableDescription>? = null
 )
 
 data class TypeDescription(
-    val topType: Components,
-    val subType: List<String>,
-    val description: String,
+    val topType: ComponentTopType,
+    val subType: String,
 )
 
 // 只允许Source为SystemFileSource？
-data class RuleDescription(
+data class RuleDescriptor(
     //"只允许" or "不允许"
     val isAllow: String,
     val type: String,

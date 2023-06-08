@@ -1,5 +1,6 @@
 package xyz.shoaky.sourcedownloader.core
 
+import com.fasterxml.jackson.module.kotlin.convertValue
 import org.springframework.beans.factory.DisposableBean
 import org.springframework.beans.factory.support.DefaultListableBeanFactory
 import org.springframework.stereotype.Component
@@ -8,10 +9,9 @@ import xyz.shoaky.sourcedownloader.sdk.Properties
 import xyz.shoaky.sourcedownloader.sdk.SourceItemPointer
 import xyz.shoaky.sourcedownloader.sdk.component.*
 import xyz.shoaky.sourcedownloader.util.Events
+import xyz.shoaky.sourcedownloader.util.jackson.yamlMapper
 import java.util.concurrent.ConcurrentHashMap
-import kotlin.reflect.full.declaredMemberFunctions
-import kotlin.reflect.full.valueParameters
-import kotlin.reflect.jvm.jvmErasure
+import kotlin.jvm.optionals.getOrElse
 
 interface SdComponentManager {
 
@@ -52,6 +52,7 @@ interface SdComponentManager {
     }
 
     fun getComponentDescriptions(): List<ComponentDescription>
+
     fun destroy(instanceName: String)
 }
 
@@ -140,41 +141,39 @@ class SpringSdComponentManager(
         return type.keys
     }
 
-    override fun getComponentDescriptions(): List<ComponentDescription> {
-        return sdComponentSuppliers.values.distinct()
+    private val _componentDescriptions by lazy {
+        val descriptor = DescriptionLoader.load()
+        val descriptionMapping = descriptor.component.associateBy { it.id }
+        sdComponentSuppliers.values.distinct()
             .map { supplier ->
-                val typeDesc = supplier.supplyTypes().groupBy { it.topType() }
-                    .map { (topType, types) ->
-                        TypeDescription(
-                            topType,
-                            types.map { it.typeName },
-                            // TODO description
-                            "",
-                        )
-                    }
-
-                val componentClass = supplier::class.declaredMemberFunctions
-                    .first {
-                        it.name == "apply" && it.valueParameters.size == 1
-                    }.returnType.jvmErasure
-
-                val any = typeDesc.any { it.topType == Components.VARIABLE_PROVIDER }
-                ComponentDescription(
-                    componentClass.simpleName!!,
-                    typeDesc,
-                    emptyList(),
-                    ruleDescriptions(supplier),
-                    if (any) emptyList() else null
-                )
+                val name = supplier::class.java.name
+                val description = descriptionMapping[name] ?: ComponentDescription(name)
+                description.apply {
+                    this.rules = ruleDescriptors(supplier)
+                    this.types = componentTypeDescriptors(supplier)
+                }
+                description
             }
     }
 
-    private fun ruleDescriptions(supplier: SdComponentSupplier<*>) =
-        supplier.rules().map {
-            RuleDescription(
-                if (it.isAllow) "允许" else "禁止",
-                it.type.lowerHyphenName(),
-                it.value.simpleName!!
+    override fun getComponentDescriptions(): List<ComponentDescription> {
+        return _componentDescriptions
+    }
+
+    private fun componentTypeDescriptors(supplier: SdComponentSupplier<*>) =
+        supplier.supplyTypes().map { type ->
+            ComponentTypeDescriptor(
+                type.topType(),
+                type.typeName
+            )
+        }
+
+    private fun ruleDescriptors(supplier: SdComponentSupplier<*>) =
+        supplier.rules().map { rule ->
+            RuleDescriptor(
+                if (rule.isAllow) "允许" else "禁止",
+                rule.type.lowerHyphenName(),
+                rule.value.simpleName!!
             )
         }
 
@@ -185,3 +184,71 @@ class SpringSdComponentManager(
         }
     }
 }
+
+object DescriptionLoader {
+
+    private const val DESCRIPTION_FILE = "sd-description.yaml"
+    private const val COMPONENT = "component"
+    private const val INSTANCE = "instance"
+
+    fun load(): Descriptor {
+        val classLoader = Thread.currentThread().contextClassLoader
+        val node = classLoader.resources(DESCRIPTION_FILE).map {
+            yamlMapper.readTree(it)
+        }.reduce { acc, op ->
+            val readerForUpdating = yamlMapper.readerForUpdating(acc)
+            readerForUpdating.readValue(op)
+        }.getOrElse { yamlMapper.nullNode() }
+        val component = node[COMPONENT]
+        val instance = node[INSTANCE]
+        return Descriptor(
+            yamlMapper.convertValue(instance),
+            yamlMapper.convertValue(component),
+        )
+    }
+}
+
+data class Descriptor(
+    val instance: List<InstanceDescription> = emptyList(),
+    val component: List<ComponentDescription> = emptyList()
+)
+
+data class InstanceDescription(
+    val id: String,
+    override val name: String = id,
+    override val description: String,
+    val properties: List<PropertyDescriptor> = emptyList(),
+) : CommonDescriptor(name, description, null)
+
+data class ComponentDescription(
+    val id: String,
+    val description: String? = null,
+    val properties: List<PropertyDescriptor> = emptyList(),
+    val variables: List<VariableDescriptor> = emptyList(),
+    var types: List<ComponentTypeDescriptor> = emptyList(),
+    var rules: List<RuleDescriptor> = emptyList(),
+)
+
+data class ComponentTypeDescriptor(
+    val topType: ComponentTopType,
+    val subType: String,
+)
+
+data class PropertyDescriptor(
+    override val name: String,
+    override val description: String? = null,
+    override val example: String? = null,
+    val required: Boolean = true
+) : CommonDescriptor(name, description, example)
+
+data class VariableDescriptor(
+    override val name: String,
+    override val description: String,
+    override val example: String? = null
+) : CommonDescriptor(name, description, example)
+
+open class CommonDescriptor(
+    open val name: String,
+    open val description: String? = null,
+    open val example: String? = null
+)

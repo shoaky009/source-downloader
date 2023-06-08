@@ -1,6 +1,5 @@
 package xyz.shoaky.sourcedownloader
 
-// import xyz.shoaky.sourcedownloader.external.qbittorrent.QbittorrentConfig
 import com.google.common.reflect.ClassPath
 import com.vladmihalcea.hibernate.type.json.JsonType
 import jakarta.annotation.PreDestroy
@@ -43,10 +42,12 @@ class SourceDownloaderApplication(
 
     @EventListener(ApplicationReadyEvent::class)
     fun createProcessors() {
-        log.info("Database file located:${
-            environment.getProperty("spring.datasource.url")
-                ?.removePrefix("jdbc:h2:file:")
-        }")
+        log.info(
+            "Database file located:${
+                environment.getProperty("spring.datasource.url")
+                    ?.removePrefix("jdbc:h2:file:")
+            }"
+        )
 
         val processorConfigs = processorStorages.flatMap { it.getAllProcessorConfig() }
         for (processorConfig in processorConfigs) {
@@ -112,7 +113,7 @@ class SourceDownloaderApplication(
     }
 
     private fun createFromConfigs(key: String, configs: List<ComponentConfig>) {
-        val componentKClass = Components.fromName(key)?.klass
+        val componentKClass = ComponentTopType.fromName(key)?.klass
             ?: throw ComponentException.unsupported("未知组件类型:$key")
 
         configs.forEach {
@@ -151,13 +152,14 @@ class SourceDownloaderApplication(
         override fun registerHints(hints: RuntimeHints, classLoader: ClassLoader?) {
             hints.reflection().registerType(JsonType::class.java, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS)
             hints.reflection().registerType(ProcessorConfig::class.java, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS)
-            hints.reflection().registerType(ProcessorConfig.Options::class.java, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS)
+            hints.reflection()
+                .registerType(ProcessorConfig.Options::class.java, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS)
             hints.reflection().registerType(Regex::class.java, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS)
             hints.reflection().registerType(PathPattern::class.java, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS)
             hints.reflection().registerType(ComponentId::class.java, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS)
-            hints.reflection().registerType(ProcessorConfig.Options::class.java, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS)
+            hints.reflection()
+                .registerType(ProcessorConfig.Options::class.java, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS)
             hints.reflection().registerType(ComponentConfig::class.java, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS)
-            // hints.reflection().registerType(QbittorrentConfig::class.java, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS)
 
             ClassPath.from(this::class.java.classLoader)
                 .getTopLevelClasses("xyz.shoaky.sourcedownloader.component.supplier")

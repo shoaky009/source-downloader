@@ -6,6 +6,7 @@ import xyz.shoaky.sourcedownloader.sdk.Properties
 interface SdComponentSupplier<R : SdComponent> {
 
     fun apply(props: Properties): R
+
     fun supplyTypes(): List<ComponentType>
 
     fun rules(): List<ComponentRule> = emptyList()

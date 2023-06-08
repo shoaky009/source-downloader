@@ -17,7 +17,7 @@ private class ComponentController(
 
     @GetMapping
     fun getComponents(
-        type: Components?, typeName: String?, name: String?,
+        type: ComponentTopType?, typeName: String?, name: String?,
     ): List<ComponentInfo> {
         val componentConfigs = componentService.getComponentConfigs()
         return componentConfigs
@@ -48,7 +48,7 @@ private class ComponentController(
 
     @PostMapping("/{type}/{typeName}/{name}")
     fun createComponent(
-        @PathVariable type: Components,
+        @PathVariable type: ComponentTopType,
         @PathVariable typeName: String,
         @PathVariable name: String,
         @RequestBody body: Map<String, Any>
@@ -64,7 +64,7 @@ private class ComponentController(
 
     @DeleteMapping("/{type}/{typeName}/{name}")
     fun deleteComponent(
-        @PathVariable type: Components,
+        @PathVariable type: ComponentTopType,
         @PathVariable typeName: String,
         @PathVariable name: String,
     ) {
@@ -78,7 +78,7 @@ private class ComponentController(
     fun getComponentDescriptions(): List<ComponentDescription> {
         return componentManager.getComponentDescriptions()
             .sortedBy { cd ->
-                cd.types.maxOf { it.topType }
+                cd.types.maxOfOrNull { it.topType }
             }
     }
 }
@@ -90,7 +90,7 @@ private data class ComponentDetail(
 )
 
 private data class ComponentInfo(
-    val type: Components,
+    val type: ComponentTopType,
     val typeName: String,
     val name: String,
     val props: Map<String, Any>,
@@ -104,12 +104,12 @@ private class ComponentService(
     private val componentManager: SdComponentManager,
     private val configStorages: List<ComponentConfigStorage>
 ) {
-    fun getComponentConfigs(): Map<Components, List<ComponentConfig>> {
-        val map = mutableMapOf<Components, MutableList<ComponentConfig>>()
+    fun getComponentConfigs(): Map<ComponentTopType, List<ComponentConfig>> {
+        val map = mutableMapOf<ComponentTopType, MutableList<ComponentConfig>>()
         for (cc in configStorages) {
             val allComponents = cc.getAllComponentConfig()
             for (allComponent in allComponents) {
-                val components = Components.fromName(allComponent.key)
+                val components = ComponentTopType.fromName(allComponent.key)
                     ?: throw ComponentException.unsupported("Unknown component type: ${allComponent.key}")
                 map.getOrPut(components) {
                     mutableListOf()

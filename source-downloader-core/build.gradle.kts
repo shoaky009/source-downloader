@@ -5,7 +5,7 @@ plugins {
     id("org.springframework.boot")
     kotlin("plugin.spring")
     id("jacoco-report-aggregation")
-    id("org.graalvm.buildtools.native") version "0.9.21"
+    // id("org.graalvm.buildtools.native") version "0.9.21"
 }
 
 dependencies {
@@ -21,7 +21,6 @@ dependencies {
     implementation("org.hibernate.orm:hibernate-core:6.2.3.Final")
     // runtimeOnly("com.h2database:h2")
     // kotlin
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
@@ -30,7 +29,6 @@ dependencies {
 
     // others
     implementation("org.apache.commons:commons-collections4:4.4")
-    implementation("com.google.guava:guava:31.1-jre")
     implementation("com.vladmihalcea:hibernate-types-60:2.21.1")
     implementation("org.springframework.retry:spring-retry")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml")
@@ -85,14 +83,20 @@ tasks.bootJar {
             }
             intoLayer("dependencies")
         }
-        layerOrder.addAll("dependencies", "spring-boot-loader", "snapshot-dependencies", "source-downloader-plugins", "application")
+        layerOrder.addAll(
+            "dependencies",
+            "spring-boot-loader",
+            "snapshot-dependencies",
+            "source-downloader-plugins",
+            "application"
+        )
     }
 }
 
-graalvmNative {
-    binaries.all {
-        resources.includedPatterns.add(".*.yaml")
-        resources.includedPatterns.add(".*.yml")
-        resources.autodetect()
-    }
-}
+// graalvmNative {
+//     binaries.all {
+//         resources.includedPatterns.add(".*.yaml")
+//         resources.includedPatterns.add(".*.yml")
+//         resources.autodetect()
+//     }
+// }
