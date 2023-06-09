@@ -66,6 +66,7 @@ private object CommonEpisodeValueParser : ValueParser {
     private val pattern = Regex("(\\[?[^\\[\\]]*]?)")
 
     private val replaces = mapOf(
+        Regex("[！？]") to " ",
         Regex("【") to "[",
         Regex("】") to "]",
         Regex("\\(") to "[",
@@ -82,8 +83,7 @@ private object CommonEpisodeValueParser : ValueParser {
         val episode = replace.split(" ")
             .filter { it.isNotBlank() }
             .map { it.removePrefix("[").removeSuffix("]") }
-            .filter { NumberUtils.isParsable(it) && it.length > 1 }
-            .maxByOrNull { it.length }
+            .lastOrNull { NumberUtils.isParsable(it) && it.length > 1 }
             ?.let {
                 if (it.contains(".")) {
                     it.toFloat()
