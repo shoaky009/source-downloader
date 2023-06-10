@@ -37,14 +37,25 @@ enum class ComponentTopType(
     VARIABLE_PROVIDER(VariableProvider::class, listOf("provider", "variable-provider", "variableProvider")),
     FILE_MOVER(FileMover::class, listOf("mover", "file-mover", "fileMover")),
     RUN_AFTER_COMPLETION(RunAfterCompletion::class, listOf("run-after-completion", "run", "runAfterCompletion")),
-    SOURCE_ITEM_FILTER(SourceItemFilter::class, listOf("source-item-filter", "item-filter", "sourceItemFilter", "itemFilter")),
-    FILE_CONTENT_FILTER(FileContentFilter::class, listOf("file-content-filter", "file-filter", "fileContentFilter", "fileFilter")),
+    SOURCE_ITEM_FILTER(
+        SourceItemFilter::class,
+        listOf("source-item-filter", "item-filter", "sourceItemFilter", "itemFilter")
+    ),
+    FILE_CONTENT_FILTER(
+        FileContentFilter::class,
+        listOf("file-content-filter", "file-filter", "fileContentFilter", "fileFilter")
+    ),
     TAGGER(FileTagger::class, listOf("file-tagger", "tagger")),
+    FILE_REPLACEMENT_DECIDER(
+        FileReplacementDecider::class,
+        listOf("file-replacement-decider", "replacement-decider", "fileReplacementDecider", "replacementDecider")
+    ),
     ;
 
     @JsonValue
     fun lowerHyphenName(): String {
-        return CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_HYPHEN,
+        return CaseFormat.UPPER_UNDERSCORE.to(
+            CaseFormat.LOWER_HYPHEN,
             this.name
         )
     }
@@ -165,4 +176,10 @@ interface FileTagger : SdComponent {
      * @return the tag of the file, null if no tag
      */
     fun tag(fileContent: FileContent): String?
+}
+
+interface FileReplacementDecider : SdComponent {
+
+    fun isReplace(current: SourceContent, before: SourceContent?): Boolean
+
 }

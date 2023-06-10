@@ -50,6 +50,11 @@ data class ComponentType(
             return ComponentType(type, FileTagger::class)
         }
 
+        @JvmStatic
+        fun replacementDecider(type: String): ComponentType {
+            return ComponentType(type, FileReplacementDecider::class)
+        }
+
         private val componentTypes = SdComponent::class.sealedSubclasses
             .associateBy {
                 val simpleName = it.simpleName!!

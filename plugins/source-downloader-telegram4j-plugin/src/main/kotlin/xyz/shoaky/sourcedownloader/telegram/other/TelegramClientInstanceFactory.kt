@@ -50,11 +50,12 @@ object TelegramClientInstanceFactory : InstanceFactory<MTProtoTelegramClient> {
             .addResponseTransformer(
                 ResponseTransformer.retryFloodWait(
                     MethodPredicate.all(),
-                    MTProtoRetrySpec.max({ it.seconds < 30 }, Long.MAX_VALUE)
+                    MTProtoRetrySpec.max({ it.seconds < 30 }, 2)
                 )
             )
             .setUpdatesManager {
-                DefaultUpdatesManager(it,
+                DefaultUpdatesManager(
+                    it,
                     DefaultUpdatesManager.Options(
                         DefaultUpdatesManager.Options.DEFAULT_CHECKIN,
                         DefaultUpdatesManager.Options.MAX_USER_CHANNEL_DIFFERENCE,

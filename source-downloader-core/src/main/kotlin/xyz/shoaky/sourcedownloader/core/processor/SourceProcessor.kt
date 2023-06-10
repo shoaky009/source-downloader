@@ -6,6 +6,7 @@ import org.springframework.retry.RetryContext
 import org.springframework.retry.RetryListener
 import org.springframework.retry.support.RetryTemplateBuilder
 import org.springframework.util.StopWatch
+import xyz.shoaky.sourcedownloader.component.NeverReplace
 import xyz.shoaky.sourcedownloader.component.provider.MetadataVariableProvider
 import xyz.shoaky.sourcedownloader.core.*
 import xyz.shoaky.sourcedownloader.core.ProcessingContent.Status.*
@@ -49,6 +50,11 @@ class SourceProcessor(
     private val variableProviders = variableProviders.toMutableList()
     private val runAfterCompletion: MutableList<RunAfterCompletion> = mutableListOf()
     private val taggers: MutableList<FileTagger> = mutableListOf()
+
+    private var fileReplacementDecider: FileReplacementDecider = NeverReplace
+    fun setFileReplacementDecider(decider: FileReplacementDecider) {
+        fileReplacementDecider = decider
+    }
 
     private val downloadPath = downloader.defaultDownloadPath()
 
@@ -460,7 +466,7 @@ class SourceProcessor(
     }
 
     private fun saveTargetPaths(sourceItem: SourceItem, paths: List<Path>) {
-        val processingTargetPaths = if (options.fileReplacementStrategy == "NEVER") {
+        val processingTargetPaths = if (fileReplacementDecider == NeverReplace) {
             ProcessingTargetPaths(paths)
         } else {
             ProcessingTargetPaths(paths, name, sourceItem.hashing())

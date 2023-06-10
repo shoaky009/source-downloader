@@ -1,7 +1,5 @@
 package xyz.shoaky.sourcedownloader.core
 
-// import io.swagger.v3.oas.annotations.media.Schema
-// import io.swagger.v3.oas.annotations.media.SchemaProperty
 import com.fasterxml.jackson.annotation.*
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import xyz.shoaky.sourcedownloader.core.file.VariableErrorStrategy
@@ -109,7 +107,7 @@ data class ProcessorConfig(
         @JsonDeserialize(contentAs = RegexVariableReplacer::class)
         val variableReplacers: List<VariableReplacer> = emptyList(),
         @JsonAlias("file-replacement-strategy")
-        val fileReplacementStrategy: String = "NEVER",
+        val fileReplacementDecider: ComponentId = ComponentId("never"),
         @JsonAlias("fetch-limit")
         val fetchLimit: Int = 50,
         @JsonAlias("pointer-batch-mode")
