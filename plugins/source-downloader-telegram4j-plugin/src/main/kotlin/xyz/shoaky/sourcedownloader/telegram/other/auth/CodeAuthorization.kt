@@ -14,11 +14,13 @@ import telegram4j.mtproto.RpcException
 import telegram4j.mtproto.client.MTProtoClientGroup
 import telegram4j.mtproto.store.StoreLayout
 import telegram4j.tl.ImmutableCodeSettings
-import telegram4j.tl.auth.Authorization
 import telegram4j.tl.auth.BaseAuthorization
 import telegram4j.tl.auth.BaseSentCode
 import telegram4j.tl.auth.SentCode
-import telegram4j.tl.request.auth.*
+import telegram4j.tl.request.auth.ImmutableCancelCode
+import telegram4j.tl.request.auth.ImmutableResendCode
+import telegram4j.tl.request.auth.ImmutableSendCode
+import telegram4j.tl.request.auth.SignIn
 import java.time.Instant
 import java.util.*
 
@@ -58,13 +60,26 @@ class CodeAuthorization(
                             phoneNumber = readPhoneNumber(sc)
                         }
                         return@flatMap clientGroup.main()
-                            .sendAwait<SentCode?, ImmutableSendCode>(ImmutableSendCode.of(phoneNumber!!, authResources.apiId,
-                                authResources.apiHash, ImmutableCodeSettings.of()))
-                            .onErrorResume(RpcException.isErrorMessage("PHONE_NUMBER_INVALID")) { Mono.fromRunnable<SentCode?> { state.emitNext(State.SEND_CODE, FAIL_FAST) } }
+                            .sendAwait<SentCode?>(
+                                ImmutableSendCode.of(
+                                    phoneNumber!!, authResources.apiId,
+                                    authResources.apiHash, ImmutableCodeSettings.of()
+                                )
+                            )
+                            .onErrorResume(RpcException.isErrorMessage("PHONE_NUMBER_INVALID")) {
+                                Mono.fromRunnable<SentCode?> {
+                                    state.emitNext(
+                                        State.SEND_CODE,
+                                        FAIL_FAST
+                                    )
+                                }
+                            }
                             .onErrorResume(RpcException.isErrorCode(303)) { e: Throwable ->
                                 val rpcExc = e as RpcException
                                 val msg = rpcExc.error.errorMessage()
-                                if (!msg.startsWith("PHONE_MIGRATE_")) return@onErrorResume Mono.error<SentCode>(IllegalStateException("Unexpected type of DC redirection", e))
+                                if (!msg.startsWith("PHONE_MIGRATE_")) return@onErrorResume Mono.error<SentCode>(
+                                    IllegalStateException("Unexpected type of DC redirection", e)
+                                )
                                 val dcId = msg.substring(14).toInt()
                                 validPhone = true
                                 synchronized(System.out) {
@@ -75,19 +90,31 @@ class CodeAuthorization(
                                     .map<DataCenter> { dcOpts: DcOptions ->
                                         dcOpts.find(DataCenter.Type.REGULAR, dcId)
                                             .orElseThrow<IllegalStateException> {
-                                                IllegalStateException("Could not find DC " + dcId
-                                                    + " for redirecting main client")
+                                                IllegalStateException(
+                                                    "Could not find DC " + dcId
+                                                        + " for redirecting main client"
+                                                )
                                             }
                                     }
                                     .flatMap { clientGroup.setMain(it) }
-                                    .then<SentCode?>(Mono.fromRunnable<SentCode?> { state.emitNext(State.SEND_CODE, FAIL_FAST) })
+                                    .then<SentCode?>(Mono.fromRunnable<SentCode?> {
+                                        state.emitNext(
+                                            State.SEND_CODE,
+                                            FAIL_FAST
+                                        )
+                                    })
                             } // TODO: why new subtype of SentCode was added?
                             .cast<BaseSentCode>(BaseSentCode::class.java)
                             .flatMapMany { scode: BaseSentCode? -> applyCode(scode) }
                     }
 
                     State.RESEND_CODE -> return@flatMap clientGroup.main()
-                        .sendAwait<SentCode, ImmutableResendCode>(ImmutableResendCode.of(phoneNumber!!, currentCode!!.phoneCodeHash()))
+                        .sendAwait<SentCode>(
+                            ImmutableResendCode.of(
+                                phoneNumber!!,
+                                currentCode!!.phoneCodeHash()
+                            )
+                        )
                         .cast<BaseSentCode>(BaseSentCode::class.java)
                         .flatMapMany { scode: BaseSentCode? -> applyCode(scode) }
 
@@ -167,7 +194,8 @@ class CodeAuthorization(
             return Mono.empty<Any>()
         }
         return if (code.equals("cancel", ignoreCase = true)) {
-            clientGroup.main().sendAwait<Boolean, ImmutableCancelCode>(ImmutableCancelCode.of(phoneNumber!!, scode.phoneCodeHash()))
+            clientGroup.main()
+                .sendAwait(ImmutableCancelCode.of(phoneNumber!!, scode.phoneCodeHash()))
                 .doOnNext { b: Boolean ->
                     synchronized(System.out) {
                         println(delimiter)
@@ -180,16 +208,27 @@ class CodeAuthorization(
                     state.emitNext(State.CANCEL_CODE, FAIL_FAST)
                 }
         } else clientGroup.main()
-            .sendAwait<Authorization?, ImmutableSignIn>(SignIn.builder()
-                .phoneNumber(phoneNumber!!)
-                .phoneCode(code)
-                .phoneCodeHash(scode.phoneCodeHash())
-                .build())
-            .onErrorResume(RpcException.isErrorMessage("PHONE_CODE_INVALID")) { Mono.fromRunnable { state.emitNext(State.AWAIT_CODE, FAIL_FAST) } }
+            .sendAwait(
+                SignIn.builder()
+                    .phoneNumber(phoneNumber!!)
+                    .phoneCode(code)
+                    .phoneCodeHash(scode.phoneCodeHash())
+                    .build()
+            )
+            .onErrorResume(RpcException.isErrorMessage("PHONE_CODE_INVALID")) {
+                Mono.fromRunnable {
+                    state.emitNext(
+                        State.AWAIT_CODE,
+                        FAIL_FAST
+                    )
+                }
+            }
             .onErrorResume(RpcException.isErrorMessage("SESSION_PASSWORD_NEEDED")) {
                 val tfa = TwoFactorAuthHandler(clientGroup)
-                tfa.begin2FA().retryWhen(Retry.indefinitely()
-                    .filter(RpcException.isErrorMessage("PASSWORD_HASH_INVALID")))
+                tfa.begin2FA().retryWhen(
+                    Retry.indefinitely()
+                        .filter(RpcException.isErrorMessage("PASSWORD_HASH_INVALID"))
+                )
             }
             .cast(BaseAuthorization::class.java)
             .doOnNext { a: BaseAuthorization ->
@@ -204,8 +243,10 @@ class CodeAuthorization(
 
     companion object {
         val delimiter = "=".repeat(32)
-        fun authorize(clientGroup: MTProtoClientGroup, storeLayout: StoreLayout,
-                      authResources: AuthorizationResources): Mono<BaseAuthorization> {
+        fun authorize(
+            clientGroup: MTProtoClientGroup, storeLayout: StoreLayout,
+            authResources: AuthorizationResources
+        ): Mono<BaseAuthorization> {
             return Mono.create { sink: MonoSink<BaseAuthorization> ->
                 val instance = CodeAuthorization(clientGroup, storeLayout, authResources, sink)
                 sink.onCancel(instance.begin()

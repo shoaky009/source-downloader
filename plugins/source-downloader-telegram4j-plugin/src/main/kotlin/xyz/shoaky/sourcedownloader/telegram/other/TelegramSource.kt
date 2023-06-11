@@ -28,16 +28,19 @@ class TelegramSource(
 
         val result: MutableList<PointedItem<TelegramPointer>> = mutableListOf()
         for (chatPointer in chatPointers) {
-            val beginDate = chatMapping[chatPointer.chatId]?.beginDate
-            val messages = getMessages(chatPointer, limit)
-            val items = messages.mapNotNull { message ->
-                val sourceItem = mediaMessageToSourceItem(message, chatPointer) ?: return@mapNotNull null
-                val update = telegramPointer.update(chatPointer.copy(fromMessageId = message.id()))
-                PointedItem(sourceItem, update)
-            }.filter { beginDate == null || beginDate <= it.sourceItem.date.toLocalDate() }
-            result.addAll(items)
-            if (messages.size > limit) {
-                break
+            while (result.size < limit) {
+                val beginDate = chatMapping[chatPointer.chatId]?.beginDate
+                val messages = getMessages(chatPointer, limit)
+                if (messages.isEmpty()) {
+                    break
+                }
+                val items = messages.mapNotNull { message ->
+                    val sourceItem = mediaMessageToSourceItem(message, chatPointer) ?: return@mapNotNull null
+                    val update = telegramPointer.update(chatPointer.copy(fromMessageId = message.id()))
+                    PointedItem(sourceItem, update)
+                }.filter { beginDate == null || beginDate <= it.sourceItem.date.toLocalDate() }
+                result.addAll(items)
+                chatPointer.fromMessageId = messages.last().id()
             }
         }
         return result
@@ -46,7 +49,7 @@ class TelegramSource(
     private fun getMessages(chatPointer: ChatPointer, limit: Int): List<BaseMessage> {
         val isChannel = chatPointer.isChannel()
         val getHistoryBuilder = ImmutableGetHistory.builder()
-            .offsetId(chatPointer.fromMessageId)
+            .offsetId(maxOf(chatPointer.fromMessageId + 1, 1))
             .addOffset(-limit)
             .limit(limit)
             .maxId(-1)
@@ -60,7 +63,8 @@ class TelegramSource(
                 .channelId(chatPointer.parseChatId())
                 .accessHash(user.id.accessHash.get())
                 .build()
-            val channel = client.serviceHolder.chatService.getChannel(inputChannel).blockOptional(timeout).get() as Channel
+            val channel =
+                client.serviceHolder.chatService.getChannel(inputChannel).blockOptional(timeout).get() as Channel
             InputPeerChannel.builder()
                 .channelId(channel.id())
                 .accessHash(channel.accessHash()!!)

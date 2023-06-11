@@ -26,7 +26,14 @@ dependencies {
     testImplementation("org.mockito:mockito-junit-jupiter:5.3.1")
 
     implementation("com.google.zxing:core:3.5.1")
-    implementation("com.telegram4j:telegram4j-core:0.1.0-SNAPSHOT")
+    implementation("com.telegram4j:telegram4j-core:0.1.0-SNAPSHOT") {
+        exclude(group = "io.netty", module = "netty-transport-native-epoll")
+        exclude(group = "io.netty", module = "netty-transport-native-kqueue")
+    }
+
+    implementation("io.netty:netty-transport-native-kqueue:4.1.93.Final") {
+        artifact { classifier = "osx-aarch_64" }
+    }
 }
 
 tasks.withType<KotlinCompile> {

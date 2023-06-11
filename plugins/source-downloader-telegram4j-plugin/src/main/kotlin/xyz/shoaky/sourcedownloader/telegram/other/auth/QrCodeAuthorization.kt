@@ -54,7 +54,7 @@ object QrCodeAuthorization {
                 .filter { u: UpdateShort -> u.update().identifier() == UpdateLoginToken.ID }
                 .publishOn(Schedulers.boundedElastic()) // do not block to wait 2FA password
                 .flatMap {
-                    clientGroup.send<LoginToken, ImmutableExportLoginToken>(
+                    clientGroup.send(
                         DcId.main(),
                         ImmutableExportLoginToken.of(apiId, apiHash, listOf<Long>())
                     )
@@ -80,7 +80,7 @@ object QrCodeAuthorization {
                                 }
                                 .flatMap { clientGroup.setMain(it) }
                                 .flatMap<LoginToken> {
-                                    it.sendAwait<LoginToken, ImmutableImportLoginToken>(
+                                    it.sendAwait<LoginToken>(
                                         ImmutableImportLoginToken.of(migrate.token())
                                     )
                                 }
@@ -115,7 +115,7 @@ object QrCodeAuthorization {
             inter.start(Duration.ofMinutes(1)) // stub period
             val qrDisplay = inter.ticks()
                 .flatMap {
-                    clientGroup.send<LoginToken?, ImmutableExportLoginToken>(
+                    clientGroup.send(
                         DcId.main(),
                         ImmutableExportLoginToken.of(apiId, apiHash, listOf<Long>())
                     )

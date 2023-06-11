@@ -33,7 +33,7 @@ class TwoFactorAuthHandler(
     // Ported version of https://gist.github.com/andrew-ld/524332536dbc8c525ed80d281855a0d4 and
     // https://github.com/DrKLO/Telegram/blob/abb896635f849a93968a2ba35a944c91b4978be4/TMessagesProj/src/main/java/org/telegram/messenger/SRPHelper.java#L29
     fun begin2FA(): Mono<Authorization> {
-        return clientGroup.send<Password, GetPassword>(DcId.main(), GetPassword.instance()).flatMap { pswrd: Password ->
+        return clientGroup.send(DcId.main(), GetPassword.instance()).flatMap { pswrd: Password ->
             if (!pswrd.hasPassword()) {
                 return@flatMap Mono.error<Authorization>(IllegalStateException("?".repeat(1 shl 4)))
             }
@@ -42,7 +42,7 @@ class TwoFactorAuthHandler(
                 return@flatMap Mono.error<Authorization>(IllegalStateException("Unexpected type of current algorithm: $currentAlgo"))
             }
             synchronized(System.out) {
-                println(CodeAuthorization.delimiter)
+                // println(CodeAuthorization.delimiter)
                 if (first2fa) {
                     first2fa = false
                     print("The account is protected by 2FA, please write password")
@@ -93,7 +93,7 @@ class TwoFactorAuthHandler(
             )
             val srpId: Long = pswrd.srpId()!!
             val icpsrp = ImmutableBaseInputCheckPasswordSRP.of(srpId, gABytes, m1)
-            clientGroup.send<Authorization?, ImmutableCheckPassword>(DcId.main(), ImmutableCheckPassword.of(icpsrp))
+            clientGroup.send(DcId.main(), ImmutableCheckPassword.of(icpsrp))
         }
     }
 
