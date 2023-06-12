@@ -1,13 +1,13 @@
-package xyz.shoaky.sourcedownloader.telegram
+package io.github.shoaky.sourcedownloader.telegram
 
 import com.fasterxml.jackson.annotation.JsonAlias
 import com.fasterxml.jackson.annotation.JsonIgnore
 import it.tdlight.client.SimpleTelegramClient
 import it.tdlight.jni.TdApi
-import xyz.shoaky.sourcedownloader.sdk.PointedItem
-import xyz.shoaky.sourcedownloader.sdk.SourceItem
-import xyz.shoaky.sourcedownloader.sdk.SourceItemPointer
-import xyz.shoaky.sourcedownloader.sdk.component.Source
+import io.github.shoaky.sourcedownloader.sdk.PointedItem
+import io.github.shoaky.sourcedownloader.sdk.SourceItem
+import io.github.shoaky.sourcedownloader.sdk.SourceItemPointer
+import io.github.shoaky.sourcedownloader.sdk.component.Source
 import java.net.URI
 import java.time.Instant
 import java.time.LocalDate

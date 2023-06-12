@@ -1,10 +1,10 @@
-group = "xyz.shoaky"
+group = "io.github.shoaky"
 version = "0.0.1-SNAPSHOT"
 
 plugins {
     id("io.spring.dependency-management") version "1.1.0"
     kotlin("jvm")
-    id("jacoco")
+    jacoco
 }
 
 allprojects {

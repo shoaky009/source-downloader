@@ -76,7 +76,7 @@ tasks.bootJar {
         }
         dependencies {
             intoLayer("source-downloader-plugins") {
-                include("xyz.shoaky:source-downloader-*-plugin:*")
+                include("io.github.shoaky:source-downloader-*-plugin:*")
             }
             intoLayer("snapshot-dependencies") {
                 include("*:*:*SNAPSHOT")

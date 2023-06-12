@@ -1,10 +1,10 @@
-package xyz.shoaky.sourcedownloader.telegram
+package io.github.shoaky.sourcedownloader.telegram
 
 import com.fasterxml.jackson.annotation.JsonAlias
 import it.tdlight.client.*
 import it.tdlight.jni.TdApi
-import xyz.shoaky.sourcedownloader.sdk.InstanceFactory
-import xyz.shoaky.sourcedownloader.sdk.Properties
+import io.github.shoaky.sourcedownloader.sdk.InstanceFactory
+import io.github.shoaky.sourcedownloader.sdk.Properties
 import java.net.URI
 import java.nio.file.Path
 

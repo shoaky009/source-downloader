@@ -1,4 +1,4 @@
-package xyz.shoaky.sourcedownloader.telegram
+package io.github.shoaky.sourcedownloader.telegram
 
 import it.tdlight.jni.TdApi
 

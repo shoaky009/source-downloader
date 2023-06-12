@@ -16,7 +16,6 @@ dependencies {
     api("com.fasterxml.jackson.core:jackson-core")
     api("com.fasterxml.jackson.module:jackson-module-kotlin")
     api("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
-    // api("com.fasterxml.jackson.dataformat:jackson-dataformat-xml")
 
     api("org.slf4j:slf4j-api:2.0.7")
     api("ch.qos.logback:logback-classic:1.4.7")
@@ -25,13 +24,18 @@ dependencies {
     api("org.apache.commons:commons-lang3:3.12.0")
 }
 
-publishing {
-    publications.create<MavenPublication>("maven") {
-        from(components["java"])
-    }
-}
-
 java {
     withSourcesJar()
     withJavadocJar()
+}
+
+publishing {
+
+    publications {
+        create<MavenPublication>("mavenJava") {
+            from(components["java"])
+            groupId = project.group.toString()
+            artifactId = project.name
+        }
+    }
 }

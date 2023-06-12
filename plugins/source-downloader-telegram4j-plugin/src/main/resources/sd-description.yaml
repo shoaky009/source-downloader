@@ -19,7 +19,7 @@ instance:
         example: "http://localhost:7890"
 
 component:
-  - id: xyz.shoaky.sourcedownloader.telegram.other.TelegramSourceSupplier
+  - id: io.github.shoaky.sourcedownloader.telegram.other.TelegramSourceSupplier
     description: |
       从Telegram中获取文件信息，私聊类型chatId为正数，频道为负数
     properties:

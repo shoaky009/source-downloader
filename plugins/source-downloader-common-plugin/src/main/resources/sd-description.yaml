@@ -1,5 +1,5 @@
 component:
-  - id: xyz.shoaky.sourcedownloader.common.supplier.MikanVariableProviderSupplier
+  - id: io.github.shoaky.sourcedownloader.common.supplier.MikanVariableProviderSupplier
     description: |
       根据蜜柑RSS的link，爬取番剧对应页面获取到对应的bgm.tv的信息
       季度则会从bgm.tv的中标题，文件名，原标题+TMDB解析，如果都没有符合规则的则默认01

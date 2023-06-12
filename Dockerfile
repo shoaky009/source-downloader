@@ -22,4 +22,4 @@ COPY --from=builder source-downloader-plugins/BOOT-INF/lib /app/lib
 #COPY --from=builder application/BOOT-INF/lib /app/lib
 COPY --from=builder application/BOOT-INF/classes /app
 
-ENTRYPOINT java -cp ".:/app/lib/*:/app/plugins/*" $JAVA_OPTS xyz.shoaky.sourcedownloader.SourceDownloaderApplication $SPRINGBOOT_OPTS
+ENTRYPOINT java -cp ".:/app/lib/*:/app/plugins/*" $JAVA_OPTS io.github.shoaky.sourcedownloader.SourceDownloaderApplication $SPRINGBOOT_OPTS

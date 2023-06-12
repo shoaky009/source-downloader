@@ -1,13 +1,13 @@
-package xyz.shoaky.sourcedownloader.telegram
+package io.github.shoaky.sourcedownloader.telegram
 
 import it.tdlight.client.SimpleTelegramClient
 import it.tdlight.jni.TdApi
 import org.slf4j.LoggerFactory
-import xyz.shoaky.sourcedownloader.sdk.*
-import xyz.shoaky.sourcedownloader.sdk.component.Downloader
-import xyz.shoaky.sourcedownloader.sdk.component.ItemFileResolver
-import xyz.shoaky.sourcedownloader.sdk.component.VariableProvider
-import xyz.shoaky.sourcedownloader.sdk.util.queryMap
+import io.github.shoaky.sourcedownloader.sdk.*
+import io.github.shoaky.sourcedownloader.sdk.component.Downloader
+import io.github.shoaky.sourcedownloader.sdk.component.ItemFileResolver
+import io.github.shoaky.sourcedownloader.sdk.component.VariableProvider
+import io.github.shoaky.sourcedownloader.sdk.util.queryMap
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.moveTo
