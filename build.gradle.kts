@@ -2,7 +2,6 @@ group = "io.github.shoaky"
 version = "0.0.1-SNAPSHOT"
 
 plugins {
-    id("io.spring.dependency-management") version "1.1.0"
     kotlin("jvm")
     jacoco
 }
@@ -23,7 +22,6 @@ subprojects {
 
     apply(plugin = "org.jetbrains.kotlin.jvm")
     apply(plugin = "java")
-    apply(plugin = "io.spring.dependency-management")
     apply(plugin = "jacoco")
 
     tasks.test {

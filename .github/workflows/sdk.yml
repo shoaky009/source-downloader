@@ -1,0 +1,23 @@
+name: Publish SDK
+on:
+  workflow_dispatch:
+    inputs:
+      manual_trigger:
+        description: 'Manual trigger'
+        required: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK 20
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '20'
+          cache: 'gradle'
+      - name: Build with Gradle
+        run: ./gradlew source-downloader-sdk:build
+      - name: Publish artifacts
+        run: ./gradlew -PsonatypeUsername=${{ secrets.SONATYPE_USERNAME }} -PsonatypePassword=${{ secrets.SONATYPE_PASSWORD }} -PsigningKey="${{ secrets.SIGNING_KEY }}" -PsigningPassword=${{ secrets.SIGNING_PASSWORD }} source-downloader-sdk:publish
