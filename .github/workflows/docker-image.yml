@@ -5,9 +5,6 @@ on:
       manual_trigger:
         description: 'Manual trigger'
         required: false
-#  push:
-#    branches:
-#      - dev
 
 jobs:
   publish:
@@ -15,15 +12,15 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set up JDK 20
+      - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
           distribution: 'zulu'
-          java-version: '20'
+          java-version: '17'
           cache: 'gradle'
 
       - name: Build with Gradle
-        run: ./gradlew clean build -x test -PsdPlugins=common,telegram4j --no-daemon
+        run: ./gradlew build -x test -PsdPlugins=common,telegram4j --no-daemon
 
       - name: Docker Metadata
         id: metadata
