@@ -1,0 +1,53 @@
+[versions]
+springboot = "3.1.0"
+guava = "32.0.0-jre"
+commons-lang3 = "3.12.0"
+cel = "0.3.15"
+kotlinx-coroutines = "1.6.4"
+kotlin = "1.8.22"
+graalvm = "0.9.21"
+sqlite = "3.42.0.0"
+hibernate = "6.2.3.Final"
+commons-collections4 = "4.4"
+hibernate-types = "2.21.1"
+axion-release = "1.15.3"
+zxing = "3.5.1"
+telegram4j = "0.1.0-SNAPSHOT"
+rssreader = "3.3.0"
+anitomyJ = "0.0.7"
+atomashpolskiy-bt = "1.10"
+tika = "2.7.0"
+jsoup = "1.15.4"
+
+[libraries]
+springboot-dependencies = { module = "org.springframework.boot:spring-boot-dependencies", version.ref = "springboot" }
+guava = { module = "com.google.guava:guava", version.ref = "guava" }
+commons-lang3 = { module = "org.apache.commons:commons-lang3", version.ref = "commons-lang3" }
+commons-collections4 = { module = "org.apache.commons:commons-collections4", version.ref = "commons-collections4" }
+cel-bom = { module = "org.projectnessie.cel:cel-bom", version.ref = "cel" }
+cel-tools = { module = "org.projectnessie.cel:cel-tools", version.ref = "cel" }
+sqlite-jdbc = { module = "org.xerial:sqlite-jdbc", version.ref = "sqlite" }
+hibernate-community-dialects = { module = "org.hibernate.orm:hibernate-community-dialects", version.ref = "hibernate" }
+hibernate-core = { module = "org.hibernate.orm:hibernate-core", version.ref = "hibernate" }
+hibernate-types = { module = "com.vladmihalcea:hibernate-types-60", version.ref = "hibernate-types" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
+kotlinx-coroutines-core-jvm = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm", version.ref = "kotlinx-coroutines" }
+zxing-core = { module = "com.google.zxing:core", version.ref = "zxing" }
+telegram4j = { module = "com.telegram4j:telegram4j-core", version.ref = "telegram4j" }
+rssreader = { module = "com.apptasticsoftware:rssreader", version.ref = "rssreader" }
+anitomyJ = { module = "com.dgtlrepublic:anitomyJ", version.ref = "anitomyJ" }
+bt-core = { module = "com.github.atomashpolskiy:bt-core", version.ref = "atomashpolskiy-bt" }
+bt-dht = { module = "com.github.atomashpolskiy:bt-dht", version.ref = "atomashpolskiy-bt" }
+tika-core = { module = "org.apache.tika:tika-core", version.ref = "tika" }
+jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
+
+[bundles]
+cel = ["cel-bom", "cel-tools"]
+bt = ["bt-core", "bt-dht"]
+
+[plugins]
+springboot = { id = "org.springframework.boot", version.ref = "springboot" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-spring = { id = "org.jetbrains.kotlin.plugin.spring", version.ref = "kotlin" }
+graalvm = { id = "org.graalvm.buildtools.native", version.ref = "graalvm" }
+axion-release = { id = "pl.allegro.tech.build.axion-release", version.ref = "axion-release" }

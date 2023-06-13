@@ -1,9 +1,9 @@
 group = "io.github.shoaky"
-version = "0.0.1-SNAPSHOT"
 
 plugins {
-    kotlin("jvm")
+    alias(libs.plugins.kotlin.jvm)
     jacoco
+    alias(libs.plugins.axion.release)
 }
 
 allprojects {
@@ -15,6 +15,12 @@ allprojects {
         maven { url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots") }
     }
 }
+
+scmVersion {
+    useHighestVersion.set(true)
+}
+
+version = scmVersion.version
 
 subprojects {
     version = rootProject.version

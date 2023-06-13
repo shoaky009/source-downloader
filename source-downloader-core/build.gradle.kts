@@ -1,11 +1,10 @@
 description = "source-downloader-core"
 
 plugins {
-    id("maven-publish")
-    id("org.springframework.boot")
-    kotlin("plugin.spring")
+    alias(libs.plugins.springboot)
+    alias(libs.plugins.kotlin.spring)
     id("jacoco-report-aggregation")
-    // id("org.graalvm.buildtools.native") version "0.9.21"
+    // alias(libs.plugins.graalvm)
 }
 
 dependencies {
@@ -16,24 +15,24 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     implementation("org.flywaydb:flyway-core")
-    implementation("org.xerial:sqlite-jdbc:3.42.0.0")
-    implementation("org.hibernate.orm:hibernate-community-dialects:6.2.3.Final")
-    implementation("org.hibernate.orm:hibernate-core:6.2.3.Final")
+    implementation(libs.sqlite.jdbc)
+    implementation(libs.hibernate.community.dialects)
+    implementation(libs.hibernate.core)
     // runtimeOnly("com.h2database:h2")
     // kotlin
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
-    runtimeOnly("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.6.4")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
 
+    implementation(libs.kotlinx.coroutines.core)
+    runtimeOnly(libs.kotlinx.coroutines.core.jvm)
+
     // others
-    implementation("org.apache.commons:commons-collections4:4.4")
-    implementation("com.vladmihalcea:hibernate-types-60:2.21.1")
+    implementation(libs.commons.collections4)
+    implementation(libs.hibernate.types)
     implementation("org.springframework.retry:spring-retry")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml")
-    implementation(enforcedPlatform("org.projectnessie.cel:cel-bom:0.3.15"))
-    implementation("org.projectnessie.cel:cel-tools")
+    implementation(libs.bundles.cel)
 
     resolveBuildInPlugins()
 }

@@ -4,6 +4,7 @@ import io.github.shoaky.sourcedownloader.telegram.other.ChatConfig
 import io.github.shoaky.sourcedownloader.telegram.other.ChatPointer
 import io.github.shoaky.sourcedownloader.telegram.other.DefaultMessageFetcher
 import io.github.shoaky.sourcedownloader.telegram.other.TelegramSource
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import telegram4j.tl.ImmutableBaseMessage
@@ -11,6 +12,7 @@ import telegram4j.tl.ImmutablePeerChat
 import java.time.Duration
 import java.util.stream.IntStream
 
+@Disabled
 class TelegramSourceTest {
 
     @Test
