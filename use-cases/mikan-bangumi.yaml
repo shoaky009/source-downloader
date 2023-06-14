@@ -4,6 +4,15 @@ components:
       type: rss
       props:
         url: https://mikanani.me/RSS/MyBangumi?token=
+    # mikan
+    - name: mikan
+      type: mikan
+      props:
+        url: https://mikanani.me/RSS/MyBangumi?token=
+        # 历史番剧
+        all-episode: true
+        # 推荐填上token，有些番剧要登陆才能番剧信息页面，否则有些番会无法正确重命名
+        token: ""
   downloader:
     - name: qbittorrent
       type: qbittorrent
@@ -33,14 +42,15 @@ components:
       props:
         interval: PT20M
         on-start-run-tasks: true
-# 过滤720P，中文配音的番剧，
-# 完成后
+
 processors:
   - name: mikan-bangumi
     triggers:
       - fixed:20min
-      - webhook
-    source: rss:mikan
+      - webhook:mikan
+    # 如果不需要番剧补全使用
+    #source: rss:mikan
+    source: mikan
     variable-providers:
       - "mikan"
       - "episode"
@@ -53,7 +63,7 @@ processors:
       run-after-completion:
         - http:telegram-message-webhook
       save-path-pattern: "{name}/Season {season}/"
-      filename-pattern: "{nameCn} S{season}E{episode}"
+      filename-pattern: "{nameCn} - S{season}E{episode}"
       rename-task-interval: PT2M
       rename-times-threshold: 2
       download-options:
@@ -62,5 +72,5 @@ processors:
           - "mikan-bangumi"
       provide-metadata-variables: false
       item-expression-exclusions:
-        - "#title matches '.*720(?<!P).*'"
-        - "#title matches '.*中文配音.*'"
+        - "title.matches('720(?i)P')"
+        - "title.matches('中文配音')"

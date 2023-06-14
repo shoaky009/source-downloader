@@ -1,0 +1,48 @@
+components:
+  source:
+    - name: anime-temp-path
+      type: system-file
+      props:
+        path: /mnt/temp-media/anime-temp
+  downloader:
+    - name: anime-temp-path
+      type: system-file
+
+processors:
+  - name: 'anime-local'
+    triggers:
+      - webhook:anime-local
+    source: system-file:anime-temp-path
+    downloader: system-file:anime-temp-path
+    item-file-resolver: system-file
+    variable-providers:
+      - "anime"
+      - "season"
+      - "anitom"
+      - "episode"
+      - "language"
+    mover: general
+    save-path: /mnt/temp-media/anime
+    options:
+      save-path-pattern: "{nativeName}/Season {season}"
+      filename-pattern: "{title} S{season}E{episode}:{' - '+source}"
+      file-filters:
+        - "anime"
+      save-processing-content: false
+      variable-name-replace:
+        episodeNumber: episode
+        animeTitle: title
+        episodeNumberAlt: episode
+        romajiName: title
+      run-after-completion:
+        - "clean-empty-directory"
+      file-expression-exclusions:
+        - "ext in ['md5', 'torrent', 'txt', 'jpg', 'png']"
+        - "'Extra' in paths"
+      file-taggers:
+        - "simple"
+      tag-filename-pattern:
+        subtitle: "{title} S{season}E{episode}:{' - '+source}.{language}"
+      variable-replacers:
+        - regex: "(?i)^BDRIP$"
+          replacement: BD

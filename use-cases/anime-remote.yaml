@@ -1,0 +1,51 @@
+components:
+  source:
+    - name: vcb-7acg
+      type: rss
+      props:
+        url: "https://mikanani.me/RSS/Search?searchstr=%5B7%C2%B3ACG%5D+4%E4%B8%AA%E4%BA%BA%E5%90%84%E8%87%AA%E6%9C%89%E7%9D%80%E8%87%AA%E5%B7%B1%E7%9A%84%E7%A7%98%E5%AF%86%2F4%E4%BA%BA%E3%81%AF%E3%81%9D%E3%82%8C%E3%81%9E%E3%82%8C%E3%82%A6%E3%
+    82%BD%E3%82%92%E3%81%A4%E3%81%8F%2F"
+  downloader:
+    - name: qbittorrent
+      type: qbittorrent
+      props:
+        url: http://192.168.1.219:10095
+        username: admin
+        password: 123456
+
+processors:
+  - name: 'anime-remote'
+    triggers:
+      - webhook:anime-remote
+    source: rss:vcb-7acg
+    downloader: qbittorrent
+    item-file-resolver: torrent
+    variable-providers:
+      - "anime"
+      - "anitom"
+      - "episode"
+      - "language"
+      - "season"
+    mover: general
+    save-path: /mnt/temp-media/anime
+    options:
+      save-path-pattern: "{nativeName}/Season {season}"
+      filename-pattern: "{title} S{season}E{episode}:{' - '+source}"
+      file-filters:
+        - "anime"
+      variable-name-replace:
+        episodeNumber: episode
+        animeTitle: title
+        episodeNumberAlt: episode
+        romajiName: title
+      provide-metadata-variables: false
+      file-expression-inclusions: [ ]
+      file-expression-exclusions:
+        - "ext in ['torrent', 'md5', 'txt', 'jpg', 'png']"
+      file-taggers:
+        - "simple"
+      tag-filename-pattern:
+        subtitle: "{title} S{season}E{episode}:{' - '+source}.{language}"
+      variable-replacers:
+        - regex: "(?i)^BDRIP$"
+          replacement: BD
