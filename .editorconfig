@@ -10,6 +10,8 @@ end_of_line = lf
 ij_any_line_comment_at_first_column = false
 ij_any_line_comment_add_space = true
 ij_any_line_comment_add_space_on_reformat = true
+ij_kotlin_keep_blank_lines_in_declarations = 1
+ij_kotlin_keep_blank_lines_in_code = 1
 
 [*.{yaml,yml}]
 indent_style = space

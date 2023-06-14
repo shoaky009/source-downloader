@@ -20,4 +20,6 @@ object AnimeVariableProviderSupplier : SdComponentSupplier<AnimeVariableProvider
             ComponentType.provider("anime")
         )
     }
+
+    override fun autoCreateDefault(): Boolean = true
 }

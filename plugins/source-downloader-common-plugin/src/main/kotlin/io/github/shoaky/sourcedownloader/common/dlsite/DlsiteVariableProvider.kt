@@ -18,7 +18,7 @@ internal class DlsiteVariableProvider(
     private val locale: String = "zh-cn"
 ) : VariableProvider {
     override fun createSourceGroup(sourceItem: SourceItem): SourceItemGroup {
-        val dlsiteId = getDlsiteId(sourceItem) ?: throw IllegalArgumentException("not dlsite item")
+        val dlsiteId = getDlsiteId(sourceItem) ?: return SourceItemGroup.EMPTY
 
         val workInfo = getWorkInfo(dlsiteId)
         return FunctionalItemGroup(
@@ -30,7 +30,7 @@ internal class DlsiteVariableProvider(
         dlsiteId: String
     ): DlsiteWorkInfo {
         // 不用jsoup来请求是因为后续要对http请求统一管理,增加功能
-        //TODO cache
+        // TODO cache
         val request = httpGetRequest(
             URI("https://www.dlsite.com/home/work/=/product_id/$dlsiteId.html"),
             mapOf("Cookie" to "locale=$locale; adultchecked=1")
@@ -54,8 +54,7 @@ internal class DlsiteVariableProvider(
                 document.getElementById("work_name")?.ownText(),
             )
 
-
-        val keys = map[locale] ?: map["zh-cn"]!!
+        val keys = localizationMapping[locale] ?: localizationMapping["zh-cn"]!!
 
         val releaseDate = kotlin.runCatching {
             LocalDate.parse(workOutline[keys[0]], chineseDateTimeFormatter)
@@ -95,7 +94,7 @@ internal class DlsiteVariableProvider(
             return link.find(*idRegexes)
         }
 
-        private val map: Map<String, List<String>> = mapOf(
+        private val localizationMapping: Map<String, List<String>> = mapOf(
             "zh-cn" to listOf(
                 "贩卖日", "系列名", "剧情", "插画", "声优", "音乐", "作品类型", "作者", "社团名"
             ),

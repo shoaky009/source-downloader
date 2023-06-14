@@ -69,7 +69,7 @@ object QrCodeAuthorization {
                         LoginTokenMigrateTo.ID -> {
                             val migrate = token as LoginTokenMigrateTo
                             log.info("Redirecting to the DC {}", migrate.dcId())
-                            return@flatMap storeLayout.dcOptions // TODO: request help.GetConfig if DC not found
+                            return@flatMap storeLayout.dcOptions
                                 .map<DataCenter> { dcOpts: DcOptions ->
                                     dcOpts.find(DataCenter.Type.REGULAR, migrate.dcId())
                                         .orElseThrow<IllegalStateException> {

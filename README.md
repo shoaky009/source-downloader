@@ -3,6 +3,7 @@
 ![kotlin](https://img.shields.io/badge/kotlin-1.8.20-blueviolet)
 ![jre](https://img.shields.io/badge/jre-17+-orange)
 [![GitHub License](https://img.shields.io/github/license/shoaky009/source-downloader)](https://github.com/shoaky009/source-downloader/blob/main/LICENSE)
+![build](https://github.com/shoaky009/source-downloader/actions/workflows/test.yml/badge.svg)
 
 ## 主要功能
 

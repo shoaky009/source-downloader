@@ -103,7 +103,7 @@ class CodeAuthorization(
                                             FAIL_FAST
                                         )
                                     })
-                            } // TODO: why new subtype of SentCode was added?
+                            }
                             .cast<BaseSentCode>(BaseSentCode::class.java)
                             .flatMapMany { scode: BaseSentCode? -> applyCode(scode) }
                     }

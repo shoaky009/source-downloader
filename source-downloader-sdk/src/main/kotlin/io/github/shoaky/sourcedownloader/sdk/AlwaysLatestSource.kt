@@ -12,7 +12,7 @@ abstract class AlwaysLatestSource : Source<NullPointer> {
     final override fun fetch(
         pointer: NullPointer?,
         limit: Int
-    ): Iterable<io.github.shoaky.sourcedownloader.sdk.PointedItem<NullPointer>> {
+    ): Iterable<PointedItem<NullPointer>> {
         return Iterables.transform(fetch()) {
             PointedItem(
                 it,

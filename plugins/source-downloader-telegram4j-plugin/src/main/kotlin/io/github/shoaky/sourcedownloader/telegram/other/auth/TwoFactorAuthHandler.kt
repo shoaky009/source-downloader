@@ -84,7 +84,6 @@ class TwoFactorAuthHandler(
             val sBytes = toBytesPadded(s)
             val kBytes = sha256Digest(sBytes)
 
-            // TODO: checks
             val m1 = sha256Digest(
                 xor(sha256Digest(pBytes), sha256Digest(gBytes)),
                 sha256Digest(salt1),

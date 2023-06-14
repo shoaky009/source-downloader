@@ -7,7 +7,7 @@ import io.github.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
 
 internal object DlsiteVariableProviderSupplier : SdComponentSupplier<DlsiteVariableProvider> {
     override fun apply(props: Properties): DlsiteVariableProvider {
-        return DlsiteVariableProvider()
+        return DlsiteVariableProvider(props.getOrDefault("locale", "zh-cn"))
     }
 
     override fun supplyTypes(): List<ComponentType> {
@@ -16,4 +16,5 @@ internal object DlsiteVariableProviderSupplier : SdComponentSupplier<DlsiteVaria
         )
     }
 
+    override fun autoCreateDefault(): Boolean = true
 }

@@ -30,13 +30,21 @@ subprojects {
     apply(plugin = "java")
     apply(plugin = "jacoco")
 
+    // val testReport: String? by project
     tasks.test {
         useJUnitPlatform()
-        finalizedBy(tasks.jacocoTestReport)
+        // if (testReport.toBoolean()) {
+        //     finalizedBy(tasks.jacocoTestReport)
+        // }
     }
 
     tasks.jacocoTestReport {
         dependsOn(tasks.test)
+        reports {
+            xml.required.set(false)
+            html.required.set(false)
+            csv.required.set(true)
+        }
     }
 
     tasks.compileKotlin {

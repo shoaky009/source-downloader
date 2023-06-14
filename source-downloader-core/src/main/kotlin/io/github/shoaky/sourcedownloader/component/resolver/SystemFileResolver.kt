@@ -11,7 +11,7 @@ object SystemFileResolver : ItemFileResolver {
     override fun resolveFiles(sourceItem: SourceItem): List<SourceFile> {
         val path = sourceItem.downloadUri.toPath()
         if (path.isDirectory()) {
-            return Files.list(path).sorted().map { SourceFile(it) }.toList()
+            return Files.walk(path).filter { it.isDirectory().not() }.sorted().map { SourceFile(it) }.toList()
         }
         return listOf(SourceFile(path))
     }

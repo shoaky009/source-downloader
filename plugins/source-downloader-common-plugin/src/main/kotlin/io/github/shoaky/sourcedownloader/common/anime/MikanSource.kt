@@ -19,22 +19,6 @@ internal class MikanSource(
     private val mikanSupport: MikanSupport = MikanSupport(null)
 ) : Source<MikanPointer> {
 
-    companion object {
-
-        private val log = LoggerFactory.getLogger(MikanSource::class.java)
-
-        private fun fromRssItem(rssItem: Item): SourceItem {
-            val enclosure = rssItem.enclosure.get()
-            return SourceItem(
-                rssItem.title.get(),
-                URI(rssItem.link.get()),
-                parseTime(rssItem.pubDate.get()),
-                enclosure.type,
-                URI(enclosure.url)
-            )
-        }
-    }
-
     override fun fetch(pointer: MikanPointer?, limit: Int): Iterable<PointedItem<MikanPointer>> {
         val sourceItems = rssReader.read(url)
             .map {
@@ -60,6 +44,7 @@ internal class MikanSource(
 
             var pointedItems = rssReader.read(fansubRss)
                 .map {
+                    // TODO 改进指针，包括列表内的也能过滤
                     PointedItem(fromRssItem(it), MikanPointer(pi.sourceItem.date))
                 }.toList()
                 .sortedBy { it.sourceItem.date }
@@ -75,6 +60,21 @@ internal class MikanSource(
         return expander.asSequence().flatten().asIterable()
     }
 
+    private companion object {
+
+        private val log = LoggerFactory.getLogger(MikanSource::class.java)
+
+        private fun fromRssItem(rssItem: Item): SourceItem {
+            val enclosure = rssItem.enclosure.get()
+            return SourceItem(
+                rssItem.title.get(),
+                URI(rssItem.link.get()),
+                parseTime(rssItem.pubDate.get()),
+                enclosure.type,
+                URI(enclosure.url)
+            )
+        }
+    }
 }
 
 internal data class MikanPointer(

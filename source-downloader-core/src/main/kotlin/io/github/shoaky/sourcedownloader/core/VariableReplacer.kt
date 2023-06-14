@@ -8,7 +8,7 @@ interface VariableReplacer {
 
 class RegexVariableReplacer(
     private val regex: Regex,
-    private val replacement: String
+    private val replacement: String,
 ) : VariableReplacer {
 
     override fun replace(key: String, value: String): String {
