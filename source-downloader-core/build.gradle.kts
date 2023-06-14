@@ -32,7 +32,8 @@ dependencies {
     implementation(libs.hibernate.types)
     implementation("org.springframework.retry:spring-retry")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml")
-    implementation(libs.bundles.cel)
+    implementation(enforcedPlatform(libs.cel.bom))
+    implementation(libs.cel.tools)
 
     resolveBuildInPlugins()
 }

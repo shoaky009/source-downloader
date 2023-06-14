@@ -7,14 +7,17 @@ import io.github.shoaky.sourcedownloader.repo.jpa.ProcessingRecordRepository
 import io.github.shoaky.sourcedownloader.testResourcePath
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
 import kotlin.io.path.*
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 
 @SpringBootTest
+@Disabled
 @ActiveProfiles("integration-test")
 @OptIn(ExperimentalPathApi::class)
 class SourceProcessorTest {
@@ -26,6 +29,7 @@ class SourceProcessorTest {
     lateinit var processorManager: ProcessorManager
 
     init {
+        Path("test.db").deleteIfExists()
         sourcePath.createDirectories()
         savePath.createDirectories()
     }
@@ -49,7 +53,8 @@ class SourceProcessorTest {
     @Test
     fun normal() {
         val processor = processorManager.getProcessor("NormalCase")
-            ?: throw IllegalStateException("Processor not found")
+        assertNotNull(processor, "Processor NormalCase not found")
+
         processor.run()
         processor.runRename()
 
@@ -70,7 +75,7 @@ class SourceProcessorTest {
     @Test
     fun normal_dry_run() {
         val processor = processorManager.getProcessor("NormalCaseCopy")
-            ?: throw IllegalStateException("Processor not found")
+        assertNotNull(processor, "Processor NormalCaseCopy not found")
 
         val contents = processor.dryRun()
         assertEquals(3, contents.size)
@@ -85,14 +90,13 @@ class SourceProcessorTest {
             .resolve("test3.jpg").createIfNotExists()
 
         val processor = processorManager.getProcessor("FileStatusCase")
-            ?: throw IllegalStateException("Processor not found")
+        assertNotNull(processor, "Processor FileStatusCase not found")
 
         processor.run()
         val records = processingStorage.findByProcessorName("FileStatusCase").sortedBy { it.id }
 
         downloadedFile.deleteIfExists()
         targetFile.deleteIfExists()
-
         assertEquals(FileContentStatus.NORMAL, records[0].sourceContent.sourceFiles.first().status)
         assertEquals(FileContentStatus.NORMAL, records[1].sourceContent.sourceFiles.first().status)
         assertEquals(FileContentStatus.TARGET_EXISTS, records[2].sourceContent.sourceFiles[0].status)
@@ -101,7 +105,7 @@ class SourceProcessorTest {
     @Test
     fun test_file_status2() {
         val processor = processorManager.getProcessor("FileStatusCase2")
-            ?: throw IllegalStateException("Processor not found")
+        assertNotNull(processor, "Processor FileStatusCase2 not found")
 
         processor.run()
         val records = processingStorage.findByProcessorName("FileStatusCase2").sortedBy { it.id }

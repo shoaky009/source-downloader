@@ -1,0 +1,61 @@
+name: Test
+on:
+  workflow_dispatch:
+    inputs:
+      manual_trigger:
+        description: 'Manual trigger'
+        required: false
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+      - name: Run Test with Gradle
+        run: ./gradlew test jacocoTestReport testCodeCoverageReport --no-daemon
+      - name: Generate JaCoCo Badge
+        id: jacoco
+        uses: cicirello/jacoco-badge-generator@v2
+        with:
+          generate-branches-badge: false
+          jacoco-csv-file: "**/build/reports/jacoco/test/jacocoTestReport.csv"
+      - name: Log coverage percentage
+        run: |
+          echo "coverage = ${{ steps.jacoco.outputs.coverage }}"
+          echo "branch coverage = ${{ steps.jacoco.outputs.branches }}"
+      - name: Format Coverage
+        id: format
+        run: |
+          echo coverage=$(echo "${{ steps.jacoco.outputs.coverage }} 100" | awk '{printf "%.2f", $1 * $2}') >> $GITHUB_OUTPUT
+      - name: color
+        id: color
+        run: |
+          if [ ${{ steps.jacoco.outputs.coverage }} -ge 90 ]; then
+            echo "value=hsl(120, 100%, 40%)" >> $GITHUB_OUTPUT
+          elif [ ${{ steps.jacoco.outputs.coverage }} -ge 80 ]; then
+            echo "value=hsl(90, 100%, 40%)" >> $GITHUB_OUTPUT
+          elif [ ${{ steps.jacoco.outputs.coverage }} -ge 70 ]; then
+            echo "value=hsl(60, 100%, 40%)" >> $GITHUB_OUTPUT
+          elif [ ${{ steps.jacoco.outputs.coverage }} -ge 60 ]; then
+            echo "value=hsl(30, 100%, 40%)" >> $GITHUB_OUTPUT
+          else
+            echo "value=hsl(0, 100%, 40%)" >> $GITHUB_OUTPUT
+          fi
+      - name: Test Coverage Badges
+        uses: schneegans/dynamic-badges-action@v1.6.0
+        with:
+          auth: ${{ secrets.GIST_TOKEN }}
+          gistID: 27eb9c1db02a3e823136a12e6598aae1
+          filename: source-downloader.json
+          label: Coverage
+          message: ${{ steps.format.outputs.coverage }}%
+          color: ${{ steps.color.outputs.value }}

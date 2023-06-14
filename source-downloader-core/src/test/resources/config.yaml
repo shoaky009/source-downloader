@@ -38,7 +38,7 @@ processors:
   - name: FileStatusCase
     triggers: [ ]
     source: "system-file:test-files"
-    downloader: "mock"
+    downloader: mock
     item-file-resolver: system-file
     file-mover: general
     variable-providers: [ ]
@@ -48,7 +48,7 @@ processors:
   - name: FileStatusCase2
     triggers: [ ]
     source: "system-file:test-files"
-    downloader: "mock"
+    downloader: mock
     item-file-resolver: system-file
     file-mover: general
     variable-providers: [ ]
@@ -59,7 +59,7 @@ processors:
   - name: PointerStorageCase
     triggers: [ ]
     source: "system-file:test-files"
-    downloader: "mock"
+    downloader: mock
     item-file-resolver: system-file
     file-mover: general
     variable-providers: [ ]

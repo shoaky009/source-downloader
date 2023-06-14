@@ -33,6 +33,9 @@ subprojects {
     // val testReport: String? by project
     tasks.test {
         useJUnitPlatform()
+        testLogging {
+            showStandardStreams = true
+        }
         // if (testReport.toBoolean()) {
         //     finalizedBy(tasks.jacocoTestReport)
         // }

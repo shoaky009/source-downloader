@@ -1,4 +1,4 @@
-name: Dev Docker Image
+name: Docker Image
 on:
   workflow_dispatch:
     inputs:
