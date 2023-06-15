@@ -52,13 +52,14 @@ jobs:
       - name: Select Badge Color
         id: color
         run: |
-          if [ ${{ steps.jacoco.outputs.coverage }} -ge 90 ]; then
+          VALUE=$(printf "%0.f" ${{ steps.format.outputs.coverage }})
+          if [ "$VALUE" -ge 90 ]; then
             echo "value=hsl(120, 100%, 40%)" >> $GITHUB_OUTPUT
-          elif [ ${{ steps.jacoco.outputs.coverage }} -ge 80 ]; then
+          elif [ "$VALUE" -ge 80 ]; then
             echo "value=hsl(90, 100%, 40%)" >> $GITHUB_OUTPUT
-          elif [ ${{ steps.jacoco.outputs.coverage }} -ge 70 ]; then
+          elif [ "$VALUE" -ge 70 ]; then
             echo "value=hsl(60, 100%, 40%)" >> $GITHUB_OUTPUT
-          elif [ ${{ steps.jacoco.outputs.coverage }} -ge 60 ]; then
+          elif [ "$VALUE" -ge 60 ]; then
             echo "value=hsl(30, 100%, 40%)" >> $GITHUB_OUTPUT
           else
             echo "value=hsl(0, 100%, 40%)" >> $GITHUB_OUTPUT
