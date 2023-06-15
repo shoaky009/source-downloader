@@ -93,6 +93,16 @@ tasks.bootJar {
     }
 }
 
+tasks.testCodeCoverageReport {
+    this.reports {
+        html.required.set(false)
+        xml.required.set(false)
+        csv.required.set(true)
+        val file = rootProject.layout.buildDirectory.file("reports/jacoco/testCodeCoverageReport.csv")
+        csv.outputLocation.set(file)
+    }
+}
+
 // graalvmNative {
 //     binaries.all {
 //         resources.includedPatterns.add(".*.yaml")

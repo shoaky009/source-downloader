@@ -27,16 +27,29 @@ jobs:
         uses: cicirello/jacoco-badge-generator@v2
         with:
           generate-branches-badge: false
-          jacoco-csv-file: "**/build/reports/jacoco/test/jacocoTestReport.csv"
+          jacoco-csv-file: "build/reports/jacoco/testCodeCoverageReport.csv"
+          badges-directory: "badges"
+      - name: Store reports
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: reports
+          path: |
+            **/build/reports/
+            **/build/test-results/
+
       - name: Log coverage percentage
         run: |
           echo "coverage = ${{ steps.jacoco.outputs.coverage }}"
           echo "branch coverage = ${{ steps.jacoco.outputs.branches }}"
+      #          pwd
+      #          ls -al
+      #          ls -al badges
       - name: Format Coverage
         id: format
         run: |
           echo coverage=$(echo "${{ steps.jacoco.outputs.coverage }} 100" | awk '{printf "%.2f", $1 * $2}') >> $GITHUB_OUTPUT
-      - name: color
+      - name: Select Badge Color
         id: color
         run: |
           if [ ${{ steps.jacoco.outputs.coverage }} -ge 90 ]; then
@@ -50,7 +63,7 @@ jobs:
           else
             echo "value=hsl(0, 100%, 40%)" >> $GITHUB_OUTPUT
           fi
-      - name: Test Coverage Badges
+      - name: Update Coverage
         uses: schneegans/dynamic-badges-action@v1.6.0
         with:
           auth: ${{ secrets.GIST_TOKEN }}
@@ -59,3 +72,12 @@ jobs:
           label: Coverage
           message: ${{ steps.format.outputs.coverage }}%
           color: ${{ steps.color.outputs.value }}
+#         FIXME no such file or directory
+#      - name: Upload Coverage Badge
+#        uses: exuanbo/actions-deploy-gist@v1
+#        with:
+#          token: ${{ secrets.GIST_TOKEN }}
+#          gist_id: 27eb9c1db02a3e823136a12e6598aae1
+#          file_path: badges/jacoco.svg
+#          file_type: binary
+#          gist_file_name: coverage-badges/source-downloader.svg
