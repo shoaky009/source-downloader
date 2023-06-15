@@ -2,13 +2,11 @@ package io.github.shoaky.sourcedownloader.telegram
 
 import io.github.shoaky.sourcedownloader.sdk.DownloadTask
 import io.github.shoaky.sourcedownloader.sdk.Properties
-import io.github.shoaky.sourcedownloader.telegram.other.*
 import io.netty.util.ResourceLeakDetector
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import reactor.core.publisher.Hooks
 import kotlin.io.path.Path
-
 
 @Disabled("just a demo")
 class OtherClientTest {
@@ -37,9 +35,11 @@ class OtherClientTest {
             val sourceItem = pointedItem.sourceItem
             val resolveFiles = integration.resolveFiles(sourceItem)
 
-            val task = DownloadTask(sourceItem,
+            val task = DownloadTask(
+                sourceItem,
                 resolveFiles.map { downloadPath.resolve(it.path) },
-                downloadPath)
+                downloadPath
+            )
             integration.submit(task)
         }
     }
