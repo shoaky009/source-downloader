@@ -1,5 +1,6 @@
 package io.github.shoaky.sourcedownloader.telegram.auth
 
+import io.github.shoaky.common.Generated
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.ByteBufUtil
 import io.netty.buffer.Unpooled
@@ -22,7 +23,7 @@ import java.util.*
 import javax.crypto.Mac
 import javax.crypto.SecretKey
 
-
+@Generated
 class TwoFactorAuthHandler(
     private val clientGroup: MTProtoClientGroup,
 ) {
@@ -133,7 +134,13 @@ class TwoFactorAuthHandler(
 
     // copied from com.sun.crypto.provider.PBKDF2KeyImpl
     // because the public interface does not allow to work directly with byte arrays
-    private fun deriveKey(prf: Mac, password: ByteArray, salt: ByteArray?, iterCount: Int, keyLengthInBit: Int): ByteArray {
+    private fun deriveKey(
+        prf: Mac,
+        password: ByteArray,
+        salt: ByteArray?,
+        iterCount: Int,
+        keyLengthInBit: Int
+    ): ByteArray {
         val keyLength = keyLengthInBit / 8
         val key = ByteArray(keyLength)
         try {

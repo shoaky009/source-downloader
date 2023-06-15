@@ -91,14 +91,10 @@ class DefaultMessageFetcher(
     private val client: MTProtoTelegramClient,
 ) : TelegramMessageFetcher {
 
-    private companion object {
-        const val MIN_MESSAGE_ID = 1
-    }
-
     override fun fetchMessages(chatPointer: ChatPointer, limit: Int, timeout: Duration): List<BaseMessage> {
         val isChannel = chatPointer.isChannel()
         val getHistoryBuilder = ImmutableGetHistory.builder()
-            .offsetId(maxOf(chatPointer.fromMessageId + 1, MIN_MESSAGE_ID))
+            .offsetId(chatPointer.nextMessageId())
             .addOffset(-limit)
             .limit(limit)
             .maxId(-1)

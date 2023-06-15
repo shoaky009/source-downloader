@@ -73,6 +73,13 @@ jobs:
           label: Coverage
           message: ${{ steps.format.outputs.coverage }}%
           color: ${{ steps.color.outputs.value }}
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          directory: build/reports/jacoco
+          files: testCodeCoverageReport.xml
+
 #         FIXME no such file or directory
 #      - name: Upload Coverage Badge
 #        uses: exuanbo/actions-deploy-gist@v1

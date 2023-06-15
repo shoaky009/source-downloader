@@ -30,12 +30,8 @@ subprojects {
     apply(plugin = "java")
     apply(plugin = "jacoco")
 
-    // val testReport: String? by project
     tasks.test {
         useJUnitPlatform()
-        // if (testReport.toBoolean()) {
-        //     finalizedBy(tasks.jacocoTestReport)
-        // }
     }
 
     tasks.jacocoTestReport {

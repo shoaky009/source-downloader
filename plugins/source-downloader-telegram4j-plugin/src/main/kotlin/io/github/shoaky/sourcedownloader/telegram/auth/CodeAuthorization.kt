@@ -1,5 +1,6 @@
 package io.github.shoaky.sourcedownloader.telegram.auth
 
+import io.github.shoaky.common.Generated
 import org.reactivestreams.Publisher
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
@@ -24,7 +25,7 @@ import telegram4j.tl.request.auth.SignIn
 import java.time.Instant
 import java.util.*
 
-
+@Generated
 class CodeAuthorization(
     private val clientGroup: MTProtoClientGroup,
     private val storeLayout: StoreLayout,
@@ -144,7 +145,6 @@ class CodeAuthorization(
             .then()
     }
 
-
     enum class State {
         SEND_CODE,
         AWAIT_CODE,
@@ -152,7 +152,6 @@ class CodeAuthorization(
         CANCEL_CODE,
         SIGN_IN
     }
-
 
     private fun readPhoneNumber(sc: Scanner): String {
         var phoneNumber: String = sc.nextLine()

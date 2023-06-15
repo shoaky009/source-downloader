@@ -96,10 +96,14 @@ tasks.bootJar {
 tasks.testCodeCoverageReport {
     this.reports {
         html.required.set(false)
-        xml.required.set(false)
+        xml.required.set(true)
+        xml.outputLocation.set(
+            rootProject.layout.buildDirectory.file("reports/jacoco/testCodeCoverageReport.xml")
+        )
         csv.required.set(true)
-        val file = rootProject.layout.buildDirectory.file("reports/jacoco/testCodeCoverageReport.csv")
-        csv.outputLocation.set(file)
+        csv.outputLocation.set(
+            rootProject.layout.buildDirectory.file("reports/jacoco/testCodeCoverageReport.csv")
+        )
     }
 }
 

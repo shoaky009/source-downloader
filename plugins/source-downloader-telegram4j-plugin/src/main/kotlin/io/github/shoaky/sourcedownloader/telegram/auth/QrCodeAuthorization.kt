@@ -6,6 +6,7 @@ import com.google.zxing.MultiFormatWriter
 import com.google.zxing.WriterException
 import com.google.zxing.common.BitMatrix
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
+import io.github.shoaky.common.Generated
 import reactor.core.Disposables
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
@@ -34,7 +35,7 @@ import java.time.Duration
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 
-
+@Generated
 object QrCodeAuthorization {
 
     private val log: Logger = Loggers.getLogger(QrCodeAuthorization::class.java)

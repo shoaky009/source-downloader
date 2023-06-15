@@ -5,6 +5,7 @@ plugins {
 
 dependencies {
     implementation(project(":source-downloader-sdk"))
+    implementation(project(":source-downloader-common"))
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     testImplementation("org.mockito:mockito-junit-jupiter")

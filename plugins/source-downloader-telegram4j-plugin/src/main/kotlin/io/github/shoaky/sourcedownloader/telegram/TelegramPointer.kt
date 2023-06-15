@@ -9,7 +9,7 @@ data class TelegramPointer(
     fun refreshChats(chatIds: List<Long>): TelegramPointer {
         val chatLastMessage = pointers.associateBy { it.chatId }.mapValues { it.value.fromMessageId }
         val chatPointers = chatIds.map {
-            ChatPointer(it, chatLastMessage.getOrDefault(it, 1))
+            ChatPointer(it, chatLastMessage.getOrDefault(it, 0))
         }
         return TelegramPointer(chatPointers)
     }
@@ -24,5 +24,9 @@ data class TelegramPointer(
             }
         }
         return TelegramPointer(updateChats)
+    }
+
+    fun getChatPointer(chatId: Long): ChatPointer? {
+        return pointers.firstOrNull { it.chatId == chatId }
     }
 }

@@ -24,4 +24,12 @@ data class ChatPointer(
             Id.ofChat(parseChatId())
         }
     }
+
+    fun nextMessageId(): Int {
+        return maxOf(fromMessageId + 1, MIN_MESSAGE_ID)
+    }
+
+    private companion object {
+        const val MIN_MESSAGE_ID = 1
+    }
 }
