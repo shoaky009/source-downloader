@@ -1,9 +1,10 @@
 # 注意项目文档和代码功能当前阶段没有完全同步, 遇到使用问题请留言
 
-![kotlin](https://img.shields.io/badge/kotlin-1.8.20-blueviolet)
-![jre](https://img.shields.io/badge/jre-17+-orange)
+![Kotlin](https://img.shields.io/badge/kotlin-1.8.20-blueviolet)
+![JRE](https://img.shields.io/badge/jre-17+-orange)
 [![GitHub License](https://img.shields.io/github/license/shoaky009/source-downloader)](https://github.com/shoaky009/source-downloader/blob/main/LICENSE)
-![build](https://github.com/shoaky009/source-downloader/actions/workflows/test.yml/badge.svg)
+![Test](https://github.com/shoaky009/source-downloader/actions/workflows/test.yml/badge.svg?branch=main)
+![Test Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/shoaky009/27eb9c1db02a3e823136a12e6598aae1/raw/source-downloader.json)
 
 ## 主要功能
 
