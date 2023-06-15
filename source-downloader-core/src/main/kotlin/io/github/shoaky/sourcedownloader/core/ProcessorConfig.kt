@@ -76,7 +76,7 @@ data class ProcessorConfig(
         val downloadOptions: DownloadOptions = DownloadOptions(),
         @JsonAlias("variable-conflict-strategy")
         val variableConflictStrategy: VariableConflictStrategy = VariableConflictStrategy.SMART,
-        @JsonAlias("touch-item-directory")
+        @JsonAlias("rename-times-threshold")
         val renameTimesThreshold: Int = 3,
         @JsonAlias("provide-metadata-variables")
         val provideMetadataVariables: Boolean = true,
@@ -106,7 +106,7 @@ data class ProcessorConfig(
         @JsonAlias("variable-replacers")
         @JsonDeserialize(contentAs = RegexVariableReplacer::class)
         val variableReplacers: List<VariableReplacer> = emptyList(),
-        @JsonAlias("file-replacement-strategy")
+        @JsonAlias("file-replacement-decider")
         val fileReplacementDecider: ComponentId = ComponentId("never"),
         @JsonAlias("fetch-limit")
         val fetchLimit: Int = 50,
