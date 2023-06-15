@@ -37,4 +37,9 @@ class DlsiteVariableProviderTests {
         assertEquals(2023, workInfo.year)
         assertEquals("電撃G's magazine", workInfo.maker)
     }
+
+    @Test
+    fun test_group() {
+        // val group = provider.createSourceGroup(sourceItem)
+    }
 }

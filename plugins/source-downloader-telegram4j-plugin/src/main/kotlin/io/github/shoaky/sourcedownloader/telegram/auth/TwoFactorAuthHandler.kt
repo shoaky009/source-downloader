@@ -1,4 +1,4 @@
-package io.github.shoaky.sourcedownloader.telegram.other.auth
+package io.github.shoaky.sourcedownloader.telegram.auth
 
 import io.netty.buffer.ByteBuf
 import io.netty.buffer.ByteBufUtil

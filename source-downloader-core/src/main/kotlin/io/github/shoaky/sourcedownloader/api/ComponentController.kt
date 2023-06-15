@@ -9,6 +9,7 @@ import io.github.shoaky.sourcedownloader.core.file.SdComponentManager
 import io.github.shoaky.sourcedownloader.sdk.ComponentStateful
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.component.*
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.bind.annotation.*
 
@@ -52,6 +53,7 @@ private class ComponentController(
     }
 
     @PostMapping("/{type}/{typeName}/{name}")
+    @ResponseStatus(HttpStatus.CREATED)
     fun createComponent(
         @PathVariable type: ComponentTopType,
         @PathVariable typeName: String,
@@ -102,7 +104,6 @@ private data class ComponentInfo(
     val detail: ComponentDetail,
     val stateDetail: Any? = null,
 )
-
 
 @Service
 private class ComponentService(

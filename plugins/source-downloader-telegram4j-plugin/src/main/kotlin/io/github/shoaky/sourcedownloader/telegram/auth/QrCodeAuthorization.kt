@@ -1,4 +1,4 @@
-package io.github.shoaky.sourcedownloader.telegram.other.auth
+package io.github.shoaky.sourcedownloader.telegram.auth
 
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.EncodeHintType

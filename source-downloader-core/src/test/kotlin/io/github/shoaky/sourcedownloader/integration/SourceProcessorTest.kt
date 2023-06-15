@@ -5,7 +5,6 @@ import io.github.shoaky.sourcedownloader.core.processor.ProcessorManager
 import io.github.shoaky.sourcedownloader.createIfNotExists
 import io.github.shoaky.sourcedownloader.repo.jpa.ProcessingRecordRepository
 import io.github.shoaky.sourcedownloader.testResourcePath
-import org.junit.Before
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -30,12 +29,6 @@ class SourceProcessorTest {
     init {
         sourcePath.createDirectories()
         savePath.createDirectories()
-    }
-
-    @Before
-    fun init() {
-        println("init")
-        processingStorage.deleteAll()
     }
 
     @BeforeEach

@@ -1,5 +1,7 @@
 package io.github.shoaky.sourcedownloader.common.rss
 
+import com.apptasticsoftware.rssreader.RssReader
+import io.github.shoaky.sourcedownloader.sdk.AlwaysLatestSource
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import java.net.URI
 import java.time.LocalDateTime
@@ -7,10 +9,9 @@ import java.time.format.DateTimeFormatter
 import java.util.*
 
 class JackettSource(
-    private val url: String
-) : io.github.shoaky.sourcedownloader.sdk.AlwaysLatestSource() {
-
-    private val rssReader = defaultRssReader
+    private val url: String,
+    private val rssReader: RssReader = defaultRssReader
+) : AlwaysLatestSource() {
 
     override fun fetch(): Iterable<SourceItem> {
         return rssReader.read(url)

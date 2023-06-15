@@ -1,39 +1,31 @@
 package io.github.shoaky.sourcedownloader
 
-import com.google.common.reflect.ClassPath
-import com.vladmihalcea.hibernate.type.json.JsonType
 import io.github.shoaky.sourcedownloader.component.*
 import io.github.shoaky.sourcedownloader.component.supplier.*
 import io.github.shoaky.sourcedownloader.config.SourceDownloaderProperties
 import io.github.shoaky.sourcedownloader.core.*
 import io.github.shoaky.sourcedownloader.core.component.ComponentConfig
 import io.github.shoaky.sourcedownloader.core.component.ComponentConfigStorage
-import io.github.shoaky.sourcedownloader.core.component.ComponentId
 import io.github.shoaky.sourcedownloader.core.component.DefaultInstanceManager
 import io.github.shoaky.sourcedownloader.core.file.SdComponentManager
 import io.github.shoaky.sourcedownloader.core.processor.ProcessorManager
 import io.github.shoaky.sourcedownloader.sdk.InstanceManager
-import io.github.shoaky.sourcedownloader.sdk.PathPattern
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.component.*
 import io.github.shoaky.sourcedownloader.sdk.util.getObjectSuppliers
 import jakarta.annotation.PreDestroy
 import org.slf4j.LoggerFactory
-import org.springframework.aot.hint.MemberCategory
-import org.springframework.aot.hint.RuntimeHints
-import org.springframework.aot.hint.RuntimeHintsRegistrar
 import org.springframework.beans.factory.InitializingBean
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.boot.context.properties.EnableConfigurationProperties
-import org.springframework.context.annotation.ImportRuntimeHints
 import org.springframework.context.event.EventListener
 import org.springframework.core.env.Environment
-import java.net.URL
+import java.net.URI
 
 @SpringBootApplication
-@ImportRuntimeHints(SourceDownloaderApplication.ApplicationRuntimeHints::class)
+// @ImportRuntimeHints(SourceDownloaderApplication.ApplicationRuntimeHints::class)
 @EnableConfigurationProperties(SourceDownloaderProperties::class)
 class SourceDownloaderApplication(
     private val environment: Environment,
@@ -145,7 +137,7 @@ class SourceDownloaderApplication(
             val env = System.getenv()
             val urlStr = env["http_proxy"] ?: env["HTTP_PROXY"] ?: env["https_proxy"] ?: env["HTTPS_PROXY"]
             urlStr?.also {
-                val url = URL(it)
+                val url = URI(it)
                 System.setProperty("http.proxyHost", url.host)
                 System.setProperty("http.proxyPort", url.port.toString())
                 System.setProperty("https.proxyHost", url.host)
@@ -154,30 +146,30 @@ class SourceDownloaderApplication(
         }
     }
 
-    class ApplicationRuntimeHints : RuntimeHintsRegistrar {
-        override fun registerHints(hints: RuntimeHints, classLoader: ClassLoader?) {
-            hints.reflection().registerType(JsonType::class.java, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS)
-            hints.reflection().registerType(ProcessorConfig::class.java, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS)
-            hints.reflection()
-                .registerType(ProcessorConfig.Options::class.java, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS)
-            hints.reflection().registerType(Regex::class.java, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS)
-            hints.reflection().registerType(PathPattern::class.java, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS)
-            hints.reflection().registerType(ComponentId::class.java, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS)
-            hints.reflection()
-                .registerType(ProcessorConfig.Options::class.java, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS)
-            hints.reflection().registerType(ComponentConfig::class.java, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS)
-
-            ClassPath.from(this::class.java.classLoader)
-                .getTopLevelClasses("io.github.shoaky.sourcedownloader.component.supplier")
-                .filter { it.simpleName.contains("supplier", true) }
-                .map { it.load() }
-                .forEach {
-                    hints.reflection().registerType(it, MemberCategory.DECLARED_FIELDS)
-                    hints.reflection().registerType(it, MemberCategory.INVOKE_PUBLIC_METHODS)
-                }
-        }
-
-    }
+    // class ApplicationRuntimeHints : RuntimeHintsRegistrar {
+    //     override fun registerHints(hints: RuntimeHints, classLoader: ClassLoader?) {
+    //         hints.reflection().registerType(JsonType::class.java, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS)
+    //         hints.reflection().registerType(ProcessorConfig::class.java, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS)
+    //         hints.reflection()
+    //             .registerType(ProcessorConfig.Options::class.java, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS)
+    //         hints.reflection().registerType(Regex::class.java, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS)
+    //         hints.reflection().registerType(PathPattern::class.java, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS)
+    //         hints.reflection().registerType(ComponentId::class.java, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS)
+    //         hints.reflection()
+    //             .registerType(ProcessorConfig.Options::class.java, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS)
+    //         hints.reflection().registerType(ComponentConfig::class.java, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS)
+    //
+    //         ClassPath.from(this::class.java.classLoader)
+    //             .getTopLevelClasses("io.github.shoaky.sourcedownloader.component.supplier")
+    //             .filter { it.simpleName.contains("supplier", true) }
+    //             .map { it.load() }
+    //             .forEach {
+    //                 hints.reflection().registerType(it, MemberCategory.DECLARED_FIELDS)
+    //                 hints.reflection().registerType(it, MemberCategory.INVOKE_PUBLIC_METHODS)
+    //             }
+    //     }
+    //
+    // }
 
     override fun afterPropertiesSet() {
         // 加载出现异常不让应用完成启动

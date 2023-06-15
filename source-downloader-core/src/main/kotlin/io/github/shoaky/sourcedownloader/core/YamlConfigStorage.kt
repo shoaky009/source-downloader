@@ -38,7 +38,7 @@ class YamlConfigStorage(
         } else {
             typeConfigs[index] = componentConfig
         }
-        yamlMapper.writeValue(configPath.toFile(), config)
+        yamlMapper.writerWithDefaultPrettyPrinter().writeValue(configPath.toFile(), config)
     }
 
     @Synchronized

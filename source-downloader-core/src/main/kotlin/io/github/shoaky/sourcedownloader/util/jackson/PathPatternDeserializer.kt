@@ -30,5 +30,6 @@ val yamlMapper: YAMLMapper = run {
         .enable(DeserializationFeature.FAIL_ON_MISSING_EXTERNAL_TYPE_ID_PROPERTY)
         .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
         .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
+        .enable(SerializationFeature.INDENT_OUTPUT)
     mapper
 }

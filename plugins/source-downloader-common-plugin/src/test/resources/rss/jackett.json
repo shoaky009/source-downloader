@@ -1,0 +1,31 @@
+[
+  {
+    "title": "[整理搬运] 冰菓 (氷菓／Hyouka)：TV动画+音乐+小说+漫画+其他；日语,外挂简中字幕 (整理时间：2019.10.06)",
+    "guid": "https://mikanani.me/Download/20230615/422f8d447eb25b122c082f62a4e49e8e746fc812.torrent",
+    "jackettindexer": {
+      "id": "mikan",
+      "value": "Mikan"
+    },
+    "type": "public",
+    "comments": "https://mikanani.me/Home/Episode/422f8d447eb25b122c082f62a4e49e8e746fc812",
+    "pubDate": "Thu, 15 Jun 2023 07:57:30 +0000",
+    "size": "49499496448",
+    "description": "",
+    "link": "http://truenas:9117/dl/mikan/?jackett_apikey=",
+    "enclosure": {
+      "url": "http://truenas:9117/dl/mikan/?jackett_apikey",
+      "length": "49499496448",
+      "type": "application/x-bittorrent"
+    },
+    "torznab:attr": [
+      {
+        "name": "infohash",
+        "value": "422f8d447eb25b122c082f62a4e49e8e746fc812"
+      },
+      {
+        "name": "magneturl",
+        "value": "magnet:?xt=urn:btih:422f8d447eb25b122c082f62a4e49e8e746fc812&amp;tr=http%3a%2f%2ft.nyaatracker.com%2fannounce&amp;tr=http%3a%2f%2ftracker.kamigami.org%3a2710%2fannounce&amp;tr=http%3a%2f%2fshare.camoe.cn%3a8080%2fannounce&amp;tr=http%3a%2f%2fopentracker.acgnx.se%2fannounce&amp;tr=http%3a%2f%2fanidex.moe%3a6969%2fannounce&amp;tr=http%3a%2f%2ft.acg.rip%3a6699%2fannounce&amp;tr=https%3a%2f%2ftr.bangumi.moe%3a9696%2fannounce&amp;tr=udp%3a%2f%2ftr.bangumi.moe%3a6969%2fannounce&amp;tr=http%3a%2f%2fopen.acgtracker.com%3a1096%2fannounce&amp;tr=udp%3a%2f%2ftracker.opentrackr.org%3a1337%2fannounce"
+      }
+    ]
+  }
+]

@@ -10,7 +10,7 @@ import java.time.LocalDateTime
 import kotlin.io.path.*
 
 class SystemFileSource(
-    private val path: Path,
+    val path: Path,
     /**
      * 0: 把路径下的文件(包括文件夹 文件夹下的作为item下的子文件)作为一个SourceItem
      * 1: 把路径下的所有文件(不包括文件夹，包括子路径下的文件)作为一个SourceItem

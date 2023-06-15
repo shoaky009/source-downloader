@@ -1,4 +1,4 @@
-package io.github.shoaky.sourcedownloader.telegram.other
+package io.github.shoaky.sourcedownloader.telegram
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import telegram4j.core.util.Id

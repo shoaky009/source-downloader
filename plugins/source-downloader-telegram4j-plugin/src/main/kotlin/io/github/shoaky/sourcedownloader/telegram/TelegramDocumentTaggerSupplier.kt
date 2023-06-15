@@ -1,4 +1,4 @@
-package io.github.shoaky.sourcedownloader.telegram.other
+package io.github.shoaky.sourcedownloader.telegram
 
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentType

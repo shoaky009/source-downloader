@@ -18,7 +18,7 @@ private class ProcessorController(
 ) {
 
     @GetMapping
-    fun processors(): Any {
+    fun getProcessors(): Any {
         val processors = processorManager.getProcessors()
         return processors.map {
             ProcessorInfo(it.name, it.info())

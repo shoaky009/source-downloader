@@ -1,9 +1,6 @@
 package io.github.shoaky.sourcedownloader.telegram
 
-import io.github.shoaky.sourcedownloader.telegram.other.ChatConfig
-import io.github.shoaky.sourcedownloader.telegram.other.ChatPointer
-import io.github.shoaky.sourcedownloader.telegram.other.DefaultMessageFetcher
-import io.github.shoaky.sourcedownloader.telegram.other.TelegramSource
+import io.github.shoaky.sourcedownloader.telegram.DefaultMessageFetcher
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito

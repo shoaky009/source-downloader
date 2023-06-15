@@ -1,11 +1,11 @@
-package io.github.shoaky.sourcedownloader.telegram.other
+package io.github.shoaky.sourcedownloader.telegram
 
 import com.fasterxml.jackson.annotation.JsonAlias
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import io.github.shoaky.sourcedownloader.sdk.InstanceFactory
 import io.github.shoaky.sourcedownloader.sdk.Properties
-import io.github.shoaky.sourcedownloader.telegram.other.auth.QrCodeAuthorization
+import io.github.shoaky.sourcedownloader.telegram.auth.QrCodeAuthorization
 import io.netty.util.ResourceLeakDetector
 import org.slf4j.LoggerFactory
 import reactor.core.publisher.Hooks
