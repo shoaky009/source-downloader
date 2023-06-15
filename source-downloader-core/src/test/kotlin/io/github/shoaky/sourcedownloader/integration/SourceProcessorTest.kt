@@ -1,7 +1,7 @@
 package io.github.shoaky.sourcedownloader.integration
 
-import io.github.shoaky.sourcedownloader.core.ProcessorManager
 import io.github.shoaky.sourcedownloader.core.file.FileContentStatus
+import io.github.shoaky.sourcedownloader.core.processor.ProcessorManager
 import io.github.shoaky.sourcedownloader.createIfNotExists
 import io.github.shoaky.sourcedownloader.repo.jpa.ProcessingRecordRepository
 import io.github.shoaky.sourcedownloader.testResourcePath
@@ -63,11 +63,15 @@ class SourceProcessorTest {
         processor.runRename()
 
         val contents = processingStorage.findByProcessorName("NormalCase")
+            .associateBy { it.sourceContent.sourceItem.title }
         assertEquals(3, contents.size)
 
-        val d1 = contents[0].sourceContent.sourceFiles.first().patternVariables.getVariables()["sourceItemDate"]!!
-        val d2 = contents[1].sourceContent.sourceFiles.first().patternVariables.getVariables()["sourceItemDate"]!!
-        val d3 = contents[2].sourceContent.sourceFiles.first().patternVariables.getVariables()["sourceItemDate"]!!
+        val d1 =
+            contents["test1"]!!.sourceContent.sourceFiles.first().patternVariables.getVariables()["sourceItemDate"]!!
+        val d2 =
+            contents["test2"]!!.sourceContent.sourceFiles.first().patternVariables.getVariables()["sourceItemDate"]!!
+        val d3 =
+            contents["test-dir"]!!.sourceContent.sourceFiles.first().patternVariables.getVariables()["sourceItemDate"]!!
 
         assert(savePath.resolve(Path("test1", d1, "test1 - 1.jpg")).exists())
         assert(savePath.resolve(Path("test2", d2, "test2 - 1.jpg")).exists())

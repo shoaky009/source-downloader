@@ -2,6 +2,7 @@ package io.github.shoaky.sourcedownloader.core
 
 import com.fasterxml.jackson.annotation.*
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
+import io.github.shoaky.sourcedownloader.core.component.ComponentId
 import io.github.shoaky.sourcedownloader.core.file.VariableErrorStrategy
 import io.github.shoaky.sourcedownloader.core.processor.VariableConflictStrategy
 import io.github.shoaky.sourcedownloader.sdk.DownloadOptions

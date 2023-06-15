@@ -1,6 +1,11 @@
 package io.github.shoaky.sourcedownloader.api
 
 import io.github.shoaky.sourcedownloader.core.*
+import io.github.shoaky.sourcedownloader.core.component.ComponentConfig
+import io.github.shoaky.sourcedownloader.core.component.ComponentConfigStorage
+import io.github.shoaky.sourcedownloader.core.component.ConfigOperator
+import io.github.shoaky.sourcedownloader.core.file.ComponentDescription
+import io.github.shoaky.sourcedownloader.core.file.SdComponentManager
 import io.github.shoaky.sourcedownloader.sdk.ComponentStateful
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.component.*

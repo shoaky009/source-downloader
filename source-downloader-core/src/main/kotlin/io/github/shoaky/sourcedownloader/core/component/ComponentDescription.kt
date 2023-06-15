@@ -1,4 +1,4 @@
-package io.github.shoaky.sourcedownloader.core
+package io.github.shoaky.sourcedownloader.core.component
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentTopType

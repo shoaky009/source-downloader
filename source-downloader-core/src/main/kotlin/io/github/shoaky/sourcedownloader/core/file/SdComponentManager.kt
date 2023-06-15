@@ -1,6 +1,7 @@
-package io.github.shoaky.sourcedownloader.core
+package io.github.shoaky.sourcedownloader.core.file
 
 import com.fasterxml.jackson.module.kotlin.convertValue
+import io.github.shoaky.sourcedownloader.core.component.RuleDescriptor
 import io.github.shoaky.sourcedownloader.core.processor.SourceProcessor
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.SourceItemPointer

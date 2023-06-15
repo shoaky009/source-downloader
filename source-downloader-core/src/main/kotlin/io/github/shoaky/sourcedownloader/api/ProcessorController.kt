@@ -1,10 +1,10 @@
 package io.github.shoaky.sourcedownloader.api
 
-import io.github.shoaky.sourcedownloader.core.ConfigOperator
 import io.github.shoaky.sourcedownloader.core.ProcessorConfig
 import io.github.shoaky.sourcedownloader.core.ProcessorConfigStorage
-import io.github.shoaky.sourcedownloader.core.ProcessorManager
+import io.github.shoaky.sourcedownloader.core.component.ConfigOperator
 import io.github.shoaky.sourcedownloader.core.file.FileContentStatus
+import io.github.shoaky.sourcedownloader.core.processor.ProcessorManager
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentException
 import org.springframework.web.bind.annotation.*

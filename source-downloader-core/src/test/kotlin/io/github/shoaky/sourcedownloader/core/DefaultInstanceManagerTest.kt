@@ -1,5 +1,6 @@
 package io.github.shoaky.sourcedownloader.core
 
+import io.github.shoaky.sourcedownloader.core.component.DefaultInstanceManager
 import io.github.shoaky.sourcedownloader.sdk.InstanceFactory
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import org.junit.jupiter.api.Test

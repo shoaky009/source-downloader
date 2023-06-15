@@ -1,6 +1,6 @@
-package io.github.shoaky.sourcedownloader.core
+package io.github.shoaky.sourcedownloader.core.processor
 
-import io.github.shoaky.sourcedownloader.core.processor.SourceProcessor
+import io.github.shoaky.sourcedownloader.core.ProcessorConfig
 
 interface ProcessorManager {
 

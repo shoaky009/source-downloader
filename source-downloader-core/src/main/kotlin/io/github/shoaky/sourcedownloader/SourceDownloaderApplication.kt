@@ -6,6 +6,12 @@ import io.github.shoaky.sourcedownloader.component.*
 import io.github.shoaky.sourcedownloader.component.supplier.*
 import io.github.shoaky.sourcedownloader.config.SourceDownloaderProperties
 import io.github.shoaky.sourcedownloader.core.*
+import io.github.shoaky.sourcedownloader.core.component.ComponentConfig
+import io.github.shoaky.sourcedownloader.core.component.ComponentConfigStorage
+import io.github.shoaky.sourcedownloader.core.component.ComponentId
+import io.github.shoaky.sourcedownloader.core.component.DefaultInstanceManager
+import io.github.shoaky.sourcedownloader.core.file.SdComponentManager
+import io.github.shoaky.sourcedownloader.core.processor.ProcessorManager
 import io.github.shoaky.sourcedownloader.sdk.InstanceManager
 import io.github.shoaky.sourcedownloader.sdk.PathPattern
 import io.github.shoaky.sourcedownloader.sdk.Properties

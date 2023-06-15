@@ -1,8 +1,8 @@
 package io.github.shoaky.sourcedownloader.config
 
-import io.github.shoaky.sourcedownloader.core.DefaultInstanceManager
-import io.github.shoaky.sourcedownloader.core.InstanceConfigStorage
 import io.github.shoaky.sourcedownloader.core.YamlConfigStorage
+import io.github.shoaky.sourcedownloader.core.component.DefaultInstanceManager
+import io.github.shoaky.sourcedownloader.core.component.InstanceConfigStorage
 import io.github.shoaky.sourcedownloader.sdk.InstanceManager
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration

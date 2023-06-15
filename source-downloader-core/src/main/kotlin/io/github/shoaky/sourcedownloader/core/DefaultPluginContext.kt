@@ -2,6 +2,7 @@ package io.github.shoaky.sourcedownloader.core
 
 import com.google.common.cache.CacheBuilder
 import io.github.shoaky.sourcedownloader.config.SourceDownloaderProperties
+import io.github.shoaky.sourcedownloader.core.file.SdComponentManager
 import io.github.shoaky.sourcedownloader.sdk.*
 import io.github.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
 import org.springframework.stereotype.Component

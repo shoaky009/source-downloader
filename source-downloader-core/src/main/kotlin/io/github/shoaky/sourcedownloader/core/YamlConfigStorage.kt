@@ -1,6 +1,10 @@
 package io.github.shoaky.sourcedownloader.core
 
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
+import io.github.shoaky.sourcedownloader.core.component.ComponentConfig
+import io.github.shoaky.sourcedownloader.core.component.ComponentConfigStorage
+import io.github.shoaky.sourcedownloader.core.component.ConfigOperator
+import io.github.shoaky.sourcedownloader.core.component.InstanceConfigStorage
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentTopType
 import io.github.shoaky.sourcedownloader.util.jackson.yamlMapper

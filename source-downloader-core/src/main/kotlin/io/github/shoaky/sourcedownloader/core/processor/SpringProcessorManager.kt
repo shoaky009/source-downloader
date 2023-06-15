@@ -1,11 +1,13 @@
-package io.github.shoaky.sourcedownloader.core
+package io.github.shoaky.sourcedownloader.core.processor
 
 import io.github.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
 import io.github.shoaky.sourcedownloader.component.supplier.CleanEmptyDirectorySupplier
 import io.github.shoaky.sourcedownloader.component.supplier.ExpressionFileFilterSupplier
 import io.github.shoaky.sourcedownloader.component.supplier.ExpressionItemFilterSupplier
 import io.github.shoaky.sourcedownloader.component.supplier.TouchItemDirectorySupplier
-import io.github.shoaky.sourcedownloader.core.processor.SourceProcessor
+import io.github.shoaky.sourcedownloader.core.ProcessingStorage
+import io.github.shoaky.sourcedownloader.core.ProcessorConfig
+import io.github.shoaky.sourcedownloader.core.file.SdComponentManager
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.SourceItemPointer
 import io.github.shoaky.sourcedownloader.sdk.component.*

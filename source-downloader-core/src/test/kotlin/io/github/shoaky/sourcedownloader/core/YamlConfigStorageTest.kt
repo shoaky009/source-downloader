@@ -1,5 +1,7 @@
 package io.github.shoaky.sourcedownloader.core
 
+import io.github.shoaky.sourcedownloader.core.component.ComponentConfig
+import io.github.shoaky.sourcedownloader.core.component.ComponentId
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.nio.file.Files
@@ -48,11 +50,13 @@ processors:
 
     @Test
     fun write_component() {
-        storage.save("source",
+        storage.save(
+            "source",
             ComponentConfig(
                 "test",
                 "test1"
-            ))
+            )
+        )
         val config = storage.getAllComponentConfig()["source"]?.first()
         assertEquals("test1", config?.type)
     }

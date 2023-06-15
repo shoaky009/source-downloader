@@ -1,5 +1,6 @@
-package io.github.shoaky.sourcedownloader.core
+package io.github.shoaky.sourcedownloader.core.component
 
+import io.github.shoaky.sourcedownloader.core.ProcessorConfig
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentTopType
 
 interface ComponentConfigStorage {

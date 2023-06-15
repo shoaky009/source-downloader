@@ -48,7 +48,7 @@ class SystemFileSource(
     private fun fromPath(it: Path): SourceItem {
         val creationTime = it.creationTime() ?: LocalDateTime.now()
         val url = it.toUri()
-        val type = if (it.isDirectory()) "directory" else "system-file"
+        val type = if (it.isDirectory()) "directory" else "file"
         return SourceItem(it.nameWithoutExtension, url, creationTime, type, url)
     }
 

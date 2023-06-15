@@ -1,4 +1,4 @@
-package io.github.shoaky.sourcedownloader.core
+package io.github.shoaky.sourcedownloader.core.component
 
 data class ComponentConfig(
     val name: String,
