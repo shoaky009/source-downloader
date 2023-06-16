@@ -4,7 +4,7 @@
 ![JRE](https://img.shields.io/badge/JRE-17+-orange)
 [![GPLv3 license](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://github.com/shoaky009/source-downloader/blob/main/LICENSE)
 ![Test](https://github.com/shoaky009/source-downloader/actions/workflows/test.yml/badge.svg?branch=main)
-![Test Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/shoaky009/27eb9c1db02a3e823136a12e6598aae1/raw/source-downloader.json)
+[![Codecov](https://codecov.io/gh/shoaky009/source-downloader/branch/main/graph/badge.svg?token=OY727HWBWL)](https://codecov.io/gh/shoaky009/source-downloader)
 
 ## 主要功能
 
