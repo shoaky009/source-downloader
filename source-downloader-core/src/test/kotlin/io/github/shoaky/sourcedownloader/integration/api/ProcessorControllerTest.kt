@@ -1,5 +1,6 @@
 package io.github.shoaky.sourcedownloader.integration.api
 
+import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -9,6 +10,8 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
+import kotlin.io.path.Path
+import kotlin.io.path.deleteIfExists
 
 @SpringBootTest
 @ActiveProfiles("integration-test")
@@ -44,5 +47,13 @@ class ProcessorControllerTest {
             .andExpect {
                 MockMvcResultMatchers.jsonPath("$.*").isNotEmpty
             }
+    }
+
+    companion object {
+        @JvmStatic
+        @AfterAll
+        fun clean() {
+            Path("test.db").deleteIfExists()
+        }
     }
 }

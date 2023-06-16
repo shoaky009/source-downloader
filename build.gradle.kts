@@ -21,6 +21,7 @@ scmVersion {
 }
 
 version = scmVersion.version
+val isSnapshot = version.toString().endsWith("-SNAPSHOT", true)
 
 subprojects {
     version = rootProject.version
@@ -54,4 +55,19 @@ subprojects {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+}
+
+tasks.jar {
+    enabled = false
+}
+
+tasks.register<DefaultTask>("versionTags") {
+    val tags = mutableListOf<String>()
+    if (isSnapshot) {
+        tags.add("dev")
+    } else {
+        tags.add("latest")
+        tags.add(version.toString())
+    }
+    print(tags.joinToString(","))
 }

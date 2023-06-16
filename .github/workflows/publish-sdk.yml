@@ -5,6 +5,9 @@ on:
       manual_trigger:
         description: 'Manual trigger'
         required: false
+  push:
+    tags:
+      - v*
 
 jobs:
   publish:

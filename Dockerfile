@@ -1,6 +1,7 @@
 FROM azul/zulu-openjdk-alpine:20-jre as builder
-ARG JAR_FILE=source-downloader-core/build/libs/source-downloader-core-0.0.1-SNAPSHOT.jar
-COPY ${JAR_FILE} application.jar
+
+ARG version
+COPY source-downloader-core/build/libs/source-downloader-core-$version.jar application.jar
 RUN java -Djarmode=layertools -jar application.jar extract
 
 FROM azul/zulu-openjdk-alpine:20-jre

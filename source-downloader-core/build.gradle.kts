@@ -63,6 +63,11 @@ fun DependencyHandlerScope.resolveBuildInPlugins() {
 
 tasks.bootBuildImage {
     imageName.set("source-downloader")
+    runImage.set("azul/zulu-openjdk-alpine:20-jre")
+    environment.put("TZ", "Asia/Shanghai")
+    environment.put("SOURCE_DOWNLOADER_DATA_LOCATION", "/app/data/")
+    environment.put("SOURCE_DOWNLOADER_PLUGIN_LOCATION", "/app/plugin/")
+    tags.add("dev")
 }
 
 tasks.bootJar {

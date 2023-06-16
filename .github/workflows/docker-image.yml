@@ -5,6 +5,9 @@ on:
       manual_trigger:
         description: 'Manual trigger'
         required: false
+  push:
+    tags:
+      - v*
 
 jobs:
   publish:
@@ -20,13 +23,16 @@ jobs:
           cache: 'gradle'
 
       - name: Build with Gradle
-        run: ./gradlew build -x test -PsdPlugins=common,telegram4j --no-daemon
+        id: build
+        run: |
+          echo version="$(./gradlew cV --no-daemon | grep "Project version" | sed "s/.*:\ //")"
+          ./gradlew build -x test -PsdPlugins=common,telegram4j --no-daemon
 
       - name: Docker Metadata
         id: metadata
         uses: docker/metadata-action@v4
         with:
-          images: shoaky009/source-downloader
+          images: ${{ github.event.repository.name }}
           tags: |
             type=raw,value=dev
 
@@ -51,3 +57,5 @@ jobs:
           labels: ${{ steps.metadata.outputs.labels }}
           cache-from: type=gha, scope=${{ github.workflow }}
           cache-to: type=gha, scope=${{ github.workflow }}
+          build-args: |
+            version=${{ steps.build.outputs.version }}
