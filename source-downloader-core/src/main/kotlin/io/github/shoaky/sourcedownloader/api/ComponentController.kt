@@ -10,6 +10,7 @@ import io.github.shoaky.sourcedownloader.sdk.ComponentStateful
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.component.*
 import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import org.springframework.web.bind.annotation.*
 
@@ -74,11 +75,12 @@ private class ComponentController(
         @PathVariable type: ComponentTopType,
         @PathVariable typeName: String,
         @PathVariable name: String,
-    ) {
+    ): ResponseEntity<Any> {
         // TODO 聚合componentManager和processorManager的业务层,如果有Processor引用组件不允许删除
         // check if processor is using this component
         // componentManager.destroyComponent(name, componentType)
-        configOperator.deleteComponent(type, typeName, name)
+        val deleted = configOperator.deleteComponent(type, typeName, name)
+        return if (deleted) ResponseEntity.ok().build() else ResponseEntity.noContent().build()
     }
 
     @GetMapping("/descriptions")

@@ -4,7 +4,6 @@ import io.github.shoaky.sourcedownloader.core.file.SdComponentManager
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentTopType
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
 import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
@@ -39,7 +38,6 @@ class ComponentControllerTest {
     }
 
     @Test
-    // @Disabled
     fun create_component() {
         mockMvc.perform(
             post("/api/component/source/system-file/api-create")
@@ -55,13 +53,24 @@ class ComponentControllerTest {
     }
 
     @Test
-    @Disabled
     fun delete_component() {
         mockMvc.perform(
-            delete("/api/component/source/system-file/api-create")
+            post("/api/component/source/system-file/api-create2")
+                .content(
+                    """{"path": "src/test/resources/sources"}"""
+                ).contentType(MediaType.APPLICATION_JSON)
+        ).andExpect(status().is2xxSuccessful)
+            .andExpect {
+                val instanceName = ComponentType("system-file", ComponentTopType.SOURCE).instanceName("api-create2")
+                val component = componentManager.getComponent(instanceName)
+                component != null
+            }
+
+        mockMvc.perform(
+            delete("/api/component/source/system-file/api-create2")
         ).andExpect(status().isOk)
             .andExpect {
-                val instanceName = ComponentType("system-file", ComponentTopType.SOURCE).instanceName("api-create")
+                val instanceName = ComponentType("system-file", ComponentTopType.SOURCE).instanceName("api-create2")
                 val component = componentManager.getComponent(instanceName)
                 component != null
             }

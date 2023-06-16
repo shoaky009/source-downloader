@@ -1,9 +1,11 @@
 package io.github.shoaky.sourcedownloader.config
 
 import io.github.shoaky.sourcedownloader.core.YamlConfigStorage
+import io.github.shoaky.sourcedownloader.core.component.ConfigOperator
 import io.github.shoaky.sourcedownloader.core.component.DefaultInstanceManager
 import io.github.shoaky.sourcedownloader.core.component.InstanceConfigStorage
 import io.github.shoaky.sourcedownloader.sdk.InstanceManager
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import kotlin.io.path.Path
@@ -17,7 +19,8 @@ class StorageConfiguration(
 ) {
 
     @Bean
-    fun yamlConfigStorage(): YamlConfigStorage {
+    @ConditionalOnMissingBean(ConfigOperator::class)
+    fun yamlConfigStorage(): ConfigOperator {
         val dataLocation = props.dataLocation
         val configPath = dataLocation.resolve("config.yaml")
         if (configPath.exists()) {

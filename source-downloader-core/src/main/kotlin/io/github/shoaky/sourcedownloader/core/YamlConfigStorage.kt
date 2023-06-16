@@ -3,9 +3,7 @@ package io.github.shoaky.sourcedownloader.core
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import io.github.shoaky.sourcedownloader.core.component.ComponentConfig
-import io.github.shoaky.sourcedownloader.core.component.ComponentConfigStorage
 import io.github.shoaky.sourcedownloader.core.component.ConfigOperator
-import io.github.shoaky.sourcedownloader.core.component.InstanceConfigStorage
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentTopType
 import io.github.shoaky.sourcedownloader.util.jackson.yamlMapper
@@ -15,14 +13,12 @@ import kotlin.io.path.inputStream
 
 class YamlConfigStorage(
     private val configPath: Path = Path("config.yaml")
-) : ProcessorConfigStorage, ComponentConfigStorage,
-    ConfigOperator, InstanceConfigStorage {
+) : ConfigOperator {
 
     override fun getAllProcessorConfig(): List<ProcessorConfig> {
         val config = yamlMapper.readTree(configPath.inputStream()).get("processors") ?: return emptyList()
         return yamlMapper.convertValue(config, jacksonTypeRef())
     }
-
 
     override fun getAllComponentConfig(): Map<String, List<ComponentConfig>> {
         val config = yamlMapper.readTree(configPath.inputStream()).get("components") ?: return emptyMap()
@@ -39,7 +35,7 @@ class YamlConfigStorage(
         } else {
             typeConfigs[index] = componentConfig
         }
-        yamlMapper.writerWithDefaultPrettyPrinter().writeValue(configPath.toFile(), config)
+        yamlMapper.writeValue(configPath.toFile(), config)
     }
 
     @Synchronized
@@ -56,13 +52,26 @@ class YamlConfigStorage(
     }
 
     @Synchronized
-    override fun deleteComponent(topType: ComponentTopType, type: String, name: String) {
-        TODO()
+    override fun deleteComponent(topType: ComponentTopType, type: String, name: String): Boolean {
+        val config = yamlMapper.readValue(configPath.inputStream(), Config::class.java)
+        val components = config.components
+        val configs = components[topType.lowerHyphenName()] ?: mutableListOf()
+        val removed = configs.removeIf { it.type == type && it.name == name }
+        if (removed) {
+            yamlMapper.writeValue(configPath.toFile(), config)
+        }
+        return removed
     }
 
     @Synchronized
-    override fun deleteProcessor(name: String) {
-        TODO()
+    override fun deleteProcessor(name: String): Boolean {
+        val config = yamlMapper.readValue(configPath.inputStream(), Config::class.java)
+        val processors = config.processors
+        val removed = processors.removeIf { it.name == name }
+        if (removed) {
+            yamlMapper.writeValue(configPath.toFile(), config)
+        }
+        return removed
     }
 
     override fun getInstanceProps(name: String): Properties {
