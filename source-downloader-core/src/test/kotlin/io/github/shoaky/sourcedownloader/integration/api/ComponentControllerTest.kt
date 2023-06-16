@@ -39,7 +39,7 @@ class ComponentControllerTest {
     }
 
     @Test
-    @Disabled
+    // @Disabled
     fun create_component() {
         mockMvc.perform(
             post("/api/component/source/system-file/api-create")

@@ -160,7 +160,6 @@ interface FileMover : SdComponent {
     }
 }
 
-@FunctionalInterface
 interface RunAfterCompletion : SdComponent, Consumer<SourceContent>
 
 /**

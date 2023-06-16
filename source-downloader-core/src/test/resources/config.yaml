@@ -1,68 +1,57 @@
 components:
   source:
-    - name: test-files
-      type: system-file
+    - name: "test-files"
+      type: "system-file"
       props:
-        path: src/test/resources/sources
+        path: "src/test/resources/sources"
   downloader:
-    - name: test-files
-      type: system-file
-    - name: mock
-      type: mock
+    - name: "test-files"
+      type: "system-file"
+    - name: "mock"
+      type: "mock"
       props:
-        download-path: src/test/resources/downloads
-
+        download-path: "src/test/resources/downloads"
 processors:
-  - name: NormalCase
-    triggers: [ ]
+  - name: "NormalCase"
     source: "system-file:test-files"
+    item-file-resolver: "system-file"
     downloader: "system-file:test-files"
-    file-mover: general
-    variable-providers: [ ]
-    item-file-resolver: system-file
-    save-path: src/test/resources/target
+    file-mover: "general"
+    save-path: "/Users/shoaky/GitRepo/source-downloader/source-downloader-core/src/test/resources/target"
     options:
       save-path-pattern: "{sourceItemTitle}/{sourceItemDate}/"
       filename-pattern: "{filename} - {sequence}"
-  - name: NormalCaseCopy
-    triggers: [ ]
+  - name: "NormalCaseCopy"
     source: "system-file:test-files"
+    item-file-resolver: "system-file"
     downloader: "system-file:test-files"
-    item-file-resolver: system-file
-    file-mover: general
-    variable-providers: [ ]
-    save-path: src/test/resources/target
+    file-mover: "general"
+    save-path: "/Users/shoaky/GitRepo/source-downloader/source-downloader-core/src/test/resources/target"
     options:
       save-path-pattern: "{sourceItemTitle}/{sourceItemDate}/"
       filename-pattern: "{filename} - {sequence}"
-  - name: FileStatusCase
-    triggers: [ ]
+  - name: "FileStatusCase"
     source: "system-file:test-files"
-    downloader: mock
-    item-file-resolver: system-file
-    file-mover: general
-    variable-providers: [ ]
-    save-path: src/test/resources/target
+    item-file-resolver: "system-file"
+    downloader: "mock"
+    file-mover: "general"
+    save-path: "/Users/shoaky/GitRepo/source-downloader/source-downloader-core/src/test/resources/target"
     options:
       save-path-pattern: "{sourceItemTitle}"
-  - name: FileStatusCase2
-    triggers: [ ]
+  - name: "FileStatusCase2"
     source: "system-file:test-files"
-    downloader: mock
-    item-file-resolver: system-file
-    file-mover: general
-    variable-providers: [ ]
-    save-path: src/test/resources/target
+    item-file-resolver: "system-file"
+    downloader: "mock"
+    file-mover: "general"
+    save-path: "/Users/shoaky/GitRepo/source-downloader/source-downloader-core/src/test/resources/target"
     options:
       save-path-pattern: "1"
       filename-pattern: "1"
-  - name: PointerStorageCase
-    triggers: [ ]
+  - name: "PointerStorageCase"
     source: "system-file:test-files"
-    downloader: mock
-    item-file-resolver: system-file
-    file-mover: general
-    variable-providers: [ ]
-    save-path: src/test/resources/target
+    item-file-resolver: "system-file"
+    downloader: "mock"
+    file-mover: "general"
+    save-path: "/Users/shoaky/GitRepo/source-downloader/source-downloader-core/src/test/resources/target"
     options:
       save-path-pattern: "{sourceItemTitle}"

@@ -3,6 +3,7 @@ package io.github.shoaky.sourcedownloader.util.jackson
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.DeserializationContext
 import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator
@@ -30,6 +31,8 @@ val yamlMapper: YAMLMapper = run {
         .enable(DeserializationFeature.FAIL_ON_MISSING_EXTERNAL_TYPE_ID_PROPERTY)
         .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
         .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
-        .enable(SerializationFeature.INDENT_OUTPUT)
+
+    mapper.setPropertyNamingStrategy(PropertyNamingStrategies.KEBAB_CASE)
+    mapper.enable(YAMLGenerator.Feature.INDENT_ARRAYS_WITH_INDICATOR)
     mapper
 }

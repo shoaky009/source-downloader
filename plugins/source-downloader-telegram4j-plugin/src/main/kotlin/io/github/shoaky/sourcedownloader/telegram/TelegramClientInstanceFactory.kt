@@ -1,6 +1,5 @@
 package io.github.shoaky.sourcedownloader.telegram
 
-import com.fasterxml.jackson.annotation.JsonAlias
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import io.github.shoaky.sourcedownloader.sdk.InstanceFactory
@@ -14,7 +13,9 @@ import telegram4j.core.MTProtoTelegramClient
 import telegram4j.core.event.DefaultUpdatesManager
 import telegram4j.core.retriever.EntityRetrievalStrategy
 import telegram4j.core.retriever.PreferredEntityRetriever
-import telegram4j.mtproto.*
+import telegram4j.mtproto.MTProtoRetrySpec
+import telegram4j.mtproto.MethodPredicate
+import telegram4j.mtproto.ResponseTransformer
 import telegram4j.mtproto.store.FileStoreLayout
 import telegram4j.mtproto.store.StoreLayoutImpl
 import telegram4j.tl.InputClientProxy
@@ -25,7 +26,6 @@ import java.time.Duration
 import java.util.*
 import java.util.function.Function
 import kotlin.io.path.createDirectories
-
 
 object TelegramClientInstanceFactory : InstanceFactory<MTProtoTelegramClient> {
     override fun create(props: Properties): MTProtoTelegramClient {
@@ -121,11 +121,8 @@ object TelegramClientInstanceFactory : InstanceFactory<MTProtoTelegramClient> {
 internal val log = LoggerFactory.getLogger("Telegram4j")
 
 private data class ClientConfig(
-    @JsonAlias("api-id")
     val apiId: Int,
-    @JsonAlias("api-hash")
     val apiHash: String,
-    @JsonAlias("metadata-path")
     val metadataPath: Path,
     val proxy: URI?,
     val debug: Boolean = false

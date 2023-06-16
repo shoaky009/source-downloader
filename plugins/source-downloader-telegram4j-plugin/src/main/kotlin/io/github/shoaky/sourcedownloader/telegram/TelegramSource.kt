@@ -1,6 +1,5 @@
 package io.github.shoaky.sourcedownloader.telegram
 
-import com.fasterxml.jackson.annotation.JsonAlias
 import io.github.shoaky.sourcedownloader.sdk.PointedItem
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.Source
@@ -77,9 +76,7 @@ class TelegramSource(
 
 
 data class ChatConfig(
-    @JsonAlias("chat-id")
     val chatId: Long,
-    @JsonAlias("begin-date")
     val beginDate: LocalDate? = null
 )
 

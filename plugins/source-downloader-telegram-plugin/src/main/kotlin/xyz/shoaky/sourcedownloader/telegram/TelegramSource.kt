@@ -109,8 +109,6 @@ data class ChatPointer(
 }
 
 data class ChatConfig(
-    @JsonAlias("chat-id")
     val chatId: Long,
-    @JsonAlias("begin-date")
     val beginDate: LocalDate? = null
 )

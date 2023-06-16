@@ -1,5 +1,6 @@
 package io.github.shoaky.sourcedownloader.core
 
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import io.github.shoaky.sourcedownloader.core.component.ComponentConfig
 import io.github.shoaky.sourcedownloader.core.component.ComponentConfigStorage
@@ -75,11 +76,13 @@ class YamlConfigStorage(
     }
 }
 
+@JsonInclude(JsonInclude.Include.NON_DEFAULT)
 data class InstanceConfig(
     val name: String,
     val props: Map<String, Any>
 )
 
+@JsonInclude(JsonInclude.Include.NON_DEFAULT)
 private data class Config(
     val components: MutableMap<String, MutableList<ComponentConfig>> = mutableMapOf(),
     val processors: MutableList<ProcessorConfig> = mutableListOf(),

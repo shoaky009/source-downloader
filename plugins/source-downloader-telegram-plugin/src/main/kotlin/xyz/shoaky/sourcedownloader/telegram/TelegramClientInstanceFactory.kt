@@ -45,13 +45,9 @@ class TelegramClientInstanceFactory(
     }
 
     data class ClientConfig(
-        @JsonAlias("api-id")
         val apiId: Int,
-        @JsonAlias("api-hash")
         val apiHash: String,
-        @JsonAlias("metadata-path")
         val metadataPath: Path,
-        @JsonAlias("download-path")
         val downloadPath: Path,
         val proxy: URI?,
     )
