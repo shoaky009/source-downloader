@@ -53,8 +53,7 @@ internal class DlsiteVariableProvider(
                 dlsiteId,
                 document.getElementById("work_name")?.ownText(),
             )
-
-        val keys = localizationMapping[locale] ?: localizationMapping["zh-cn"]!!
+        val keys = localizationMapping[locale] ?: localizationMapping.getValue(ZH_CN)
 
         val releaseDate = kotlin.runCatching {
             LocalDate.parse(workOutline[keys[0]], chineseDateTimeFormatter)
@@ -94,8 +93,10 @@ internal class DlsiteVariableProvider(
             return link.find(*idRegexes)
         }
 
+        private const val ZH_CN = "zh-cn"
+
         private val localizationMapping: Map<String, List<String>> = mapOf(
-            "zh-cn" to listOf(
+            ZH_CN to listOf(
                 "贩卖日", "系列名", "剧情", "插画", "声优", "音乐", "作品类型", "作者", "社团名"
             ),
             "ja-jp" to listOf(

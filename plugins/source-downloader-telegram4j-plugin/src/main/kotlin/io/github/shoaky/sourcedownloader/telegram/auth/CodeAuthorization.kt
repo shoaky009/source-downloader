@@ -61,7 +61,7 @@ class CodeAuthorization(
                             phoneNumber = readPhoneNumber(sc)
                         }
                         return@flatMap clientGroup.main()
-                            .sendAwait<SentCode?>(
+                            .send<SentCode?>(
                                 ImmutableSendCode.of(
                                     phoneNumber!!, authResources.apiId,
                                     authResources.apiHash, ImmutableCodeSettings.of()
@@ -110,7 +110,7 @@ class CodeAuthorization(
                     }
 
                     State.RESEND_CODE -> return@flatMap clientGroup.main()
-                        .sendAwait<SentCode>(
+                        .send<SentCode>(
                             ImmutableResendCode.of(
                                 phoneNumber!!,
                                 currentCode!!.phoneCodeHash()
@@ -194,7 +194,7 @@ class CodeAuthorization(
         }
         return if (code.equals("cancel", ignoreCase = true)) {
             clientGroup.main()
-                .sendAwait(ImmutableCancelCode.of(phoneNumber!!, scode.phoneCodeHash()))
+                .send(ImmutableCancelCode.of(phoneNumber!!, scode.phoneCodeHash()))
                 .doOnNext { b: Boolean ->
                     synchronized(System.out) {
                         println(delimiter)
@@ -207,7 +207,7 @@ class CodeAuthorization(
                     state.emitNext(State.CANCEL_CODE, FAIL_FAST)
                 }
         } else clientGroup.main()
-            .sendAwait(
+            .send(
                 SignIn.builder()
                     .phoneNumber(phoneNumber!!)
                     .phoneCode(code)

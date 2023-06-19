@@ -81,7 +81,7 @@ object QrCodeAuthorization {
                                 }
                                 .flatMap { clientGroup.setMain(it) }
                                 .flatMap<LoginToken> {
-                                    it.sendAwait<LoginToken>(
+                                    it.send<LoginToken>(
                                         ImmutableImportLoginToken.of(migrate.token())
                                     )
                                 }

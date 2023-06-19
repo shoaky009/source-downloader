@@ -15,5 +15,4 @@ dependencies {
     implementation(libs.bundles.bt)
     implementation(libs.tika.core)
     implementation(libs.jsoup)
-    implementation("it.skrape:skrapeit:1.2.2")
 }
