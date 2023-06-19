@@ -16,13 +16,22 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <kotlin.version>1.8.10</kotlin.version>
         <anitomyJ.verion>0.0.7</anitomyJ.verion>
+        <source-downloader-sdk.version>0.1.0-SNAPSHOT</source-downloader-sdk.version>
     </properties>
+
+    <repositories>
+        <repository>
+            <id>sonatype</id>
+            <name>sonatype-snapshots</name>
+            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+        </repository>
+    </repositories>
 
     <dependencies>
         <dependency>
             <groupId>io.github.shoaky</groupId>
             <artifactId>source-downloader-sdk</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>${source-downloader-sdk.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
