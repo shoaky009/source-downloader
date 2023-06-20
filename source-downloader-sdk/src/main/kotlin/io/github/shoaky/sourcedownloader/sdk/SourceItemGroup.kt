@@ -12,13 +12,14 @@ interface SourceItemGroup {
     }
 
     /**
-     * @return 和SourceFile共享的变量
+     * @return shared pattern variables, which will be used in all filePatternVariables
      */
     fun sharedPatternVariables() = PatternVariables.EMPTY
 
     companion object {
         val EMPTY = object : SourceItemGroup {
-            override fun filePatternVariables(paths: List<SourceFile>): List<FileVariable> = paths.map { FileVariable.EMPTY }
+            override fun filePatternVariables(paths: List<SourceFile>): List<FileVariable> =
+                paths.map { FileVariable.EMPTY }
         }
     }
 }

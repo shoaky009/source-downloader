@@ -76,12 +76,12 @@ class QbittorrentDownloader(
         return torrents.map { it.progress >= 0.99f }.firstOrNull()
     }
 
-    override fun rename(sourceContent: SourceContent): Boolean {
+    override fun move(sourceContent: SourceContent): Boolean {
         val torrentHash = getTorrentHash(sourceContent.sourceItem)
         val sourceFiles = sourceContent.sourceFiles
 
         val firstFile = sourceFiles.first()
-        val saveItemFileRootDirectory = firstFile.itemSaveRootDirectory()
+        val saveItemFileRootDirectory = firstFile.fileSaveRootDirectory()
         val itemLocation = saveItemFileRootDirectory ?: firstFile.saveDirectoryPath()
 
         val allSuccess = sourceFiles.map {

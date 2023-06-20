@@ -25,7 +25,7 @@ class ExpressionFileFilter(
     }
 
     override fun test(content: FileContent): Boolean {
-        val paths = content.itemDownloadRelativeParentDirectory()?.toList()?.map { it.name } ?: emptyList()
+        val paths = content.fileDownloadRelativeParentDirectory()?.toList()?.map { it.name } ?: emptyList()
         val variables = mapOf(
             "filename" to content.fileDownloadPath.name,
             "tags" to content.tags.toList(),

@@ -18,7 +18,7 @@ data class TestFileContent(
 
     override fun targetPath(): Path = targetPath
 
-    override fun itemSaveRootDirectory(): Path = itemSaveRootDirectory
+    override fun fileSaveRootDirectory(): Path = itemSaveRootDirectory
 
-    override fun itemDownloadRootDirectory(): Path = itemDownloadRootDirectory
+    override fun fileDownloadRootDirectory(): Path = itemDownloadRootDirectory
 }

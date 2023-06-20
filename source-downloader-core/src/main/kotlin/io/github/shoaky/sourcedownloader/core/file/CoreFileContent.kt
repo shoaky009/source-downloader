@@ -110,7 +110,7 @@ data class CoreFileContent(
         return targetFilename0().first
     }
 
-    override fun itemSaveRootDirectory(): Path? {
+    override fun fileSaveRootDirectory(): Path? {
         val saveDirectoryPath = saveDirectoryPath()
         if (sourceSavePath == saveDirectoryPath) {
             return null

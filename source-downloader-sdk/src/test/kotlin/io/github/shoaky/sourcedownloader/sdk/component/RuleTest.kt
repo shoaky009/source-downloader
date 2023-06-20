@@ -41,7 +41,7 @@ class RuleTest {
 }
 
 object Mover : FileMover {
-    override fun rename(sourceContent: SourceContent): Boolean {
+    override fun move(sourceContent: SourceContent): Boolean {
         return true
     }
 }
@@ -69,7 +69,7 @@ object TestTorrentDownloader : TorrentDownloader {
         return Path.of("test")
     }
 
-    override fun rename(sourceContent: SourceContent): Boolean {
+    override fun move(sourceContent: SourceContent): Boolean {
         return true
     }
 

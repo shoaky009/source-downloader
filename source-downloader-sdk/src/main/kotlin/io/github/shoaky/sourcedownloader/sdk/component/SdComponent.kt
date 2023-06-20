@@ -12,6 +12,9 @@ import kotlin.reflect.KClass
 import kotlin.reflect.full.allSuperclasses
 import kotlin.reflect.full.isSuperclassOf
 
+/**
+ * The base interface of all components
+ */
 sealed interface SdComponent
 
 fun <T : SdComponent> KClass<T>.componentSuperClasses(): List<KClass<out SdComponent>> {
@@ -84,28 +87,50 @@ enum class ComponentTopType(
 }
 
 interface Trigger : SdComponent, AutoCloseable {
+
+    /**
+     * @param task the task to be executed
+     */
     fun addTask(task: Runnable)
 
+    /**
+     * Start the trigger
+     */
     fun start()
 
+    /**
+     * Stop the trigger
+     */
     fun stop()
 
+    /**
+     * Restart the trigger
+     */
     fun restart() {
         stop()
         start()
     }
 
+    /**
+     * Close the trigger equivalent to stop
+     */
     override fun close() {
         stop()
     }
 
+    /**
+     * Remove the task from the trigger
+     */
     fun removeTask(task: Runnable)
 }
 
+/**
+ * @param T the type of the pointer
+ */
 interface Source<T : SourceItemPointer> : SdComponent {
 
     /**
-     * @param limit 不一定完全按照limit的数量返回，但尽可能接近
+     * @param limit the max number of items to be fetched, Not necessarily exactly the number of limits returned, but as close as possible.
      */
     fun fetch(pointer: T?, limit: Int = 50): Iterable<PointedItem<T>>
 
@@ -113,8 +138,14 @@ interface Source<T : SourceItemPointer> : SdComponent {
 
 interface Downloader : SdComponent {
 
+    /**
+     * @param task the task to be submitted
+     */
     fun submit(task: DownloadTask)
 
+    /**
+     * @return the default download path
+     */
     fun defaultDownloadPath(): Path
 
 }
@@ -123,7 +154,7 @@ interface ItemFileResolver : SdComponent {
 
     /**
      * Resolve files from item
-     * @return Relative paths in the download path
+     * @return Relative paths
      */
     fun resolveFiles(sourceItem: SourceItem): List<SourceFile>
 }
@@ -131,22 +162,33 @@ interface ItemFileResolver : SdComponent {
 interface VariableProvider : SdComponent {
 
     /**
-     * 变量准确度
      * 0:low
      * 1:med
      * 2:high
-     * 3:99.99%准确 一般是通过SourceItem中特定的ID，然后从元数据源中获取的
+     * 3:99.99% Completely accurate, implemented by getting ID from [SourceItem]
+     *
+     * @return the accuracy of the variable provider
      */
     val accuracy: Int get() = 1
 
+    /**
+     * @return the variables for the item
+     */
     fun createSourceGroup(sourceItem: SourceItem): SourceItemGroup
+
+    /**
+     * @return true if the provider can provide variables for the item
+     */
     fun support(item: SourceItem): Boolean
 
 }
 
 interface FileMover : SdComponent {
 
-    fun rename(sourceContent: SourceContent): Boolean
+    /**
+     * @param sourceContent the [SourceContent] to be moved
+     */
+    fun move(sourceContent: SourceContent): Boolean
 
     /**
      * @param paths the target paths
@@ -155,6 +197,9 @@ interface FileMover : SdComponent {
         return paths.all { it.exists() }
     }
 
+    /**
+     * @param path the path to be created
+     */
     fun createDirectories(path: Path) {
         path.createDirectories()
     }
@@ -167,6 +212,9 @@ interface RunAfterCompletion : SdComponent, Consumer<SourceContent>
  */
 interface SourceItemFilter : SdComponent, Predicate<SourceItem>
 
+/**
+ * @return true if the file should be processed
+ */
 interface FileContentFilter : SdComponent, Predicate<FileContent>
 
 interface FileTagger : SdComponent {

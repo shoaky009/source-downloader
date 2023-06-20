@@ -17,7 +17,7 @@ open class HttpFileMover(
     private val username: String? = null,
     private val password: String? = null
 ) : FileMover {
-    override fun rename(sourceContent: SourceContent): Boolean {
+    override fun move(sourceContent: SourceContent): Boolean {
         // 后面异步
         val responses = sourceContent.sourceFiles.map {
             val createFile = createFile(it.fileDownloadPath, it.targetPath())

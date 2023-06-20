@@ -57,7 +57,7 @@ class GeneralFileMoverTest {
         )
 
         val sourceContent = CoreSourceContent(sourceItem(), listOf(file1, file2), MapPatternVariables())
-        val result = mover.rename(sourceContent)
+        val result = mover.move(sourceContent)
         assert(result)
         Files.deleteIfExists(file1.targetPath())
         Files.deleteIfExists(file2.targetPath())

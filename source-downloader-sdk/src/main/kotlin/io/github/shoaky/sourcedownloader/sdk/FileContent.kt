@@ -5,40 +5,66 @@ import java.nio.file.Path
 interface FileContent {
 
     /**
-     * 保存文件的根目录 e.g. /mnt/downloads
+     * The root directory of the download file. e.g. /mnt/downloads
      */
     val downloadPath: Path
 
     /**
-     * 文件全路径 e.g. /mnt/downloads/test.txt
+     * The full path of the file. e.g. /mnt/downloads/test.txt
      */
     val fileDownloadPath: Path
 
     val patternVariables: PatternVariables
 
+    /**
+     * The tags of the file.
+     */
     val tags: Set<String>
 
+    /**
+     * The attributes of the file.
+     */
     val attributes: Map<String, Any>
 
+    /**
+     * @return The target path of the file. e.g. /mnt/save/2023-01-01/test.txt
+     */
     fun targetPath(): Path
 
+    /**
+     * @return The target directory of the file. e.g. /mnt/save/2023-01-01
+     */
     fun saveDirectoryPath(): Path {
         return targetPath().parent
     }
 
     /**
-     * 获取item文件对应的顶级目录e.g. 文件保存在下/mnt/bangumi/FATE/Season 01 返回 /mnt/bangumi/FATE
-     * Returns:
-     * null如果item的文件是保存在saveRootPath下
+     * example:
+     *  savePath=/mnt/bangumi
+     *  targetPath=/mnt/bangumi/FATE/Season 01/EP01.mp4
+     *  return /mnt/bangumi/FATE
+     *
+     *  savePath=/mnt/demo
+     *  targetPath=/mnt/demo/test.txt
+     *  return null
+     *
+     * @return The target directory of the file, when the path is equal to savePath, return null.
      */
-    fun itemSaveRootDirectory(): Path?
+    fun fileSaveRootDirectory(): Path?
 
     /**
-     * 获取item文件对应的顶级目录e.g. 文件保存在下/downloads/FATE/Season 01 返回 /downloads/FATE/
-     * Returns:
-     * null如果item的文件是保存在downloadPath下
+     * example:
+     *  downloadPath=/downloads
+     *  targetPath=/downloads/FATE/Season 01/EP01.mp4
+     *  return /downloads/FATE
+     *
+     *  downloadPath=/downloads
+     *  targetPath=/downloads/test.txt
+     *  return null
+     *
+     * @return The download directory of the file, when the path is equal to downloadPath, return null.
      */
-    fun itemDownloadRootDirectory(): Path? {
+    fun fileDownloadRootDirectory(): Path? {
         if (fileDownloadPath.parent == downloadPath) {
             return null
         }
@@ -51,9 +77,13 @@ interface FileContent {
     }
 
     /**
-     * 获取item文件对应的相对目录e.g. fileDownloadPath=/mnt/bangumi/FATE/Season 01/EP01.mp4 返回 FATE/Season 01
+     * example:
+     *  fileDownloadPath=/mnt/bangumi/FATE/Season 01/EP01.mp4
+     *  return FATE/Season 01
+     *
+     * @return The relative directory of the file.
      */
-    fun itemDownloadRelativeParentDirectory(): Path? {
+    fun fileDownloadRelativeParentDirectory(): Path? {
         val relativize = downloadPath.relativize(fileDownloadPath)
         return relativize.parent
     }

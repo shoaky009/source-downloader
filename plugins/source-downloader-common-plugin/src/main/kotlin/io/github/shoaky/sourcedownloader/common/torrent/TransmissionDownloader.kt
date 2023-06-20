@@ -57,7 +57,7 @@ class TransmissionDownloader(
         return client.execute(SessionGet()).body().arguments.downloadPath
     }
 
-    override fun rename(sourceContent: SourceContent): Boolean {
+    override fun move(sourceContent: SourceContent): Boolean {
         // https://github.com/transmission/transmission/issues/3216
         // NOTE 目前Transmission的API无法完全满足命名种子内部的文件，重命名参数不能包含文件夹
 
@@ -65,7 +65,7 @@ class TransmissionDownloader(
         val sourceFiles = sourceContent.sourceFiles
 
         val firstFile = sourceFiles.first()
-        val saveItemFileRootDirectory = firstFile.itemSaveRootDirectory()
+        val saveItemFileRootDirectory = firstFile.fileSaveRootDirectory()
         val itemLocation = saveItemFileRootDirectory ?: firstFile.saveDirectoryPath()
 
         val allSuccess = sourceFiles.map {

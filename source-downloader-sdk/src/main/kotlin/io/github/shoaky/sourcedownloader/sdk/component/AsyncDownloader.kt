@@ -4,13 +4,12 @@ import io.github.shoaky.sourcedownloader.sdk.DownloadTask
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 
 /**
- * 异步下载，submit方法不会等待下载执行完毕才返回
- * 下载器提交任务成功后会有持久化重命名任务
+ * Async downloader, submit method will not wait for the download to complete before returning
  */
 interface AsyncDownloader : Downloader {
 
     /**
-     * @return null当下载器不存在该任务时
+     * @return null if the task not found, otherwise return true if the task is finished
      */
     fun isFinished(task: DownloadTask): Boolean?
 

@@ -8,7 +8,7 @@ object CleanEmptyDirectory : RunAfterCompletion {
     @OptIn(ExperimentalPathApi::class)
     override fun accept(t: SourceContent) {
         t.sourceFiles.firstOrNull()?.run {
-            val directoryPath = this.itemDownloadRootDirectory()
+            val directoryPath = this.fileDownloadRootDirectory()
             if (directoryPath != null && directoryPath.walk(PathWalkOption.INCLUDE_DIRECTORIES)
                     .all { it.isDirectory() }
             ) {

@@ -33,7 +33,7 @@ class MockDownloader(
         return downloadPath
     }
 
-    override fun rename(sourceContent: SourceContent): Boolean {
+    override fun move(sourceContent: SourceContent): Boolean {
         val sourceFiles = sourceContent.sourceFiles
         for (sourceFile in sourceFiles) {
             sourceFile.fileDownloadPath.moveTo(sourceFile.targetPath())

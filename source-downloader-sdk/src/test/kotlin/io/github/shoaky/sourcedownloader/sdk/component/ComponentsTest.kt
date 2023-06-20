@@ -49,7 +49,7 @@ private class MultiCp : TorrentDownloader, FileTagger {
         throw NotImplementedError()
     }
 
-    override fun rename(sourceContent: SourceContent): Boolean {
+    override fun move(sourceContent: SourceContent): Boolean {
         throw NotImplementedError()
     }
 

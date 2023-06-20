@@ -28,6 +28,7 @@ import kotlin.io.path.exists
 import kotlin.time.ExperimentalTime
 import kotlin.time.measureTime
 
+// TODO 基于行为重构，async,sync,dry-run,...
 /**
  * 拉在这里，后面看情况重构
  */
@@ -41,6 +42,7 @@ class SourceProcessor(
     private val downloader: Downloader,
     private val fileMover: FileMover,
     private val sourceSavePath: Path,
+    // TODO 分离配置中的option和Processor运行时本身的option
     private val options: ProcessorConfig.Options = ProcessorConfig.Options(),
     private val processingStorage: ProcessingStorage,
 ) : Runnable {
@@ -512,7 +514,7 @@ class SourceProcessor(
             .forEach {
                 fileMover.createDirectories(it)
             }
-        return fileMover.rename(
+        return fileMover.move(
             content.copy(sourceFiles = renameFiles)
         )
     }
