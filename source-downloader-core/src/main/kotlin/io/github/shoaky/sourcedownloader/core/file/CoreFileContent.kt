@@ -20,16 +20,14 @@ data class CoreFileContent(
     @JsonDeserialize(`as` = CorePathPattern::class)
     val filenamePattern: PathPattern,
     override val attributes: Map<String, Any> = emptyMap(),
-    var status: FileContentStatus = FileContentStatus.NORMAL
+    var status: FileContentStatus = FileContentStatus.NORMAL,
+    override val tags: MutableSet<String> = mutableSetOf()
 ) : FileContent {
 
     private var variableErrorStrategy: VariableErrorStrategy = VariableErrorStrategy.STAY
 
     @Transient
     private val allVariables = MapPatternVariables(patternVariables)
-
-    @Transient
-    override val tags: MutableSet<String> = mutableSetOf()
 
     private val targetPath: Path by lazy {
         val saveDirectoryPath = saveDirectoryPath()
@@ -126,16 +124,8 @@ data class CoreFileContent(
         return res
     }
 
-    fun tag(tags: List<String>) {
-        this.tags.addAll(tags)
-    }
-
     fun isTagged(tag: String): Boolean {
         return tags.contains(tag)
-    }
-
-    fun tags(): List<String> {
-        return tags.toList()
     }
 
     fun currentVariables(): PatternVariables {

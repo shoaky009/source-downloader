@@ -10,12 +10,11 @@ import io.github.shoaky.sourcedownloader.sdk.PathPattern.ExpressionResult
 import io.github.shoaky.sourcedownloader.sdk.PathPattern.ParseResult
 import io.github.shoaky.sourcedownloader.sdk.PatternVariables
 import io.github.shoaky.sourcedownloader.util.jackson.PathPatternDeserializer
+import io.github.shoaky.sourcedownloader.util.scriptHost
 import org.projectnessie.cel.Env
 import org.projectnessie.cel.checker.Decls
 import org.projectnessie.cel.tools.Script
-import org.projectnessie.cel.tools.ScriptHost
 import java.util.regex.Pattern
-
 
 @JsonDeserialize(using = PathPatternDeserializer::class)
 data class CorePathPattern(
@@ -74,6 +73,19 @@ data class CorePathPattern(
         return ParseResult(pathBuilder.toString(), variableResults)
     }
 
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as CorePathPattern
+
+        return pattern == other.pattern
+    }
+
+    override fun hashCode(): Int {
+        return pattern.hashCode()
+    }
+
     companion object {
         private val variablePatternRegex: Pattern = Pattern.compile("\\{(.+?)}|:\\{(.+?)}")
         val ORIGIN = CorePathPattern("")
@@ -120,10 +132,6 @@ private class Expression(
 
     fun isOptional(): Boolean {
         return raw.startsWith(":")
-    }
-
-    companion object {
-        private val scriptHost = ScriptHost.newBuilder().build()
     }
 
     private fun extractIdentifiers(expr: Expr): Set<String> {

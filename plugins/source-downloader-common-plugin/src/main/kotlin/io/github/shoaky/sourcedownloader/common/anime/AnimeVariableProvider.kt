@@ -4,6 +4,7 @@ import com.google.common.cache.CacheBuilder
 import com.google.common.cache.CacheLoader
 import io.github.shoaky.sourcedownloader.external.anilist.AnilistClient
 import io.github.shoaky.sourcedownloader.external.anilist.Search
+import io.github.shoaky.sourcedownloader.external.anilist.Title
 import io.github.shoaky.sourcedownloader.external.bangumi.BgmTvApiClient
 import io.github.shoaky.sourcedownloader.external.bangumi.SearchSubjectRequest
 import io.github.shoaky.sourcedownloader.sdk.*
@@ -14,6 +15,7 @@ import org.slf4j.LoggerFactory
 class AnimeVariableProvider(
     private val bgmTvApiClient: BgmTvApiClient,
     private val anilistClient: AnilistClient,
+    private val preferBgmTv: Boolean = false
 ) : VariableProvider {
 
     private val searchCache =
@@ -35,9 +37,14 @@ class AnimeVariableProvider(
         return searchCache.get(title)
     }
 
+    /**
+     * 根据标题来决定用bgm还是anilist来进行第一次搜索
+     */
     private fun searchAnime(title: String): Anime {
         val hasJp = hasLanguage(title, Character.UnicodeScript.HIRAGANA, Character.UnicodeScript.KATAKANA)
         val hasChinese = hasLanguage(title, Character.UnicodeScript.HAN)
+
+        var anilistResult: Title? = null
         if (hasJp || hasChinese.not()) {
             val response = anilistClient.execute(Search(title)).body()
             if (response.errors.isNotEmpty()) {
@@ -45,21 +52,37 @@ class AnimeVariableProvider(
             }
             val anime = response.data.page.medias.firstOrNull()
             if (anime == null) {
-                log.warn("searching anime: $title no result")
+                log.warn("anilist searching anime: $title no result")
             }
+            anilistResult = anime?.title
+        }
+        if (preferBgmTv.not() && anilistResult != null) {
             return Anime(
-                romajiName = anime?.title?.romaji,
-                nativeName = anime?.title?.native
+                anilistResult.romaji,
+                anilistResult.native
             )
         }
-        val body = bgmTvApiClient.execute(SearchSubjectRequest(title)).body()
+
+        val body = bgmTvApiClient.execute(
+            SearchSubjectRequest(anilistResult?.native ?: title)
+        ).body()
         val subjectItem = body.list.firstOrNull()
         if (subjectItem == null) {
-            log.warn("searching anime: $title no result")
+            log.warn("bgmtv searching anime: $title no result")
             return Anime()
         }
 
-        val response = anilistClient.execute(Search(subjectItem.name)).body()
+        if (anilistResult != null) {
+            return Anime(
+                anilistResult.romaji,
+                subjectItem.name
+            )
+        }
+
+        // 这里是中文的情况
+        val response = anilistClient.execute(
+            Search(subjectItem.name)
+        ).body()
         if (response.errors.isNotEmpty()) {
             return Anime(
                 nativeName = subjectItem.name
@@ -67,7 +90,7 @@ class AnimeVariableProvider(
         }
         val media = response.data.page.medias.firstOrNull()
         if (media == null) {
-            log.warn("searching anime: $title no result")
+            log.warn("anilist searching anime: $title no result")
         }
 
         return Anime(
@@ -78,15 +101,11 @@ class AnimeVariableProvider(
 
     private fun extractTitle(sourceItem: SourceItem): String {
         val text = sourceItem.title.replaces(
-            listOf("(", "【", "（"), "["
+            leftBrReplaces, "["
         ).replaces(
-            listOf(")", "】", "）"), "]"
+            rightBrReplaces, "]"
         ).replaces(
-            listOf(
-                "~", "！", "～", "SP", "TV", "-",
-                "S01", "Season 1", "Season 01",
-                "BDBOX", "BD-BOX", "+"
-            ), ""
+            empyReplaces, "", false
         )
             .replace(Regex("S(\\d+)"), "Season $1")
             .replace(Regex("\\[.*?]"), "")
@@ -102,6 +121,10 @@ class AnimeVariableProvider(
                 .map { TitleScore(it) }
                 .maxBy { it.score }.title
         }
+        if (text.isNotBlank()) {
+            return text
+        }
+
         return text
     }
 
@@ -109,6 +132,16 @@ class AnimeVariableProvider(
         return text.codePoints().anyMatch {
             unicode.contains(Character.UnicodeScript.of(it))
         }
+    }
+
+    companion object {
+        private val leftBrReplaces = listOf("(", "【", "（")
+        private val rightBrReplaces = listOf(")", "】", "）")
+        private val empyReplaces = listOf(
+            "~", "！", "～", "Special", "SP", "TV", "-",
+            "S01", "Season 1", "Season 01",
+            "BDBOX", "BD-BOX", "+", "OVA"
+        )
     }
 
 }

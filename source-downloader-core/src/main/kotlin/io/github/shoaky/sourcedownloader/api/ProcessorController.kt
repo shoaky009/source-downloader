@@ -74,7 +74,7 @@ private class ProcessorController(
                         file.fileDownloadPath.toString(),
                         file.targetPath().toString(),
                         file.patternVariables.variables(),
-                        file.tags(),
+                        file.tags,
                         file.status
                     )
                 }
@@ -103,6 +103,6 @@ private data class FileResult(
     val from: String,
     val to: String,
     val variables: Map<String, Any>,
-    val tags: List<String>,
+    val tags: Collection<String>,
     val status: FileContentStatus
 )

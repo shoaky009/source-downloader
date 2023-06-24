@@ -1,5 +1,6 @@
 package io.github.shoaky.sourcedownloader.telegram
 
+import com.fasterxml.jackson.annotation.JsonAlias
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import io.github.shoaky.sourcedownloader.sdk.InstanceFactory
@@ -121,8 +122,11 @@ object TelegramClientInstanceFactory : InstanceFactory<MTProtoTelegramClient> {
 internal val log = LoggerFactory.getLogger("Telegram4j")
 
 private data class ClientConfig(
+    @JsonAlias("api-id")
     val apiId: Int,
+    @JsonAlias("api-hash")
     val apiHash: String,
+    @JsonAlias("metadata-path")
     val metadataPath: Path,
     val proxy: URI?,
     val debug: Boolean = false

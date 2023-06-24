@@ -289,8 +289,8 @@ class SourceProcessor(
         sourceItemGroup: SourceItemGroup,
         sourceItem: SourceItem
     ): CoreSourceContent {
-        val resolveFiles = itemFileResolver.resolveFiles(sourceItem)
         val sharedPatternVariables = sourceItemGroup.sharedPatternVariables()
+        val resolveFiles = itemFileResolver.resolveFiles(sourceItem)
         val sourceFiles = sourceItemGroup.filePatternVariables(resolveFiles)
             .mapIndexed { index, sourceFile ->
                 val resolveFile = resolveFiles[index]
@@ -303,8 +303,10 @@ class SourceProcessor(
                     filenamePattern,
                     resolveFile.attributes
                 )
-                // 这里坑，后面看怎么改
-                val tagged = tagFileAndReplaceFilenamePattern(sourceFileContent)
+                val tags = taggers.mapNotNull { it.tag(sourceFileContent) }
+                sourceFileContent.tags.addAll(tags)
+
+                val tagged = replaceFilenamePattern(sourceFileContent)
                 tagged.setVariableErrorStrategy(options.variableErrorStrategy)
                 tagged.addSharedVariables(sharedPatternVariables)
                 tagged
@@ -318,14 +320,11 @@ class SourceProcessor(
         return CoreSourceContent(sourceItem, sourceFiles, MapPatternVariables(sharedPatternVariables))
     }
 
-    private fun tagFileAndReplaceFilenamePattern(fileContent: CoreFileContent): CoreFileContent {
+    private fun replaceFilenamePattern(fileContent: CoreFileContent): CoreFileContent {
         val customTags = tagFilenamePattern.keys
         if (customTags.isEmpty()) {
             return fileContent
         }
-        val tags = taggers.mapNotNull { it.tag(fileContent) }
-        fileContent.tag(tags)
-
         val tagged = customTags.filter {
             fileContent.isTagged(it)
         }
@@ -338,10 +337,7 @@ class SourceProcessor(
         }
         val taggedFilePattern = pathPatterns.first()
         log.debug("Processor:{} 文件:{} 使用自定义命名规则:{}", name, fileContent.fileDownloadPath, taggedFilePattern)
-        val copy = fileContent.copy(filenamePattern = taggedFilePattern)
-        // 考虑要不要存tag
-        copy.tag(fileContent.tags())
-        return copy
+        return fileContent.copy(filenamePattern = taggedFilePattern)
     }
 
     private fun probeContent(sc: CoreSourceContent): Pair<Boolean, ProcessingContent.Status> {
@@ -456,7 +452,7 @@ class SourceProcessor(
 
         val renameTimesThreshold = options.renameTimesThreshold
         if (pc.renameTimes == renameTimesThreshold) {
-            log.error("重命名${renameTimesThreshold}次重试失败record:${Jackson.toJsonString(pc)}")
+            log.warn("重命名${renameTimesThreshold}次重试失败record:${Jackson.toJsonString(pc)}")
         }
 
         val toUpdate = pc.copy(
