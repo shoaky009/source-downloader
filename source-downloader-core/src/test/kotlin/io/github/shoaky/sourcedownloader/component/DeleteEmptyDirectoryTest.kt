@@ -1,6 +1,6 @@
 package io.github.shoaky.sourcedownloader.component
 
-import io.github.shoaky.sourcedownloader.component.supplier.CleanEmptyDirectorySupplier
+import io.github.shoaky.sourcedownloader.component.supplier.DeleteEmptyDirectorySupplier
 import io.github.shoaky.sourcedownloader.core.CorePathPattern
 import io.github.shoaky.sourcedownloader.core.file.CoreFileContent
 import io.github.shoaky.sourcedownloader.core.file.CoreSourceContent
@@ -15,7 +15,7 @@ import kotlin.io.path.*
 @OptIn(ExperimentalPathApi::class)
 class DeleteEmptyDirectoryTest {
 
-    private val cp = CleanEmptyDirectorySupplier.apply(Properties.EMPTY)
+    private val cp = DeleteEmptyDirectorySupplier.apply(Properties.EMPTY)
 
     @Test
     fun given_empty() {

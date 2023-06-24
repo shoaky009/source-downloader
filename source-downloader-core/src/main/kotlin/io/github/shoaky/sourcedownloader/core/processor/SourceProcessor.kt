@@ -274,8 +274,11 @@ class SourceProcessor(
 
         var status = WAITING_TO_RENAME
         if (downloader !is AsyncDownloader && dryRun.not()) {
-            rename(sourceContent)
+            val success = rename(sourceContent)
             status = RENAMED
+            if (success) {
+                runAfterCompletions(sourceContent)
+            }
         }
 
         if (contentStatus.first.not() && downloader is AsyncDownloader) {
@@ -600,7 +603,6 @@ private class SimpleStat(
         return "$name 处理了${processingCounting}个 过滤了${filterCounting}个, took:${stopWatch.totalTimeMillis}ms"
     }
 }
-
 
 private class SafeRunner(
     private val processor: SourceProcessor

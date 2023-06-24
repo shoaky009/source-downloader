@@ -4,7 +4,7 @@ import io.github.shoaky.sourcedownloader.sdk.SourceContent
 import io.github.shoaky.sourcedownloader.sdk.component.RunAfterCompletion
 import kotlin.io.path.*
 
-object CleanEmptyDirectory : RunAfterCompletion {
+object DeleteEmptyDirectory : RunAfterCompletion {
     @OptIn(ExperimentalPathApi::class)
     override fun accept(t: SourceContent) {
         t.sourceFiles.firstOrNull()?.run {

@@ -1,7 +1,7 @@
 package io.github.shoaky.sourcedownloader.core.processor
 
 import io.github.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
-import io.github.shoaky.sourcedownloader.component.supplier.CleanEmptyDirectorySupplier
+import io.github.shoaky.sourcedownloader.component.supplier.DeleteEmptyDirectorySupplier
 import io.github.shoaky.sourcedownloader.component.supplier.ExpressionFileFilterSupplier
 import io.github.shoaky.sourcedownloader.component.supplier.ExpressionItemFilterSupplier
 import io.github.shoaky.sourcedownloader.component.supplier.TouchItemDirectorySupplier
@@ -126,7 +126,7 @@ class SpringProcessorManager(
         }
         processor.scheduleRenameTask(options.renameTaskInterval)
         if (options.deleteEmptyDirectory) {
-            val deleteEmptyDirectory = CleanEmptyDirectorySupplier.apply(Properties.EMPTY)
+            val deleteEmptyDirectory = DeleteEmptyDirectorySupplier.apply(Properties.EMPTY)
             processor.addRunAfterCompletion(deleteEmptyDirectory)
         }
         if (options.touchItemDirectory) {
