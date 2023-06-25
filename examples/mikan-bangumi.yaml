@@ -26,7 +26,7 @@ components:
       props:
       # 推荐填上token，有些番剧要登陆才能番剧信息页面，否则有些番会无法正确重命名
       # 登陆https://mikanani.me/后，F12打开开发者工具，找到cookie中的token
-      # token:
+        token: ""
   file-mover:
     - name: qbittorrent
       type: qbittorrent
