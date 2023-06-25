@@ -6,7 +6,7 @@ import io.github.shoaky.sourcedownloader.external.anilist.AnilistClient
 import io.github.shoaky.sourcedownloader.external.anilist.Search
 import io.github.shoaky.sourcedownloader.external.anilist.Title
 import io.github.shoaky.sourcedownloader.external.bangumi.BgmTvApiClient
-import io.github.shoaky.sourcedownloader.external.bangumi.SearchSubjectRequest
+import io.github.shoaky.sourcedownloader.external.bangumi.SearchSubjectV0Request
 import io.github.shoaky.sourcedownloader.sdk.*
 import io.github.shoaky.sourcedownloader.sdk.component.VariableProvider
 import io.github.shoaky.sourcedownloader.sdk.util.replaces
@@ -64,9 +64,9 @@ class AnimeVariableProvider(
         }
 
         val body = bgmTvApiClient.execute(
-            SearchSubjectRequest(anilistResult?.native ?: title)
+            SearchSubjectV0Request(anilistResult?.native ?: title)
         ).body()
-        val subjectItem = body.list.firstOrNull()
+        val subjectItem = body.data.firstOrNull()
         if (subjectItem == null) {
             log.warn("bgmtv searching anime: $title no result")
             return Anime()

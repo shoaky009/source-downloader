@@ -633,7 +633,7 @@ private class ProcessStage(
     val subject: Any?
 ) {
     override fun toString(): String {
-        return "operation='$stage', subject=$subject"
+        return "stage='$stage', subject=$subject"
     }
 }
 

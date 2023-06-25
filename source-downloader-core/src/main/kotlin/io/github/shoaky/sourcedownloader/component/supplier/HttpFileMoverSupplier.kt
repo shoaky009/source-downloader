@@ -11,6 +11,7 @@ object HttpFileMoverSupplier : SdComponentSupplier<HttpFileMover> {
             props.get("server-url"),
             props.getOrNull("username"),
             props.getOrNull("password"),
+            props.getOrDefault("delete-source", true),
         )
     }
 

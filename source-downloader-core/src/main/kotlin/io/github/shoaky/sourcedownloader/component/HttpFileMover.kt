@@ -15,7 +15,8 @@ import java.nio.file.Path
 open class HttpFileMover(
     private val serverUrl: String,
     private val username: String? = null,
-    private val password: String? = null
+    private val password: String? = null,
+    private val deleteSource: Boolean = true
 ) : FileMover {
     override fun move(sourceContent: SourceContent): Boolean {
         // 后面异步
@@ -23,6 +24,10 @@ open class HttpFileMover(
             val createFile = createFile(it.fileDownloadPath, it.targetPath())
             if (createFile.statusCode() != HttpStatus.CREATED.value()) {
                 log.error("Failed to create file: ${it.targetPath()}")
+            } else {
+                if (deleteSource) {
+                    it.fileDownloadPath.toFile().delete()
+                }
             }
             createFile
         }
