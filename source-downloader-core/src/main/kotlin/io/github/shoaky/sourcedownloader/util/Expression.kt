@@ -29,9 +29,9 @@ class CelLibrary : Library {
     override fun getCompileOptions(): List<EnvOption> {
         val options = EnvOption.declarations(
             Decls.newFunction(
-                ANY_CONTAINS,
+                CONTAINS_ANY,
                 Decls.newInstanceOverload(
-                    "string_any_contains",
+                    "string_contains_any",
                     listOf(
                         Decls.newListType(Decls.String),
                         Decls.newListType(Decls.String)
@@ -39,7 +39,7 @@ class CelLibrary : Library {
                     Decls.Bool
                 ),
                 Decls.newInstanceOverload(
-                    "string_any_contains_ignore_case",
+                    "string_contains_any_ignore_case",
                     listOf(
                         Decls.newListType(Decls.String),
                         Decls.newListType(Decls.String),
@@ -56,20 +56,20 @@ class CelLibrary : Library {
     override fun getProgramOptions(): List<ProgramOption> {
         val option = ProgramOption.functions(
             Overload.overload(
-                ANY_CONTAINS,
+                CONTAINS_ANY,
                 null,
                 null,
                 { l, r ->
                     val source = l.convertToNative(List::class.java).map { it.toString() }
                     val target = r.convertToNative(List::class.java).map { it.toString() }
-                    val contains = anyContains(source, target)
+                    val contains = containsAny(source, target)
                     if (contains) BoolT.True else BoolT.False
                 },
                 { vals ->
                     val l = vals[0].convertToNative(List::class.java).map { it.toString() }
                     val r = vals[1].convertToNative(List::class.java).map { it.toString() }
                     val b = vals[2].booleanValue()
-                    val contains = anyContains(l, r, b)
+                    val contains = containsAny(l, r, b)
                     if (contains) BoolT.True else BoolT.False
                 },
             )
@@ -80,9 +80,9 @@ class CelLibrary : Library {
 
     companion object {
 
-        private const val ANY_CONTAINS = "anyContains"
+        private const val CONTAINS_ANY = "containsAny"
 
-        fun anyContains(source: List<String>, target: List<String>, ignoreCase: Boolean = false): Boolean {
+        fun containsAny(source: List<String>, target: List<String>, ignoreCase: Boolean = false): Boolean {
             if (ignoreCase) {
                 val set = target.map { it.lowercase() }.toSet()
                 return source.any { it.lowercase() in set }
