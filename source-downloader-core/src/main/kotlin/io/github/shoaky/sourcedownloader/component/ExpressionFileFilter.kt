@@ -2,6 +2,7 @@ package io.github.shoaky.sourcedownloader.component
 
 import io.github.shoaky.sourcedownloader.sdk.FileContent
 import io.github.shoaky.sourcedownloader.sdk.component.FileContentFilter
+import io.github.shoaky.sourcedownloader.util.CelLibrary
 import io.github.shoaky.sourcedownloader.util.scriptHost
 import org.projectnessie.cel.checker.Decls
 import org.projectnessie.cel.tools.Script
@@ -50,19 +51,21 @@ class ExpressionFileFilter(
     }
 
     companion object {
+
         private val log = LoggerFactory.getLogger(ExpressionFileFilter::class.java)
         private fun buildScript(expression: String): Script {
             return scriptHost.buildScript(expression)
                 .withDeclarations(
                     Decls.newVar("filename", Decls.String),
                     Decls.newVar("tags", Decls.newListType(Decls.String)),
-                    // short for extension
+                    // abbr. extension
                     Decls.newVar("ext", Decls.String),
-                    // short for patternVariables
+                    // abbr. patternVariables
                     Decls.newVar("vars", Decls.newMapType(Decls.String, Decls.String)),
                     Decls.newVar("attr", Decls.newMapType(Decls.String, Decls.Any)),
                     Decls.newVar("paths", Decls.newListType(Decls.String)),
                 )
+                .withLibraries(CelLibrary())
                 .build()
         }
     }
