@@ -26,26 +26,27 @@ processors:
       - "episode"
       - "language"
       - "season"
-    mover: general
+    mover: qbittorrent
     save-path: /mnt/temp-media/anime
     options:
       save-path-pattern: "{nativeName}/Season {season}"
-      filename-pattern: "{title} S{season}E{episode}:{' - '+source}"
-      file-filters:
-        - "anime"
+      filename-pattern: "{title} S{season}E{episode}:{' - ' + source}"
       variable-name-replace:
         episodeNumber: episode
         animeTitle: title
         episodeNumberAlt: episode
         romajiName: title
-      provide-metadata-variables: false
-      file-expression-inclusions: [ ]
-      file-expression-exclusions:
-        - "ext in ['torrent', 'md5', 'txt', 'jpg', 'png']"
-      file-taggers:
-        - "simple"
-      tag-filename-pattern:
-        subtitle: "{title} S{season}E{episode}:{' - '+source}.{language}"
       variable-replacers:
         - regex: "(?i)^BDRIP$"
           replacement: BD
+      file-taggers:
+        - "simple"
+      tag-filename-pattern:
+        subtitle: "{title} S{season}E{episode}:{' - ' + source}:{'.' + language}"
+      file-filters:
+        - "anime"
+      file-expression-exclusions:
+        - "ext in ['torrent', 'md5', 'txt']"
+        - "tags.containsAny(['image'], true)"
+        - "paths.containsAny(['extra', 'special', 'others', '映像特典'], true)"
+      save-processing-content: false

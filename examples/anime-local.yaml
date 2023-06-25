@@ -25,24 +25,25 @@ processors:
     save-path: /mnt/temp-media/anime
     options:
       save-path-pattern: "{nativeName}/Season {season}"
-      filename-pattern: "{title} S{season}E{episode}:{' - '+source}"
-      file-filters:
-        - "anime"
-      save-processing-content: false
+      filename-pattern: "{title} S{season}E{episode}:{' - ' + source}"
       variable-name-replace:
         episodeNumber: episode
         animeTitle: title
         episodeNumberAlt: episode
         romajiName: title
-      run-after-completion:
-        - "clean-empty-directory"
-      file-expression-exclusions:
-        - "ext in ['md5', 'torrent', 'txt', 'jpg', 'png']"
-        - "'Extra' in paths"
-      file-taggers:
-        - "simple"
-      tag-filename-pattern:
-        subtitle: "{title} S{season}E{episode}:{' - '+source}.{language}"
       variable-replacers:
         - regex: "(?i)^BDRIP$"
           replacement: BD
+      file-taggers:
+        - "simple"
+      tag-filename-pattern:
+        subtitle: "{title} S{season}E{episode}:{' - ' + source}:{'.' + language}"
+      file-filters:
+        - "anime"
+      file-expression-exclusions:
+        - "ext in ['torrent', 'md5', 'txt']"
+        - "tags.containsAny(['image'], true)"
+        - "paths.containsAny(['extra', 'special', 'others', '映像特典'], true)"
+      save-processing-content: false
+      run-after-completion:
+        - "delete-empty-directory"
