@@ -7,13 +7,14 @@ import io.github.shoaky.sourcedownloader.sdk.util.encodeBase64
 import io.github.shoaky.sourcedownloader.sdk.util.http.httpClient
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
+import org.springframework.web.util.UriComponentsBuilder
 import java.net.URI
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import java.nio.file.Path
 
 open class HttpFileMover(
-    private val serverUrl: String,
+    private val url: URI,
     private val username: String? = null,
     private val password: String? = null,
     private val deleteSource: Boolean = true
@@ -34,15 +35,46 @@ open class HttpFileMover(
         return responses.all { it.statusCode() == HttpStatus.CREATED.value() }
     }
 
+    override fun exists(paths: List<Path>): Boolean {
+        return paths.asSequence().map {
+            val request = buildAuthRequest(it)
+                .method(PROPFIND, HttpRequest.BodyPublishers.noBody())
+                .build()
+            httpClient.send(request, HttpResponse.BodyHandlers.discarding())
+        }.any { it.statusCode() == HttpStatus.NOT_FOUND.value() }
+    }
+
+    override fun createDirectories(path: Path) {
+        val request = buildAuthRequest(path)
+            .method(MKCOL, HttpRequest.BodyPublishers.noBody())
+            .build()
+        httpClient.send(request, HttpResponse.BodyHandlers.ofString())
+    }
+
     private fun createFile(filePath: Path, targetPath: Path): HttpResponse<String> {
-        val builder = HttpRequest.newBuilder(URI(serverUrl + targetPath))
+        val builder = buildAuthRequest(targetPath)
             .expectContinue(true)
+        builder.PUT(HttpRequest.BodyPublishers.ofFile(filePath))
+        return httpClient.send(builder.build(), HttpResponse.BodyHandlers.ofString())
+    }
+
+    private fun buildAuthRequest(targetPath: Path): HttpRequest.Builder {
+        val uri = UriComponentsBuilder.fromUri(url)
+            .path(targetPath.toString())
+            .build()
+            .toUri()
+        val builder = HttpRequest.newBuilder(uri)
         if (username != null && password != null) {
             val authorization = "$username:$password".encodeBase64()
             builder.header(HttpHeaders.AUTHORIZATION, "Basic $authorization")
         }
-        builder.PUT(HttpRequest.BodyPublishers.ofFile(filePath))
-        return httpClient.send(builder.build(), HttpResponse.BodyHandlers.ofString())
+        log.debug("Request uri: {}", uri)
+        return builder
+    }
+
+    companion object {
+        private const val MKCOL = "MKCOL"
+        private const val PROPFIND = "PROPFIND"
     }
 
 }

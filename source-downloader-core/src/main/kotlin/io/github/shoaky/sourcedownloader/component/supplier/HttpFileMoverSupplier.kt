@@ -8,7 +8,7 @@ import io.github.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
 object HttpFileMoverSupplier : SdComponentSupplier<HttpFileMover> {
     override fun apply(props: Properties): HttpFileMover {
         return HttpFileMover(
-            props.get("server-url"),
+            props.get("url"),
             props.getOrNull("username"),
             props.getOrNull("password"),
             props.getOrDefault("delete-source", true),

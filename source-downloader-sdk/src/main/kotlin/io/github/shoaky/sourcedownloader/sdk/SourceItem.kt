@@ -10,6 +10,7 @@ data class SourceItem(
     val date: LocalDateTime,
     val contentType: String,
     val downloadUri: URI,
+    val attributes: Map<String, Any> = emptyMap()
 ) {
 
     constructor(
@@ -24,8 +25,5 @@ data class SourceItem(
         return Hashing.goodFastHash(128)
             .hashString("$title-$link-$contentType-$downloadUri", Charsets.UTF_8)
             .toString()
-        // return Hashing.sha256()
-        //     .hashString("$title-$link-$contentType-$downloadUri", Charsets.UTF_8)
-        //     .toString()
     }
 }

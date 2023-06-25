@@ -16,13 +16,14 @@ object Jackson {
     private val mapRef = jacksonTypeRef<Map<String, Any>>()
 
     init {
-        objectMapper.registerModule(KotlinModule.Builder().build())
-        objectMapper.registerModule(JavaTimeModule())
-        objectMapper.enable(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT)
-        objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-        objectMapper.enable(DeserializationFeature.FAIL_ON_INVALID_SUBTYPE)
-        objectMapper.enable(DeserializationFeature.FAIL_ON_MISSING_EXTERNAL_TYPE_ID_PROPERTY)
-        objectMapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
+        objectMapper
+            .registerModule(KotlinModule.Builder().build())
+            .registerModule(JavaTimeModule())
+            .enable(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT)
+            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+            .enable(DeserializationFeature.FAIL_ON_INVALID_SUBTYPE)
+            .enable(DeserializationFeature.FAIL_ON_MISSING_EXTERNAL_TYPE_ID_PROPERTY)
+            .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
     }
 
     fun <T : Any> fromJson(json: String, type: KClass<T>): T {

@@ -38,11 +38,13 @@ class SendHttpRequestTest {
             )
         )
 
-        apply.accept(CoreSourceContent(
-            sourceItem("test"),
-            listOf(),
-            MapPatternVariables()
-        ))
+        apply.accept(
+            CoreSourceContent(
+                sourceItem("test"),
+                listOf(),
+                MapPatternVariables()
+            )
+        )
         assertEquals("message=下载 test内的0个文件", queryString)
         assertEquals("test", header)
     }
@@ -67,15 +69,16 @@ class SendHttpRequestTest {
             )
         )
 
-        apply.accept(CoreSourceContent(
-            sourceItem("test"),
-            listOf(),
-            MapPatternVariables()
-        ))
+        apply.accept(
+            CoreSourceContent(
+                sourceItem("test"),
+                listOf(),
+                MapPatternVariables()
+            )
+        )
 
         assertEquals("test", jsonPath?.read("$.sourceItem.title"))
     }
-
 
     @Test
     fun test_custom_body() {
@@ -101,11 +104,13 @@ class SendHttpRequestTest {
             )
         )
 
-        apply.accept(CoreSourceContent(
-            sourceItem("test"),
-            listOf(),
-            MapPatternVariables()
-        ))
+        apply.accept(
+            CoreSourceContent(
+                sourceItem("test"),
+                listOf(),
+                MapPatternVariables()
+            )
+        )
 
         assertEquals("text", jsonPath?.read("$.type"))
         assertEquals("番剧 test内的0个文件", jsonPath?.read("$.content"))
