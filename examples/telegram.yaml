@@ -1,10 +1,11 @@
+# 启动后查看应用标准输出，用tg移动端扫码需要关闭2FA
 instances:
   - name: telegramClient
     props:
       api-id: 1
       api-hash: 1
       metadata-path: /app/data/telegram
-      # 因库的原因暂时不起作用
+      # 支持http和socks5代理
       proxy: http://192.168.1.219:17890
 components:
   source:
@@ -13,8 +14,9 @@ components:
       props:
         client: telegramClient
         chats:
-          # 如果是私聊不填负数，频道填负数
-          - chat-id: "-1956424521"
+          # 如果是私聊填正数，频道填负数
+          - chat-id: "-190000000"
+          - chat-id: "190000000"
   downloader:
     - name: telegram
       type: telegram

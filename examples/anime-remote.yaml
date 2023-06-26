@@ -3,8 +3,7 @@ components:
     - name: vcb-7acg
       type: rss
       props:
-        url: "https://mikanani.me/RSS/Search?searchstr=%5B7%C2%B3ACG%5D+4%E4%B8%AA%E4%BA%BA%E5%90%84%E8%87%AA%E6%9C%89%E7%9D%80%E8%87%AA%E5%B7%B1%E7%9A%84%E7%A7%98%E5%AF%86%2F4%E4%BA%BA%E3%81%AF%E3%81%9D%E3%82%8C%E3%81%9E%E3%82%8C%E3%82%A6%E3%
-    82%BD%E3%82%92%E3%81%A4%E3%81%8F%2F"
+        url: "https://mikanani.me/RSS/Search?searchstr=vcb|7%C2%B3ACG"
   downloader:
     - name: qbittorrent
       type: qbittorrent
