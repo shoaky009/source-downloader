@@ -1,15 +1,12 @@
 package io.github.shoaky.sourcedownloader.telegram
 
 import com.fasterxml.jackson.annotation.JsonAlias
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import io.github.shoaky.sourcedownloader.sdk.InstanceFactory
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.telegram.auth.QrCodeAuthorization
 import io.netty.util.ResourceLeakDetector
 import org.slf4j.LoggerFactory
 import reactor.core.publisher.Hooks
-import telegram4j.core.InitConnectionParams
 import telegram4j.core.MTProtoTelegramClient
 import telegram4j.core.event.DefaultUpdatesManager
 import telegram4j.core.retriever.EntityRetrievalStrategy
@@ -17,10 +14,12 @@ import telegram4j.core.retriever.PreferredEntityRetriever
 import telegram4j.mtproto.MTProtoRetrySpec
 import telegram4j.mtproto.MethodPredicate
 import telegram4j.mtproto.ResponseTransformer
+import telegram4j.mtproto.resource.EventLoopResources
+import telegram4j.mtproto.resource.ProxyResources
+import telegram4j.mtproto.resource.TcpClientResources
 import telegram4j.mtproto.store.FileStoreLayout
 import telegram4j.mtproto.store.StoreLayoutImpl
-import telegram4j.tl.InputClientProxy
-import java.lang.module.ModuleDescriptor
+import java.net.InetSocketAddress
 import java.net.URI
 import java.nio.file.Path
 import java.time.Duration
@@ -39,8 +38,23 @@ object TelegramClientInstanceFactory : InstanceFactory<MTProtoTelegramClient> {
             config.apiHash,
             QrCodeAuthorization::authorize
         )
-        val initConnectionParams = initConnectionParams(props.getOrNull<URI>("proxy"))
-        bootstrap.setInitConnectionParams(initConnectionParams)
+
+        val proxyResource = props.getOrNull<URI>("proxy")?.let {
+            val address = InetSocketAddress(it.host, it.port)
+            when (it.scheme) {
+                "http" -> ProxyResources.ofHttp().address(address).build()
+                "socks5" -> ProxyResources.ofSocks5().address(address).build()
+                else -> throw IllegalArgumentException("unsupported proxy type ${it.scheme}")
+            }
+        }
+        proxyResource?.apply {
+            bootstrap.setTcpClientResources(
+                TcpClientResources.builder()
+                    .eventLoopResources(EventLoopResources.create())
+                    .proxyResources(this).build()
+            )
+        }
+
         bootstrap
             .setEntityRetrieverStrategy(
                 EntityRetrievalStrategy.preferred(
@@ -81,36 +95,7 @@ object TelegramClientInstanceFactory : InstanceFactory<MTProtoTelegramClient> {
             .doOnError {
                 log.error("Error while connecting to Telegram", it)
             }
-            .blockOptional(Duration.ofSeconds(10)).get()
-    }
-
-    private fun initConnectionParams(proxyUri: URI?): InitConnectionParams {
-        val appVersion = Optional.ofNullable(
-            InitConnectionParams::class.java.module.descriptor
-        )
-            .flatMap { obj: ModuleDescriptor -> obj.rawVersion() }
-            .orElse("0.1.0-SNAPSHOT")
-        val deviceModel = "Telegram4J"
-        val systemVersion = java.lang.String.join(
-            " ", System.getProperty("os.name"),
-            System.getProperty("os.version"),
-            System.getProperty("os.arch")
-        )
-
-        val langCode = Locale.getDefault().language.lowercase()
-        val node: JsonNode = JsonNodeFactory.instance.objectNode()
-            .put("tz_offset", TimeZone.getDefault().rawOffset / 1000.0)
-
-        val proxy = proxyUri?.let {
-            InputClientProxy.builder()
-                .port(it.port)
-                .address(it.host)
-                .build()
-        }
-        return InitConnectionParams(
-            appVersion, deviceModel, langCode,
-            "", systemVersion, langCode, proxy, node
-        )
+            .blockOptional(Duration.ofSeconds(30)).get()
     }
 
     override fun type(): Class<MTProtoTelegramClient> {

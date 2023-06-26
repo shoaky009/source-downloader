@@ -14,7 +14,7 @@ instance:
         required: true
         example: /app/data/telegram
       - name: proxy
-        description: 代理URI
+        description: 代理URI, 支持http和socks5
         required: false
         example: "http://localhost:7890"
 
@@ -29,3 +29,13 @@ component:
       - name: chats
         description: Chats
         required: true
+        type: array
+        nested:
+          - name: chat-id
+            description: ChatId
+            required: true
+            example: -1001234567890
+          - name: begin-date
+            description: 开始日期
+            required: false
+            example: 2021-01-01

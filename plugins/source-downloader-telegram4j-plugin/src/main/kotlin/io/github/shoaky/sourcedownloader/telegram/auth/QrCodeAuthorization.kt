@@ -118,7 +118,7 @@ object QrCodeAuthorization {
                 .flatMap {
                     clientGroup.send(
                         DcId.main(),
-                        ImmutableExportLoginToken.of(apiId, apiHash, listOf<Long>())
+                        ImmutableExportLoginToken.of(apiId, apiHash, listOf())
                     )
                 }
                 .cast(BaseLoginToken::class.java)
