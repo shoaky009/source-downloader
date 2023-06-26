@@ -19,6 +19,7 @@ interface SourceContent {
 }
 
 interface PathPattern {
+
     val pattern: String
     fun parse(provider: PatternVariables): ParseResult
 

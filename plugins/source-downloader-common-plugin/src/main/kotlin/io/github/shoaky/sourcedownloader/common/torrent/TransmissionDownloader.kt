@@ -3,6 +3,7 @@ package io.github.shoaky.sourcedownloader.common.torrent
 import io.github.shoaky.sourcedownloader.external.transmission.*
 import io.github.shoaky.sourcedownloader.sdk.DownloadTask
 import io.github.shoaky.sourcedownloader.sdk.SourceContent
+import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.TorrentDownloader
 import org.slf4j.LoggerFactory
 import java.nio.file.Path
@@ -11,21 +12,25 @@ class TransmissionDownloader(
     private val client: TransmissionClient,
 ) : TorrentDownloader {
 
-    override fun isFinished(task: DownloadTask): Boolean? {
-        val hash = getTorrentHash(task.sourceItem)
-        val response = client.execute(TorrentGet(
-            listOf(hash)
-        ))
+    override fun isFinished(sourceItem: SourceItem): Boolean? {
+        val hash = getTorrentHash(sourceItem)
+        val response = client.execute(
+            TorrentGet(
+                listOf(hash)
+            )
+        )
         val torrent = response.body().arguments.torrents.firstOrNull() ?: return null
         return torrent.percentComplete == 1.0
     }
 
     override fun submit(task: DownloadTask) {
-        val response = client.execute(TorrentAdd(
-            task.downloadUri().toString(),
-            task.downloadPath,
-            task.options.tags,
-        ))
+        val response = client.execute(
+            TorrentAdd(
+                task.downloadUri().toString(),
+                task.downloadPath,
+                task.options.tags,
+            )
+        )
 
         val torrentHash = response.body().arguments.getHash()
         val torrent = client.execute(
@@ -87,7 +92,8 @@ class TransmissionDownloader(
                 listOf(torrentHash),
                 itemLocation,
                 true
-            ))
+            )
+        )
 
         val isSuccess = setLocationResponse.body().isSuccess().not()
         if (isSuccess) {

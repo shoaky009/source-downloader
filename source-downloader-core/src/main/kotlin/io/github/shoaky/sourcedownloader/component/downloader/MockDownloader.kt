@@ -2,6 +2,7 @@ package io.github.shoaky.sourcedownloader.component.downloader
 
 import io.github.shoaky.sourcedownloader.sdk.DownloadTask
 import io.github.shoaky.sourcedownloader.sdk.SourceContent
+import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.TorrentDownloader
 import java.nio.file.Files
 import java.nio.file.Path
@@ -13,7 +14,7 @@ class MockDownloader(
     private val downloadPath: Path
 ) : TorrentDownloader {
 
-    override fun isFinished(task: DownloadTask): Boolean {
+    override fun isFinished(sourceItem: SourceItem): Boolean {
         return true
     }
 
@@ -34,10 +35,18 @@ class MockDownloader(
     }
 
     override fun move(sourceContent: SourceContent): Boolean {
-        val sourceFiles = sourceContent.sourceFiles
-        for (sourceFile in sourceFiles) {
-            sourceFile.fileDownloadPath.moveTo(sourceFile.targetPath())
-        }
+        sourceContent.sourceFiles
+            .forEach {
+                it.fileDownloadPath.moveTo(it.targetPath())
+            }
+        return true
+    }
+
+    override fun replace(sourceContent: SourceContent): Boolean {
+        sourceContent.sourceFiles
+            .forEach {
+                it.fileDownloadPath.moveTo(it.targetPath(), true)
+            }
         return true
     }
 

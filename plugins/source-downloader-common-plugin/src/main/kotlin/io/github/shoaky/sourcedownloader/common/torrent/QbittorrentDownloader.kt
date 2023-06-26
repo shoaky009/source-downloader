@@ -39,9 +39,11 @@ class QbittorrentDownloader(
         // NOTE 必须要等一下qbittorrent(不知道有没有同步添加的方法)
         Thread.sleep(400L)
         val torrentFiles = retry({
-            client.execute(TorrentFilesRequest(
-                torrentHash
-            )).body()
+            client.execute(
+                TorrentFilesRequest(
+                    torrentHash
+                )
+            ).body()
         })
 
         val relativePaths = task.relativePaths()
@@ -53,11 +55,13 @@ class QbittorrentDownloader(
             return
         }
 
-        client.execute(TorrentFilePrioRequest(
-            torrentHash,
-            stopDownloadFiles.map { it.index },
-            0
-        ))
+        client.execute(
+            TorrentFilePrioRequest(
+                torrentHash,
+                stopDownloadFiles.map { it.index },
+                0
+            )
+        )
     }
 
     override fun defaultDownloadPath(): Path {
@@ -68,8 +72,7 @@ class QbittorrentDownloader(
         return Path.of(response.body())
     }
 
-    override fun isFinished(task: DownloadTask): Boolean? {
-        val sourceItem = task.sourceItem
+    override fun isFinished(sourceItem: SourceItem): Boolean? {
         val torrentHash = getTorrentHash(sourceItem)
         val torrent = client.execute(TorrentInfoRequest(hashes = torrentHash))
         val torrents = torrent.body()
@@ -102,7 +105,8 @@ class QbittorrentDownloader(
             TorrentsSetLocationRequest(
                 listOf(torrentHash),
                 itemLocation.toString()
-            ))
+            )
+        )
         if (setLocationResponse.statusCode() != HttpStatus.OK.value()) {
             log.error("set location failed,hash:$torrentHash code:${setLocationResponse.statusCode()} body:${setLocationResponse.body()}")
         }

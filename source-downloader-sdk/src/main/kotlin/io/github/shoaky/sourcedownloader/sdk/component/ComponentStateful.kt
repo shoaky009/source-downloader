@@ -1,4 +1,4 @@
-package io.github.shoaky.sourcedownloader.sdk
+package io.github.shoaky.sourcedownloader.sdk.component
 
 
 interface ComponentStateful {

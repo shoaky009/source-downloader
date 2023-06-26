@@ -1,8 +1,8 @@
 package io.github.shoaky.sourcedownloader.common.rss
 
 import com.apptasticsoftware.rssreader.RssReader
-import io.github.shoaky.sourcedownloader.sdk.AlwaysLatestSource
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
+import io.github.shoaky.sourcedownloader.sdk.component.AlwaysLatestSource
 import java.net.URI
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter

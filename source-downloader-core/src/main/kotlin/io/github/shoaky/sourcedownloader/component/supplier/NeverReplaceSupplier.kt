@@ -14,7 +14,7 @@ object NeverReplaceSupplier : SdComponentSupplier<NeverReplace> {
 
     override fun supplyTypes(): List<ComponentType> {
         return listOf(
-            ComponentType.replacementDecider("never")
+            ComponentType.fileReplacementDecider("never")
         )
     }
 

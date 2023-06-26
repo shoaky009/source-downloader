@@ -18,16 +18,7 @@ data class CoreSourceContent(
             .filter { it.value > 1 }.keys
 
         for (sourceFile in sourceFiles) {
-            if (fileMover.exists(listOf(sourceFile.targetPath()))) {
-                sourceFile.status = FileContentStatus.TARGET_EXISTS
-                continue
-            }
-
-            if (conflicts.contains(sourceFile.targetPath())) {
-                sourceFile.status = FileContentStatus.FILE_CONFLICT
-                continue
-            }
-
+            // 校验顺序不可换
             val filenameResult = sourceFile.filenamePattern.parse(sourceFile.currentVariables())
             if (filenameResult.success().not()) {
                 sourceFile.status = FileContentStatus.VARIABLE_ERROR
@@ -39,10 +30,20 @@ data class CoreSourceContent(
                 sourceFile.status = FileContentStatus.VARIABLE_ERROR
                 continue
             }
+
+            if (conflicts.contains(sourceFile.targetPath())) {
+                sourceFile.status = FileContentStatus.FILE_CONFLICT
+                continue
+            }
+
+            if (fileMover.exists(listOf(sourceFile.targetPath()))) {
+                sourceFile.status = FileContentStatus.TARGET_EXISTS
+                continue
+            }
         }
     }
 
-    fun getRenameFiles(fileMover: FileMover): List<CoreFileContent> {
+    fun getMovableFiles(fileMover: FileMover): List<CoreFileContent> {
         if (!updated) {
             updateFileStatus(fileMover)
             updated = true

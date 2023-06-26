@@ -2,13 +2,14 @@ package io.github.shoaky.sourcedownloader.common.rss
 
 import com.apptasticsoftware.rssreader.RssReader
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
+import io.github.shoaky.sourcedownloader.sdk.component.AlwaysLatestSource
 import org.slf4j.LoggerFactory
 import java.net.URI
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 
-class RssSource(private val url: String) : io.github.shoaky.sourcedownloader.sdk.AlwaysLatestSource() {
+class RssSource(private val url: String) : AlwaysLatestSource() {
 
     private val rssReader = defaultRssReader
     override fun fetch(): Iterable<SourceItem> {

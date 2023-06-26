@@ -2,6 +2,7 @@ package io.github.shoaky.sourcedownloader.component.source
 
 import io.github.shoaky.sourcedownloader.sdk.DownloadTask
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
+import io.github.shoaky.sourcedownloader.sdk.component.AlwaysLatestSource
 import io.github.shoaky.sourcedownloader.sdk.component.Downloader
 import io.github.shoaky.sourcedownloader.util.creationTime
 import java.nio.file.Files
@@ -17,7 +18,7 @@ class SystemFileSource(
      */
     private val mode: Int = 0
     // 用这个只是偷懒，如果要面对超大的文件数量需要用到pointer
-) : io.github.shoaky.sourcedownloader.sdk.AlwaysLatestSource(), Downloader {
+) : AlwaysLatestSource(), Downloader {
 
     override fun fetch(): Iterable<SourceItem> {
         return when (mode) {

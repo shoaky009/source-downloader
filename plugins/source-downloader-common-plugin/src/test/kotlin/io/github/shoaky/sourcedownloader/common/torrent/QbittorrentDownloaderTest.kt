@@ -3,7 +3,6 @@ package io.github.shoaky.sourcedownloader.common.torrent
 import io.github.shoaky.sourcedownloader.external.qbittorrent.QbittorrentClient
 import io.github.shoaky.sourcedownloader.external.qbittorrent.TorrentInfo
 import io.github.shoaky.sourcedownloader.external.qbittorrent.TorrentInfoRequest
-import io.github.shoaky.sourcedownloader.sdk.DownloadTask
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import org.apache.commons.lang3.NotImplementedException
 import org.junit.jupiter.api.Test
@@ -16,7 +15,6 @@ import java.net.http.HttpResponse
 import java.time.LocalDateTime
 import java.util.*
 import javax.net.ssl.SSLSession
-import kotlin.io.path.Path
 
 class QbittorrentDownloaderTest {
 
@@ -40,8 +38,7 @@ class QbittorrentDownloaderTest {
             LocalDateTime.now(), "torrent",
             URI("https://mikanani.me/Download/20230308/f3bcd4831746caac97212896caa41f4e24d0ae88.torrent")
         )
-        val downloadTask = DownloadTask(sourceItem, emptyList(), Path(""))
-        val finished = downloader.isFinished(downloadTask) ?: false
+        val finished = downloader.isFinished(sourceItem) ?: false
         assert(finished)
     }
 
@@ -62,8 +59,7 @@ class QbittorrentDownloaderTest {
             LocalDateTime.now(), "torrent",
             URI("https://mikanani.me/Download/20230308/f3bcd4831746caac97212896caa41f4e24d0ae88.torrent")
         )
-        val downloadTask = DownloadTask(sourceItem, emptyList(), Path(""))
-        val finished = downloader.isFinished(downloadTask) ?: false
+        val finished = downloader.isFinished(sourceItem) ?: false
         assert(!finished)
     }
 

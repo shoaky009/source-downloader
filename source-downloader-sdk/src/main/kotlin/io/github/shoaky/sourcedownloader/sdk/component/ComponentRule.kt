@@ -1,9 +1,5 @@
-package io.github.shoaky.sourcedownloader.sdk
+package io.github.shoaky.sourcedownloader.sdk.component
 
-import io.github.shoaky.sourcedownloader.sdk.component.ComponentException
-import io.github.shoaky.sourcedownloader.sdk.component.ComponentTopType
-import io.github.shoaky.sourcedownloader.sdk.component.SdComponent
-import io.github.shoaky.sourcedownloader.sdk.component.componentSuperClasses
 import kotlin.reflect.KClass
 import kotlin.reflect.full.isSuperclassOf
 

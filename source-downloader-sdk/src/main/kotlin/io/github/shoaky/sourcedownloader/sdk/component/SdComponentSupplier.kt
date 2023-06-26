@@ -1,6 +1,5 @@
 package io.github.shoaky.sourcedownloader.sdk.component
 
-import io.github.shoaky.sourcedownloader.sdk.ComponentRule
 import io.github.shoaky.sourcedownloader.sdk.Properties
 
 interface SdComponentSupplier<R : SdComponent> {

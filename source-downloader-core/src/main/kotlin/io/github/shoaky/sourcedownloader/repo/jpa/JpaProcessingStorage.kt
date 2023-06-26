@@ -3,12 +3,13 @@ package io.github.shoaky.sourcedownloader.repo.jpa
 import io.github.shoaky.sourcedownloader.core.ProcessingContent
 import io.github.shoaky.sourcedownloader.core.ProcessingStorage
 import io.github.shoaky.sourcedownloader.core.ProcessorSourceState
-import io.github.shoaky.sourcedownloader.core.processor.ProcessingTargetPaths
+import io.github.shoaky.sourcedownloader.core.processor.ProcessingTargetPath
 import io.github.shoaky.sourcedownloader.util.fromValue
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Component
 import java.nio.file.Path
 import java.time.LocalDateTime
+import kotlin.io.path.Path
 
 @Component
 class JpaProcessingStorage(
@@ -79,7 +80,7 @@ class JpaProcessingStorage(
         }
     }
 
-    override fun saveTargetPath(paths: ProcessingTargetPaths) {
+    override fun saveTargetPath(paths: ProcessingTargetPath) {
         val now = LocalDateTime.now()
         val processingId = paths.itemHashing
         val processorName = paths.processorName
@@ -118,7 +119,6 @@ class JpaProcessingStorage(
         }
     }
 
-
     override fun save(state: ProcessorSourceState) {
         processorSourceStateRepository.save(state.let {
             val record = ProcessorSourceStateRecord()
@@ -130,5 +130,16 @@ class JpaProcessingStorage(
             record.lastActiveTime = state.lastActiveTime
             record
         })
+    }
+
+    override fun findTargetPath(path: Path): ProcessingTargetPath? {
+        val targetPath = targetPathRepository.findByIdOrNull(path.toString())
+            ?: return null
+
+        return ProcessingTargetPath(
+            listOf(Path(targetPath.id)),
+            targetPath.processorName,
+            targetPath.itemHashing
+        )
     }
 }

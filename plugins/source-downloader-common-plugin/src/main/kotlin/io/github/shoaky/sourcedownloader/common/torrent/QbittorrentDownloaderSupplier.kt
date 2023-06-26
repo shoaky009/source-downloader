@@ -2,10 +2,10 @@ package io.github.shoaky.sourcedownloader.common.torrent
 
 import io.github.shoaky.sourcedownloader.external.qbittorrent.QbittorrentClient
 import io.github.shoaky.sourcedownloader.external.qbittorrent.QbittorrentConfig
-import io.github.shoaky.sourcedownloader.sdk.ComponentRule
 import io.github.shoaky.sourcedownloader.sdk.InstanceFactory
 import io.github.shoaky.sourcedownloader.sdk.InstanceManager
 import io.github.shoaky.sourcedownloader.sdk.Properties
+import io.github.shoaky.sourcedownloader.sdk.component.ComponentRule
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
 import io.github.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
 

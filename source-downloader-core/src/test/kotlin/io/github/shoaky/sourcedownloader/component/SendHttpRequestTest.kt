@@ -63,8 +63,7 @@ class SendHttpRequestTest {
             Properties.fromMap(
                 mapOf(
                     "url" to "http://localhost:8080/body?message=下载 {summary}",
-                    "withSummary" to true,
-                    "withContent" to true,
+                    "with-content-body" to true,
                 )
             )
         )

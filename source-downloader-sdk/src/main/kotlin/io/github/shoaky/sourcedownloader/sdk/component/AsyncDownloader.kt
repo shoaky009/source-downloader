@@ -1,7 +1,8 @@
 package io.github.shoaky.sourcedownloader.sdk.component
 
-import io.github.shoaky.sourcedownloader.sdk.DownloadTask
+import io.github.shoaky.sourcedownloader.sdk.SourceContent
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
+import kotlin.io.path.deleteIfExists
 
 /**
  * Async downloader, submit method will not wait for the download to complete before returning
@@ -11,7 +12,7 @@ interface AsyncDownloader : Downloader {
     /**
      * @return null if the task not found, otherwise return true if the task is finished
      */
-    fun isFinished(task: DownloadTask): Boolean?
+    fun isFinished(sourceItem: SourceItem): Boolean?
 
 }
 
@@ -24,5 +25,14 @@ interface TorrentDownloader : AsyncDownloader, FileMover {
                 ?: torrentHashRegex.find(sourceItem.link.toString()) ?: torrentHashRegex.find(sourceItem.title)
             return find?.value
         }
+    }
+
+    /**
+     * 偷懒的实现，后面可能要调整
+     */
+    override fun replace(sourceContent: SourceContent): Boolean {
+        val fileContent = sourceContent.sourceFiles.first()
+        fileContent.targetPath().deleteIfExists()
+        return move(sourceContent)
     }
 }

@@ -128,6 +128,7 @@ class SourceProcessorTest {
     // 6.variableNameReplace option测试
     // 7.tagFilenamePattern option测试
     // 8.replaceVariable option测试
+    // 9.fileReplacement 测试
 
     companion object {
 

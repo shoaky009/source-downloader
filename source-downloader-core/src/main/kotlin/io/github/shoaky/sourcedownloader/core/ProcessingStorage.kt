@@ -1,6 +1,6 @@
 package io.github.shoaky.sourcedownloader.core
 
-import io.github.shoaky.sourcedownloader.core.processor.ProcessingTargetPaths
+import io.github.shoaky.sourcedownloader.core.processor.ProcessingTargetPath
 import java.nio.file.Path
 
 interface ProcessingStorage {
@@ -16,7 +16,7 @@ interface ProcessingStorage {
     /**
      * 需要从targetPath获取到[ProcessingContent]，从而目标文件存在时提供上下文信息做出决策
      */
-    fun saveTargetPath(paths: ProcessingTargetPaths)
+    fun saveTargetPath(paths: ProcessingTargetPath)
 
     fun targetPathExists(paths: List<Path>): Boolean
 
@@ -25,4 +25,5 @@ interface ProcessingStorage {
     fun findProcessorSourceState(processorName: String, sourceId: String): ProcessorSourceState?
     fun save(state: ProcessorSourceState)
 
+    fun findTargetPath(path: Path): ProcessingTargetPath?
 }

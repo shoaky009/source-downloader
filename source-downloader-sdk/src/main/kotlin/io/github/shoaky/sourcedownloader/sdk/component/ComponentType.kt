@@ -51,7 +51,7 @@ data class ComponentType(
         }
 
         @JvmStatic
-        fun replacementDecider(type: String): ComponentType {
+        fun fileReplacementDecider(type: String): ComponentType {
             return ComponentType(type, FileReplacementDecider::class)
         }
 

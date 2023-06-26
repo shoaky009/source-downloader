@@ -203,6 +203,11 @@ interface FileMover : SdComponent {
     fun createDirectories(path: Path) {
         path.createDirectories()
     }
+
+    /**
+     * @param sourceContent the [SourceContent] to be replaced
+     */
+    fun replace(sourceContent: SourceContent): Boolean
 }
 
 interface RunAfterCompletion : SdComponent, Consumer<SourceContent>
@@ -227,6 +232,11 @@ interface FileTagger : SdComponent {
 
 interface FileReplacementDecider : SdComponent {
 
+    /**
+     * @param current the current [SourceContent], the [SourceContent.sourceFiles] always has one [FileContent] element
+     * @param before the [SourceContent] before the current one, the [SourceContent.sourceFiles] also may empty
+     * @return true if the current [SourceContent] should replace
+     */
     fun isReplace(current: SourceContent, before: SourceContent?): Boolean
 
 }

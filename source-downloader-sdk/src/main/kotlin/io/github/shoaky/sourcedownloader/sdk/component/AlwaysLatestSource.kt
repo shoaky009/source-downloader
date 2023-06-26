@@ -1,8 +1,10 @@
-package io.github.shoaky.sourcedownloader.sdk
+package io.github.shoaky.sourcedownloader.sdk.component
 
 import com.google.common.collect.Iterables
-import io.github.shoaky.sourcedownloader.sdk.component.Source
-
+import io.github.shoaky.sourcedownloader.sdk.NullPointer
+import io.github.shoaky.sourcedownloader.sdk.OffsetPointer
+import io.github.shoaky.sourcedownloader.sdk.PointedItem
+import io.github.shoaky.sourcedownloader.sdk.SourceItem
 
 /**
  * 根源没有时间 limit等请求参数

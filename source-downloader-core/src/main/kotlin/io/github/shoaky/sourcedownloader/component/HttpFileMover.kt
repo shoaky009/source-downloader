@@ -51,6 +51,10 @@ open class HttpFileMover(
         httpClient.send(request, HttpResponse.BodyHandlers.ofString())
     }
 
+    override fun replace(sourceContent: SourceContent): Boolean {
+        return move(sourceContent)
+    }
+
     private fun createFile(filePath: Path, targetPath: Path): HttpResponse<String> {
         val builder = buildAuthRequest(targetPath)
             .expectContinue(true)
