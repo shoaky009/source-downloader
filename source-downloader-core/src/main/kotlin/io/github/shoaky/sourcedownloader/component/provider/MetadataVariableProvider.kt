@@ -16,7 +16,10 @@ object MetadataVariableProvider : VariableProvider {
     override val accuracy: Int = 3
 }
 
-class MetadataSourceItemGroup(val sourceItem: SourceItem) : SourceItemGroup {
+class MetadataSourceItemGroup(
+    val sourceItem: SourceItem
+) : SourceItemGroup {
+
     override fun filePatternVariables(paths: List<SourceFile>): List<FileVariable> {
         val length = paths.size.toString().length
         return paths.mapIndexed { index, sf ->
@@ -24,8 +27,6 @@ class MetadataSourceItemGroup(val sourceItem: SourceItem) : SourceItemGroup {
             val vars = MapPatternVariables()
             vars.addVariable("filename", path.nameWithoutExtension)
             vars.addVariable("extension", path.extension)
-            vars.addVariable("sourceItemTitle", sourceItem.title)
-            vars.addVariable("sourceItemDate", sourceItem.date.toLocalDate().toString())
             vars.addVariable("sequence", "${index + 1}".padStart(length, '0'))
             path.parent?.apply {
                 vars.addVariable("parent", path.parent.name)
@@ -34,5 +35,18 @@ class MetadataSourceItemGroup(val sourceItem: SourceItem) : SourceItemGroup {
         }
     }
 
+    override fun sharedPatternVariables(): PatternVariables {
+        val vars = MapPatternVariables()
+        vars.addVariable("sourceItemTitle", sourceItem.title)
+        val date = sourceItem.date.toLocalDate()
+        vars.addVariable("sourceItemDate", date.toString())
+        vars.addVariable("sourceItemYear", date.year.toString())
+        vars.addVariable("sourceItemMonth", date.month.toString())
+        vars.addVariable("sourceItemDayOfMonth", date.dayOfMonth.toString())
+        sourceItem.attributes.forEach { (t, u) ->
+            vars.addVariable("attr.$t", u.toString())
+        }
+        return vars
+    }
 }
 
