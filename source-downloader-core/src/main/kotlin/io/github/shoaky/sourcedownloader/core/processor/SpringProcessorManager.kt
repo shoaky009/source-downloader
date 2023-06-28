@@ -1,10 +1,7 @@
 package io.github.shoaky.sourcedownloader.core.processor
 
 import io.github.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
-import io.github.shoaky.sourcedownloader.component.supplier.DeleteEmptyDirectorySupplier
-import io.github.shoaky.sourcedownloader.component.supplier.ExpressionFileFilterSupplier
-import io.github.shoaky.sourcedownloader.component.supplier.ExpressionItemFilterSupplier
-import io.github.shoaky.sourcedownloader.component.supplier.TouchItemDirectorySupplier
+import io.github.shoaky.sourcedownloader.component.supplier.*
 import io.github.shoaky.sourcedownloader.core.ProcessingStorage
 import io.github.shoaky.sourcedownloader.core.ProcessorConfig
 import io.github.shoaky.sourcedownloader.core.file.SdComponentManager
@@ -110,6 +107,12 @@ class SpringProcessorManager(
             processor.addItemFilter(ExpressionItemFilterSupplier.expressions(
                 options.itemExpressionExclusions,
                 options.itemExpressionInclusions
+            ))
+        }
+        if (options.contentExpressionExclusions.isNotEmpty() || options.contentExpressionInclusions.isNotEmpty()) {
+            processor.addContentFilter(ExpressionSourceContentFilterSupplier.expressions(
+                options.contentExpressionExclusions,
+                options.contentExpressionInclusions
             ))
         }
         if (options.fileExpressionExclusions.isNotEmpty() || options.fileExpressionInclusions.isNotEmpty()) {

@@ -10,7 +10,8 @@ data class SourceItem(
     val date: LocalDateTime,
     val contentType: String,
     val downloadUri: URI,
-    val attributes: Map<String, Any> = emptyMap()
+    val attributes: Map<String, Any> = emptyMap(),
+    val tags: Set<String> = emptySet(),
 ) {
 
     constructor(

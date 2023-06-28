@@ -79,6 +79,8 @@ data class ProcessorConfig(
         val saveProcessingContent: Boolean = true,
         val itemExpressionExclusions: List<String> = emptyList(),
         val itemExpressionInclusions: List<String> = emptyList(),
+        val contentExpressionExclusions: List<String> = emptyList(),
+        val contentExpressionInclusions: List<String> = emptyList(),
         val fileExpressionExclusions: List<String> = emptyList(),
         val fileExpressionInclusions: List<String> = emptyList(),
         val variableErrorStrategy: VariableErrorStrategy = VariableErrorStrategy.STAY,

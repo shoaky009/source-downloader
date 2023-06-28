@@ -1,8 +1,13 @@
 package io.github.shoaky.sourcedownloader.component
 
 import io.github.shoaky.sourcedownloader.component.supplier.ExpressionItemFilterSupplier
+import io.github.shoaky.sourcedownloader.core.CorePathPattern
+import io.github.shoaky.sourcedownloader.core.file.CoreFileContent
+import io.github.shoaky.sourcedownloader.sdk.MapPatternVariables
 import io.github.shoaky.sourcedownloader.sourceItem
 import org.junit.jupiter.api.Test
+import java.nio.file.Path
+import kotlin.io.path.Path
 import kotlin.test.assertEquals
 
 class ExpressionItemFilterTest {
@@ -55,4 +60,26 @@ class ExpressionItemFilterTest {
         )
         assertEquals(false, filter.test(sourceItem))
     }
+
+}
+
+fun createFileContent(
+    path: Path = Path(""),
+    sourcePath: Path = Path(""),
+    sourceRoot: Path = Path(""),
+    patternVariables: MapPatternVariables = MapPatternVariables(),
+    pathPattern: CorePathPattern = CorePathPattern.ORIGIN,
+    sourcePathPattern: CorePathPattern = CorePathPattern.ORIGIN,
+    tags: MutableSet<String> = mutableSetOf()
+): CoreFileContent {
+
+    return CoreFileContent(
+        path,
+        sourcePath,
+        sourceRoot,
+        patternVariables,
+        pathPattern,
+        sourcePathPattern,
+        tags = tags
+    )
 }

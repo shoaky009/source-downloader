@@ -44,6 +44,10 @@ enum class ComponentTopType(
         SourceItemFilter::class,
         listOf("source-item-filter", "item-filter", "sourceItemFilter", "itemFilter")
     ),
+    SOURCE_CONTENT_FILTER(
+        SourceContentFilter::class,
+        listOf("source-content-filter", "content-filter", "sourceContentFilter", "contentFilter")
+    ),
     FILE_CONTENT_FILTER(
         FileContentFilter::class,
         listOf("file-content-filter", "file-filter", "fileContentFilter", "fileFilter")
@@ -216,6 +220,11 @@ interface RunAfterCompletion : SdComponent, Consumer<SourceContent>
  * @return true if the item should be processed
  */
 interface SourceItemFilter : SdComponent, Predicate<SourceItem>
+
+/**
+ * @return true if the item should be processed
+ */
+interface SourceContentFilter : SdComponent, Predicate<SourceContent>
 
 /**
  * @return true if the file should be processed

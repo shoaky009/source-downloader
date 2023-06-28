@@ -9,7 +9,9 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 
-class RssSource(private val url: String) : AlwaysLatestSource() {
+class RssSource(
+    private val url: String
+) : AlwaysLatestSource() {
 
     private val rssReader = defaultRssReader
     override fun fetch(): Iterable<SourceItem> {

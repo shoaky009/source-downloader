@@ -30,6 +30,8 @@ data class ProcessingContent(
          */
         WAITING_TO_RENAME(0),
 
+        FILTERED(2),
+
         /**
          * 下载失败，指从下载器获取[SourceItem]对应的信息失败，大概率是人工手动删除了
          */

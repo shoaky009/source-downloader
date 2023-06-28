@@ -3,7 +3,7 @@ components:
     - name: vcb-7acg
       type: rss
       props:
-        url: "https://mikanani.me/RSS/Search?searchstr=vcb|7%C2%B3ACG"
+        url: "https://mikanani.me/RSS/Search?searchstr=vcb%7C7%C2%B3ACG"
   downloader:
     - name: qbittorrent
       type: qbittorrent
@@ -44,8 +44,11 @@ processors:
         subtitle: "{title} S{season}E{episode}:{' - ' + source}:{'.' + language}"
       file-filters:
         - "anime"
+      item-expression-exclusions:
+        - "title.matches('剧场版') || title.matches('BDMV') || title.matches('劇場版')"
+      content-expression-exclusions:
+        - "files.filter(x, 'video' in x.tags).size() < 3"
       file-expression-exclusions:
-        - "ext in ['torrent', 'md5', 'txt']"
+        - "ext in ['torrent', 'md5', 'txt', 'rar', 'zip']"
         - "tags.containsAny(['image'], true)"
-        - "paths.containsAny(['extra', 'special', 'others', '映像特典'], true)"
-      save-processing-content: false
+        - "paths.containsAny(['extra', 'special', 'others', '映像特典', 'cd', 'cds'], true)"

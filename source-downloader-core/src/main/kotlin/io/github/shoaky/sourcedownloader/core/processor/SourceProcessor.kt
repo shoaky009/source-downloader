@@ -48,6 +48,7 @@ class SourceProcessor(
 ) : Runnable {
 
     private val sourceItemFilters: MutableList<SourceItemFilter> = mutableListOf()
+    private val sourceContentFilters: MutableList<SourceContentFilter> = mutableListOf()
     private val fileContentFilters: MutableList<FileContentFilter> = mutableListOf()
     private val variableProviders = variableProviders.toMutableList()
     private val runAfterCompletion: MutableList<RunAfterCompletion> = mutableListOf()
@@ -110,6 +111,7 @@ class SourceProcessor(
             "Downloader" to downloader::class.java.simpleName,
             "FileMover" to fileMover::class.java.simpleName,
             "SourceItemFilter" to sourceItemFilters.map { it::class.simpleName },
+            "SourceContentFilter" to sourceContentFilters.map { it::class.simpleName },
             "RunAfterCompletion" to runAfterCompletion.map { it::class.simpleName },
             "DownloadPath" to downloadPath,
             "SourceSavePath" to sourceSavePath,
@@ -197,8 +199,8 @@ class SourceProcessor(
             }.getOrElse {
                 ProcessingContent(
                     name, CoreSourceContent(
-                        item.sourceItem, emptyList(), MapPatternVariables()
-                    )
+                    item.sourceItem, emptyList(), MapPatternVariables()
+                )
                 ).copy(status = FAILURE, failureReason = it.message)
             }
 
@@ -258,6 +260,12 @@ class SourceProcessor(
             options.variableNameReplace
         )
         val sourceContent = createPersistentSourceContent(variablesAggregation, sourceItem)
+        val filterBy = sourceContentFilters.firstOrNull { it.test(sourceContent).not() }
+        if (filterBy != null) {
+            log.debug("{} Filtered item:{}", filterBy::class.simpleName, sourceItem)
+            return ProcessingContent(name, sourceContent).copy(status = FILTERED)
+        }
+
         val contentStatus = probeContent(sourceContent)
         val replaceFiles = getReplaceableFiles(sourceContent)
 
@@ -513,6 +521,10 @@ class SourceProcessor(
         sourceItemFilters.addAll(filters)
     }
 
+    fun addContentFilter(vararg filters: SourceContentFilter) {
+        sourceContentFilters.addAll(filters)
+    }
+
     fun addFileFilter(vararg filters: FileContentFilter) {
         fileContentFilters.addAll(filters)
     }
@@ -584,6 +596,7 @@ class SourceProcessor(
     }
 
     companion object {
+
         private val retry = RetryTemplateBuilder()
             .maxAttempts(3)
             .fixedBackoff(Duration.ofSeconds(5L).toMillis())
@@ -681,6 +694,7 @@ private class ProcessStage(
     val stage: String,
     val subject: Any?
 ) {
+
     override fun toString(): String {
         return "stage='$stage', subject=$subject"
     }
@@ -690,6 +704,7 @@ private class SourceHashingItemFilter(
     val sourceName: String,
     val processingStorage: ProcessingStorage
 ) : SourceItemFilter {
+
     override fun test(item: SourceItem): Boolean {
         val processingContent = processingStorage.findByNameAndHash(sourceName, item.hashing())
         if (processingContent != null) {

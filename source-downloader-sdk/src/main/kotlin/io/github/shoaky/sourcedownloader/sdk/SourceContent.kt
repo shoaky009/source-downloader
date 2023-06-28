@@ -1,14 +1,11 @@
 package io.github.shoaky.sourcedownloader.sdk
 
-import java.nio.file.Path
 import kotlin.io.path.name
 
 interface SourceContent {
+
     val sourceFiles: List<FileContent>
     val sourceItem: SourceItem
-    fun allTargetPaths(): List<Path> {
-        return sourceFiles.map { it.targetPath() }
-    }
 
     fun summaryContent(): String {
         if (sourceFiles.size == 1) {
@@ -31,6 +28,7 @@ interface PathPattern {
         val path: String,
         val results: List<ExpressionResult>
     ) {
+
         fun success(): Boolean {
             return results.all { it.success }
         }

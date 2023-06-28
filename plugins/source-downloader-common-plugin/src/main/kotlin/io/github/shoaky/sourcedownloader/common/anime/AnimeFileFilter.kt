@@ -15,15 +15,15 @@ object AnimeFileFilter : FileContentFilter {
      * 如果在special中的文件夹下，匹配规则可以宽松些
      */
     private val spRegexes = listOf(
-        "NCOP|NCED|MENU|PV|CM|Fonts|IV|Scan|Event|Lecture|Preview|映像特典|Other".toRegex(RegexOption.IGNORE_CASE),
-    )
-
-    private val normalRegexes = listOf(
-        "NCED|NCOP|\\s+MENU|\\s+PV|\\s+CM|\\s+Fonts|^MENU(\\d+)?$|^PV(\\d+)?\$|映像特典".toRegex(RegexOption.IGNORE_CASE),
+        "NCOP|NCED|MENU|PV|CM|Fonts|IV|Scan|Event|Lecture|Preview|映像特典|Other|OP|ED".toRegex(RegexOption.IGNORE_CASE),
     )
 
     private val specialDirNames = setOf(
-        "sps", "sp", "special", "ncop", "nced", "menu", "pv", "cm", "cd", "cds", "scan", "scans", "extra"
+        "sps", "sp", "special", "ncop", "nced", "menu", "pv", "cm", "cd", "cds", "scan", "scans", "extra", "映像特典"
+    )
+
+    private val normalRegexes = listOf(
+        "NCED|NCOP|\\s+OP|\\s+ED|\\s+MENU|\\s+PV|\\s+CM|\\s+Fonts|^MENU(\\d+)?$|^PV(\\d+)?\$|映像特典".toRegex(RegexOption.IGNORE_CASE),
     )
 
     override fun test(content: FileContent): Boolean {

@@ -60,11 +60,11 @@ class SourceProcessorTest {
         assertEquals(3, contents.size)
 
         val d1 =
-            contents["test1"]!!.sourceContent.sourceFiles.first().patternVariables.getVariables()["sourceItemDate"]!!
+            contents["test1"]!!.sourceContent.sharedPatternVariables.getVariables()["sourceItemDate"]!!
         val d2 =
-            contents["test2"]!!.sourceContent.sourceFiles.first().patternVariables.getVariables()["sourceItemDate"]!!
+            contents["test2"]!!.sourceContent.sharedPatternVariables.getVariables()["sourceItemDate"]!!
         val d3 =
-            contents["test-dir"]!!.sourceContent.sourceFiles.first().patternVariables.getVariables()["sourceItemDate"]!!
+            contents["test-dir"]!!.sourceContent.sharedPatternVariables.getVariables()["sourceItemDate"]!!
 
         assert(savePath.resolve(Path("test1", d1, "test1 - 1.jpg")).exists())
         assert(savePath.resolve(Path("test2", d2, "test2 - 1.jpg")).exists())

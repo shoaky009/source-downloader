@@ -1,5 +1,7 @@
 package io.github.shoaky.sourcedownloader.common.anime
 
+import com.dgtlrepublic.anitomyj.AnitomyJ
+import com.dgtlrepublic.anitomyj.Element
 import com.google.common.cache.CacheBuilder
 import com.google.common.cache.CacheLoader
 import io.github.shoaky.sourcedownloader.external.anilist.AnilistClient
@@ -105,7 +107,9 @@ class AnimeVariableProvider(
         ).replaces(
             rightBrReplaces, "]"
         ).replaces(
-            empyReplaces, "", false
+            emptyReplaces, "", false
+        ).replaces(
+            bReplaces, " "
         )
             .replace(Regex("S(\\d+)"), "Season $1")
             .replace(Regex("\\[.*?]"), "")
@@ -117,9 +121,13 @@ class AnimeVariableProvider(
             } ?: return text
 
             // 优先选择日语，最后是中文尽可能用anilist搜索
-            return text.split(sp)
+            val title = text.split(sp)
                 .map { TitleScore(it) }
                 .maxBy { it.score }.title
+
+            return AnitomyJ.parse(title)
+                .firstOrNull { it.category == Element.ElementCategory.kElementAnimeTitle }?.value
+                ?: title
         }
         if (text.isNotBlank()) {
             return text
@@ -135,12 +143,16 @@ class AnimeVariableProvider(
     }
 
     companion object {
+
         private val leftBrReplaces = listOf("(", "【", "（")
         private val rightBrReplaces = listOf(")", "】", "）")
-        private val empyReplaces = listOf(
+        private val emptyReplaces = listOf(
             "~", "！", "～", "Special", "SP", "TV", "-",
             "S01", "Season 1", "Season 01",
             "BDBOX", "BD-BOX", "+", "OVA"
+        )
+        private val bReplaces = listOf(
+            "。", "，", "～"
         )
     }
 
