@@ -99,9 +99,9 @@ object QrCodeAuthorization {
                                 .filter(RpcException.isErrorMessage("PASSWORD_HASH_INVALID"))
                         )
                 }
-                .cast(LoginTokenSuccess::class.java)
+                .cast(ImmutableBaseAuthorization::class.java)
                 .doOnNext {
-                    val authorization = it.authorization() as BaseAuthorization
+                    val authorization = it as BaseAuthorization
                     val b = authorization.user() as BaseUser
                     val j = StringJoiner(" ")
                     Optional.ofNullable(b.firstName()).ifPresent(j::add)
