@@ -109,6 +109,10 @@ tasks.testCodeCoverageReport {
     }
 }
 
+springBoot {
+    buildInfo()
+}
+
 // graalvmNative {
 //     binaries.all {
 //         resources.includedPatterns.add(".*.yaml")

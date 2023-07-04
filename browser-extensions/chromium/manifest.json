@@ -1,0 +1,20 @@
+{
+  "name": "Source Downloader",
+  "description": "Match current uri and send sourceItem to processor",
+  "version": "1.0",
+  "manifest_version": 3,
+  "action": {
+    "default_popup": "server.html",
+    "default_icon": "source_downloader.png"
+  },
+  "host_permissions": [
+    "*://*/*"
+  ],
+  "permissions": [
+    "storage",
+    "declarativeNetRequest",
+    "declarativeNetRequestFeedback",
+    "contextMenus",
+    "scripting"
+  ]
+}
