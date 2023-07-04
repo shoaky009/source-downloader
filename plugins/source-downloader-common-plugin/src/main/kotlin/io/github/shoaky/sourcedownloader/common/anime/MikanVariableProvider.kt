@@ -61,6 +61,7 @@ class MikanVariableProvider(
     }
 
     override fun createSourceGroup(sourceItem: SourceItem): SourceItemGroup {
+        // TODO cache
         val pageInfo = mikanSupport.getEpisodePageInfo(sourceItem.link)
         if (pageInfo.mikanHref == null) {
             log.warn("mikanHref is null, link:{}", sourceItem.link)

@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // 从Chrome存储中加载配置
     chrome.storage.sync.get('serverUrl', function (data) {
-        var savedServerUrl = data.serverUrl;
+        const savedServerUrl = data.serverUrl;
         if (savedServerUrl) {
             serverUrlInput.value = savedServerUrl;
         }
@@ -16,10 +16,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // 保存配置
     saveButton.addEventListener('click', function () {
         const serverUrl = serverUrlInput.value;
-
-        // 将配置保存到Chrome存储中
         chrome.storage.sync.set({serverUrl: serverUrl}, function () {
-            // 显示保存成功的消息
             statusMessage.textContent = '配置已保存';
         });
     });
@@ -27,10 +24,6 @@ document.addEventListener('DOMContentLoaded', function () {
     // 测试连接
     testButton.addEventListener('click', function () {
         const serverUrl = serverUrlInput.value;
-        // 发起与服务的连接测试请求
-        // 这里可以使用XMLHttpRequest或者fetch等方法进行请求
-
-        // 示例：使用fetch方法测试与服务的连通性
         fetch(serverUrl + "/api/application/info")
             .then(function (response) {
                 if (response.ok) {

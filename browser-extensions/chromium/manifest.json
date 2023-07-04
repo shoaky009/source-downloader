@@ -5,7 +5,12 @@
   "manifest_version": 3,
   "action": {
     "default_popup": "server.html",
-    "default_icon": "source_downloader.png"
+    "default_icon": {
+      "16": "source_downloader.png",
+      "32": "source_downloader.png",
+      "48": "source_downloader.png",
+      "128": "source_downloader.png"
+    }
   },
   "host_permissions": [
     "*://*/*"
@@ -16,5 +21,8 @@
     "declarativeNetRequestFeedback",
     "contextMenus",
     "scripting"
-  ]
+  ],
+  "background": {
+    "service_worker": "background.js"
+  }
 }

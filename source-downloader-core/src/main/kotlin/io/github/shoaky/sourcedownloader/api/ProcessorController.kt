@@ -8,6 +8,7 @@ import io.github.shoaky.sourcedownloader.core.processor.ProcessorManager
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentException
 import org.springframework.web.bind.annotation.*
+import java.net.URI
 
 @RestController
 @RequestMapping("/api/processor")
@@ -30,7 +31,6 @@ private class ProcessorController(
         return configStorages.flatMap { it.getAllProcessorConfig() }
             .firstOrNull { it.name == processorName }
     }
-
 
     @PostMapping("/{processorName}")
     fun create(@PathVariable processorName: String,
@@ -55,7 +55,6 @@ private class ProcessorController(
         processorManager.destroy(processorName)
         processorManager.createProcessor(processorConfig)
     }
-
 
     @DeleteMapping("/{processorName}")
     fun delete(@PathVariable processorName: String) {
@@ -85,6 +84,11 @@ private class ProcessorController(
             }
     }
 
+    @GetMapping("/idk")
+    fun idk(@RequestBody idk: Idk): String {
+        return "idk"
+    }
+
 }
 
 private data class ProcessorInfo(
@@ -105,4 +109,9 @@ private data class FileResult(
     val variables: Map<String, Any>,
     val tags: Collection<String>,
     val status: FileContentStatus
+)
+
+private data class Idk(
+    val uri: URI,
+    val sourceItem: SourceItem
 )

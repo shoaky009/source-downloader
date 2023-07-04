@@ -3,6 +3,7 @@ package io.github.shoaky.sourcedownloader.sdk.component
 import com.fasterxml.jackson.annotation.JsonValue
 import com.google.common.base.CaseFormat
 import io.github.shoaky.sourcedownloader.sdk.*
+import java.net.URI
 import java.nio.file.Path
 import java.util.function.Consumer
 import java.util.function.Predicate
@@ -247,5 +248,15 @@ interface FileReplacementDecider : SdComponent {
      * @return true if the current [SourceContent] should replace
      */
     fun isReplace(current: SourceContent, before: SourceContent?): Boolean
+
+}
+
+interface ManualSource : SdComponent {
+
+    /**
+     * @return Provide matched [uri] JavaScript code to convert page to [SourceItem],
+     * basically just some selector values mapped to the [SourceItem] structure. null if not matched
+     */
+    fun getScript(uri: URI): SourceItemConvertScript?
 
 }

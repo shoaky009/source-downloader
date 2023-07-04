@@ -112,9 +112,13 @@ class TelegramIntegration(
             )
         )
 
-        progresses.computeIfPresent(fileDownloadPath) { _, _ ->
-            throw IllegalStateException("File already downloading: $fileDownloadPath")
+        progresses.compute(fileDownloadPath) { _, oldValue ->
+            oldValue?.run {
+                throw IllegalStateException("File already downloading: $fileDownloadPath")
+            }
+            monitoredChannel
         }
+
         client.downloadFile(document.fileReferenceId)
             .doFirst {
                 log.info("Start downloading file: $fileDownloadPath")
