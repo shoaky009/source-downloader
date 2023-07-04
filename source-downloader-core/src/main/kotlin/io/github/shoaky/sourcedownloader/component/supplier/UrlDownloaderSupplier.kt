@@ -2,11 +2,12 @@ package io.github.shoaky.sourcedownloader.component.supplier
 
 import io.github.shoaky.sourcedownloader.component.downloader.UrlDownloader
 import io.github.shoaky.sourcedownloader.sdk.Properties
+import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
-import io.github.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
 import kotlin.io.path.Path
 
-object UrlDownloaderSupplier : SdComponentSupplier<UrlDownloader> {
+object UrlDownloaderSupplier : ComponentSupplier<UrlDownloader> {
+
     override fun apply(props: Properties): UrlDownloader {
         val path = props.rawValues["download-path"]?.let {
             Path(it.toString())

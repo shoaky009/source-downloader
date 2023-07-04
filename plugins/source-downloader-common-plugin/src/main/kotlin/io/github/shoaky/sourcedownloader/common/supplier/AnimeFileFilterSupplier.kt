@@ -2,10 +2,11 @@ package io.github.shoaky.sourcedownloader.common.supplier
 
 import io.github.shoaky.sourcedownloader.common.anime.AnimeFileFilter
 import io.github.shoaky.sourcedownloader.sdk.Properties
+import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
-import io.github.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
 
-object AnimeFileFilterSupplier : SdComponentSupplier<AnimeFileFilter> {
+object AnimeFileFilterSupplier : ComponentSupplier<AnimeFileFilter> {
+
     override fun apply(props: Properties): AnimeFileFilter {
         return AnimeFileFilter
     }

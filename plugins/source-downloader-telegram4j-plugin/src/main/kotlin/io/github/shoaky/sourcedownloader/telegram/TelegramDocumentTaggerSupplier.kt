@@ -1,10 +1,11 @@
 package io.github.shoaky.sourcedownloader.telegram
 
 import io.github.shoaky.sourcedownloader.sdk.Properties
+import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
-import io.github.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
 
-object TelegramDocumentTaggerSupplier : SdComponentSupplier<TelegramDocumentTagger> {
+object TelegramDocumentTaggerSupplier : ComponentSupplier<TelegramDocumentTagger> {
+
     override fun apply(props: Properties): TelegramDocumentTagger {
         return TelegramDocumentTagger
     }

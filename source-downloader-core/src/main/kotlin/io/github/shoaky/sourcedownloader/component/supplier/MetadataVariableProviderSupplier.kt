@@ -2,10 +2,11 @@ package io.github.shoaky.sourcedownloader.component.supplier
 
 import io.github.shoaky.sourcedownloader.component.provider.MetadataVariableProvider
 import io.github.shoaky.sourcedownloader.sdk.Properties
+import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
-import io.github.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
 
-object MetadataVariableProviderSupplier : SdComponentSupplier<MetadataVariableProvider> {
+object MetadataVariableProviderSupplier : ComponentSupplier<MetadataVariableProvider> {
+
     override fun apply(props: Properties): MetadataVariableProvider {
         return MetadataVariableProvider
     }

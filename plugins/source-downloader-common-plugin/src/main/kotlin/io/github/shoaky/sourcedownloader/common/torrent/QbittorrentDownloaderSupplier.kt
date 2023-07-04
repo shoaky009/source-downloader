@@ -6,12 +6,13 @@ import io.github.shoaky.sourcedownloader.sdk.InstanceFactory
 import io.github.shoaky.sourcedownloader.sdk.InstanceManager
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentRule
+import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
-import io.github.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
 
 class QbittorrentDownloaderSupplier(
     private val instanceManager: InstanceManager
-) : SdComponentSupplier<QbittorrentDownloader> {
+) : ComponentSupplier<QbittorrentDownloader> {
+
     override fun apply(props: Properties): QbittorrentDownloader {
         val parse = props.parse<QbittorrentConfig>()
         val name = "qbittorrentClient:${parse.username}"

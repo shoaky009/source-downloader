@@ -2,10 +2,11 @@ package io.github.shoaky.sourcedownloader.component.supplier
 
 import io.github.shoaky.sourcedownloader.component.resolver.UrlFileResolver
 import io.github.shoaky.sourcedownloader.sdk.Properties
+import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
-import io.github.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
 
-object UrlFileResolverSupplier : SdComponentSupplier<UrlFileResolver> {
+object UrlFileResolverSupplier : ComponentSupplier<UrlFileResolver> {
+
     override fun apply(props: Properties): UrlFileResolver {
         return UrlFileResolver
     }

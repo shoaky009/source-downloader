@@ -6,10 +6,11 @@ import io.github.shoaky.sourcedownloader.component.downloader.MockDownloader
 import io.github.shoaky.sourcedownloader.component.source.SystemFileSource
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentRule
+import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
-import io.github.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
 
-object SystemFileSourceSupplier : SdComponentSupplier<SystemFileSource> {
+object SystemFileSourceSupplier : ComponentSupplier<SystemFileSource> {
+
     override fun apply(props: Properties): SystemFileSource {
         return SystemFileSource(props.get("path"),
             props.getOrDefault("mode", 0)

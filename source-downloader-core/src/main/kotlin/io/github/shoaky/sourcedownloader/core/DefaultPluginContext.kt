@@ -2,15 +2,15 @@ package io.github.shoaky.sourcedownloader.core
 
 import com.google.common.cache.CacheBuilder
 import io.github.shoaky.sourcedownloader.config.SourceDownloaderProperties
-import io.github.shoaky.sourcedownloader.core.file.SdComponentManager
+import io.github.shoaky.sourcedownloader.core.component.ComponentManager
 import io.github.shoaky.sourcedownloader.sdk.*
-import io.github.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
+import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
 import org.springframework.stereotype.Component
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap
 
 class DefaultPluginContext(
-    private val componentManager: SdComponentManager,
+    private val componentManager: ComponentManager,
     private val instanceManager: InstanceManager,
     private val cacheManager: MemoryCacheManager,
     // 这个不应该这样注入, 不过暂时没有其他应用级别的需求
@@ -21,7 +21,7 @@ class DefaultPluginContext(
         return applicationProps.dataLocation
     }
 
-    override fun registerSupplier(vararg suppliers: SdComponentSupplier<*>) {
+    override fun registerSupplier(vararg suppliers: ComponentSupplier<*>) {
         componentManager.registerSupplier(*suppliers)
     }
 

@@ -2,36 +2,34 @@ package io.github.shoaky.sourcedownloader.core.processor
 
 import io.github.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
 import io.github.shoaky.sourcedownloader.component.supplier.*
+import io.github.shoaky.sourcedownloader.core.ObjectContainer
 import io.github.shoaky.sourcedownloader.core.ProcessingStorage
 import io.github.shoaky.sourcedownloader.core.ProcessorConfig
-import io.github.shoaky.sourcedownloader.core.file.SdComponentManager
+import io.github.shoaky.sourcedownloader.core.component.ComponentManager
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.SourceItemPointer
 import io.github.shoaky.sourcedownloader.sdk.component.*
-import org.springframework.beans.factory.support.DefaultListableBeanFactory
-import org.springframework.stereotype.Component
 
-@Component
-class SpringProcessorManager(
+class DefaultProcessorManager(
     private val processingStorage: ProcessingStorage,
-    private val componentManager: SdComponentManager,
-    private val applicationContext: DefaultListableBeanFactory,
+    private val componentManager: ComponentManager,
+    private val objectContainer: ObjectContainer,
 ) : ProcessorManager {
 
     @Suppress("UNCHECKED_CAST")
     override fun createProcessor(config: ProcessorConfig): SourceProcessor {
         val processorBeanName = processorBeanName(config.name)
-        if (applicationContext.containsBean(processorBeanName)) {
+        if (objectContainer.contains(processorBeanName)) {
             throw ComponentException.processorExists("Processor ${config.name} already exists")
         }
-        val source = applicationContext.getBean(config.sourceInstanceName(), Source::class.java) as Source<SourceItemPointer>
-        val downloader = applicationContext.getBean(config.downloaderInstanceName(), Downloader::class.java)
+        val source = objectContainer.get(config.sourceInstanceName(), Source::class.java) as Source<SourceItemPointer>
+        val downloader = objectContainer.get(config.downloaderInstanceName(), Downloader::class.java)
 
         val providers = config.providerInstanceNames().map {
-            applicationContext.getBean(it, VariableProvider::class.java)
+            objectContainer.get(it, VariableProvider::class.java)
         }
-        val mover = applicationContext.getBean(config.moverInstanceName(), FileMover::class.java)
-        val resolver = applicationContext.getBean(config.fileResolverInstanceName(), ItemFileResolver::class.java)
+        val mover = objectContainer.get(config.moverInstanceName(), FileMover::class.java)
+        val resolver = objectContainer.get(config.fileResolverInstanceName(), ItemFileResolver::class.java)
         val processor = SourceProcessor(
             config.name,
             config.source.id,
@@ -62,24 +60,24 @@ class SpringProcessorManager(
 
         val fileFilters = config.options.fileContentFilters.map {
             val instanceName = it.getInstanceName(FileContentFilter::class)
-            applicationContext.getBean(instanceName, FileContentFilter::class.java)
+            objectContainer.get(instanceName, FileContentFilter::class.java)
         }.toTypedArray()
         processor.addFileFilter(*fileFilters)
 
         val itemFilters = config.options.sourceItemFilters.map {
             val instanceName = it.getInstanceName(FileContentFilter::class)
-            applicationContext.getBean(instanceName, FileContentFilter::class.java)
+            objectContainer.get(instanceName, FileContentFilter::class.java)
         }.toTypedArray()
         processor.addFileFilter(*itemFilters)
 
         initOptions(config.options, processor)
 
-        applicationContext.registerSingleton(processorBeanName, processor)
+        objectContainer.put(processorBeanName, processor)
         log.info("处理器初始化完成:$processor")
 
         val task = processor.safeTask()
         config.triggerInstanceNames().map {
-            applicationContext.getBean(it, Trigger::class.java)
+            objectContainer.get(it, Trigger::class.java)
         }.forEach {
             it.addTask(task)
         }
@@ -88,8 +86,8 @@ class SpringProcessorManager(
 
     override fun getProcessor(name: String): SourceProcessor? {
         val processorBeanName = processorBeanName(name)
-        return if (applicationContext.containsBean(processorBeanName)) {
-            applicationContext.getBean(processorBeanName, SourceProcessor::class.java)
+        return if (objectContainer.contains(processorBeanName)) {
+            objectContainer.get(processorBeanName, SourceProcessor::class.java)
         } else {
             null
         }
@@ -124,7 +122,7 @@ class SpringProcessorManager(
         val runAfterCompletion = options.runAfterCompletion
         runAfterCompletion.forEach {
             val instanceName = it.getInstanceName(RunAfterCompletion::class)
-            applicationContext.getBean(instanceName, RunAfterCompletion::class.java)
+            objectContainer.get(instanceName, RunAfterCompletion::class.java)
                 .also { completion -> processor.addRunAfterCompletion(completion) }
         }
         processor.scheduleRenameTask(options.renameTaskInterval)
@@ -138,11 +136,12 @@ class SpringProcessorManager(
         }
         options.fileTaggers.forEach {
             val instanceName = it.getInstanceName(FileTagger::class)
-            applicationContext.getBean(instanceName, FileTagger::class.java)
+            objectContainer.get(instanceName, FileTagger::class.java)
                 .also { tagger -> processor.addTagger(tagger) }
         }
     }
 
+    // TODO 重构这一校验，目标通过组件的描述对象
     // TODO 第二个参数应该给组件的描述对象
     private fun check(componentType: ComponentType, components: List<SdComponent>, config: ProcessorConfig) {
         val supplier = componentManager.getSupplier(componentType)
@@ -181,24 +180,24 @@ class SpringProcessorManager(
     }
 
     override fun getProcessors(): List<SourceProcessor> {
-        return applicationContext.getBeansOfType(SourceProcessor::class.java).values.toList()
+        return objectContainer.getObjectsOfType(SourceProcessor::class.java).values.toList()
     }
 
     override fun destroy(processorName: String) {
         val processorBeanName = processorBeanName(processorName)
-        if (applicationContext.containsBean(processorBeanName).not()) {
+        if (objectContainer.contains(processorBeanName).not()) {
             throw ComponentException.processorMissing("Processor $processorName not exists")
         }
 
-        val processor = applicationContext.getBean(processorBeanName, SourceProcessor::class.java)
+        val processor = objectContainer.get(processorBeanName, SourceProcessor::class.java)
         val safeTask = processor.safeTask()
         componentManager.getAllTrigger().forEach {
             it.removeTask(safeTask)
         }
-        applicationContext.destroySingleton(processorBeanName)
+        objectContainer.remove(processorBeanName)
     }
 
     override fun getAllProcessorNames(): Set<String> {
-        return applicationContext.getBeansOfType(SourceProcessor::class.java).keys
+        return objectContainer.getObjectsOfType(SourceProcessor::class.java).keys
     }
 }

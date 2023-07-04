@@ -2,10 +2,11 @@ package io.github.shoaky.sourcedownloader.common.supplier
 
 import io.github.shoaky.sourcedownloader.common.EpisodeVariableProvider
 import io.github.shoaky.sourcedownloader.sdk.Properties
+import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
-import io.github.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
 
-object EpisodeVariableProviderSupplier : SdComponentSupplier<EpisodeVariableProvider> {
+object EpisodeVariableProviderSupplier : ComponentSupplier<EpisodeVariableProvider> {
+
     override fun apply(props: Properties): EpisodeVariableProvider {
         return EpisodeVariableProvider
     }

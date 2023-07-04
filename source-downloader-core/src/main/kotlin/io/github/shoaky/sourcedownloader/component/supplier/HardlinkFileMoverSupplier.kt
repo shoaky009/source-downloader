@@ -2,10 +2,11 @@ package io.github.shoaky.sourcedownloader.component.supplier
 
 import io.github.shoaky.sourcedownloader.component.HardlinkFileMover
 import io.github.shoaky.sourcedownloader.sdk.Properties
+import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
-import io.github.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
 
-object HardlinkFileMoverSupplier : SdComponentSupplier<HardlinkFileMover> {
+object HardlinkFileMoverSupplier : ComponentSupplier<HardlinkFileMover> {
+
     override fun apply(props: Properties): HardlinkFileMover {
         return HardlinkFileMover
     }

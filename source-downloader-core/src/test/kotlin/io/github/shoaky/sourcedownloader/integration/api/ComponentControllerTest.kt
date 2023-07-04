@@ -1,6 +1,6 @@
 package io.github.shoaky.sourcedownloader.integration.api
 
-import io.github.shoaky.sourcedownloader.core.file.SdComponentManager
+import io.github.shoaky.sourcedownloader.core.component.ComponentManager
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentTopType
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
 import org.junit.jupiter.api.AfterAll
@@ -26,7 +26,7 @@ class ComponentControllerTest {
     private lateinit var mockMvc: MockMvc
 
     @Autowired
-    private lateinit var componentManager: SdComponentManager
+    private lateinit var componentManager: ComponentManager
 
     @Test
     fun get_components() {

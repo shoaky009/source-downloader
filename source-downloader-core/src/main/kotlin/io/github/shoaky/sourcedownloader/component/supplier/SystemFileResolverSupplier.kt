@@ -4,10 +4,11 @@ import io.github.shoaky.sourcedownloader.component.resolver.SystemFileResolver
 import io.github.shoaky.sourcedownloader.component.source.SystemFileSource
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentRule
+import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
-import io.github.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
 
-object SystemFileResolverSupplier : SdComponentSupplier<SystemFileResolver> {
+object SystemFileResolverSupplier : ComponentSupplier<SystemFileResolver> {
+
     override fun apply(props: Properties): SystemFileResolver {
         return SystemFileResolver
     }

@@ -1,11 +1,7 @@
 package io.github.shoaky.sourcedownloader.api
 
 import io.github.shoaky.sourcedownloader.core.*
-import io.github.shoaky.sourcedownloader.core.component.ComponentConfig
-import io.github.shoaky.sourcedownloader.core.component.ComponentConfigStorage
-import io.github.shoaky.sourcedownloader.core.component.ConfigOperator
-import io.github.shoaky.sourcedownloader.core.file.ComponentDescription
-import io.github.shoaky.sourcedownloader.core.file.SdComponentManager
+import io.github.shoaky.sourcedownloader.core.component.*
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.component.*
 import org.springframework.http.HttpStatus
@@ -16,7 +12,7 @@ import org.springframework.web.bind.annotation.*
 @RestController
 @RequestMapping("/api/component")
 private class ComponentController(
-    private val componentManager: SdComponentManager,
+    private val componentManager: ComponentManager,
     private val configOperator: ConfigOperator,
     private val componentService: ComponentService
 ) {
@@ -108,7 +104,7 @@ private data class ComponentInfo(
 
 @Service
 private class ComponentService(
-    private val componentManager: SdComponentManager,
+    private val componentManager: ComponentManager,
     private val configStorages: List<ComponentConfigStorage>
 ) {
     fun getComponentConfigs(): Map<ComponentTopType, List<ComponentConfig>> {

@@ -1,7 +1,7 @@
 package io.github.shoaky.sourcedownloader.sdk.util
 
 import com.google.common.reflect.ClassPath
-import io.github.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
+import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
 import java.net.URI
 import java.util.*
 import kotlin.reflect.KClass
@@ -37,12 +37,11 @@ fun URI.queryMap(): Map<String, String> {
     }
 }
 
-
 // TODO native image会失败，后面再看
 fun getObjectSuppliers(
     vararg packages: String,
     classLoader: ClassLoader = Thread.currentThread().contextClassLoader
-): Array<SdComponentSupplier<*>> {
+): Array<ComponentSupplier<*>> {
     return packages.map {
         ClassPath.from(classLoader)
             .getTopLevelClasses(it)
@@ -50,7 +49,7 @@ fun getObjectSuppliers(
         .flatten()
         .filter { it.simpleName.contains("supplier", true) }
         .map { it.load().kotlin }
-        .filterIsInstance<KClass<SdComponentSupplier<*>>>()
+        .filterIsInstance<KClass<ComponentSupplier<*>>>()
         .mapNotNull {
             it.objectInstance
         }.toTypedArray()

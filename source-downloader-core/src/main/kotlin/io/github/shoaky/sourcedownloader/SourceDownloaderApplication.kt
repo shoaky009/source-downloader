@@ -6,8 +6,8 @@ import io.github.shoaky.sourcedownloader.config.SourceDownloaderProperties
 import io.github.shoaky.sourcedownloader.core.*
 import io.github.shoaky.sourcedownloader.core.component.ComponentConfig
 import io.github.shoaky.sourcedownloader.core.component.ComponentConfigStorage
+import io.github.shoaky.sourcedownloader.core.component.ComponentManager
 import io.github.shoaky.sourcedownloader.core.component.DefaultInstanceManager
-import io.github.shoaky.sourcedownloader.core.file.SdComponentManager
 import io.github.shoaky.sourcedownloader.core.processor.ProcessorManager
 import io.github.shoaky.sourcedownloader.sdk.InstanceManager
 import io.github.shoaky.sourcedownloader.sdk.Properties
@@ -30,12 +30,12 @@ import java.net.URI
 class SourceDownloaderApplication(
     private val environment: Environment,
     private val instanceManager: InstanceManager,
-    private val componentManager: SdComponentManager,
+    private val componentManager: ComponentManager,
     private val processorManager: ProcessorManager,
     private val pluginManager: PluginManager,
     private val processorStorages: List<ProcessorConfigStorage>,
     private val componentStorages: List<ComponentConfigStorage>,
-    private val componentSupplier: List<SdComponentSupplier<*>>
+    private val componentSupplier: List<ComponentSupplier<*>>
 ) : InitializingBean {
 
     @EventListener(ApplicationReadyEvent::class)

@@ -3,12 +3,13 @@ package io.github.shoaky.sourcedownloader.component.supplier
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import io.github.shoaky.sourcedownloader.component.RunCommand
 import io.github.shoaky.sourcedownloader.sdk.Properties
+import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
 import io.github.shoaky.sourcedownloader.sdk.component.RunAfterCompletion
-import io.github.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
 import io.github.shoaky.sourcedownloader.sdk.util.Jackson
 
-object RunCommandSupplier : SdComponentSupplier<RunCommand> {
+object RunCommandSupplier : ComponentSupplier<RunCommand> {
+
     override fun apply(props: Properties): RunCommand {
         val command = props.rawValues["command"] ?: throw RuntimeException("command is null")
         val enableSummary = props.rawValues["withSubjectSummary"] as Boolean? ?: false

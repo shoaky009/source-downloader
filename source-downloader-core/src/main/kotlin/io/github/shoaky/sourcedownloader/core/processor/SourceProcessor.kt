@@ -208,7 +208,11 @@ class SourceProcessor(
                 processingStorage.save(processingContent)
             }
 
-            simpleStat.incProcessingCounting()
+            if (FILTERED == processingContent.status || TARGET_ALREADY_EXISTS == processingContent.status) {
+                simpleStat.incFilterCounting()
+            } else {
+                simpleStat.incProcessingCounting()
+            }
         }
         simpleStat.stopWatch.stop()
 
@@ -386,6 +390,9 @@ class SourceProcessor(
         return fileContent.copy(filenamePattern = taggedFilePattern)
     }
 
+    /**
+     * @return Download or not, [ProcessingContent.Status]
+     */
     private fun probeContent(sc: CoreSourceContent): Pair<Boolean, ProcessingContent.Status> {
         val files = sc.sourceFiles
         if (files.isEmpty()) {

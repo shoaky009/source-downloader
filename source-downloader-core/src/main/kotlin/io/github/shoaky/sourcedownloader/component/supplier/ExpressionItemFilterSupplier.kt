@@ -2,10 +2,10 @@ package io.github.shoaky.sourcedownloader.component.supplier
 
 import io.github.shoaky.sourcedownloader.component.ExpressionItemFilter
 import io.github.shoaky.sourcedownloader.sdk.Properties
+import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
-import io.github.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
 
-object ExpressionItemFilterSupplier : SdComponentSupplier<ExpressionItemFilter> {
+object ExpressionItemFilterSupplier : ComponentSupplier<ExpressionItemFilter> {
 
     override fun apply(props: Properties): ExpressionItemFilter {
         val exclusions = props.getOrDefault<List<String>>("exclusions", listOf())

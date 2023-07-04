@@ -3,10 +3,11 @@ package io.github.shoaky.sourcedownloader.common.supplier
 import io.github.shoaky.sourcedownloader.common.anime.MikanSource
 import io.github.shoaky.sourcedownloader.common.anime.MikanSupport
 import io.github.shoaky.sourcedownloader.sdk.Properties
+import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
-import io.github.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
 
-internal object MikanSourceSupplier : SdComponentSupplier<MikanSource> {
+internal object MikanSourceSupplier : ComponentSupplier<MikanSource> {
+
     override fun apply(props: Properties): MikanSource {
         val url = props.get<String>("url")
         val allEpisode = props.getOrNull<Boolean>("all-episode") ?: false

@@ -2,10 +2,11 @@ package io.github.shoaky.sourcedownloader.component.supplier
 
 import io.github.shoaky.sourcedownloader.component.HttpFileMover
 import io.github.shoaky.sourcedownloader.sdk.Properties
+import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
-import io.github.shoaky.sourcedownloader.sdk.component.SdComponentSupplier
 
-object HttpFileMoverSupplier : SdComponentSupplier<HttpFileMover> {
+object HttpFileMoverSupplier : ComponentSupplier<HttpFileMover> {
+
     override fun apply(props: Properties): HttpFileMover {
         return HttpFileMover(
             props.get("url"),

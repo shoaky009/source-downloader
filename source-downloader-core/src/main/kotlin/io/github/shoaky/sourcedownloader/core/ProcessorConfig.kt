@@ -25,7 +25,6 @@ data class ProcessorConfig(
     val downloader: ComponentId,
     @JsonAlias("mover")
     val fileMover: ComponentId = ComponentId("mover:general"),
-    // @JsonAlias("save-path")
     @JsonSerialize(using = ToStringSerializer::class)
     val savePath: Path,
     val options: Options = Options(),
@@ -94,7 +93,13 @@ data class ProcessorConfig(
         val variableReplacers: List<VariableReplacer> = emptyList(),
         val fileReplacementDecider: ComponentId = ComponentId("never"),
         val fetchLimit: Int = 50,
+        /**
+         * 从Source获取Items后，更新pointer的模式，true:处理完这一批更新一次，false:处理完一个更新一次
+         * 这个选项待定，可能会移除
+         */
         val pointerBatchMode: Boolean = true,
+        val category: String? = null,
+        val tags: Set<String> = emptySet()
     )
 
 }

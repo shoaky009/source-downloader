@@ -50,7 +50,10 @@ class SystemFileSource(
         val creationTime = it.creationTime() ?: LocalDateTime.now()
         val url = it.toUri()
         val type = if (it.isDirectory()) "directory" else "file"
-        return SourceItem(it.nameWithoutExtension, url, creationTime, type, url)
+        return SourceItem(
+            it.nameWithoutExtension, url, creationTime, type, url,
+            mapOf("size" to it.fileSize())
+        )
     }
 
     override fun submit(task: DownloadTask) {
@@ -60,7 +63,6 @@ class SystemFileSource(
     override fun defaultDownloadPath(): Path {
         return path
     }
-
 
 }
 
