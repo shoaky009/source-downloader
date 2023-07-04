@@ -91,7 +91,7 @@ processors:
         #标签
         tags:
           - "processor-bangumi"
-      #变量冲突时的处理策略,默认:SMART(未实现)
+      #变量冲突时的处理策略,默认:SMART
       #ANY:任意挑选
       #VOTE:挑选值最多的,比如provider1-3,1和2都给了"02",3给了"01"则会选"02"来命名
       #ACCURACY:覆盖,提供者会有准确度的属性,按照最高的来
@@ -118,7 +118,7 @@ processors:
       file-expression-inclusions:
         #文件名包含test的
         - "filename.contains('test')"
-      #定义的模板变量不存在时的处理策略,默认:USE_ORIGINAL_FILENAME(未实现)
+      #定义的模板变量不存在时的处理策略,默认:USE_ORIGINAL_FILENAME
       #USE_ORIGINAL_FILENAME:使用原文件名
       #USE_PATTERN:使用模板
       #STAY:不移动留在downloadPath下
@@ -127,7 +127,7 @@ processors:
       touch-item-directory: true
       #在run-after-completion添加clean-empty-directory组件,默认:true
       clean-empty-directory: true
-      #变量提供者中的变量名映射(未实现)
+      #变量提供者中的变量名映射
       variables-name-mapping:
         seasonNumber: season
         anitomEpisode: episode
@@ -158,4 +158,5 @@ processors:
           replacement: BD
       #每次从Source获取SourceItem的条数，具体看Source实现不能保证一定是其设定的条数
       fetch-limit: 50
-      #file-replacement-decider: NEVER
+      #替换文件的策略组件
+      file-replacement-decider: never
