@@ -4,10 +4,10 @@ import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
 
-object TelegramDocumentTaggerSupplier : ComponentSupplier<TelegramDocumentTagger> {
+object TelegramMediaTaggerSupplier : ComponentSupplier<TelegramMediaTagger> {
 
-    override fun apply(props: Properties): TelegramDocumentTagger {
-        return TelegramDocumentTagger
+    override fun apply(props: Properties): TelegramMediaTagger {
+        return TelegramMediaTagger
     }
 
     override fun supplyTypes(): List<ComponentType> {

@@ -11,7 +11,7 @@ class Telegram4jPlugin : Plugin {
         pluginContext.registerSupplier(
             TelegramSourceSupplier(pluginContext),
             TelegramIntegrationSupplier(pluginContext),
-            TelegramDocumentTaggerSupplier
+            TelegramMediaTaggerSupplier
         )
     }
 

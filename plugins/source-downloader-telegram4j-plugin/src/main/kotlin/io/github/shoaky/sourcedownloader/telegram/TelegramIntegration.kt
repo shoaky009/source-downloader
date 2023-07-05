@@ -28,7 +28,6 @@ import kotlin.io.path.*
 import kotlin.jvm.optionals.getOrDefault
 import kotlin.jvm.optionals.getOrNull
 
-
 class TelegramIntegration(
     private val client: MTProtoTelegramClient,
     private val downloadPath: Path
@@ -66,14 +65,8 @@ class TelegramIntegration(
     override fun support(item: SourceItem): Boolean = item.downloadUri.scheme == "telegram"
 
     override fun resolveFiles(sourceItem: SourceItem): List<SourceFile> {
-        if (sourceItem.contentType == "image/jpg" && sourceItem.title.lastIndexOf(".") < 0) {
-            return listOf(
-                SourceFile(Path("${sourceItem.title}.jpg"), mapOf("telegramDocumentType" to "photo"))
-            )
-        }
-        return listOf(
-            SourceFile(Path(sourceItem.title))
-        )
+        val sourceFile = SourceFile(Path("${sourceItem.title}.jpg"), sourceItem.attributes)
+        return listOf(sourceFile)
     }
 
     override fun submit(task: DownloadTask) {
@@ -195,7 +188,6 @@ private data class MessageVariable(
     val chatName: String?,
 ) : PatternVariables
 
-
 class ProgressiveChannel(
     private val totalSize: Long,
     private val ch: SeekableByteChannel
@@ -273,6 +265,7 @@ class ProgressiveChannel(
     }
 
     companion object {
+
         private const val KILOBYTE = 1024
         private const val MEGABYTE = KILOBYTE * 1024
         private const val GIGABYTE = MEGABYTE * 1024

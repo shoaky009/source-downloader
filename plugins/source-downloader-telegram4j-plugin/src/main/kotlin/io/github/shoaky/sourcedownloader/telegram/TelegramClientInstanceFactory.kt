@@ -8,12 +8,8 @@ import io.netty.util.ResourceLeakDetector
 import org.slf4j.LoggerFactory
 import reactor.core.publisher.Hooks
 import telegram4j.core.MTProtoTelegramClient
-import telegram4j.core.event.DefaultUpdatesManager
 import telegram4j.core.retriever.EntityRetrievalStrategy
 import telegram4j.core.retriever.PreferredEntityRetriever
-import telegram4j.mtproto.MTProtoRetrySpec
-import telegram4j.mtproto.MethodPredicate
-import telegram4j.mtproto.ResponseTransformer
 import telegram4j.mtproto.resource.EventLoopResources
 import telegram4j.mtproto.resource.ProxyResources
 import telegram4j.mtproto.resource.TcpClientResources
@@ -28,6 +24,7 @@ import java.util.function.Function
 import kotlin.io.path.createDirectories
 
 object TelegramClientInstanceFactory : InstanceFactory<MTProtoTelegramClient> {
+
     override fun create(props: Properties): MTProtoTelegramClient {
         val config = props.parse<ClientConfig>()
         val metadataPath = config.metadataPath.resolve("telegram4j.bin")
@@ -54,8 +51,9 @@ object TelegramClientInstanceFactory : InstanceFactory<MTProtoTelegramClient> {
                     .proxyResources(this).build()
             )
         }
-
         bootstrap
+            .setReconnectionInterval(Duration.ofSeconds(config.reconnectionInterval))
+            .setPingInterval(Duration.ofSeconds(config.pingInterval))
             .setEntityRetrieverStrategy(
                 EntityRetrievalStrategy.preferred(
                     EntityRetrievalStrategy.STORE_FALLBACK_RPC,
@@ -69,22 +67,6 @@ object TelegramClientInstanceFactory : InstanceFactory<MTProtoTelegramClient> {
                     metadataPath
                 )
             )
-            .addResponseTransformer(
-                ResponseTransformer.retryFloodWait(
-                    MethodPredicate.all(),
-                    MTProtoRetrySpec.max({ it.seconds < 30 }, 2)
-                )
-            )
-            .setUpdatesManager {
-                DefaultUpdatesManager(
-                    it,
-                    DefaultUpdatesManager.Options(
-                        DefaultUpdatesManager.Options.DEFAULT_CHECKIN,
-                        DefaultUpdatesManager.Options.MAX_USER_CHANNEL_DIFFERENCE,
-                        true
-                    )
-                )
-            }
 
         if (config.debug) {
             Hooks.onOperatorDebug()
@@ -114,5 +96,9 @@ private data class ClientConfig(
     @JsonAlias("metadata-path")
     val metadataPath: Path,
     val proxy: URI?,
-    val debug: Boolean = false
+    val debug: Boolean = false,
+    @JsonAlias("ping-interval")
+    val pingInterval: Long = 15L,
+    @JsonAlias("reconnection-interval")
+    val reconnectionInterval: Long = 5L
 )

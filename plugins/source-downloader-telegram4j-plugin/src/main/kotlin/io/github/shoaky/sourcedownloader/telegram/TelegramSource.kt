@@ -53,7 +53,9 @@ class TelegramSource(
         val messageDateTime = Instant.ofEpochSecond(message.date().toLong()).atZone(zoneId).toLocalDateTime()
         when (media) {
             is MessageMediaPhoto -> {
-                return SourceItem("$chatId-${message.id()}", uri, messageDateTime, "image/jpg", uri)
+                return SourceItem("$chatId-${message.id()}", uri,
+                    messageDateTime, "image/jpg", uri,
+                    attributes = mapOf(MEDIA_TYPE_ATTR to "photo"))
             }
 
             is MessageMediaDocument -> {
@@ -62,7 +64,7 @@ class TelegramSource(
                 val filename = dc.attributes()
                     .filterIsInstance<DocumentAttributeFilename>()
                     .firstOrNull()?.fileName() ?: "$chatId-${message.id()}"
-                return SourceItem(filename, uri, messageDateTime, dc.mimeType(), uri)
+                return SourceItem(filename, uri, messageDateTime, dc.mimeType(), uri, mapOf(MEDIA_TYPE_ATTR to "document"))
             }
 
             else -> return null
@@ -70,11 +72,12 @@ class TelegramSource(
     }
 
     companion object {
+
         private val zoneId = ZoneId.systemDefault()
         private val timeout: Duration = Duration.ofSeconds(5L)
+        const val MEDIA_TYPE_ATTR = "mediaType"
     }
 }
-
 
 data class ChatConfig(
     @JsonAlias("chat-id")
@@ -84,6 +87,7 @@ data class ChatConfig(
 )
 
 interface TelegramMessageFetcher {
+
     fun fetchMessages(chatPointer: ChatPointer, limit: Int, timeout: Duration): List<BaseMessage>
 }
 

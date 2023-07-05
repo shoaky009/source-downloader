@@ -10,6 +10,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import java.io.InputStream
 import kotlin.reflect.KClass
 
+// TODO 支持kebab-case和camelCase
 object Jackson {
 
     private val objectMapper: ObjectMapper = ObjectMapper()
