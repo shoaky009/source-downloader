@@ -283,16 +283,16 @@ class SourceProcessor(
             Events.post(ProcessorSubmitDownloadEvent(name, sourceContent))
         }
 
-        var status = WAITING_TO_RENAME
         if (downloader !is AsyncDownloader && dryRun.not()) {
             val moveSuccess = moveFiles(sourceContent)
             val replaceSuccess = replaceFiles(sourceContent)
-            status = RENAMED
             if (moveSuccess || replaceSuccess) {
                 runAfterCompletions(sourceContent)
             }
+            return ProcessingContent(name, sourceContent).copy(status = RENAMED, renameTimes = 1)
         }
 
+        var status = WAITING_TO_RENAME
         if (contentStatus.first.not() && downloader is AsyncDownloader) {
             status = contentStatus.second
         }
