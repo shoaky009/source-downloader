@@ -43,12 +43,14 @@ internal class TmdbSeasonParser(
                 }
 
                 val last = split.last()
-                return tvShow.seasons.filter { it.name.contains(last) }
+                return tvShow.seasons.map { it.copy(name = it.name.replace(" ", "")) }
+                    .filter { it.name.contains(last) }
                     .map { it.seasonNumber }.firstOrNull() ?: -1
             }
         })
 
     companion object {
+
         private val log = LoggerFactory.getLogger(TmdbSeasonParser::class.java)
     }
 }
