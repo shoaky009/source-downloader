@@ -1,6 +1,7 @@
 package io.github.shoaky.sourcedownloader.core.component
 
-import io.github.shoaky.sourcedownloader.core.ObjectContainer
+import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
+import io.github.shoaky.sourcedownloader.core.ObjectWrapperContainer
 import io.github.shoaky.sourcedownloader.core.processor.SourceProcessor
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentException
@@ -12,7 +13,7 @@ import org.springframework.beans.factory.DisposableBean
 import java.util.concurrent.ConcurrentHashMap
 
 class DefaultComponentManager(
-    private val objectContainer: ObjectContainer,
+    private val objectWrapperContainer: ObjectWrapperContainer,
 ) : ComponentManager, DisposableBean {
 
     private val componentSuppliers: MutableMap<ComponentType, ComponentSupplier<*>> = ConcurrentHashMap()
@@ -20,7 +21,7 @@ class DefaultComponentManager(
     @Synchronized
     override fun createComponent(name: String, componentType: ComponentType, props: Properties) {
         val beanName = componentType.instanceName(name)
-        val exists = objectContainer.contains(beanName)
+        val exists = objectWrapperContainer.contains(beanName)
         if (exists) {
             throw ComponentException.instanceExists("component $beanName already exists, check your config.yaml and remove duplicate component")
         }
@@ -28,35 +29,49 @@ class DefaultComponentManager(
         val supplier = getSupplier(componentType)
         // FIXME 创建顺序问题
         val otherTypes = supplier.supplyTypes().filter { it != componentType }
-        val singletonNames = objectContainer.getAllObjectNames()
+        val singletonNames = objectWrapperContainer.getAllObjectNames()
         for (otherType in otherTypes) {
             val typeBeanName = otherType.instanceName(name)
             if (singletonNames.contains(typeBeanName)) {
-                val component = objectContainer.get(typeBeanName, SdComponent::class.java)
-                objectContainer.put(beanName, component)
+                val component = objectWrapperContainer.get(typeBeanName, componentWrapperTypeRef)
+                val componentWrapper = ComponentWrapper(
+                    componentType,
+                    name,
+                    props,
+                    component.get()
+                )
+                objectWrapperContainer.put(beanName, componentWrapper)
                 return
             }
         }
 
         val component = supplier.apply(props)
-        if (objectContainer.contains(beanName).not()) {
-            objectContainer.put(beanName, component)
-            Events.register(component)
+        if (objectWrapperContainer.contains(beanName).not()) {
+            val componentWrapper = ComponentWrapper(
+                componentType,
+                name,
+                props,
+                component
+            )
+
+            objectWrapperContainer.put(beanName, componentWrapper)
+            Events.register(componentWrapper)
         }
     }
 
     override fun getAllProcessor(): List<SourceProcessor> {
-        return objectContainer.getObjectsOfType(SourceProcessor::class.java).values.toList()
+        return objectWrapperContainer.getObjectsOfType(jacksonTypeRef<ProcessorWrapper>())
+            .values.map { it.get() }.toList()
     }
 
-    override fun getComponent(name: String): SdComponent? {
+    override fun getComponent(name: String): ComponentWrapper<SdComponent>? {
         return kotlin.runCatching {
-            objectContainer.get(name, SdComponent::class.java)
+            objectWrapperContainer.get(name, jacksonTypeRef<ComponentWrapper<SdComponent>>())
         }.getOrNull()
     }
 
-    override fun getAllComponent(): List<SdComponent> {
-        return objectContainer.getObjectsOfType(SdComponent::class.java).values.toList()
+    override fun getAllComponent(): List<ComponentWrapper<SdComponent>> {
+        return objectWrapperContainer.getObjectsOfType(componentWrapperTypeRef).values.toList()
     }
 
     override fun getSupplier(type: ComponentType): ComponentSupplier<*> {
@@ -81,17 +96,18 @@ class DefaultComponentManager(
     }
 
     override fun destroy(instanceName: String) {
-        if (objectContainer.contains(instanceName)) {
-            val bean = objectContainer.get(instanceName)
-            if (bean is AutoCloseable) {
-                bean.close()
+        if (objectWrapperContainer.contains(instanceName)) {
+            val wrapper = objectWrapperContainer.get(instanceName)
+            val obj = wrapper.get()
+            if (obj is AutoCloseable) {
+                obj.close()
             }
-            objectContainer.remove(instanceName)
+            objectWrapperContainer.remove(instanceName)
         }
     }
 
     override fun getAllComponentNames(): Set<String> {
-        val type = objectContainer.getObjectsOfType(SdComponent::class.java)
+        val type = objectWrapperContainer.getObjectsOfType(componentWrapperTypeRef)
         return type.keys
     }
 
@@ -136,5 +152,9 @@ class DefaultComponentManager(
         for (name in componentNames) {
             destroy(name)
         }
+    }
+
+    companion object {
+        private val componentWrapperTypeRef = jacksonTypeRef<ComponentWrapper<SdComponent>>()
     }
 }

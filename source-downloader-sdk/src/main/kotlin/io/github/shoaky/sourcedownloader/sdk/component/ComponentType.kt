@@ -9,6 +9,9 @@ data class ComponentType(
     val topTypeClass: KClass<out SdComponent>
 ) {
 
+    val topType: ComponentTopType
+        get() = topType()
+
     constructor(typeName: String, type: ComponentTopType) : this(typeName, type.klass)
 
     fun topType(): ComponentTopType {

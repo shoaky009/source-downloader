@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import org.springframework.web.bind.annotation.*
+import java.util.function.Predicate
 
 @RestController
 @RequestMapping("/api/component")
@@ -21,30 +22,20 @@ private class ComponentController(
     fun getComponents(
         type: ComponentTopType?, typeName: String?, name: String?,
     ): List<ComponentInfo> {
-        val componentConfigs = componentService.getComponentConfigs()
-        return componentConfigs
-            .filter {
-                type == null || it.key == type
-            }
-            .flatMap { entry ->
-                val componentName = entry.key
-                entry.value
-                    .filter {
-                        typeName == null || it.type == typeName
-                    }.filter {
-                        name == null || it.name == name
-                    }.map {
-                        val instanceName = ComponentType(it.type, componentName).instanceName(it.name)
-                        val stateful = componentManager.getComponent(instanceName) as? ComponentStateful
-                        ComponentInfo(
-                            componentName,
-                            it.type,
-                            it.name,
-                            it.props,
-                            ComponentDetail(),
-                            stateful?.stateDetail()
-                        )
-                    }
+        return componentManager.getAllComponent()
+            .filter { name == null || it.name == name }
+            .filter { type == null || it.type.topType == type }
+            .filter { typeName == null || it.type.typeName == typeName }
+            .map {
+                val stateful = it.component as? ComponentStateful
+                ComponentInfo(
+                    it.type.topType,
+                    it.type.typeName,
+                    it.name,
+                    it.props.rawValues,
+                    ComponentDetail(),
+                    stateful?.stateDetail()
+                )
             }
     }
 

@@ -14,9 +14,9 @@ interface ComponentManager {
 
     fun getAllProcessor(): List<SourceProcessor>
 
-    fun getComponent(name: String): SdComponent?
+    fun getComponent(name: String): ComponentWrapper<SdComponent>?
 
-    fun getAllComponent(): List<SdComponent>
+    fun getAllComponent(): List<ComponentWrapper<SdComponent>>
 
     fun getSupplier(type: ComponentType): ComponentSupplier<*>
 
@@ -27,23 +27,23 @@ interface ComponentManager {
     fun getAllComponentNames(): Set<String>
 
     fun getAllTrigger(): List<Trigger> {
-        return getAllComponent().filterIsInstance<Trigger>()
+        return getAllComponent().map { it.component }.filterIsInstance<Trigger>()
     }
 
     fun getAllSource(): List<Source<SourceItemPointer>> {
-        return getAllComponent().filterIsInstance<Source<SourceItemPointer>>()
+        return getAllComponent().map { it.component }.filterIsInstance<Source<SourceItemPointer>>()
     }
 
     fun getAllDownloader(): List<Downloader> {
-        return getAllComponent().filterIsInstance<Downloader>()
+        return getAllComponent().map { it.component }.filterIsInstance<Downloader>()
     }
 
     fun getAllMover(): List<FileMover> {
-        return getAllComponent().filterIsInstance<FileMover>()
+        return getAllComponent().map { it.component }.filterIsInstance<FileMover>()
     }
 
     fun getAllProvider(): List<VariableProvider> {
-        return getAllComponent().filterIsInstance<VariableProvider>()
+        return getAllComponent().map { it.component }.filterIsInstance<VariableProvider>()
     }
 
     fun getComponentDescriptions(): List<ComponentDescription>

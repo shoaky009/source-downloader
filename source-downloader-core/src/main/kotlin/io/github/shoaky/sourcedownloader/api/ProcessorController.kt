@@ -22,7 +22,7 @@ private class ProcessorController(
     fun getProcessors(): Any {
         val processors = processorManager.getProcessors()
         return processors.map {
-            ProcessorInfo(it.name, it.info())
+            ProcessorInfo(it.name, it.get().info())
         }
     }
 
@@ -66,7 +66,7 @@ private class ProcessorController(
     fun dryRun(@PathVariable processorName: String): List<DryRunResult> {
         val sourceProcessor = (processorManager.getProcessor(processorName)
             ?: throw ComponentException.processorMissing("processor $processorName not found"))
-        return sourceProcessor.dryRun()
+        return sourceProcessor.get().dryRun()
             .map { pc ->
                 val fileResult = pc.sourceContent.sourceFiles.map { file ->
                     FileResult(

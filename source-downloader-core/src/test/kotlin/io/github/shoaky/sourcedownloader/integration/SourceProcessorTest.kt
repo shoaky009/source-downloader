@@ -49,7 +49,7 @@ class SourceProcessorTest {
 
     @Test
     fun normal() {
-        val processor = processorManager.getProcessor("NormalCase")
+        val processor = processorManager.getProcessor("NormalCase")?.get()
         assertNotNull(processor, "Processor NormalCase not found")
 
         processor.run()
@@ -75,7 +75,7 @@ class SourceProcessorTest {
 
     @Test
     fun normal_dry_run() {
-        val processor = processorManager.getProcessor("NormalCaseCopy")
+        val processor = processorManager.getProcessor("NormalCaseCopy")?.get()
         assertNotNull(processor, "Processor NormalCaseCopy not found")
 
         val contents = processor.dryRun()
@@ -89,7 +89,7 @@ class SourceProcessorTest {
         val targetFile = savePath.resolve("test-dir")
             .resolve("test3.jpg").createIfNotExists()
 
-        val processor = processorManager.getProcessor("FileStatusCase")
+        val processor = processorManager.getProcessor("FileStatusCase")?.get()
         assertNotNull(processor, "Processor FileStatusCase not found")
 
         processor.run()
@@ -108,7 +108,7 @@ class SourceProcessorTest {
 
     @Test
     fun test_file_status2() {
-        val processor = processorManager.getProcessor("FileStatusCase2")
+        val processor = processorManager.getProcessor("FileStatusCase2")?.get()
         assertNotNull(processor, "Processor FileStatusCase2 not found")
 
         processor.run()
