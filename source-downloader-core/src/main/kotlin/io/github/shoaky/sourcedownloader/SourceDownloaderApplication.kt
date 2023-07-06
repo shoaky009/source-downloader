@@ -146,31 +146,6 @@ class SourceDownloaderApplication(
         }
     }
 
-    // class ApplicationRuntimeHints : RuntimeHintsRegistrar {
-    //     override fun registerHints(hints: RuntimeHints, classLoader: ClassLoader?) {
-    //         hints.reflection().registerType(JsonType::class.java, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS)
-    //         hints.reflection().registerType(ProcessorConfig::class.java, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS)
-    //         hints.reflection()
-    //             .registerType(ProcessorConfig.Options::class.java, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS)
-    //         hints.reflection().registerType(Regex::class.java, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS)
-    //         hints.reflection().registerType(PathPattern::class.java, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS)
-    //         hints.reflection().registerType(ComponentId::class.java, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS)
-    //         hints.reflection()
-    //             .registerType(ProcessorConfig.Options::class.java, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS)
-    //         hints.reflection().registerType(ComponentConfig::class.java, MemberCategory.INVOKE_PUBLIC_CONSTRUCTORS)
-    //
-    //         ClassPath.from(this::class.java.classLoader)
-    //             .getTopLevelClasses("io.github.shoaky.sourcedownloader.component.supplier")
-    //             .filter { it.simpleName.contains("supplier", true) }
-    //             .map { it.load() }
-    //             .forEach {
-    //                 hints.reflection().registerType(it, MemberCategory.DECLARED_FIELDS)
-    //                 hints.reflection().registerType(it, MemberCategory.INVOKE_PUBLIC_METHODS)
-    //             }
-    //     }
-    //
-    // }
-
     override fun afterPropertiesSet() {
         // 加载出现异常不让应用完成启动
         loadAndInitPlugins()

@@ -65,12 +65,10 @@ class SourceProcessor(
         *options.variableReplacers.toTypedArray(), WindowsPathReplacer
     )
 
-    private val fileSavePathPattern: PathPattern = kotlin.run {
-        CorePathPattern(
-            options.savePathPattern.pattern,
-            variableReplacers
-        )
-    }
+    private val fileSavePathPattern: PathPattern = CorePathPattern(
+        options.savePathPattern.pattern,
+        variableReplacers
+    )
 
     private val filenamePattern: PathPattern = CorePathPattern(
         options.filenamePattern.pattern,
@@ -475,8 +473,10 @@ class SourceProcessor(
             // 这边设计不太好
             it.addSharedVariables(sourceContent.sharedPatternVariables)
             it.setVariableErrorStrategy(options.variableErrorStrategy)
-            val corePathPattern = it.filenamePattern as CorePathPattern
-            corePathPattern.addReplacer(*replacers)
+            val filenamePattern = it.filenamePattern as CorePathPattern
+            filenamePattern.addReplacer(*replacers)
+            val fileSavePathPattern = it.fileSavePathPattern as CorePathPattern
+            fileSavePathPattern.addReplacer(*replacers)
         }
 
         val targetPaths = sourceFiles.map { it.targetPath() }
