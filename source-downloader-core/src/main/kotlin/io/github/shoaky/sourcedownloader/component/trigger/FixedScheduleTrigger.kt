@@ -24,7 +24,7 @@ class FixedScheduleTrigger(
             tasks.forEach {
                 thread {
                     it.run()
-                }
+                }.name = "OnStartUp-$interval"
             }
         }
     }

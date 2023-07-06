@@ -131,7 +131,6 @@ class TelegramIntegration(
             .doOnSuccess {
                 downloadCounting.incrementAndGet()
                 tempDownloadPath.moveTo(fileDownloadPath)
-                println(progresses[fileDownloadPath])
                 log.info("Downloaded file: $fileDownloadPath")
             }
             .doOnError {

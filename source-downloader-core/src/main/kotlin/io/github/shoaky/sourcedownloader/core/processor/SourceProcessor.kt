@@ -158,6 +158,8 @@ class SourceProcessor(
 
     private fun process(dryRun: Boolean = false): List<ProcessingContent> {
         var lastState = processingStorage.findProcessorSourceState(name, sourceId)
+        log.debug("Processor:{} lastState:{}", name, lastState)
+
         val itemIterator = retry.execute<Iterator<PointedItem<SourceItemPointer>>, IOException> {
             it.setAttribute("stage", ProcessStage("FetchSourceItems", lastState))
             val pointer = lastState?.resolvePointer(source::class)

@@ -49,6 +49,8 @@ class ExpressionItemFilter(
                     Decls.newVar("contentType", Decls.newListType(Decls.String)),
                     Decls.newVar("link", Decls.String),
                     Decls.newVar("date", Decls.Timestamp),
+                    Decls.newVar("tags", Decls.newListType(Decls.String)),
+                    Decls.newVar("attrs", Decls.newMapType(Decls.String, Decls.Any)),
                 )
                 .build()
         }
