@@ -25,7 +25,6 @@ import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 import kotlin.io.path.exists
-import kotlin.time.ExperimentalTime
 import kotlin.time.measureTime
 
 // TODO 基于行为重构，async,sync,dry-run,...
@@ -119,7 +118,6 @@ class SourceProcessor(
         )
     }
 
-    @OptIn(ExperimentalTime::class)
     fun scheduleRenameTask(interval: Duration) {
         if (downloader !is AsyncDownloader) {
             return
@@ -180,12 +178,17 @@ class SourceProcessor(
                 continue
             }
             val processingContent = kotlin.runCatching {
-                retry.execute<ProcessingContent, Throwable> {
+                retry.execute<ProcessingContent, IOException> {
                     it.setAttribute("stage", ProcessStage("ProcessItem", item))
                     processItem(item.sourceItem, dryRun)
                 }
             }.onFailure {
+                // 失败的hook
                 log.error("Processor:${name}处理失败, item:$item", it)
+                if (options.itemErrorContinue.not()) {
+                    log.warn("Processor:${name}处理失败, item:$item, 退出本次触发处理, 如果未能解决该处理器将无法继续处理后续Item")
+                    return result
+                }
             }.onSuccess {
                 if (dryRun) {
                     result.add(it)

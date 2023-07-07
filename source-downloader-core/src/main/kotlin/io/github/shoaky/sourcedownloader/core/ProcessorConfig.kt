@@ -99,7 +99,8 @@ data class ProcessorConfig(
          */
         val pointerBatchMode: Boolean = true,
         val category: String? = null,
-        val tags: Set<String> = emptySet()
+        val tags: Set<String> = emptySet(),
+        val itemErrorContinue: Boolean = true
     )
 
 }
