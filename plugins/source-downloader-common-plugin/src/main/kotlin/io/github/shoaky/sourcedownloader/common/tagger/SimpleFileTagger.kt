@@ -7,7 +7,7 @@ import org.apache.tika.mime.MimeTypes
 import org.slf4j.LoggerFactory
 import kotlin.io.path.name
 
-internal object SimpleFileTagger : FileTagger {
+object SimpleFileTagger : FileTagger {
 
     private val log = LoggerFactory.getLogger(SimpleFileTagger::class.java)
     private val tika = Tika()
