@@ -4,6 +4,10 @@ components:
       type: "system-file"
       props:
         path: "src/test/resources/sources"
+    - name: "error-item"
+      type: "uri"
+      props:
+        uri: "file://src/test/resources/test-item/error-items.json"
   downloader:
     - name: "test-files"
       type: "system-file"
@@ -55,3 +59,11 @@ processors:
     save-path: "src/test/resources/target"
     options:
       save-path-pattern: "{sourceItemTitle}"
+  - name: "ErrorContinueCase"
+    source: "uri:error-item"
+    item-file-resolver: "system-file"
+    downloader: "mock"
+    file-mover: "general"
+    save-path: "src/test/resources/target"
+    options:
+      item-error-continue: false

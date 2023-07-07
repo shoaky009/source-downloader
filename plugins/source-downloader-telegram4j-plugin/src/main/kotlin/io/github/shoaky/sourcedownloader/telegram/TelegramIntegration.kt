@@ -65,7 +65,7 @@ class TelegramIntegration(
     override fun support(item: SourceItem): Boolean = item.downloadUri.scheme == "telegram"
 
     override fun resolveFiles(sourceItem: SourceItem): List<SourceFile> {
-        val sourceFile = SourceFile(Path("${sourceItem.title}.jpg"), sourceItem.attributes)
+        val sourceFile = SourceFile(Path(sourceItem.title), sourceItem.attributes)
         return listOf(sourceFile)
     }
 

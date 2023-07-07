@@ -53,7 +53,7 @@ class TelegramSource(
         val messageDateTime = Instant.ofEpochSecond(message.date().toLong()).atZone(zoneId).toLocalDateTime()
         when (media) {
             is MessageMediaPhoto -> {
-                return SourceItem("$chatId-${message.id()}", uri,
+                return SourceItem("$chatId-${message.id()}.jpg", uri,
                     messageDateTime, "image/jpg", uri,
                     attributes = mapOf(MEDIA_TYPE_ATTR to "photo"))
             }
