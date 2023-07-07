@@ -1,16 +1,27 @@
 package io.github.shoaky.sourcedownloader.integration
 
+import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
+import io.github.shoaky.sourcedownloader.core.component.ComponentManager
 import io.github.shoaky.sourcedownloader.core.file.FileContentStatus
 import io.github.shoaky.sourcedownloader.core.processor.ProcessorManager
 import io.github.shoaky.sourcedownloader.createIfNotExists
 import io.github.shoaky.sourcedownloader.repo.jpa.ProcessingRecordRepository
+import io.github.shoaky.sourcedownloader.sdk.Properties
+import io.github.shoaky.sourcedownloader.sdk.SourceItem
+import io.github.shoaky.sourcedownloader.sdk.component.AlwaysLatestSource
+import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
+import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
+import io.github.shoaky.sourcedownloader.sdk.util.Jackson
 import io.github.shoaky.sourcedownloader.testResourcePath
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.InitializingBean
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.core.io.UrlResource
 import org.springframework.test.context.ActiveProfiles
+import java.net.URI
 import kotlin.io.path.*
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -18,13 +29,16 @@ import kotlin.test.assertNotNull
 @SpringBootTest
 @ActiveProfiles("integration-test")
 @OptIn(ExperimentalPathApi::class)
-class SourceProcessorTest {
+class SourceProcessorTest : InitializingBean {
 
     @Autowired
     lateinit var processingStorage: ProcessingRecordRepository
 
     @Autowired
     lateinit var processorManager: ProcessorManager
+
+    @Autowired
+    lateinit var componentManager: ComponentManager
 
     init {
         sourcePath.createDirectories()
@@ -145,4 +159,38 @@ class SourceProcessorTest {
             Path("test.db").deleteIfExists()
         }
     }
+
+    override fun afterPropertiesSet() {
+        componentManager.registerSupplier(
+            MockSourceSupplier
+        )
+    }
+}
+
+class MockSource(
+    private val itemUri: URI
+) : AlwaysLatestSource() {
+
+    override fun fetch(): Iterable<SourceItem> {
+        return Jackson.fromJson(
+            UrlResource(itemUri.toURL()).inputStream,
+            jacksonTypeRef()
+        )
+    }
+
+}
+
+object MockSourceSupplier : ComponentSupplier<MockSource> {
+
+    override fun apply(props: Properties): MockSource {
+        val parse = props.get<URI>("item-uri")
+        return MockSource(parse)
+    }
+
+    override fun supplyTypes(): List<ComponentType> {
+        return listOf(
+            ComponentType.source("mock")
+        )
+    }
+
 }

@@ -29,7 +29,7 @@ class DefaultPluginContext(
         instanceManager.registerInstanceFactory(*factories)
     }
 
-    override fun <T> load(name: String, klass: Class<T>, props: Properties?): T {
+    override fun <T> loadInstance(name: String, klass: Class<T>, props: Properties?): T {
         return instanceManager.load(name, klass, props)
     }
 

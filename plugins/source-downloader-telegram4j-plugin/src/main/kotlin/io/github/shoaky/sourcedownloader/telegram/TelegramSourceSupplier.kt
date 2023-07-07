@@ -14,7 +14,7 @@ class TelegramSourceSupplier(
     override fun apply(props: Properties): TelegramSource {
         val chats = props.get<List<ChatConfig>>("chats")
         val clientName = props.get<String>("client")
-        val client = pluginContext.load(clientName, MTProtoTelegramClient::class.java)
+        val client = pluginContext.loadInstance(clientName, MTProtoTelegramClient::class.java)
         return TelegramSource(DefaultMessageFetcher(client), chats)
     }
 

@@ -17,7 +17,7 @@ import java.net.URI
  * 从[SourceItem.link]中爬取获取bgm.tv的subjectId
  */
 class MikanVariableProvider(
-    private val mikanToken: String? = null,
+    mikanToken: String? = null,
     private val mikanSupport: MikanSupport = MikanSupport(mikanToken),
     private val bgmTvClient: BgmTvApiClient = BgmTvApiClient(),
     tmdbClient: TmdbClient = TmdbClient(TmdbClient.DEFAULT_TOKEN)
@@ -32,10 +32,6 @@ class MikanVariableProvider(
             DefaultValueSeasonParser
         ), true
     )
-
-    init {
-        log.debug("Mikan初始化,token:{}", mikanToken)
-    }
 
     companion object {
         internal val log = LoggerFactory.getLogger(MikanVariableProvider::class.java)

@@ -30,7 +30,7 @@ interface PluginContext {
      * 用第一种配置会长，适合第二种配置方式
      * 相反[QbittorrentDownloader]就适合第一种配置方式
      */
-    fun <T> load(name: String, klass: Class<T>, props: Properties? = null): T
+    fun <T> loadInstance(name: String, klass: Class<T>, props: Properties? = null): T
 
     fun getInstanceManager(): InstanceManager
 }
