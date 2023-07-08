@@ -99,18 +99,22 @@ object QrCodeAuthorization {
                                 .filter(RpcException.isErrorMessage("PASSWORD_HASH_INVALID"))
                         )
                 }
-                .cast(ImmutableBaseAuthorization::class.java)
                 .doOnNext {
-                    val authorization = it as BaseAuthorization
-                    val b = authorization.user() as BaseUser
-                    val j = StringJoiner(" ")
-                    Optional.ofNullable(b.firstName()).ifPresent(j::add)
-                    Optional.ofNullable(b.lastName()).ifPresent(j::add)
-                    val name = j.toString().ifBlank { "unknown" }
-                    log.info("Successfully login as {}", name)
-                    complete.set(true)
-                    inter.dispose()
-                    sink.success(authorization)
+                    when (it) {
+                        is LoginTokenSuccess -> it.authorization() as? BaseAuthorization
+                        is BaseAuthorization -> it
+                        else -> null
+                    }?.apply {
+                        val b = this.user() as BaseUser
+                        val j = StringJoiner(" ")
+                        Optional.ofNullable(b.firstName()).ifPresent(j::add)
+                        Optional.ofNullable(b.lastName()).ifPresent(j::add)
+                        val name = j.toString().ifBlank { "unknown" }
+                        log.info("Successfully login as {}", name)
+                        complete.set(true)
+                        inter.dispose()
+                        sink.success(this)
+                    }
                 }
                 .subscribe()
             inter.start(Duration.ofMinutes(1)) // stub period
