@@ -11,6 +11,7 @@ import io.github.shoaky.sourcedownloader.sdk.*
 import io.github.shoaky.sourcedownloader.sdk.component.VariableProvider
 import org.slf4j.LoggerFactory
 import java.net.URI
+import java.net.URL
 
 /**
  * Mikan变量提供器
@@ -34,6 +35,7 @@ class MikanVariableProvider(
     )
 
     companion object {
+
         internal val log = LoggerFactory.getLogger(MikanVariableProvider::class.java)
     }
 
@@ -46,7 +48,9 @@ class MikanVariableProvider(
 
     private fun getBangumiSubject(mikanBangumiHref: String): Subject {
         kotlin.runCatching {
-            val bangumiPageInfo = mikanSupport.getBangumiPageInfo(mikanBangumiHref)
+            val bangumiPageInfo = mikanSupport.getBangumiPageInfo(
+                URL(mikanBangumiHref)
+            )
             val subjectId = bangumiPageInfo.bgmTvSubjectId
                 ?: throw RuntimeException("从$mikanBangumiHref 获取 BgmTv Subject失败")
             return bgmTvClient.execute(GetSubjectRequest(subjectId)).body()
@@ -57,26 +61,28 @@ class MikanVariableProvider(
     }
 
     override fun createSourceGroup(sourceItem: SourceItem): SourceItemGroup {
-        // TODO cache
-        val pageInfo = mikanSupport.getEpisodePageInfo(sourceItem.link)
+        val pageInfo = mikanSupport.getEpisodePageInfo(sourceItem.link.toURL())
         if (pageInfo.mikanHref == null) {
             log.warn("mikanHref is null, link:{}", sourceItem.link)
             return SourceItemGroup.EMPTY
         }
 
-        val bangumiTitle = pageInfo.bangumiTitle!!
-        val subject = bangumiCache.get(pageInfo.mikanHref)
+        val subject = try {
+            bangumiCache.get(pageInfo.mikanHref)
+        } catch (e: Exception) {
+            log.warn("获取Bangumi Subject失败, item:{}", sourceItem, e)
+            return SourceItemGroup.EMPTY
+        }
+
         // 有些纯字母的没有中文名
         val searchContent = subject.nameCn.takeIf { it.isNotBlank() } ?: subject.name
-
-        // 暂时没看到文件跨季度的情况
         val result = seasonParserChain.apply(SubjectContent(subject.name, subject.nameCn), sourceItem.title)
 
         val season = result.padValue() ?: "01"
         val bangumiInfo = BangumiInfo(
             subject.name,
             searchContent,
-            bangumiTitle,
+            pageInfo.bangumiTitle,
             subject.date.toString(),
             subject.date.year,
             subject.date.monthValue,

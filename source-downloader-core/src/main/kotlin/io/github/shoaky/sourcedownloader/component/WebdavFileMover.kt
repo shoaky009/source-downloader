@@ -13,24 +13,27 @@ import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import java.nio.file.Path
 
-open class HttpFileMover(
-    private val url: URI,
+open class WebdavFileMover(
+    url: URI,
     private val username: String? = null,
     private val password: String? = null,
     private val deleteSource: Boolean = true
 ) : FileMover {
+
+    private val url = URI(url.toString().removeSuffix("/"))
+
     override fun move(sourceContent: SourceContent): Boolean {
         // 后面异步
         val responses = sourceContent.sourceFiles.map {
-            val createFile = createFile(it.fileDownloadPath, it.targetPath())
-            if (createFile.statusCode() != HttpStatus.CREATED.value()) {
-                log.error("Failed to create file: ${it.targetPath()}")
+            val resp = createFile(it.fileDownloadPath, it.targetPath())
+            if (resp.statusCode() != HttpStatus.CREATED.value()) {
+                log.error("Failed to create file: ${it.targetPath()}, code: ${resp.statusCode()} body:${resp.body()}")
             } else {
                 if (deleteSource) {
                     it.fileDownloadPath.toFile().delete()
                 }
             }
-            createFile
+            resp
         }
         return responses.all { it.statusCode() == HttpStatus.CREATED.value() }
     }
@@ -41,7 +44,8 @@ open class HttpFileMover(
                 .method(PROPFIND, HttpRequest.BodyPublishers.noBody())
                 .build()
             httpClient.send(request, HttpResponse.BodyHandlers.discarding())
-        }.any { it.statusCode() == HttpStatus.NOT_FOUND.value() }
+            // 这里偷懒了最好还是解析响应查看是不是200
+        }.any { it.statusCode() != HttpStatus.NOT_FOUND.value() }
     }
 
     override fun createDirectories(path: Path) {
@@ -57,8 +61,7 @@ open class HttpFileMover(
 
     private fun createFile(filePath: Path, targetPath: Path): HttpResponse<String> {
         val builder = buildAuthRequest(targetPath)
-            .expectContinue(true)
-        builder.PUT(HttpRequest.BodyPublishers.ofFile(filePath))
+            .PUT(HttpRequest.BodyPublishers.ofFile(filePath))
         return httpClient.send(builder.build(), HttpResponse.BodyHandlers.ofString())
     }
 
@@ -77,6 +80,7 @@ open class HttpFileMover(
     }
 
     companion object {
+
         private const val MKCOL = "MKCOL"
         private const val PROPFIND = "PROPFIND"
     }

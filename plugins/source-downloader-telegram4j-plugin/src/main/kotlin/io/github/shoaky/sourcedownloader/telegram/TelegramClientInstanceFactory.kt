@@ -98,7 +98,7 @@ private data class ClientConfig(
     val proxy: URI?,
     val debug: Boolean = false,
     @JsonAlias("ping-interval")
-    val pingInterval: Long = 15L,
+    val pingInterval: Long = 30L,
     @JsonAlias("reconnection-interval")
-    val reconnectionInterval: Long = 5L
+    val reconnectionInterval: Long = 15L
 )

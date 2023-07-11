@@ -21,9 +21,9 @@ import java.nio.file.Path
 import java.nio.file.StandardOpenOption
 import java.text.NumberFormat
 import java.time.Duration
+import java.time.Instant
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
-import kotlin.concurrent.fixedRateTimer
 import kotlin.io.path.*
 import kotlin.jvm.optionals.getOrDefault
 import kotlin.jvm.optionals.getOrNull
@@ -192,42 +192,42 @@ class ProgressiveChannel(
     private val ch: SeekableByteChannel
 ) : ByteChannel by ch {
 
-    private var current = 0L
-    private var flowSize = 0L
-    private var previousSize = 0L
-    private val startTime = System.currentTimeMillis()
-
-    private val timer = fixedRateTimer(initialDelay = 1000, period = 1000) {
-        flowSize = current - previousSize
-        previousSize = current
-    }
+    private var downloadedBytes = 0L
+    private val startTime = Instant.now().epochSecond
 
     override fun write(src: ByteBuffer): Int {
         val write = ch.write(src)
-        current += write
+        downloadedBytes += write
         return write
     }
 
     fun formatProgress(): String {
-        return NumberFormat.getPercentInstance().format(current.toDouble() / totalSize.toDouble())
+        return NumberFormat.getPercentInstance().format(downloadedBytes.toDouble() / totalSize.toDouble())
     }
 
     fun formatRate(): String {
+        val curr = Instant.now().epochSecond
+        val rate = if (curr == startTime) {
+            downloadedBytes
+        } else {
+            downloadedBytes / (curr - startTime)
+        }
+
         return when {
-            flowSize > GIGABYTE -> {
-                "${flowSize / GIGABYTE} GiB/s"
+            rate > GIGABYTE -> {
+                String.format("%.2f GiB/s", rate / GIGABYTE)
             }
 
-            flowSize > MEGABYTE -> {
-                "${flowSize / MEGABYTE} MiB/s"
+            rate > MEGABYTE -> {
+                String.format("%.2f MiB/s", rate / MEGABYTE)
             }
 
-            flowSize > KILOBYTE -> {
-                "${flowSize / KILOBYTE} KiB/s"
+            rate > KILOBYTE -> {
+                String.format("%.2f KiB/s", rate / KILOBYTE)
             }
 
             else -> {
-                "$flowSize B/s"
+                "$rate B/s"
             }
         }
     }
@@ -235,15 +235,15 @@ class ProgressiveChannel(
     fun formatTotalSize(): String {
         return when {
             totalSize > GIGABYTE -> {
-                "${totalSize / GIGABYTE} GiB"
+                String.format("%.2f GiB", totalSize / GIGABYTE)
             }
 
             totalSize > MEGABYTE -> {
-                "${totalSize / MEGABYTE} MiB"
+                String.format("%.2f MiB", totalSize / MEGABYTE)
             }
 
             totalSize > KILOBYTE -> {
-                "${totalSize / KILOBYTE} KiB"
+                String.format("%.2f KiB", totalSize / KILOBYTE)
             }
 
             else -> {
@@ -253,20 +253,21 @@ class ProgressiveChannel(
     }
 
     fun getDuration(): Long {
-        return Duration.ofMillis(System.currentTimeMillis() - startTime).seconds
+        return Duration.ofMillis(Instant.now().epochSecond - startTime).seconds
     }
 
     override fun close() {
-        runCatching {
-            timer.cancel()
-        }
         ch.close()
+    }
+
+    fun getDownloadedBytes(): Long {
+        return downloadedBytes
     }
 
     companion object {
 
-        private const val KILOBYTE = 1024
-        private const val MEGABYTE = KILOBYTE * 1024
-        private const val GIGABYTE = MEGABYTE * 1024
+        private const val KILOBYTE = 1024.0
+        private const val MEGABYTE = KILOBYTE * 1024.0
+        private const val GIGABYTE = MEGABYTE * 1024.0
     }
 }

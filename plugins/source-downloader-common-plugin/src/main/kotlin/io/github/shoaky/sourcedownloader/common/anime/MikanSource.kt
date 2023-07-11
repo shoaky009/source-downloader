@@ -39,7 +39,7 @@ internal class MikanSource(
             }
 
         val expander = Expander(limit, items) { pi ->
-            val fansubRss = mikanSupport.getEpisodePageInfo(pi.sourceItem.link).fansubRss
+            val fansubRss = mikanSupport.getEpisodePageInfo(pi.sourceItem.link.toURL()).fansubRss
                 ?: return@Expander emptyList()
 
             var pointedItems = rssReader.read(fansubRss)
