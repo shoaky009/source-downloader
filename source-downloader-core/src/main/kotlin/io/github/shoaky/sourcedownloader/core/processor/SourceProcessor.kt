@@ -203,8 +203,7 @@ class SourceProcessor(
                 ProcessingContent(
                     name, CoreSourceContent(
                     item.sourceItem, emptyList(), MapPatternVariables()
-                )
-                ).copy(status = FAILURE, failureReason = it.message)
+                )).copy(status = FAILURE, failureReason = it.message)
             }
 
             if (options.saveProcessingContent && dryRun.not()) {

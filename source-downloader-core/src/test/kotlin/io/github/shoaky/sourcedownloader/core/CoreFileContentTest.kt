@@ -1,7 +1,7 @@
 package io.github.shoaky.sourcedownloader.core
 
 import io.github.shoaky.sourcedownloader.core.file.CoreFileContent
-import io.github.shoaky.sourcedownloader.core.file.VariableErrorStrategy
+import io.github.shoaky.sourcedownloader.core.file.VariableErrorStrategy.*
 import io.github.shoaky.sourcedownloader.sdk.MapPatternVariables
 import io.github.shoaky.sourcedownloader.sdk.PathPattern
 import io.github.shoaky.sourcedownloader.testResourcePath
@@ -109,7 +109,6 @@ class CoreFileContentTest {
         )
         assertNull(content.fileDownloadRootDirectory())
 
-
         val content1 = content.copy(
             fileDownloadPath = Path("src", "test", "resources", "downloads", "easd", "222", "1.txt"),
             downloadPath = downloadPath
@@ -145,7 +144,7 @@ class CoreFileContentTest {
             savePathPattern = CorePathPattern("{name}/S{season}"),
             filenamePathPattern = CorePathPattern("{name} - {season}"),
         )
-        content.setVariableErrorStrategy(VariableErrorStrategy.STAY)
+        content.setVariableErrorStrategy(STAY)
         assertEquals(content.fileDownloadPath, content.targetPath())
     }
 
@@ -156,10 +155,9 @@ class CoreFileContentTest {
             savePathPattern = CorePathPattern("S{season}"),
             filenamePathPattern = CorePathPattern("{name} - {season}"),
         )
-        content.setVariableErrorStrategy(VariableErrorStrategy.STAY)
+        content.setVariableErrorStrategy(STAY)
         assertEquals(content.fileDownloadPath, content.targetPath())
     }
-
 
     @Test
     fun test_variable_error_given_pattern_strategy() {
@@ -168,7 +166,7 @@ class CoreFileContentTest {
             savePathPattern = CorePathPattern("{name}/S{season}"),
             filenamePathPattern = CorePathPattern("{name} - {season}"),
         )
-        content.setVariableErrorStrategy(VariableErrorStrategy.PATTERN)
+        content.setVariableErrorStrategy(PATTERN)
         println(content.targetPath())
         val resolve = sourceSavePath.resolve("{name}").resolve("S01").resolve("{name} - 01.txt")
         assertEquals(resolve, content.targetPath())
@@ -181,7 +179,7 @@ class CoreFileContentTest {
             savePathPattern = CorePathPattern("{name}/S{season}"),
             filenamePathPattern = CorePathPattern("{name} - {season}"),
         )
-        content.setVariableErrorStrategy(VariableErrorStrategy.ORIGINAL)
+        content.setVariableErrorStrategy(ORIGINAL)
         println(content.targetPath())
         assertEquals(content.fileDownloadPath, content.targetPath())
     }
@@ -193,7 +191,7 @@ class CoreFileContentTest {
             savePathPattern = CorePathPattern("{name}/S{season}"),
             filenamePathPattern = CorePathPattern("{title} - {season}"),
         )
-        content.setVariableErrorStrategy(VariableErrorStrategy.ORIGINAL)
+        content.setVariableErrorStrategy(ORIGINAL)
         val resolve = sourceSavePath.resolve("test").resolve("S01").resolve("1.txt")
         assertEquals(resolve, content.targetPath())
     }
@@ -205,7 +203,7 @@ class CoreFileContentTest {
             savePathPattern = CorePathPattern("{name}/S{season}"),
             filenamePathPattern = CorePathPattern("{title} - {season}"),
         )
-        content.setVariableErrorStrategy(VariableErrorStrategy.ORIGINAL)
+        content.setVariableErrorStrategy(ORIGINAL)
         assertEquals(downloadPath.resolve("test 01 - 01.txt"), content.targetPath())
     }
 
@@ -218,9 +216,87 @@ class CoreFileContentTest {
         assertEquals(Path("FATE", "Season 01"), content.fileDownloadRelativeParentDirectory())
     }
 
+    @Test
+    fun given_unresolved_filename_with_dir_item() {
+        val content = createFileContent(
+            patternVars = MapPatternVariables(mapOf("season" to "01", "title" to "test 01")),
+            savePathPattern = CorePathPattern("{title}/S{season}"),
+            filenamePathPattern = CorePathPattern("{title} S{season}E{episode}"),
+        )
+        content.setVariableErrorStrategy(TO_UNRESOLVED)
+        val path = Path("test 01", "S01", "unresolved", "1.txt")
+        assertEquals(content.sourceSavePath.resolve(path), content.targetPath())
+    }
+
+    @Test
+    fun given_unresolved_filename_with_not_dir_item() {
+        val content = createFileContent(
+            patternVars = MapPatternVariables(mapOf("season" to "01", "title" to "test 01")),
+            savePathPattern = CorePathPattern(""),
+            filenamePathPattern = CorePathPattern("{title} S{season}E{episode}"),
+        )
+        content.setVariableErrorStrategy(TO_UNRESOLVED)
+        val path = Path("unresolved", "1.txt")
+        assertEquals(content.sourceSavePath.resolve(path), content.targetPath())
+    }
+
+    @Test
+    fun given_unresolved_save_path_with_dir_item() {
+        val content = createFileContent(
+            fileDownloadPath = downloadPath.resolve("FATE").resolve("AAAAA.mp4"),
+            patternVars = MapPatternVariables(mapOf("season" to "01", "episode" to "02")),
+            savePathPattern = CorePathPattern("{title}"),
+            filenamePathPattern = CorePathPattern("S{season}E{episode}"),
+        )
+        content.setVariableErrorStrategy(TO_UNRESOLVED)
+        val path = Path("unresolved", "FATE", "S01E02.mp4")
+        assertEquals(content.sourceSavePath.resolve(path), content.targetPath())
+    }
+
+    @Test
+    fun given_unresolved_save_path_with_no_dir_item() {
+        val content = createFileContent(
+            fileDownloadPath = downloadPath.resolve("FATE").resolve("AAAAA.mp4"),
+            patternVars = MapPatternVariables(mapOf("season" to "01", "episode" to "02")),
+            savePathPattern = CorePathPattern("{title}"),
+            filenamePathPattern = CorePathPattern("S{season}E{episode}"),
+        )
+        content.setVariableErrorStrategy(TO_UNRESOLVED)
+        val path = Path("unresolved", "FATE", "S01E02.mp4")
+        assertEquals(content.sourceSavePath.resolve(path), content.targetPath())
+    }
+
+    @Test
+    fun given_both_unresolved_with_dir_item() {
+        val content = createFileContent(
+            fileDownloadPath = downloadPath.resolve("FATE").resolve("AAAAA.mp4"),
+            patternVars = MapPatternVariables(mapOf("season" to "01", "episode" to "02")),
+            savePathPattern = CorePathPattern("{Title}"),
+            filenamePathPattern = CorePathPattern("S{Season}E{Episod}"),
+        )
+        content.setVariableErrorStrategy(TO_UNRESOLVED)
+        val path = Path("unresolved", "FATE", "AAAAA.mp4")
+        println(content.targetPath())
+        assertEquals(content.sourceSavePath.resolve(path), content.targetPath())
+    }
+
+    @Test
+    fun given_both_unresolved_with_no_dir_item() {
+        val content = createFileContent(
+            fileDownloadPath = downloadPath.resolve("AAAAA.mp4"),
+            patternVars = MapPatternVariables(mapOf("season" to "01", "episode" to "02")),
+            savePathPattern = CorePathPattern("{Title}"),
+            filenamePathPattern = CorePathPattern("S{Season}E{Episod}"),
+        )
+        content.setVariableErrorStrategy(TO_UNRESOLVED)
+        val path = Path("unresolved", "AAAAA.mp4")
+        assertEquals(content.sourceSavePath.resolve(path), content.targetPath())
+    }
+
     companion object {
-        private val sourceSavePath = Path("src", "test", "resources", "target")
-        private val downloadPath = Path("src", "test", "resources", "downloads")
+
+        val sourceSavePath = Path("src", "test", "resources", "target")
+        val downloadPath = Path("src", "test", "resources", "downloads")
 
         @JvmStatic
         @AfterAll
@@ -232,7 +308,7 @@ class CoreFileContentTest {
 }
 
 private fun createFileContent(
-    fileDownloadPath: Path = Path("src", "test", "resources", "downloads", "1.txt"),
+    fileDownloadPath: Path = CoreFileContentTest.downloadPath.resolve("1.txt"),
     sourceSavePath: Path = testResourcePath.resolve("target"),
     downloadPath: Path = testResourcePath.resolve("downloads"),
     patternVars: MapPatternVariables = MapPatternVariables(),

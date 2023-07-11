@@ -49,6 +49,12 @@ data class CoreFileContent(
     override fun saveDirectoryPath(): Path {
         val parse = fileSavePathPattern.parse(allVariables)
         if (parse.success()) {
+            if (VariableErrorStrategy.TO_UNRESOLVED == variableErrorStrategy) {
+                val success = filenamePattern.parse(allVariables).success()
+                if (success.not()) {
+                    return sourceSavePath.resolve(parse.path).resolve(UNRESOLVED)
+                }
+            }
             return sourceSavePath.resolve(parse.path)
         }
 
@@ -61,6 +67,12 @@ data class CoreFileContent(
             VariableErrorStrategy.PATTERN -> {
                 sourceSavePath.resolve(parse.path)
             }
+
+            VariableErrorStrategy.TO_UNRESOLVED -> {
+                fileDownloadRelativeParentDirectory()?.let {
+                    sourceSavePath.resolve(UNRESOLVED).resolve(it)
+                } ?: sourceSavePath.resolve(UNRESOLVED)
+            }
         }
     }
 
@@ -68,6 +80,9 @@ data class CoreFileContent(
         allVariables.addVariables(shared)
     }
 
+    /**
+     * @return Pair<targetFilename, isSuccess>
+     */
     private fun targetFilename0(): Pair<String, Boolean> {
         if (filenamePattern == CorePathPattern.ORIGIN) {
             return fileDownloadPath.name to true
@@ -89,6 +104,7 @@ data class CoreFileContent(
 
         return when (variableErrorStrategy) {
             VariableErrorStrategy.STAY,
+            VariableErrorStrategy.TO_UNRESOLVED,
             VariableErrorStrategy.ORIGINAL -> {
                 fileDownloadPath.name to false
             }
@@ -130,5 +146,10 @@ data class CoreFileContent(
 
     fun currentVariables(): PatternVariables {
         return allVariables
+    }
+
+    companion object {
+
+        private const val UNRESOLVED = "unresolved"
     }
 }
