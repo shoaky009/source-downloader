@@ -98,7 +98,7 @@ class SourceDownloaderApplication(
         }.forEach {
             for (type in it.supplyTypes()) {
                 val typeName = type.typeName
-                componentManager.createComponent(typeName, type, Properties.EMPTY)
+                componentManager.createComponent(type, typeName, Properties.EMPTY)
                 log.info("成功创建组件${type.topTypeClass.simpleName}:${typeName}:${typeName}")
             }
         }
@@ -116,12 +116,13 @@ class SourceDownloaderApplication(
 
         configs.forEach {
             val type = ComponentType(it.type, componentKClass)
-            componentManager.createComponent(it.name, type, Properties.fromMap(it.props))
+            componentManager.createComponent(type, it.name, Properties.fromMap(it.props))
             log.info("成功创建组件${type.topTypeClass.simpleName}:${it.type}:${it.name}")
         }
     }
 
     companion object {
+
         internal val log = LoggerFactory.getLogger(SourceDownloaderApplication::class.java)
 
         @JvmStatic

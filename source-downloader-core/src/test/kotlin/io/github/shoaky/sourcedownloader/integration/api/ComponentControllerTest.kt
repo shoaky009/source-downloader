@@ -46,8 +46,10 @@ class ComponentControllerTest {
                 ).contentType(MediaType.APPLICATION_JSON)
         ).andExpect(status().is2xxSuccessful)
             .andExpect {
-                val instanceName = ComponentType("system-file", ComponentTopType.SOURCE).instanceName("api-create")
-                val component = componentManager.getComponent(instanceName)
+                val component = componentManager.getComponent(
+                    ComponentType("system-file", ComponentTopType.SOURCE),
+                    "api-create"
+                )
                 component != null
             }
     }
@@ -61,8 +63,10 @@ class ComponentControllerTest {
                 ).contentType(MediaType.APPLICATION_JSON)
         ).andExpect(status().is2xxSuccessful)
             .andExpect {
-                val instanceName = ComponentType("system-file", ComponentTopType.SOURCE).instanceName("api-create2")
-                val component = componentManager.getComponent(instanceName)
+                val component = componentManager.getComponent(
+                    ComponentType("system-file", ComponentTopType.SOURCE),
+                    "api-create2"
+                )
                 component != null
             }
 
@@ -70,8 +74,10 @@ class ComponentControllerTest {
             delete("/api/component/source/system-file/api-create2")
         ).andExpect(status().isOk)
             .andExpect {
-                val instanceName = ComponentType("system-file", ComponentTopType.SOURCE).instanceName("api-create2")
-                val component = componentManager.getComponent(instanceName)
+                val component = componentManager.getComponent(
+                    ComponentType("system-file", ComponentTopType.SOURCE),
+                    "api-create2"
+                )
                 component != null
             }
     }
@@ -86,6 +92,7 @@ class ComponentControllerTest {
     }
 
     companion object {
+
         @JvmStatic
         @AfterAll
         fun clean() {

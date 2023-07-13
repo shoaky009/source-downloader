@@ -9,8 +9,10 @@ data class ComponentWrapper<T : SdComponent>(
     val type: ComponentType,
     val name: String,
     val props: Properties,
-    val component: T
+    val component: T,
+    val primary: Boolean = true
 ) : ObjectWrapper<T> {
+
     override fun get(): T {
         return component
     }
@@ -28,5 +30,6 @@ data class ProcessorWrapper(
 }
 
 interface ObjectWrapper<T : Any> {
+
     fun get(): T
 }

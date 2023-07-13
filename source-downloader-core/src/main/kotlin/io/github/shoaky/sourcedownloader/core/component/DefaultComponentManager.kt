@@ -19,7 +19,7 @@ class DefaultComponentManager(
     private val componentSuppliers: MutableMap<ComponentType, ComponentSupplier<*>> = ConcurrentHashMap()
 
     @Synchronized
-    override fun createComponent(name: String, componentType: ComponentType, props: Properties) {
+    override fun createComponent(componentType: ComponentType, name: String, props: Properties) {
         val beanName = componentType.instanceName(name)
         val exists = objectWrapperContainer.contains(beanName)
         if (exists) {
@@ -38,7 +38,8 @@ class DefaultComponentManager(
                     componentType,
                     name,
                     props,
-                    component.get()
+                    component.get(),
+                    false
                 )
                 objectWrapperContainer.put(beanName, componentWrapper)
                 return
@@ -64,9 +65,10 @@ class DefaultComponentManager(
             .values.map { it.get() }.toList()
     }
 
-    override fun getComponent(name: String): ComponentWrapper<SdComponent>? {
+    override fun getComponent(type: ComponentType, name: String): ComponentWrapper<SdComponent>? {
+        val instanceName = type.instanceName(name)
         return kotlin.runCatching {
-            objectWrapperContainer.get(name, jacksonTypeRef<ComponentWrapper<SdComponent>>())
+            objectWrapperContainer.get(instanceName, jacksonTypeRef<ComponentWrapper<SdComponent>>())
         }.getOrNull()
     }
 
@@ -83,8 +85,8 @@ class DefaultComponentManager(
         return componentSuppliers.values.toList()
     }
 
-    override fun registerSupplier(vararg sdComponentSuppliers: ComponentSupplier<*>) {
-        for (componentSupplier in sdComponentSuppliers) {
+    override fun registerSupplier(vararg componentSuppliers: ComponentSupplier<*>) {
+        for (componentSupplier in componentSuppliers) {
             val types = componentSupplier.supplyTypes()
             for (type in types) {
                 if (this.componentSuppliers.containsKey(type)) {
@@ -155,6 +157,7 @@ class DefaultComponentManager(
     }
 
     companion object {
+
         private val componentWrapperTypeRef = jacksonTypeRef<ComponentWrapper<SdComponent>>()
     }
 }

@@ -16,5 +16,6 @@ interface ConfigOperator : ProcessorConfigStorage, ComponentConfigStorage, Insta
     fun save(name: String, processorConfig: ProcessorConfig)
 
     fun deleteComponent(topType: ComponentTopType, type: String, name: String): Boolean
+
     fun deleteProcessor(name: String): Boolean
 }

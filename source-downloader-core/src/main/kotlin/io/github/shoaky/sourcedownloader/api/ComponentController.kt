@@ -8,7 +8,6 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import org.springframework.web.bind.annotation.*
-import java.util.function.Predicate
 
 @RestController
 @RequestMapping("/api/component")
@@ -27,14 +26,14 @@ private class ComponentController(
             .filter { type == null || it.type.topType == type }
             .filter { typeName == null || it.type.typeName == typeName }
             .map {
-                val stateful = it.component as? ComponentStateful
                 ComponentInfo(
                     it.type.topType,
                     it.type.typeName,
                     it.name,
                     it.props.rawValues,
                     ComponentDetail(),
-                    stateful?.stateDetail()
+                    it.component as? ComponentStateful,
+                    it.primary
                 )
             }
     }
@@ -49,7 +48,7 @@ private class ComponentController(
     ) {
         val props = Properties.fromMap(body)
         val componentType = ComponentType(typeName, type.klass)
-        componentManager.createComponent(name, componentType, props)
+        componentManager.createComponent(componentType, name, props)
         configOperator.save(
             type.lowerHyphenName(),
             ComponentConfig(name, typeName, body)
@@ -91,6 +90,7 @@ private data class ComponentInfo(
     val props: Map<String, Any>,
     val detail: ComponentDetail,
     val stateDetail: Any? = null,
+    val primary: Boolean
 )
 
 @Service
@@ -98,6 +98,7 @@ private class ComponentService(
     private val componentManager: ComponentManager,
     private val configStorages: List<ComponentConfigStorage>
 ) {
+
     fun getComponentConfigs(): Map<ComponentTopType, List<ComponentConfig>> {
         val map = mutableMapOf<ComponentTopType, MutableList<ComponentConfig>>()
         for (cc in configStorages) {

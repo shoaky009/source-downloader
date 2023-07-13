@@ -10,11 +10,11 @@ import kotlin.jvm.optionals.getOrElse
 
 interface ComponentManager {
 
-    fun createComponent(name: String, componentType: ComponentType, props: Properties)
+    fun createComponent(componentType: ComponentType, name: String, props: Properties)
 
     fun getAllProcessor(): List<SourceProcessor>
 
-    fun getComponent(name: String): ComponentWrapper<SdComponent>?
+    fun getComponent(type: ComponentType, name: String): ComponentWrapper<SdComponent>?
 
     fun getAllComponent(): List<ComponentWrapper<SdComponent>>
 
@@ -22,7 +22,7 @@ interface ComponentManager {
 
     fun getSuppliers(): List<ComponentSupplier<*>>
 
-    fun registerSupplier(vararg sdComponentSuppliers: ComponentSupplier<*>)
+    fun registerSupplier(vararg componentSuppliers: ComponentSupplier<*>)
 
     fun getAllComponentNames(): Set<String>
 
