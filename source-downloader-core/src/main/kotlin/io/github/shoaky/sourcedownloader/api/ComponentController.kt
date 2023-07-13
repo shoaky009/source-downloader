@@ -6,7 +6,6 @@ import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.component.*
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.stereotype.Service
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -14,7 +13,6 @@ import org.springframework.web.bind.annotation.*
 private class ComponentController(
     private val componentManager: ComponentManager,
     private val configOperator: ConfigOperator,
-    private val componentService: ComponentService
 ) {
 
     @GetMapping
@@ -55,17 +53,21 @@ private class ComponentController(
         )
     }
 
-    @DeleteMapping("/{type}/{typeName}/{name}")
+    @DeleteMapping("/{topType}/{typeName}/{name}")
     fun deleteComponent(
-        @PathVariable type: ComponentTopType,
+        @PathVariable topType: ComponentTopType,
         @PathVariable typeName: String,
         @PathVariable name: String,
     ): ResponseEntity<Any> {
-        // TODO 聚合componentManager和processorManager的业务层,如果有Processor引用组件不允许删除
-        // check if processor is using this component
-        // componentManager.destroyComponent(name, componentType)
-        val deleted = configOperator.deleteComponent(type, typeName, name)
-        return if (deleted) ResponseEntity.ok().build() else ResponseEntity.noContent().build()
+        val componentType = ComponentType.of(topType, typeName)
+        val component = componentManager.getComponent(componentType, name)
+        if (component?.getRefs()?.isNotEmpty() == true) {
+            throw ComponentException.other("Component is referenced by ${component.getRefs()} processors")
+        }
+
+        configOperator.deleteComponent(topType, typeName, name)
+        componentManager.destroy(componentType, name)
+        return ResponseEntity.ok().build()
     }
 
     @GetMapping("/descriptions")
@@ -92,25 +94,3 @@ private data class ComponentInfo(
     val stateDetail: Any? = null,
     val primary: Boolean
 )
-
-@Service
-private class ComponentService(
-    private val componentManager: ComponentManager,
-    private val configStorages: List<ComponentConfigStorage>
-) {
-
-    fun getComponentConfigs(): Map<ComponentTopType, List<ComponentConfig>> {
-        val map = mutableMapOf<ComponentTopType, MutableList<ComponentConfig>>()
-        for (cc in configStorages) {
-            val allComponents = cc.getAllComponentConfig()
-            for (allComponent in allComponents) {
-                val components = ComponentTopType.fromName(allComponent.key)
-                    ?: throw ComponentException.unsupported("Unknown component type: ${allComponent.key}")
-                map.getOrPut(components) {
-                    mutableListOf()
-                }.addAll(allComponent.value)
-            }
-        }
-        return map
-    }
-}

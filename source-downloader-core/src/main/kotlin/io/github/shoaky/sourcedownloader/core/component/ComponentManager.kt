@@ -49,8 +49,13 @@ interface ComponentManager {
     fun getComponentDescriptions(): List<ComponentDescription>
 
     fun destroy(instanceName: String)
+
+    fun destroy(type: ComponentType, name: String) {
+        destroy(type.instanceName(name))
+    }
 }
 
+// NOTE 描述功能实现方式待定
 object DescriptionLoader {
 
     private const val DESCRIPTION_FILE = "sd-description.yaml"

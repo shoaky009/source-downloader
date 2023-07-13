@@ -11,23 +11,24 @@ import io.github.shoaky.sourcedownloader.sdk.component.*
 class DefaultProcessorManager(
     private val processingStorage: ProcessingStorage,
     private val componentManager: ComponentManager,
-    private val objectWrapperContainer: ObjectWrapperContainer,
+    private val container: ObjectWrapperContainer,
 ) : ProcessorManager {
 
     override fun createProcessor(config: ProcessorConfig): ProcessorWrapper {
         val processorBeanName = processorBeanName(config.name)
-        if (objectWrapperContainer.contains(processorBeanName)) {
-            throw ComponentException.processorExists("Processor ${config.name} already exists")
+        val processorName = config.name
+        if (container.contains(processorBeanName)) {
+            throw ComponentException.processorExists("Processor ${processorName} already exists")
         }
 
-        val source = objectWrapperContainer.get(config.sourceInstanceName(), sourceTypeRef).get()
-        val downloader = objectWrapperContainer.get(config.downloaderInstanceName(), downloaderTypeRef).get()
+        val source = container.get(config.sourceInstanceName(), sourceTypeRef).getAndMarkRef(processorName)
+        val downloader = container.get(config.downloaderInstanceName(), downloaderTypeRef).getAndMarkRef(processorName)
 
         val providers = config.providerInstanceNames().map {
-            objectWrapperContainer.get(it, variableProviderTypeRef).get()
+            container.get(it, variableProviderTypeRef).getAndMarkRef(processorName)
         }
-        val mover = objectWrapperContainer.get(config.moverInstanceName(), fileMoverTypeRef).get()
-        val resolver = objectWrapperContainer.get(config.fileResolverInstanceName(), fileResolverTypeRef).get()
+        val mover = container.get(config.moverInstanceName(), fileMoverTypeRef).getAndMarkRef(processorName)
+        val resolver = container.get(config.fileResolverInstanceName(), fileResolverTypeRef).getAndMarkRef(processorName)
         val processor = SourceProcessor(
             config.name,
             config.source.id,
@@ -41,42 +42,42 @@ class DefaultProcessorManager(
             processingStorage,
         )
 
-        val mutableListOf = mutableListOf(
+        val checkTypes = mutableListOf(
             config.source.getComponentType(Source::class),
             config.downloader.getComponentType(Downloader::class),
             config.fileMover.getComponentType(FileMover::class),
         )
-        mutableListOf.addAll(
+        checkTypes.addAll(
             config.variableProviders.map { it.getComponentType(VariableProvider::class) }
         )
 
         val cps = mutableListOf(source, downloader, mover, resolver)
         cps.addAll(providers)
-        mutableListOf.forEach {
+        checkTypes.forEach {
             check(it, cps, config)
         }
 
         val fileFilters = config.options.fileContentFilters.map {
             val instanceName = it.getInstanceName(FileContentFilter::class)
-            objectWrapperContainer.get(instanceName, fileContentFilterTypeRef).get()
+            container.get(instanceName, fileContentFilterTypeRef).getAndMarkRef(processorName)
         }.toTypedArray()
         processor.addFileFilter(*fileFilters)
 
         val itemFilters = config.options.sourceItemFilters.map {
             val instanceName = it.getInstanceName(FileContentFilter::class)
-            objectWrapperContainer.get(instanceName, fileContentFilterTypeRef).get()
+            container.get(instanceName, fileContentFilterTypeRef).getAndMarkRef(processorName)
         }.toTypedArray()
         processor.addFileFilter(*itemFilters)
 
         initOptions(config.options, processor)
 
         val processorWrapper = ProcessorWrapper(config.name, processor)
-        objectWrapperContainer.put(processorBeanName, processorWrapper)
+        container.put(processorName, processorWrapper)
         log.info("处理器初始化完成:$processor")
 
         val task = processor.safeTask()
         config.triggerInstanceNames().map {
-            objectWrapperContainer.get(it, triggerTypeRef).get()
+            container.get(it, triggerTypeRef).getAndMarkRef(processorName)
         }.forEach {
             it.addTask(task)
         }
@@ -85,8 +86,8 @@ class DefaultProcessorManager(
 
     override fun getProcessor(name: String): ProcessorWrapper? {
         val processorBeanName = processorBeanName(name)
-        return if (objectWrapperContainer.contains(processorBeanName)) {
-            objectWrapperContainer.get(processorBeanName, processorTypeRef)
+        return if (container.contains(processorBeanName)) {
+            container.get(processorBeanName, processorTypeRef)
         } else {
             null
         }
@@ -127,7 +128,7 @@ class DefaultProcessorManager(
         val runAfterCompletion = options.runAfterCompletion
         runAfterCompletion.forEach {
             val instanceName = it.getInstanceName(RunAfterCompletion::class)
-            objectWrapperContainer.get(instanceName, runAfterCompletionTypeRef).get()
+            container.get(instanceName, runAfterCompletionTypeRef).getAndMarkRef(processor.name)
                 .also { completion -> processor.addRunAfterCompletion(completion) }
         }
         processor.scheduleRenameTask(options.renameTaskInterval)
@@ -141,7 +142,7 @@ class DefaultProcessorManager(
         }
         options.fileTaggers.forEach {
             val instanceName = it.getInstanceName(FileTagger::class)
-            objectWrapperContainer.get(instanceName, fileTaggerTypeRef).get()
+            container.get(instanceName, fileTaggerTypeRef).getAndMarkRef(processor.name)
                 .also { tagger -> processor.addTagger(tagger) }
         }
     }
@@ -185,24 +186,24 @@ class DefaultProcessorManager(
     }
 
     override fun getProcessors(): List<ProcessorWrapper> {
-        return objectWrapperContainer.getObjectsOfType(processorTypeRef).values.toList()
+        return container.getObjectsOfType(processorTypeRef).values.toList()
     }
 
     override fun destroy(processorName: String) {
         val processorBeanName = processorBeanName(processorName)
-        if (objectWrapperContainer.contains(processorBeanName).not()) {
+        if (container.contains(processorBeanName).not()) {
             throw ComponentException.processorMissing("Processor $processorName not exists")
         }
 
-        val processor = objectWrapperContainer.get(processorBeanName, processorTypeRef).get()
+        val processor = container.get(processorBeanName, processorTypeRef).get()
         val safeTask = processor.safeTask()
         componentManager.getAllTrigger().forEach {
             it.removeTask(safeTask)
         }
-        objectWrapperContainer.remove(processorBeanName)
+        container.remove(processorBeanName)
     }
 
     override fun getAllProcessorNames(): Set<String> {
-        return objectWrapperContainer.getObjectsOfType(processorTypeRef).keys
+        return container.getObjectsOfType(processorTypeRef).keys
     }
 }

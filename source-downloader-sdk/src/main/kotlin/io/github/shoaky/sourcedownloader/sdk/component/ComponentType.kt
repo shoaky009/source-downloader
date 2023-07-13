@@ -5,9 +5,14 @@ import kotlin.reflect.KClass
 
 data class ComponentType(
     val typeName: String,
-    // TODO 限制密封类
     val topTypeClass: KClass<out SdComponent>
 ) {
+
+    init {
+        if (topTypeClasses.contains(topTypeClass).not()) {
+            throw IllegalArgumentException("topTypeClass must be one of $topTypeClasses")
+        }
+    }
 
     val topType: ComponentTopType
         get() = topType()
@@ -18,9 +23,9 @@ data class ComponentType(
         return ComponentTopType.fromClass(topTypeClass).first()
     }
 
-
     @Suppress("UNUSED")
     companion object {
+
         @JvmStatic
         fun downloader(type: String) = ComponentType(type, Downloader::class)
 
@@ -61,21 +66,23 @@ data class ComponentType(
             return ComponentType(type, FileReplacementDecider::class)
         }
 
-        private val componentTypes = SdComponent::class.sealedSubclasses
-            .associateBy {
-                val simpleName = it.simpleName!!
-                CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_HYPHEN, simpleName)
-            }
-
-        @JvmStatic
-        fun typeOf(type: String): KClass<out SdComponent>? {
-            return componentTypes[type]
-        }
-
         @JvmStatic
         fun types(): List<String> {
             return componentTypes.keys.toList()
         }
+
+        @JvmStatic
+        fun of(topType: ComponentTopType, typeName: String): ComponentType {
+            return ComponentType(typeName, topType.klass)
+        }
+
+        val topTypeClasses = SdComponent::class.sealedSubclasses
+
+        private val componentTypes = topTypeClasses
+            .associateBy {
+                val simpleName = it.simpleName!!
+                CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_HYPHEN, simpleName)
+            }
     }
 
     fun fullName() = "${topTypeClass.simpleName}:$typeName"

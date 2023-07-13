@@ -13,8 +13,23 @@ data class ComponentWrapper<T : SdComponent>(
     val primary: Boolean = true
 ) : ObjectWrapper<T> {
 
+    private val processorRef = mutableSetOf<String>()
+
     override fun get(): T {
         return component
+    }
+
+    fun getAndMarkRef(ref: String): T {
+        addRef(ref)
+        return component
+    }
+
+    fun addRef(name: String) {
+        processorRef.add(name)
+    }
+
+    fun getRefs(): Set<String> {
+        return processorRef
     }
 
 }
