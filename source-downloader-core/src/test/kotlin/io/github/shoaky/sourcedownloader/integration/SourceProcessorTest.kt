@@ -89,7 +89,7 @@ class SourceProcessorTest : InitializingBean {
     }
 
     @Test
-    fun test_file_status() {
+    fun given_mixed_status_files() {
         val downloadedFile = downloadPath.resolve("test2.jpg").createIfNotExists()
         val targetFile = savePath.resolve("test-dir")
             .resolve("test3.jpg").createIfNotExists()
@@ -112,7 +112,7 @@ class SourceProcessorTest : InitializingBean {
     }
 
     @Test
-    fun test_file_status2() {
+    fun given_conflict_status_files() {
         val processor = processorManager.getProcessor("FileStatusCase2")?.get()
         assertNotNull(processor, "Processor FileStatusCase2 not found")
 

@@ -39,9 +39,12 @@ val fileMoverTypeRef = componentTypeRef<FileMover>()
 val downloaderTypeRef = componentTypeRef<Downloader>()
 val fileResolverTypeRef = componentTypeRef<ItemFileResolver>()
 val variableProviderTypeRef = componentTypeRef<VariableProvider>()
+val sourceItemFilterTypeRef = componentTypeRef<SourceItemFilter>()
 val fileContentFilterTypeRef = componentTypeRef<FileContentFilter>()
+val sourceContentFilterTypeRef = componentTypeRef<SourceContentFilter>()
 val runAfterCompletionTypeRef = componentTypeRef<RunAfterCompletion>()
 val fileTaggerTypeRef = componentTypeRef<FileTagger>()
+val fileReplacementDeciderRef = componentTypeRef<FileReplacementDecider>()
 val processorTypeRef = jacksonTypeRef<ProcessorWrapper>()
 
 class SpringObjectWrapperContainer(

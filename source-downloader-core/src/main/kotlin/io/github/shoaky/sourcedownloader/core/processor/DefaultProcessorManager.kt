@@ -1,11 +1,11 @@
 package io.github.shoaky.sourcedownloader.core.processor
 
 import io.github.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
-import io.github.shoaky.sourcedownloader.component.supplier.*
+import io.github.shoaky.sourcedownloader.component.*
+import io.github.shoaky.sourcedownloader.component.provider.MetadataVariableProvider
 import io.github.shoaky.sourcedownloader.core.*
 import io.github.shoaky.sourcedownloader.core.component.ComponentManager
 import io.github.shoaky.sourcedownloader.core.component.ProcessorWrapper
-import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.component.*
 
 class DefaultProcessorManager(
@@ -18,29 +18,14 @@ class DefaultProcessorManager(
         val processorBeanName = processorBeanName(config.name)
         val processorName = config.name
         if (container.contains(processorBeanName)) {
-            throw ComponentException.processorExists("Processor ${processorName} already exists")
+            throw ComponentException.processorExists("Processor $processorName already exists")
         }
 
         val source = container.get(config.sourceInstanceName(), sourceTypeRef).getAndMarkRef(processorName)
         val downloader = container.get(config.downloaderInstanceName(), downloaderTypeRef).getAndMarkRef(processorName)
 
-        val providers = config.providerInstanceNames().map {
-            container.get(it, variableProviderTypeRef).getAndMarkRef(processorName)
-        }
         val mover = container.get(config.moverInstanceName(), fileMoverTypeRef).getAndMarkRef(processorName)
         val resolver = container.get(config.fileResolverInstanceName(), fileResolverTypeRef).getAndMarkRef(processorName)
-        val processor = SourceProcessor(
-            config.name,
-            config.source.id,
-            source,
-            providers,
-            resolver,
-            downloader,
-            mover,
-            config.savePath,
-            config.options,
-            processingStorage,
-        )
 
         val checkTypes = mutableListOf(
             config.source.getComponentType(Source::class),
@@ -52,27 +37,25 @@ class DefaultProcessorManager(
         )
 
         val cps = mutableListOf(source, downloader, mover, resolver)
-        cps.addAll(providers)
+        // cps.addAll(providers)
         checkTypes.forEach {
             check(it, cps, config)
         }
 
-        val fileFilters = config.options.fileContentFilters.map {
-            val instanceName = it.getInstanceName(FileContentFilter::class)
-            container.get(instanceName, fileContentFilterTypeRef).getAndMarkRef(processorName)
-        }.toTypedArray()
-        processor.addFileFilter(*fileFilters)
-
-        val itemFilters = config.options.sourceItemFilters.map {
-            val instanceName = it.getInstanceName(FileContentFilter::class)
-            container.get(instanceName, fileContentFilterTypeRef).getAndMarkRef(processorName)
-        }.toTypedArray()
-        processor.addFileFilter(*itemFilters)
-
-        initOptions(config.options, processor)
+        val processor = SourceProcessor(
+            config.name,
+            config.source.id,
+            source,
+            resolver,
+            downloader,
+            mover,
+            config.savePath,
+            processingStorage,
+            createOptions(config),
+        )
 
         val processorWrapper = ProcessorWrapper(config.name, processor)
-        container.put(processorName, processorWrapper)
+        container.put(processorBeanName, processorWrapper)
         log.info("处理器初始化完成:$processor")
 
         val task = processor.safeTask()
@@ -98,53 +81,6 @@ class DefaultProcessorManager(
             return name
         }
         return "Processor-$name"
-    }
-
-    private fun initOptions(options: ProcessorConfig.Options, processor: SourceProcessor) {
-        if (options.itemExpressionExclusions.isNotEmpty() || options.itemExpressionInclusions.isNotEmpty()) {
-            processor.addItemFilter(
-                ExpressionItemFilterSupplier.expressions(
-                    options.itemExpressionExclusions,
-                    options.itemExpressionInclusions
-                )
-            )
-        }
-        if (options.contentExpressionExclusions.isNotEmpty() || options.contentExpressionInclusions.isNotEmpty()) {
-            processor.addContentFilter(
-                ExpressionSourceContentFilterSupplier.expressions(
-                    options.contentExpressionExclusions,
-                    options.contentExpressionInclusions
-                )
-            )
-        }
-        if (options.fileExpressionExclusions.isNotEmpty() || options.fileExpressionInclusions.isNotEmpty()) {
-            processor.addFileFilter(
-                ExpressionFileFilterSupplier.expressions(
-                    options.fileExpressionExclusions,
-                    options.fileExpressionInclusions
-                )
-            )
-        }
-        val runAfterCompletion = options.runAfterCompletion
-        runAfterCompletion.forEach {
-            val instanceName = it.getInstanceName(RunAfterCompletion::class)
-            container.get(instanceName, runAfterCompletionTypeRef).getAndMarkRef(processor.name)
-                .also { completion -> processor.addRunAfterCompletion(completion) }
-        }
-        processor.scheduleRenameTask(options.renameTaskInterval)
-        if (options.deleteEmptyDirectory) {
-            val deleteEmptyDirectory = DeleteEmptyDirectorySupplier.apply(Properties.EMPTY)
-            processor.addRunAfterCompletion(deleteEmptyDirectory)
-        }
-        if (options.touchItemDirectory) {
-            val touchItemDirectory = TouchItemDirectorySupplier.apply(Properties.EMPTY)
-            processor.addRunAfterCompletion(touchItemDirectory)
-        }
-        options.fileTaggers.forEach {
-            val instanceName = it.getInstanceName(FileTagger::class)
-            container.get(instanceName, fileTaggerTypeRef).getAndMarkRef(processor.name)
-                .also { tagger -> processor.addTagger(tagger) }
-        }
     }
 
     // TODO 重构这一校验，目标通过组件的描述对象
@@ -205,5 +141,129 @@ class DefaultProcessorManager(
 
     override fun getAllProcessorNames(): Set<String> {
         return container.getObjectsOfType(processorTypeRef).keys
+    }
+
+    private fun createOptions(config: ProcessorConfig): ProcessorOptions {
+        val options = config.options
+        val sourceItemFilter = mutableListOf<SourceItemFilter>()
+        if (options.saveProcessingContent) {
+            sourceItemFilter.add(SourceHashingItemFilter(config.name, processingStorage))
+        }
+        if (options.itemExpressionExclusions.isNotEmpty() || options.itemExpressionInclusions.isNotEmpty()) {
+            sourceItemFilter.add(ExpressionItemFilter(
+                options.itemExpressionExclusions,
+                options.itemExpressionInclusions
+            ))
+        }
+        sourceItemFilter.addAll(
+            config.options.sourceItemFilters.map {
+                val instanceName = it.getInstanceName(SourceItemFilter::class)
+                container.get(instanceName, sourceItemFilterTypeRef).getAndMarkRef(config.name)
+            }
+        )
+
+        val sourceContentFilters = mutableListOf<SourceContentFilter>()
+        if (options.contentExpressionExclusions.isNotEmpty() || options.contentExpressionInclusions.isNotEmpty()) {
+            sourceContentFilters.add(ExpressionSourceContentFileter(
+                options.contentExpressionExclusions,
+                options.contentExpressionInclusions
+            ))
+        }
+        sourceContentFilters.addAll(
+            config.options.sourceContentFilters.map {
+                val instanceName = it.getInstanceName(SourceContentFilter::class)
+                container.get(instanceName, sourceContentFilterTypeRef).getAndMarkRef(config.name)
+            }
+        )
+
+        val fileContentFilters = mutableListOf<FileContentFilter>()
+        if (options.fileExpressionExclusions.isNotEmpty() || options.fileExpressionInclusions.isNotEmpty()) {
+            fileContentFilters.add(ExpressionFileFilter(
+                options.fileExpressionExclusions,
+                options.fileExpressionInclusions
+            ))
+        }
+        fileContentFilters.addAll(
+            config.options.fileContentFilters.map {
+                val instanceName = it.getInstanceName(FileContentFilter::class)
+                container.get(instanceName, fileContentFilterTypeRef).getAndMarkRef(config.name)
+            }
+        )
+
+        val runs = options.runAfterCompletion.map {
+            val instanceName = it.getInstanceName(RunAfterCompletion::class)
+            container.get(instanceName, runAfterCompletionTypeRef).getAndMarkRef(config.name)
+        }.toMutableList()
+        if (options.deleteEmptyDirectory) {
+            runs.add(DeleteEmptyDirectory)
+        }
+        if (options.touchItemDirectory) {
+            runs.add(TouchItemDirectory)
+        }
+
+        val taggers = options.fileTaggers.map {
+            val instanceName = it.getInstanceName(FileTagger::class)
+            container.get(instanceName, fileTaggerTypeRef).getAndMarkRef(config.name)
+        }
+
+        val providers = config.providerInstanceNames().map {
+            container.get(it, variableProviderTypeRef).getAndMarkRef(config.name)
+        }.toMutableList()
+        if (options.provideMetadataVariables) {
+            providers.add(MetadataVariableProvider)
+        }
+
+        val fileReplacementDeciderName = options.fileReplacementDecider.getInstanceName(FileReplacementDecider::class)
+        val fileReplacementDecider = container.get(
+            fileReplacementDeciderName, fileReplacementDeciderRef
+        ).component
+
+        val taggedOptions = options.taggedFileOptions.mapValues { (_, taggedOptions) ->
+            val taggedFileContentFilters = mutableListOf<FileContentFilter>()
+            if (taggedOptions.fileExpressionExclusions.isNotEmpty() || taggedOptions.fileExpressionInclusions.isNotEmpty()) {
+                taggedFileContentFilters.add(ExpressionFileFilter(
+                    taggedOptions.fileExpressionExclusions,
+                    taggedOptions.fileExpressionInclusions
+                ))
+            }
+            taggedFileContentFilters.addAll(
+                taggedOptions.fileContentFilters.map {
+                    val instanceName = it.getInstanceName(FileContentFilter::class)
+                    container.get(instanceName, fileContentFilterTypeRef).getAndMarkRef(config.name)
+                }
+            )
+
+            TaggedFileOptions(
+                taggedOptions.filenamePattern,
+                // 先不加暂时未实现
+                // taggedFileContentFilters
+            )
+        }
+
+        return ProcessorOptions(
+            options.savePathPattern,
+            options.filenamePattern,
+            providers,
+            runs,
+            sourceItemFilter,
+            sourceContentFilters,
+            fileContentFilters,
+            taggers,
+            options.variableReplacers,
+            fileReplacementDecider,
+            taggedOptions,
+            options.saveProcessingContent,
+            options.renameTaskInterval,
+            options.downloadOptions,
+            options.variableConflictStrategy,
+            options.renameTimesThreshold,
+            options.variableErrorStrategy,
+            options.variableNameReplace,
+            options.fetchLimit,
+            options.pointerBatchMode,
+            options.category,
+            options.tags,
+            options.itemErrorContinue
+        )
     }
 }

@@ -51,6 +51,9 @@ processors:
       file-taggers:
         - "simple"
         - "telegram"
-      tag-filename-pattern:
-        photo: "{messageId}"
+      tagged-file-options:
+        photo:
+          filename-pattern: "{messageId}"
       variable-replacers: [ ]
+      item-error-continue: false
+      pointer-batch-mode: false

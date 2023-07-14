@@ -70,7 +70,7 @@ enum class ComponentTopType(
 
     companion object {
 
-        private val nameMapping: Map<String, ComponentTopType> = values().flatMap {
+        private val nameMapping: Map<String, ComponentTopType> = entries.flatMap {
             it.names.map { name -> name to it }
         }.toMap()
 
@@ -79,7 +79,7 @@ enum class ComponentTopType(
                 throw ComponentException.other("can not create instance of SdComponent.class")
             }
 
-            return values().filter {
+            return entries.filter {
                 it.klass.isSuperclassOf(klass)
             }
         }

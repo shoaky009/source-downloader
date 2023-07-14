@@ -36,8 +36,9 @@ processors:
           replacement: BD
       file-taggers:
         - "simple"
-      tag-filename-pattern:
-        subtitle: "{title} S{season}E{episode}:{' - ' + source}:{'.' + language}"
+      tagged-file-options:
+        subtitle:
+          filename-pattern: "{title} S{season}E{episode}:{' - ' + source}:{'.' + language}"
       file-filters:
         - "anime"
       file-expression-exclusions:

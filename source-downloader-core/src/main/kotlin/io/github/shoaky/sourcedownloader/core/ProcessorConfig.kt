@@ -60,10 +60,13 @@ data class ProcessorConfig(
 
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     data class Options(
+        val variableProviders: List<VariableProvider> = emptyList(),
         @JsonAlias("item-filters")
         val sourceItemFilters: List<ComponentId> = emptyList(),
         @JsonAlias("file-filters")
         val fileContentFilters: List<ComponentId> = emptyList(),
+        @JsonAlias("content-filters")
+        val sourceContentFilters: List<ComponentId> = emptyList(),
         @JsonDeserialize(`as` = CorePathPattern::class)
         val savePathPattern: PathPattern = CorePathPattern.ORIGIN,
         @JsonDeserialize(`as` = CorePathPattern::class)
@@ -87,8 +90,6 @@ data class ProcessorConfig(
         val deleteEmptyDirectory: Boolean = true,
         val variableNameReplace: Map<String, String> = emptyMap(),
         val fileTaggers: List<ComponentId> = emptyList(),
-        @JsonDeserialize(contentAs = CorePathPattern::class)
-        val tagFilenamePattern: Map<String, PathPattern> = emptyMap(),
         @JsonDeserialize(contentAs = RegexVariableReplacer::class)
         val variableReplacers: List<VariableReplacer> = emptyList(),
         val fileReplacementDecider: ComponentId = ComponentId("never"),
@@ -100,9 +101,15 @@ data class ProcessorConfig(
         val pointerBatchMode: Boolean = true,
         val category: String? = null,
         val tags: Set<String> = emptySet(),
-        val itemErrorContinue: Boolean = true
+        val itemErrorContinue: Boolean = true,
+        val taggedFileOptions: Map<String, Tagged> = emptyMap()
     )
 
+    data class Tagged(
+        val filenamePattern: CorePathPattern? = null,
+        val fileContentFilters: List<ComponentId> = emptyList(),
+        val fileExpressionExclusions: List<String> = emptyList(),
+        val fileExpressionInclusions: List<String> = emptyList(),
+        val fileReplacementDecider: ComponentId? = null,
+    )
 }
-
-

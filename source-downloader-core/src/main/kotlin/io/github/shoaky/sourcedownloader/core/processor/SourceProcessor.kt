@@ -1,7 +1,6 @@
 package io.github.shoaky.sourcedownloader.core.processor
 
 import io.github.shoaky.sourcedownloader.component.NeverReplace
-import io.github.shoaky.sourcedownloader.component.provider.MetadataVariableProvider
 import io.github.shoaky.sourcedownloader.core.*
 import io.github.shoaky.sourcedownloader.core.ProcessingContent.Status.*
 import io.github.shoaky.sourcedownloader.core.file.CoreFileContent
@@ -36,29 +35,24 @@ class SourceProcessor(
     // 先这样传入 后面要改
     private val sourceId: String,
     private val source: Source<SourceItemPointer>,
-    variableProviders: List<VariableProvider>,
     private val itemFileResolver: ItemFileResolver,
     private val downloader: Downloader,
     private val fileMover: FileMover,
-    private val sourceSavePath: Path,
-    // TODO 分离配置中的option和Processor运行时本身的option
-    private val options: ProcessorConfig.Options = ProcessorConfig.Options(),
+    sourceSavePath: Path,
     private val processingStorage: ProcessingStorage,
+    private val options: ProcessorOptions = ProcessorOptions(),
 ) : Runnable {
 
-    private val sourceItemFilters: MutableList<SourceItemFilter> = mutableListOf()
-    private val sourceContentFilters: MutableList<SourceContentFilter> = mutableListOf()
-    private val fileContentFilters: MutableList<FileContentFilter> = mutableListOf()
-    private val variableProviders = variableProviders.toMutableList()
-    private val runAfterCompletion: MutableList<RunAfterCompletion> = mutableListOf()
-    private val taggers: MutableList<FileTagger> = mutableListOf()
+    private val sourceItemFilters: List<SourceItemFilter> = options.sourceItemFilters
+    private val sourceContentFilters: List<SourceContentFilter> = options.sourceContentFilters
+    private val fileContentFilters: List<FileContentFilter> = options.fileContentFilters
+    private val variableProviders = options.variableProviders
+    private val runAfterCompletion: List<RunAfterCompletion> = options.runAfterCompletion
+    private val taggers: List<FileTagger> = options.fileTaggers
+    private var fileReplacementDecider: FileReplacementDecider = options.fileReplacementDecider
 
-    private var fileReplacementDecider: FileReplacementDecider = NeverReplace
-    fun setFileReplacementDecider(decider: FileReplacementDecider) {
-        fileReplacementDecider = decider
-    }
-
-    private val downloadPath = downloader.defaultDownloadPath()
+    private val downloadPath = downloader.defaultDownloadPath().toAbsolutePath()
+    private val sourceSavePath: Path = sourceSavePath.toAbsolutePath()
 
     private val variableReplacers: MutableList<VariableReplacer> = mutableListOf(
         *options.variableReplacers.toTypedArray(), WindowsPathReplacer
@@ -73,11 +67,11 @@ class SourceProcessor(
         options.filenamePattern.pattern,
         variableReplacers
     )
-    private val tagFilenamePattern = options.tagFilenamePattern.mapValues {
-        CorePathPattern(
-            it.value.pattern,
-            variableReplacers
-        )
+
+    private val tagFilenamePattern = options.taggedFileOptions.mapValues {
+        it.value.filenamePattern?.let { pattern ->
+            CorePathPattern(pattern.pattern, variableReplacers)
+        }
     }
 
     private var renameTaskFuture: ScheduledFuture<*>? = null
@@ -89,14 +83,7 @@ class SourceProcessor(
     }
 
     init {
-        if (options.saveProcessingContent) {
-            addItemFilter(SourceHashingItemFilter(name, processingStorage))
-        }
-        if (options.provideMetadataVariables) {
-            if (this.variableProviders.map { it }.contains(MetadataVariableProvider).not()) {
-                this.variableProviders.add(MetadataVariableProvider)
-            }
-        }
+        scheduleRenameTask(options.renameTaskInterval)
     }
 
     fun info(): Map<String, Any> {
@@ -118,7 +105,7 @@ class SourceProcessor(
         )
     }
 
-    fun scheduleRenameTask(interval: Duration) {
+    private fun scheduleRenameTask(interval: Duration) {
         if (downloader !is AsyncDownloader) {
             return
         }
@@ -528,18 +515,6 @@ class SourceProcessor(
         processingStorage.saveTargetPath(processingTargetPaths)
     }
 
-    fun addItemFilter(vararg filters: SourceItemFilter) {
-        sourceItemFilters.addAll(filters)
-    }
-
-    fun addContentFilter(vararg filters: SourceContentFilter) {
-        sourceContentFilters.addAll(filters)
-    }
-
-    fun addFileFilter(vararg filters: FileContentFilter) {
-        fileContentFilters.addAll(filters)
-    }
-
     fun safeTask(): Runnable {
         return safeRunner
     }
@@ -590,20 +565,10 @@ class SourceProcessor(
         return fileMover.replace(sourceContent.copy(sourceFiles = replaceableFiles))
     }
 
-    fun addRunAfterCompletion(vararg completion: RunAfterCompletion) {
-        runAfterCompletion.addAll(completion)
-    }
-
     override fun toString(): String {
         return info().map {
             "${it.key}: ${it.value}"
         }.joinToString("\n")
-    }
-
-    fun addTagger(tagger: FileTagger) {
-        if (taggers.contains(tagger).not()) {
-            taggers.add(tagger)
-        }
     }
 
     companion object {
@@ -711,9 +676,9 @@ private class ProcessStage(
     }
 }
 
-private class SourceHashingItemFilter(
-    val sourceName: String,
-    val processingStorage: ProcessingStorage
+class SourceHashingItemFilter(
+    private val sourceName: String,
+    private val processingStorage: ProcessingStorage
 ) : SourceItemFilter {
 
     override fun test(item: SourceItem): Boolean {
