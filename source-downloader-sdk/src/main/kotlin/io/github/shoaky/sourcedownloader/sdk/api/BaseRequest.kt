@@ -15,7 +15,7 @@ abstract class BaseRequest<T : Any> {
     protected abstract val responseBodyType: TypeReference<T>
 
     @get:JsonIgnore
-    abstract val httpMethod: HttpMethod
+    abstract val httpMethod: String
 
     @get:JsonIgnore
     abstract val mediaType: MediaType?

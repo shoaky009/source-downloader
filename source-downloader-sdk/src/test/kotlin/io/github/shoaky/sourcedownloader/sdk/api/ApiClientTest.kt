@@ -128,7 +128,7 @@ private data class GetRequest(
 
     override val path: String = "/get/test"
     override val responseBodyType: TypeReference<Map<String, Any>> = jacksonTypeRef()
-    override val httpMethod: HttpMethod = HttpMethod.GET
+    override val httpMethod: String = HttpMethod.GET.name
     override val mediaType: MediaType? = null
 
 }
@@ -139,6 +139,6 @@ private data class OtherRequest(
 ) : BaseRequest<Map<String, Any>>() {
     override val path: String = "/other/test"
     override val responseBodyType: TypeReference<Map<String, Any>> = jacksonTypeRef()
-    override val httpMethod: HttpMethod = HttpMethod.POST
+    override val httpMethod: String = HttpMethod.POST.name
     override val mediaType: MediaType = MediaType.JSON_UTF_8
 }

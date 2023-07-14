@@ -422,7 +422,7 @@ class SourceProcessor(
     fun runRename(): Int {
         val asyncDownloader = downloader as? AsyncDownloader
         if (asyncDownloader == null) {
-            log.debug("Processor:${name} 非异步下载器不执行重命名任务")
+            log.warn("Processor:${name} 非异步下载器不执行重命名任务")
             return 0
         }
         val contentGrouping = processingStorage.findRenameContent(name, options.renameTimesThreshold)

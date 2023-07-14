@@ -9,7 +9,7 @@ object HttpFileMoverSupplier : ComponentSupplier<WebdavFileMover> {
 
     override fun apply(props: Properties): WebdavFileMover {
         return WebdavFileMover(
-            props.get("url"),
+            props.get("server"),
             props.getOrNull("username"),
             props.getOrNull("password"),
             props.getOrDefault("delete-source", true),

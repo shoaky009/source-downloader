@@ -1,42 +1,71 @@
 package io.github.shoaky.sourcedownloader.common.rss
 
+import com.apptasticsoftware.rssreader.Enclosure
 import com.apptasticsoftware.rssreader.RssReader
+import io.github.shoaky.sourcedownloader.external.rss.RssExtReader
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.AlwaysLatestSource
-import org.slf4j.LoggerFactory
+import io.github.shoaky.sourcedownloader.sdk.util.http.httpClient
 import java.net.URI
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
+import kotlin.jvm.optionals.getOrDefault
 
 class RssSource(
-    private val url: String
+    private val url: String,
+    private val tags: List<String> = emptyList(),
+    private val attributes: Map<String, String> = emptyMap(),
+    private val dateFormat: DateTimeFormatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME
 ) : AlwaysLatestSource() {
 
-    private val rssReader = defaultRssReader
+    private val rssReader = RssExtReader()
+
+    init {
+        tags.forEach {
+            rssReader.addItemExtension(it) { i, s ->
+                i.tags.add(s)
+            }
+        }
+
+        attributes.forEach {
+            rssReader.addItemExtension(it.key) { i, s ->
+                i.attrs[it.value] = s
+            }
+        }
+    }
+
     override fun fetch(): Iterable<SourceItem> {
         return rssReader.read(url)
-            .map {
-                kotlin.runCatching {
-                    val enclosure = it.enclosure.get()
-                    SourceItem(
-                        it.title.get(),
-                        URI(it.link.get()),
-                        parseTime(it.pubDate.get()),
-                        enclosure.type,
-                        URI(enclosure.url))
-                }.onFailure {
-                    log.error("获取RssItem字段发生错误", it)
-                }
+            .map { item ->
+                val enclosure = item.enclosure.getOrDefault(defaultEnclosure)
+                SourceItem(
+                    item.title.orElseThrow {
+                        IllegalArgumentException("$url title is null")
+                    },
+                    URI(item.link.orElseThrow {
+                        IllegalArgumentException("$url link is null")
+                    }),
+                    item.pubDate.map {
+                        LocalDateTime.parse(it, dateFormat)
+                    }.getOrDefault(LocalDateTime.now()),
+                    enclosure.type,
+                    URI(enclosure.url.ifBlank {
+                        item.link.get()
+                    }),
+                    item.attrs,
+                    item.tags
+                )
             }
-            .filter { it.isSuccess }
-            .map { it.getOrThrow() }
             .toList()
     }
 
     companion object {
 
-        private val log = LoggerFactory.getLogger(RssSource::class.java)
+        private val defaultEnclosure = Enclosure().apply {
+            this.type = ""
+            this.url = ""
+        }
     }
 }
 
@@ -45,7 +74,7 @@ private val dateTimePatterns = listOf(
     DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss Z", Locale.ENGLISH),
 )
 
-internal val defaultRssReader: RssReader = RssReader()
+internal val defaultRssReader: RssReader = RssReader(httpClient)
 
 fun parseTime(pubDateText: String): LocalDateTime {
 

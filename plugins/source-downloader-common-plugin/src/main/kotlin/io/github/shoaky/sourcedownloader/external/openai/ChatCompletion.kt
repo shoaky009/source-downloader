@@ -20,7 +20,7 @@ data class ChatCompletion(
 
     override val path: String = "/v1/chat/completions"
     override val responseBodyType: TypeReference<ChatResponse> = jacksonTypeRef()
-    override val httpMethod: HttpMethod = HttpMethod.POST
+    override val httpMethod: String = HttpMethod.POST.name
     override val mediaType: MediaType = MediaType.JSON_UTF_8
 
 }

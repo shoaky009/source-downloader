@@ -7,5 +7,5 @@ import io.github.shoaky.sourcedownloader.sdk.api.HttpMethod
 class GetSubjectRequest(subjectId: String) : BangumiRequest<Subject>() {
     override val path: String = "/v0/subjects/$subjectId"
     override val responseBodyType: TypeReference<Subject> = jacksonTypeRef()
-    override val httpMethod: HttpMethod = HttpMethod.GET
+    override val httpMethod: String = HttpMethod.GET.name
 }

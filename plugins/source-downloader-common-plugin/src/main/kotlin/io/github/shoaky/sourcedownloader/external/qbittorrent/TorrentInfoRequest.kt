@@ -22,6 +22,6 @@ class TorrentInfoRequest(
 
     override val responseBodyType: TypeReference<List<TorrentInfo>> = jacksonTypeRef()
 
-    override val httpMethod: HttpMethod = HttpMethod.GET
+    override val httpMethod: String = HttpMethod.GET.name
 
 }

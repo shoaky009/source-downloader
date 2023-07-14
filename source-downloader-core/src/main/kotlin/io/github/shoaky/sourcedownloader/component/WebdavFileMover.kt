@@ -1,7 +1,11 @@
 package io.github.shoaky.sourcedownloader.component
 
+import com.fasterxml.jackson.core.type.TypeReference
+import com.google.common.net.MediaType
 import io.github.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
 import io.github.shoaky.sourcedownloader.sdk.SourceContent
+import io.github.shoaky.sourcedownloader.sdk.api.BaseRequest
+import io.github.shoaky.sourcedownloader.sdk.api.HookedApiClient
 import io.github.shoaky.sourcedownloader.sdk.component.FileMover
 import io.github.shoaky.sourcedownloader.sdk.util.encodeBase64
 import io.github.shoaky.sourcedownloader.sdk.util.http.httpClient
@@ -14,13 +18,13 @@ import java.net.http.HttpResponse
 import java.nio.file.Path
 
 open class WebdavFileMover(
-    url: URI,
+    server: URI,
     private val username: String? = null,
     private val password: String? = null,
     private val deleteSource: Boolean = true
 ) : FileMover {
 
-    private val url = URI(url.toString().removeSuffix("/"))
+    private val url = URI(server.toString().removeSuffix("/"))
 
     override fun move(sourceContent: SourceContent): Boolean {
         // 后面异步
@@ -84,5 +88,30 @@ open class WebdavFileMover(
         private const val MKCOL = "MKCOL"
         private const val PROPFIND = "PROPFIND"
     }
+
+}
+
+class WebdavClient(
+    private val server: URI,
+    private val username: String? = null,
+    private val password: String? = null,
+) : HookedApiClient() {
+
+    override fun <R : BaseRequest<T>, T : Any> beforeRequest(requestBuilder: HttpRequest.Builder, request: R) {
+        TODO("Not yet implemented")
+    }
+
+    override fun <R : BaseRequest<T>, T : Any> afterRequest(response: HttpResponse<T>, request: R) {
+        TODO("Not yet implemented")
+    }
+
+}
+
+class MoveFile() : BaseRequest<String>() {
+
+    override val path: String = ""
+    override val responseBodyType: TypeReference<String> = stringTypeReference
+    override val httpMethod: String = ""
+    override val mediaType: MediaType? = null
 
 }

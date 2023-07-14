@@ -20,6 +20,6 @@ class SearchSubjectV0Request(
 
     override val path: String = "/v0/search/subjects"
     override val responseBodyType: TypeReference<SearchSubjectV0Body> = jacksonTypeRef()
-    override val httpMethod: HttpMethod = HttpMethod.POST
+    override val httpMethod: String = HttpMethod.POST.name
 
 }

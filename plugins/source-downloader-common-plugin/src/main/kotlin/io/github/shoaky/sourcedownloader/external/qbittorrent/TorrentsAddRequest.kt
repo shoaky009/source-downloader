@@ -25,6 +25,6 @@ class TorrentsAddRequest(
 
     override val path: String = "/api/v2/torrents/add"
     override val responseBodyType: TypeReference<String> = stringTypeReference
-    override val httpMethod: HttpMethod = HttpMethod.POST
+    override val httpMethod: String = HttpMethod.POST.name
     override val mediaType: MediaType = MediaType.FORM_DATA
 }

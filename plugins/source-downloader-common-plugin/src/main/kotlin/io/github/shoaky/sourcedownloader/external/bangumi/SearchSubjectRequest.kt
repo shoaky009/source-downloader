@@ -12,5 +12,5 @@ class SearchSubjectRequest(
 
     override val path: String = "/search/subject/$keyword"
     override val responseBodyType: TypeReference<SearchSubjectBody> = jacksonTypeRef()
-    override val httpMethod: HttpMethod = HttpMethod.GET
+    override val httpMethod: String = HttpMethod.GET.name
 }

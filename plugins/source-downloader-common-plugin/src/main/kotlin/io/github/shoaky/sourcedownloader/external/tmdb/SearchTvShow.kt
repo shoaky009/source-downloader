@@ -17,6 +17,6 @@ data class SearchTvShow(
 
     override val path: String = "/3/search/tv"
     override val responseBodyType: TypeReference<PageResult<SearchResult>> = jacksonTypeRef()
-    override val httpMethod: HttpMethod = HttpMethod.GET
+    override val httpMethod: String = HttpMethod.GET.name
     override val mediaType: MediaType = MediaType.JSON_UTF_8
 }

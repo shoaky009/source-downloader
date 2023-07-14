@@ -11,7 +11,7 @@ import io.github.shoaky.sourcedownloader.sdk.util.http.MappingInfo
 abstract class TransmissionRequest<R : Any> : BaseRequest<TransmissionResponse<R>>() {
 
     override val path: String = "/transmission/rpc"
-    override val httpMethod: HttpMethod = HttpMethod.POST
+    override val httpMethod: String = HttpMethod.POST.name
     override val mediaType: MediaType = MediaType.JSON_UTF_8
 
     val tag = System.currentTimeMillis()

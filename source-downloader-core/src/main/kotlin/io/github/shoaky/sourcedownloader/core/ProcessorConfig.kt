@@ -96,7 +96,6 @@ data class ProcessorConfig(
         val fetchLimit: Int = 50,
         /**
          * 从Source获取Items后，更新pointer的模式，true:处理完这一批更新一次，false:处理完一个更新一次
-         * 这个选项待定，可能会移除
          */
         val pointerBatchMode: Boolean = true,
         val category: String? = null,

@@ -31,12 +31,12 @@ abstract class HookedApiClient : ApiClient {
         val resolve = uri.toString() + queryString
         requestBuilder.uri(URI(resolve))
 
-        val bodyPublisher = if (request.httpMethod == HttpMethod.GET) {
+        val bodyPublisher = if (request.httpMethod == HttpMethod.GET.name) {
             BodyPublishers.noBody()
         } else {
             bodyPublisher(request)
         }
-        requestBuilder.method(request.httpMethod.name, bodyPublisher)
+        requestBuilder.method(request.httpMethod, bodyPublisher)
         request.mediaType?.let {
             request.setHeader(HttpHeaders.CONTENT_TYPE, it)
         }
@@ -65,7 +65,7 @@ abstract class HookedApiClient : ApiClient {
 
     private fun <R : BaseRequest<T>, T : Any> buildQueryString(request: R, uri: URI): String {
         val queryStringMap = mutableMapOf<String, String>()
-        if (request.httpMethod === HttpMethod.GET) {
+        if (request.httpMethod === HttpMethod.GET.name) {
             val convertToMap = Jackson.convert(request, jacksonTypeRef<Map<String, String?>>())
             queryStringMap.putAll(convertToMap.filterNotNullValues())
 

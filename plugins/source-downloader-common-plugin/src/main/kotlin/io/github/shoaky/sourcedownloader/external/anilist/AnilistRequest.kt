@@ -14,7 +14,7 @@ abstract class AnilistRequest<T : Any> : BaseRequest<T>() {
 
     override val mediaType: MediaType = MediaType.JSON_UTF_8
     override val path: String = "/"
-    override val httpMethod: HttpMethod = HttpMethod.POST
+    override val httpMethod: String = HttpMethod.POST.name
 
 }
 

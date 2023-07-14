@@ -7,7 +7,7 @@ import io.github.shoaky.sourcedownloader.sdk.api.HttpMethod
 
 abstract class QbittorrentRequest<T : Any> : BaseRequest<T>() {
     override val mediaType: MediaType = MediaType.FORM_DATA
-    override val httpMethod: HttpMethod = HttpMethod.POST
+    override val httpMethod: String = HttpMethod.POST.name
 
     @JsonIgnore
     open val authenticationRequired: Boolean = true
