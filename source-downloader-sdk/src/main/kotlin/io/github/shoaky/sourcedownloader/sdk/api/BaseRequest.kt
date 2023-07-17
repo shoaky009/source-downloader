@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import com.google.common.net.MediaType
 import io.github.shoaky.sourcedownloader.sdk.util.http.CommonBodyHandler
+import java.net.http.HttpRequest.BodyPublisher
 
 abstract class BaseRequest<T : Any> {
 
@@ -30,6 +31,8 @@ abstract class BaseRequest<T : Any> {
         return CommonBodyHandler(this.responseBodyType)
     }
 
+    open fun bodyPublisher(): BodyPublisher? = null
+
     protected fun addQueryParameter(name: String, value: Any) {
         queryString[name] = value
     }
@@ -43,6 +46,7 @@ abstract class BaseRequest<T : Any> {
     }
 
     companion object {
+
         val stringTypeReference = jacksonTypeRef<String>()
     }
 

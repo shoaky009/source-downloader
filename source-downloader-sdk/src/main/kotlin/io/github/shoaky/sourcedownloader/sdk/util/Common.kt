@@ -29,6 +29,12 @@ fun String.encodeBase64(): String {
     return Base64.getEncoder().encodeToString(this.toByteArray())
 }
 
+fun String.appendPrefix(append: Char): String {
+    if (startsWith(append)) {
+        return this
+    }
+    return "$append$this"
+}
 
 fun URI.queryMap(): Map<String, String> {
     return query.split("&").associate {

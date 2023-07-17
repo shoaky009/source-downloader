@@ -218,6 +218,9 @@ class DefaultProcessorManager(
             fileReplacementDeciderName, fileReplacementDeciderRef
         ).component
 
+        val variableReplacers: MutableList<VariableReplacer> = mutableListOf(
+            *options.variableReplacers.toTypedArray(), WindowsPathReplacer
+        )
         val taggedOptions = options.taggedFileOptions.mapValues { (_, taggedOptions) ->
             val taggedFileContentFilters = mutableListOf<FileContentFilter>()
             if (taggedOptions.fileExpressionExclusions.isNotEmpty() || taggedOptions.fileExpressionInclusions.isNotEmpty()) {
@@ -232,24 +235,27 @@ class DefaultProcessorManager(
                     container.get(instanceName, fileContentFilterTypeRef).getAndMarkRef(config.name)
                 }
             )
-
             TaggedFileOptions(
-                taggedOptions.filenamePattern,
-                // 先不加暂时未实现
-                // taggedFileContentFilters
+                taggedOptions.savePathPattern?.let {
+                    CorePathPattern(it.pattern, variableReplacers)
+                },
+                taggedOptions.filenamePattern?.let {
+                    CorePathPattern(it.pattern, variableReplacers)
+                },
+                taggedFileContentFilters
             )
         }
 
         return ProcessorOptions(
-            options.savePathPattern,
-            options.filenamePattern,
+            CorePathPattern(options.savePathPattern.pattern, variableReplacers),
+            CorePathPattern(options.filenamePattern.pattern, variableReplacers),
             providers,
             runs,
             sourceItemFilter,
             sourceContentFilters,
             fileContentFilters,
             taggers,
-            options.variableReplacers,
+            variableReplacers,
             fileReplacementDecider,
             taggedOptions,
             options.saveProcessingContent,

@@ -53,7 +53,7 @@ class JpaProcessingStorage(
             }
     }
 
-    override fun deleteById(id: Long) {
+    override fun deleteProcessingContent(id: Long) {
         processingRecordRepository.deleteById(id)
     }
 
@@ -141,5 +141,10 @@ class JpaProcessingStorage(
             targetPath.processorName,
             targetPath.itemHashing
         )
+    }
+
+    override fun deleteTargetPath(paths: List<Path>) {
+        val ids = paths.map { it.toString() }
+        targetPathRepository.deleteAllByIdInBatch(ids)
     }
 }

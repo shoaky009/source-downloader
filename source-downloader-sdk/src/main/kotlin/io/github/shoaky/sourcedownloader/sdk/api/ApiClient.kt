@@ -5,6 +5,7 @@ import com.google.common.net.HttpHeaders
 import com.google.common.net.MediaType
 import com.google.common.net.UrlEscapers
 import io.github.shoaky.sourcedownloader.sdk.util.Jackson
+import io.github.shoaky.sourcedownloader.sdk.util.appendPrefix
 import org.slf4j.LoggerFactory
 import java.net.CookieManager
 import java.net.URI
@@ -25,10 +26,14 @@ abstract class HookedApiClient : ApiClient {
     override fun <R : BaseRequest<T>, T : Any> execute(endpoint: URI, request: R): HttpResponse<T> {
         val requestBuilder = HttpRequest.newBuilder(endpoint)
         beforeRequest(requestBuilder, request)
+        val path = request.path.appendPrefix('/')
 
-        val uri = endpoint.resolve(UrlEscapers.urlFragmentEscaper().escape(request.path))
+        val uriString = StringBuilder(endpoint.toString().removeSuffix("/"))
+            .append(UrlEscapers.urlFragmentEscaper().escape(path))
+            .toString()
+        val uri = URI(uriString)
         val queryString = buildQueryString(request, uri)
-        val resolve = uri.toString() + queryString
+        val resolve = uriString + queryString
         requestBuilder.uri(URI(resolve))
 
         val bodyPublisher = if (request.httpMethod == HttpMethod.GET.name) {
@@ -94,6 +99,10 @@ abstract class HookedApiClient : ApiClient {
     abstract fun <R : BaseRequest<T>, T : Any> afterRequest(response: HttpResponse<T>, request: R)
 
     private fun <R : BaseRequest<T>, T : Any> bodyPublisher(request: BaseRequest<T>): HttpRequest.BodyPublisher {
+        request.bodyPublisher()?.let {
+            return it
+        }
+
         val mediaType = request.mediaType
         if (mediaType == MediaType.FORM_DATA || mediaType == MediaType.PLAIN_TEXT_UTF_8) {
             val data = Jackson.convert(request, jacksonTypeRef<Map<String, Any?>>())
@@ -114,6 +123,7 @@ abstract class HookedApiClient : ApiClient {
     }
 
     companion object {
+
         val cookieManager = CookieManager()
         private val httpClient: HttpClient = HttpClient.newBuilder().cookieHandler(cookieManager).build()
         private val log = LoggerFactory.getLogger(BaseRequest::class.java)
@@ -124,6 +134,4 @@ abstract class HookedApiClient : ApiClient {
             }
     }
 
-
 }
-

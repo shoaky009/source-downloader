@@ -32,6 +32,6 @@ private class ProcessingContentController(
 
     @DeleteMapping("/{id}")
     fun deleteProcessingContent(@PathVariable id: Long) {
-        storage.deleteById(id)
+        storage.deleteProcessingContent(id)
     }
 }

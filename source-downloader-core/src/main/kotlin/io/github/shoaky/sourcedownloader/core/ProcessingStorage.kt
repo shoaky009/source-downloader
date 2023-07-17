@@ -9,7 +9,7 @@ interface ProcessingStorage {
 
     fun findRenameContent(name: String, renameTimesThreshold: Int): List<ProcessingContent>
 
-    fun deleteById(id: Long)
+    fun deleteProcessingContent(id: Long)
 
     fun findByNameAndHash(processorName: String, itemHashing: String): ProcessingContent?
 
@@ -23,7 +23,10 @@ interface ProcessingStorage {
     fun findById(id: Long): ProcessingContent?
 
     fun findProcessorSourceState(processorName: String, sourceId: String): ProcessorSourceState?
+
     fun save(state: ProcessorSourceState)
 
     fun findTargetPath(path: Path): ProcessingTargetPath?
+
+    fun deleteTargetPath(paths: List<Path>)
 }

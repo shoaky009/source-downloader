@@ -1,6 +1,6 @@
 package io.github.shoaky.sourcedownloader.common.supplier
 
-import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.annotation.JsonAlias
 import io.github.shoaky.sourcedownloader.common.rss.RssSource
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
@@ -33,7 +33,7 @@ object RssSourceSupplier : ComponentSupplier<RssSource> {
         val url: String,
         val tags: List<String> = emptyList(),
         val attributes: Map<String, String> = emptyMap(),
-        @JsonProperty("date-format")
+        @JsonAlias("date-format")
         val dateFormat: String? = null
     )
 

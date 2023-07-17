@@ -106,6 +106,7 @@ data class ProcessorConfig(
 
     data class Tagged(
         val filenamePattern: CorePathPattern? = null,
+        val savePathPattern: CorePathPattern? = null,
         val fileContentFilters: List<ComponentId> = emptyList(),
         val fileExpressionExclusions: List<String> = emptyList(),
         val fileExpressionInclusions: List<String> = emptyList(),

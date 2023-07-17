@@ -23,15 +23,18 @@ private class ComponentController(
             .filter { name == null || it.name == name }
             .filter { type == null || it.type.topType == type }
             .filter { typeName == null || it.type.typeName == typeName }
-            .map {
+            .map { wp ->
                 ComponentInfo(
-                    it.type.topType,
-                    it.type.typeName,
-                    it.name,
-                    it.props.rawValues,
+                    wp.type.topType,
+                    wp.type.typeName,
+                    wp.name,
+                    wp.props.rawValues,
                     ComponentDetail(),
-                    it.component as? ComponentStateful,
-                    it.primary
+                    wp.component.let {
+                        val componentStateful = it as? ComponentStateful
+                        componentStateful?.stateDetail()
+                    },
+                    wp.primary
                 )
             }
     }

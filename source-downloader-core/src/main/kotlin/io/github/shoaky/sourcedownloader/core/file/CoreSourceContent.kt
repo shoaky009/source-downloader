@@ -13,6 +13,12 @@ data class CoreSourceContent(
 
     private var updated: Boolean = false
 
+    init {
+        sourceFiles.forEach {
+            it.addSharedVariables(sharedPatternVariables)
+        }
+    }
+
     fun updateFileStatus(fileMover: FileMover) {
         val conflicts = sourceFiles.map { it.targetPath() }.groupingBy { it }.eachCount()
             .filter { it.value > 1 }.keys

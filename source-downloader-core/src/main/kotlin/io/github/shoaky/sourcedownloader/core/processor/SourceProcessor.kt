@@ -53,26 +53,8 @@ class SourceProcessor(
 
     private val downloadPath = downloader.defaultDownloadPath().toAbsolutePath()
     private val sourceSavePath: Path = sourceSavePath.toAbsolutePath()
-
-    private val variableReplacers: MutableList<VariableReplacer> = mutableListOf(
-        *options.variableReplacers.toTypedArray(), WindowsPathReplacer
-    )
-
-    private val fileSavePathPattern: PathPattern = CorePathPattern(
-        options.savePathPattern.pattern,
-        variableReplacers
-    )
-
-    private val filenamePattern: PathPattern = CorePathPattern(
-        options.filenamePattern.pattern,
-        variableReplacers
-    )
-
-    private val tagFilenamePattern = options.taggedFileOptions.mapValues {
-        it.value.filenamePattern?.let { pattern ->
-            CorePathPattern(pattern.pattern, variableReplacers)
-        }
-    }
+    private val filenamePattern = options.filenamePattern
+    private val savePathPattern = options.savePathPattern
 
     private var renameTaskFuture: ScheduledFuture<*>? = null
     private val safeRunner by lazy {
@@ -338,45 +320,35 @@ class SourceProcessor(
                     sourceSavePath,
                     downloadPath,
                     MapPatternVariables(sourceFile.patternVariables().variables()),
-                    fileSavePathPattern,
+                    savePathPattern,
                     filenamePattern,
                     resolveFile.attributes
                 )
                 val tags = taggers.mapNotNull { it.tag(sourceFileContent) }
-                sourceFileContent.tags.addAll(tags)
+                    .onEach {
+                        sourceFileContent.tags.add(it)
+                    }
 
-                val tagged = replaceFilenamePattern(sourceFileContent)
-                tagged.setVariableErrorStrategy(options.variableErrorStrategy)
-                tagged.addSharedVariables(sharedPatternVariables)
-                tagged
-            }.filter { path ->
-                val filter = fileContentFilters.all { it.test(path) }
+                val fileOptions = options.getTaggedOptions(tags)
+                val replacedContent = fileOptions.let { ops ->
+                    sourceFileContent.copy(
+                        filenamePattern = ops?.filenamePattern ?: filenamePattern,
+                        fileSavePathPattern = ops?.savePathPattern ?: savePathPattern
+                    )
+                }
+                replacedContent.setVariableErrorStrategy(options.variableErrorStrategy)
+                replacedContent.addSharedVariables(sharedPatternVariables)
+                replacedContent to fileOptions
+            }.filter { pair ->
+                val path = pair.first
+                val filters = pair.second?.fileContentFilters ?: fileContentFilters
+                val filter = filters.all { it.test(path) }
                 if (filter.not()) {
                     log.debug("Filtered file:{}", path)
                 }
                 filter
-            }
+            }.map { it.first }
         return CoreSourceContent(sourceItem, sourceFiles, MapPatternVariables(sharedPatternVariables))
-    }
-
-    private fun replaceFilenamePattern(fileContent: CoreFileContent): CoreFileContent {
-        val customTags = tagFilenamePattern.keys
-        if (customTags.isEmpty()) {
-            return fileContent
-        }
-        val tagged = customTags.filter {
-            fileContent.isTagged(it)
-        }
-        log.debug("Processor:{} 文件:{} 标签:{}", name, fileContent.fileDownloadPath, tagged)
-        val pathPatterns = tagged.mapNotNull {
-            tagFilenamePattern[it]
-        }
-        if (pathPatterns.isEmpty()) {
-            return fileContent
-        }
-        val taggedFilePattern = pathPatterns.first()
-        log.debug("Processor:{} 文件:{} 使用自定义命名规则:{}", name, fileContent.fileDownloadPath, taggedFilePattern)
-        return fileContent.copy(filenamePattern = taggedFilePattern)
     }
 
     /**
@@ -426,11 +398,9 @@ class SourceProcessor(
             return 0
         }
         val contentGrouping = processingStorage.findRenameContent(name, options.renameTimesThreshold)
-            .groupBy(
-                { pc ->
-                    DownloadStatus.from(asyncDownloader.isFinished(pc.sourceContent.sourceItem))
-                }, { it }
-            )
+            .groupBy({ pc ->
+                DownloadStatus.from(asyncDownloader.isFinished(pc.sourceContent.sourceItem))
+            }, { it })
 
         contentGrouping[DownloadStatus.NOT_FOUND]?.forEach { pc ->
             kotlin.runCatching {
@@ -441,6 +411,8 @@ class SourceProcessor(
                         modifyTime = LocalDateTime.now(),
                     )
                 )
+                // TODO 删除targetPath记录
+                processingStorage.deleteTargetPath(pc.sourceContent.sourceFiles.map { it.targetPath() })
             }.onFailure {
                 log.error("Processing更新状态出错, record:${Jackson.toJsonString(pc)}", it)
             }
@@ -459,10 +431,9 @@ class SourceProcessor(
     private fun processRenameTask(pc: ProcessingContent) {
         val sourceContent = pc.sourceContent
         val sourceFiles = sourceContent.sourceFiles
-        val replacers = variableReplacers.toTypedArray()
+        val replacers = options.variableReplacers.toTypedArray()
         sourceFiles.forEach {
-            // 这边设计不太好
-            it.addSharedVariables(sourceContent.sharedPatternVariables)
+            // 这边设计不太好, CoreFileContent改为纯数据, 计算targetPath改为RenameContext之类的来计算
             it.setVariableErrorStrategy(options.variableErrorStrategy)
             val filenamePattern = it.filenamePattern as CorePathPattern
             filenamePattern.addReplacer(*replacers)

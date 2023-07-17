@@ -5,7 +5,6 @@ import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.util.EnumValue
 import java.time.LocalDateTime
 
-
 data class ProcessingContent(
     var id: Long? = null,
     val processorName: String,

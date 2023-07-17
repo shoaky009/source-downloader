@@ -4,8 +4,8 @@ import kotlin.io.path.name
 
 interface SourceContent {
 
-    val sourceFiles: List<FileContent>
     val sourceItem: SourceItem
+    val sourceFiles: List<FileContent>
 
     fun summaryContent(): String {
         if (sourceFiles.size == 1) {

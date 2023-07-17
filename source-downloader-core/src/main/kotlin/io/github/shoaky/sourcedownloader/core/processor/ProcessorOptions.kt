@@ -33,9 +33,21 @@ data class ProcessorOptions(
     val category: String? = null,
     val tags: Set<String> = emptySet(),
     val itemErrorContinue: Boolean = true,
-)
+) {
+
+    fun getTaggedOptions(tags: List<String>): TaggedFileOptions? {
+        if (tags.isEmpty()) {
+            return null
+        }
+        tags.forEach { tag ->
+            taggedFileOptions[tag]?.let { return it }
+        }
+        return null
+    }
+}
 
 data class TaggedFileOptions(
+    val savePathPattern: CorePathPattern? = null,
     val filenamePattern: CorePathPattern? = null,
     val fileContentFilters: List<FileContentFilter>? = null,
 )
