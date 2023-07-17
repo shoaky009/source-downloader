@@ -110,18 +110,16 @@ class AnimeVariableProvider(
             emptyReplaces, "", false
         ).replaces(
             bReplaces, " "
-        )
-            .replace(Regex("S(\\d+)"), "Season $1")
-            .replace(Regex("\\[.*?]"), "")
-            .trim()
+        ).replace(Regex("S(\\d+)"), "Season $1")
 
-        if (text.length > 12) {
+        val removedBucket = text.replace(bracketsRegex, "").trim()
+        if (removedBucket.length > 12) {
             val sp = listOf("/", "|").firstOrNull {
-                text.contains(it)
-            } ?: return text
+                removedBucket.contains(it)
+            } ?: return removedBucket
 
             // 优先选择日语，最后是中文尽可能用anilist搜索
-            val title = text.split(sp)
+            val title = removedBucket.split(sp)
                 .map { TitleScore(it) }
                 .maxBy { it.score }.title
 
@@ -129,10 +127,17 @@ class AnimeVariableProvider(
                 .firstOrNull { it.category == Element.ElementCategory.kElementAnimeTitle }?.value
                 ?: title
         }
-        if (text.isNotBlank()) {
-            return text
+        if (removedBucket.isNotBlank()) {
+            return removedBucket
         }
 
+        val matches = bracketsRegex.findAll(text).toList()
+        if (matches.size == 1) {
+            return matches[0].value.removePrefix("[").removeSuffix("]")
+        }
+        if (matches.size > 1) {
+            return matches[1].value.removePrefix("[").removeSuffix("]")
+        }
         return text
     }
 
@@ -154,6 +159,7 @@ class AnimeVariableProvider(
         private val bReplaces = listOf(
             "。", "，", "～"
         )
+        private val bracketsRegex = Regex("\\[.*?]")
     }
 
 }

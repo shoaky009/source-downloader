@@ -140,10 +140,6 @@ data class CoreFileContent(
         return res
     }
 
-    fun isTagged(tag: String): Boolean {
-        return tags.contains(tag)
-    }
-
     fun currentVariables(): PatternVariables {
         return allVariables
     }

@@ -162,7 +162,6 @@ class SourceProcessor(
                 if (dryRun) {
                     result.add(it)
                 }
-                // 也许有一直失败的会卡住整体，暂时先这样处理后面用retryTimes来判断
                 lastPointedItem = item
                 if (options.pointerBatchMode.not() && dryRun.not()) {
                     saveSourceState(lastPointedItem, lastState)
@@ -211,8 +210,14 @@ class SourceProcessor(
             log.info("Processor:${name} Source:${sourceId} no items to process")
             return
         }
+        if (lastPointedItem.pointer == lastState?.lastPointer) {
+            log.info("Processor:${name} Source:${sourceId} no pointer to save")
+            return
+        }
 
-        log.info("Processor:$name update pointer Source:$sourceId lastPointedItem:$lastPointedItem")
+        if (lastPointedItem.pointer != lastState?.lastPointer) {
+            log.info("Processor:$name update pointer Source:$sourceId lastPointedItem:$lastPointedItem")
+        }
         val latestPointer = Jackson.convert(lastPointedItem.pointer, PersistentItemPointer::class)
         val sourceState = lastState?.copy(
             processorName = name,
@@ -405,13 +410,10 @@ class SourceProcessor(
         contentGrouping[DownloadStatus.NOT_FOUND]?.forEach { pc ->
             kotlin.runCatching {
                 log.info("Processing下载任务不存在, record:${Jackson.toJsonString(pc)}")
-                processingStorage.save(
-                    pc.copy(
-                        status = DOWNLOAD_FAILED,
-                        modifyTime = LocalDateTime.now(),
-                    )
-                )
-                // TODO 删除targetPath记录
+                processingStorage.save(pc.copy(
+                    status = DOWNLOAD_FAILED,
+                    modifyTime = LocalDateTime.now(),
+                ))
                 processingStorage.deleteTargetPath(pc.sourceContent.sourceFiles.map { it.targetPath() })
             }.onFailure {
                 log.error("Processing更新状态出错, record:${Jackson.toJsonString(pc)}", it)

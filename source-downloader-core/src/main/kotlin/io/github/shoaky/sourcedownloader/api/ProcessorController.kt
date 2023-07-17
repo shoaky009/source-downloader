@@ -8,7 +8,6 @@ import io.github.shoaky.sourcedownloader.core.processor.ProcessorManager
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentException
 import org.springframework.web.bind.annotation.*
-import java.net.URI
 
 @RestController
 @RequestMapping("/api/processor")
@@ -33,8 +32,9 @@ private class ProcessorController(
     }
 
     @PostMapping("/{processorName}")
-    fun create(@PathVariable processorName: String,
-               @RequestBody processorConfig: ProcessorConfig
+    fun create(
+        @PathVariable processorName: String,
+        @RequestBody processorConfig: ProcessorConfig
     ) {
         val processor = processorManager.getProcessor(processorName)
         if (processor != null) {
@@ -45,8 +45,9 @@ private class ProcessorController(
     }
 
     @PutMapping("/{processorName}")
-    fun reload(@PathVariable processorName: String,
-               @RequestBody processorConfig: ProcessorConfig
+    fun reload(
+        @PathVariable processorName: String,
+        @RequestBody processorConfig: ProcessorConfig
     ) {
         processorManager.getProcessor(processorName)
             ?: throw ComponentException.processorMissing("processor $processorName not found")
@@ -65,7 +66,7 @@ private class ProcessorController(
     @GetMapping("/dry-run/{processorName}")
     fun dryRun(@PathVariable processorName: String): List<DryRunResult> {
         val sourceProcessor = (processorManager.getProcessor(processorName)
-            ?: throw ComponentException.processorMissing("processor $processorName not found"))
+            ?: throw ComponentException.processorMissing("Processor $processorName not found"))
         return sourceProcessor.get().dryRun()
             .map { pc ->
                 val fileResult = pc.sourceContent.sourceFiles.map { file ->
@@ -79,14 +80,11 @@ private class ProcessorController(
                 }
                 val sourceContent = pc.sourceContent
                 val variables = sourceContent.sharedPatternVariables.variables()
-                DryRunResult(sourceContent.sourceItem, variables,
-                    fileResult, pc.status.name)
+                DryRunResult(
+                    sourceContent.sourceItem, variables,
+                    fileResult, pc.status.name
+                )
             }
-    }
-
-    @GetMapping("/idk")
-    fun idk(@RequestBody idk: Idk): String {
-        return "idk"
     }
 
 }
@@ -109,9 +107,4 @@ private data class FileResult(
     val variables: Map<String, Any>,
     val tags: Collection<String>,
     val status: FileContentStatus
-)
-
-private data class Idk(
-    val uri: URI,
-    val sourceItem: SourceItem
 )

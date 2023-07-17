@@ -30,10 +30,7 @@ private class ComponentController(
                     wp.name,
                     wp.props.rawValues,
                     ComponentDetail(),
-                    wp.component.let {
-                        val componentStateful = it as? ComponentStateful
-                        componentStateful?.stateDetail()
-                    },
+                    if (wp.primary) wp.component.let { it as? ComponentStateful }?.stateDetail() else null,
                     wp.primary
                 )
             }

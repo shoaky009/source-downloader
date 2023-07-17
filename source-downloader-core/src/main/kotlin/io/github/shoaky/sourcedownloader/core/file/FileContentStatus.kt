@@ -2,6 +2,8 @@ package io.github.shoaky.sourcedownloader.core.file
 
 enum class FileContentStatus {
 
+    UNDETECTED,
+
     /**
      * 正常没有任何文件冲突
      */

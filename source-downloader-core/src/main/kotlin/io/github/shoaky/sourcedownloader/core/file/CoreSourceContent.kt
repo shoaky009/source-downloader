@@ -20,6 +20,10 @@ data class CoreSourceContent(
     }
 
     fun updateFileStatus(fileMover: FileMover) {
+        if (updated) {
+            return
+        }
+
         val conflicts = sourceFiles.map { it.targetPath() }.groupingBy { it }.eachCount()
             .filter { it.value > 1 }.keys
 
@@ -47,21 +51,16 @@ data class CoreSourceContent(
                 continue
             }
         }
+        updated = true
     }
 
     fun getMovableFiles(fileMover: FileMover): List<CoreFileContent> {
-        if (!updated) {
-            updateFileStatus(fileMover)
-            updated = true
-        }
+        updateFileStatus(fileMover)
         return sourceFiles.filter { it.status == FileContentStatus.NORMAL && it.fileDownloadPath != it.targetPath() }
     }
 
     fun getDownloadFiles(fileMover: FileMover): List<CoreFileContent> {
-        if (!updated) {
-            updateFileStatus(fileMover)
-            updated = true
-        }
+        updateFileStatus(fileMover)
         return sourceFiles.filter { it.status != FileContentStatus.TARGET_EXISTS }
     }
 }

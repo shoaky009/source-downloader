@@ -50,6 +50,7 @@ private class NameReplaceGroup(
     private val sourceItemGroup: SourceItemGroup,
     private val nameReplace: Map<String, String>
 ) : SourceItemGroup {
+
     override fun sharedPatternVariables(): PatternVariables {
         return NameReplacePatternVariables(sourceItemGroup.sharedPatternVariables(), nameReplace)
     }
@@ -64,16 +65,17 @@ private class NameReplaceGroup(
         private val sourceFile: FileVariable,
         private val nameMapping: Map<String, String>
     ) : FileVariable {
+
         override fun patternVariables(): PatternVariables {
             return NameReplacePatternVariables(sourceFile.patternVariables(), nameMapping)
         }
     }
 }
 
-
 private abstract class AggregationItemGroup(
     private val groups: Map<VariableProvider, SourceItemGroup>,
 ) : SourceItemGroup {
+
     override fun filePatternVariables(paths: List<SourceFile>): List<FileVariable> {
         val map = groups.mapValues {
             it.value.filePatternVariables(paths)
@@ -98,6 +100,7 @@ private abstract class AggregationItemGroup(
 private class AnyItemGroup(
     groups: Map<VariableProvider, SourceItemGroup>,
 ) : AggregationItemGroup(groups) {
+
     override fun mergeFiles(providerFiles: List<List<Pair<VariableProvider, FileVariable>>>): List<FileVariable> {
         return List(providerFiles.size) { index ->
             val sourceFiles = providerFiles.map { it[index] }.map { it.second }
@@ -135,8 +138,8 @@ private class AnyItemGroup(
     }
 }
 
-
 private data class ValueCount(val value: String, val count: Int) : Comparable<ValueCount> {
+
     override fun compareTo(other: ValueCount): Int {
         return count.compareTo(other.count)
     }
@@ -145,6 +148,7 @@ private data class ValueCount(val value: String, val count: Int) : Comparable<Va
 private class VoteItemGroup(
     groups: Map<VariableProvider, SourceItemGroup>,
 ) : AggregationItemGroup(groups) {
+
     override fun aggrSharedPatternVariables(groups: Map<VariableProvider, SourceItemGroup>): PatternVariables {
         val variablesList = groups.values.map { it.sharedPatternVariables().variables() }
         val valueCounts = variablesList
@@ -180,10 +184,10 @@ private class VoteItemGroup(
     }
 }
 
-
 private class AccuracyItemGroup(
     groups: Map<VariableProvider, SourceItemGroup>,
 ) : AggregationItemGroup(groups) {
+
     override fun aggrSharedPatternVariables(groups: Map<VariableProvider, SourceItemGroup>): PatternVariables {
         val variableMap = mutableMapOf<String, String>()
         groups.mapValues { it.value.sharedPatternVariables().variables() }
@@ -210,6 +214,7 @@ private class AccuracyItemGroup(
 private class SmartItemGroup(
     groups: Map<VariableProvider, SourceItemGroup>,
 ) : AggregationItemGroup(groups) {
+
     override fun aggrSharedPatternVariables(groups: Map<VariableProvider, SourceItemGroup>): PatternVariables {
         val variablesList = groups.entries.map { (provider, group) ->
             val variables = group.sharedPatternVariables().variables()
@@ -260,6 +265,7 @@ private class SmartItemGroup(
     }
 
     private class ValueAccuracy(val value: String, val accuracy: Int) : Comparable<ValueAccuracy> {
+
         override fun compareTo(other: ValueAccuracy): Int {
             return accuracy.compareTo(other.accuracy)
         }
@@ -283,6 +289,7 @@ private class SmartItemGroup(
     }
 
     private class ValueAccuracyCount(val value: String, val accuracy: Int, val count: Int) : Comparable<ValueAccuracyCount> {
+
         override fun compareTo(other: ValueAccuracyCount): Int {
             val accuracyCmp = accuracy.compareTo(other.accuracy)
             return if (accuracyCmp != 0) {
@@ -310,6 +317,7 @@ private class SmartItemGroup(
     }
 
     companion object {
+
         private val log = LoggerFactory.getLogger(SmartItemGroup::class.java)
     }
 }

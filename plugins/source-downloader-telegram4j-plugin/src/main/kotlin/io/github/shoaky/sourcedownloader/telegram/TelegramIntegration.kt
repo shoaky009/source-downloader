@@ -193,7 +193,7 @@ class ProgressiveChannel(
 ) : ByteChannel by ch {
 
     private var downloadedBytes = 0L
-    private val startTime = Instant.now().epochSecond
+    private val startTime = Instant.now()
 
     override fun write(src: ByteBuffer): Int {
         val write = ch.write(src)
@@ -207,10 +207,10 @@ class ProgressiveChannel(
 
     fun formatRate(): String {
         val curr = Instant.now().epochSecond
-        val rate = if (curr == startTime) {
+        val rate = if (curr == startTime.epochSecond) {
             downloadedBytes
         } else {
-            downloadedBytes / (curr - startTime)
+            downloadedBytes / (curr - startTime.epochSecond)
         }
 
         return when {
@@ -253,7 +253,7 @@ class ProgressiveChannel(
     }
 
     fun getDuration(): Long {
-        return Duration.ofMillis(Instant.now().epochSecond - startTime).seconds
+        return Duration.ofSeconds(Instant.now().epochSecond - startTime.epochSecond).seconds
     }
 
     override fun close() {
