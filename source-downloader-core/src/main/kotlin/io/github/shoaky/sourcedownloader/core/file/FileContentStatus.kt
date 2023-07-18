@@ -22,5 +22,10 @@ enum class FileContentStatus {
     /**
      * SourceItem中的目标文件冲突
      */
-    FILE_CONFLICT
+    FILE_CONFLICT,
+
+    /**
+     * 准备替换
+     */
+    REPLACE
 }

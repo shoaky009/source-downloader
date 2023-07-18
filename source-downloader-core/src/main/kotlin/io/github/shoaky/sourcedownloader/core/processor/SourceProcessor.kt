@@ -246,12 +246,16 @@ class SourceProcessor(
             return ProcessingContent(name, sourceContent).copy(status = FILTERED)
         }
 
-        val contentStatus = probeContent(sourceContent)
         val replaceFiles = getReplaceableFiles(sourceContent)
+        val contentStatus = probeContent(sourceContent, replaceFiles)
 
-        if (contentStatus.first && dryRun.not()) {
+        if (dryRun) {
+            return ProcessingContent(name, sourceContent).copy(status = contentStatus.second)
+        }
+
+        if (contentStatus.first) {
             val downloadTask = createDownloadTask(sourceContent, replaceFiles)
-            // NOTE 非异步下载会阻塞
+            // NOTE 非异步下载器会阻塞
             this.downloader.submit(downloadTask)
             log.info("提交下载任务成功, Processor:${name} sourceItem:${sourceItem.title}")
             val targetPaths = sourceContent.getDownloadFiles(fileMover).map { it.targetPath() }
@@ -259,7 +263,7 @@ class SourceProcessor(
             Events.post(ProcessorSubmitDownloadEvent(name, sourceContent))
         }
 
-        if (downloader !is AsyncDownloader && dryRun.not()) {
+        if (downloader !is AsyncDownloader) {
             val moveSuccess = moveFiles(sourceContent)
             val replaceSuccess = replaceFiles(sourceContent)
             if (moveSuccess || replaceSuccess) {
@@ -269,7 +273,7 @@ class SourceProcessor(
         }
 
         var status = WAITING_TO_RENAME
-        if (contentStatus.first.not() && downloader is AsyncDownloader) {
+        if (contentStatus.first.not()) {
             status = contentStatus.second
         }
 
@@ -282,19 +286,20 @@ class SourceProcessor(
             return emptyList()
         }
 
-        val replaceFiles = sourceContent.sourceFiles
+        val partition = sourceContent.sourceFiles.partition { it.status == FileContentStatus.REPLACE }
+        val replaceFiles = partition.second
             .filter { it.status == FileContentStatus.TARGET_EXISTS }
-            .map { cfc ->
+            .map { fileContent ->
                 val copy = sourceContent.copy(
-                    sourceFiles = listOf(cfc)
+                    sourceFiles = listOf(fileContent)
                 )
-
-                val before = findBeforeContent(cfc)
+                val before = findBeforeContent(fileContent)
                 val replace = fileReplacementDecider.isReplace(copy, before)
-                cfc to replace
+                fileContent to replace
             }.filter { it.second }
             .map { it.first }
-        return replaceFiles
+            .onEach { it.status = FileContentStatus.REPLACE }
+        return partition.first + replaceFiles
     }
 
     private fun findBeforeContent(fileContent: CoreFileContent): CoreSourceContent? {
@@ -359,10 +364,13 @@ class SourceProcessor(
     /**
      * @return Download or not, [ProcessingContent.Status]
      */
-    private fun probeContent(sc: CoreSourceContent): Pair<Boolean, ProcessingContent.Status> {
+    private fun probeContent(sc: CoreSourceContent, replaceFiles: List<CoreFileContent>): Pair<Boolean, ProcessingContent.Status> {
         val files = sc.sourceFiles
         if (files.isEmpty()) {
             return false to NO_FILES
+        }
+        if (replaceFiles.isNotEmpty()) {
+            return true to WAITING_TO_RENAME
         }
 
         val targetPaths = files.map { it.targetPath() }
@@ -443,8 +451,9 @@ class SourceProcessor(
             fileSavePathPattern.addReplacer(*replacers)
         }
 
-        val targetPaths = sourceFiles.map { it.targetPath() }
-        if (fileMover.exists(targetPaths)) {
+        if (sourceFiles.all { it.status != FileContentStatus.REPLACE } &&
+            fileMover.exists(sourceFiles.map { it.targetPath() })
+        ) {
             val toUpdate = pc.copy(
                 renameTimes = pc.renameTimes.inc(),
                 status = TARGET_ALREADY_EXISTS,

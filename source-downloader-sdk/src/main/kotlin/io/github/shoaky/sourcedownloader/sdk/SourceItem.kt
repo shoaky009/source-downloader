@@ -23,7 +23,7 @@ data class SourceItem(
     ) : this(title, URI(link), date, contentType, URI(downloadUri))
 
     fun hashing(): String {
-        return Hashing.goodFastHash(128)
+        return Hashing.murmur3_128()
             .hashString("$title-$link-$contentType-$downloadUri", Charsets.UTF_8)
             .toString()
     }

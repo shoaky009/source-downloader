@@ -25,7 +25,7 @@ data class ProcessingContent(
     enum class Status(val value: Int) : EnumValue<Int> {
 
         /**
-         * 一切正常，下载完成后重命名
+         * 下载完成后重命名，可能包含替换的文件
          */
         WAITING_TO_RENAME(0),
 
@@ -37,7 +37,7 @@ data class ProcessingContent(
         DOWNLOAD_FAILED(3),
 
         /**
-         * 目标文件存在
+         * 全部目标文件存在
          */
         TARGET_ALREADY_EXISTS(4),
 

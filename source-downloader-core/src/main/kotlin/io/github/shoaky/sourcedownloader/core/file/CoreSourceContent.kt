@@ -27,7 +27,8 @@ data class CoreSourceContent(
         val conflicts = sourceFiles.map { it.targetPath() }.groupingBy { it }.eachCount()
             .filter { it.value > 1 }.keys
 
-        for (sourceFile in sourceFiles) {
+        val undetectedFiles = sourceFiles.filter { it.status == FileContentStatus.UNDETECTED }
+        for (sourceFile in undetectedFiles) {
             // 校验顺序不可换
             val filenameResult = sourceFile.filenamePattern.parse(sourceFile.currentVariables())
             if (filenameResult.success().not()) {

@@ -20,7 +20,7 @@ data class CoreFileContent(
     @JsonDeserialize(`as` = CorePathPattern::class)
     val filenamePattern: PathPattern,
     override val attributes: Map<String, Any> = emptyMap(),
-    var status: FileContentStatus = FileContentStatus.NORMAL,
+    var status: FileContentStatus = FileContentStatus.UNDETECTED,
     override val tags: MutableSet<String> = mutableSetOf()
 ) : FileContent {
 
