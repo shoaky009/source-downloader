@@ -575,7 +575,7 @@ private class LoggingRetryListener : RetryListener {
     ) {
         val stage = context.getAttribute("stage")
         log.info(
-            "第{}次重试失败, message:{}, stage:{}",
+            "第{}次重试失败, stage:{}, message:{}",
             context.retryCount,
             "${throwable::class.simpleName}:${throwable.message}",
             stage
@@ -658,18 +658,3 @@ private class ProcessStage(
     }
 }
 
-class SourceHashingItemFilter(
-    private val sourceName: String,
-    private val processingStorage: ProcessingStorage
-) : SourceItemFilter {
-
-    override fun test(item: SourceItem): Boolean {
-        val processingContent = processingStorage.findByNameAndHash(sourceName, item.hashing())
-        if (processingContent != null) {
-            if (log.isDebugEnabled) {
-                log.debug("Source:${sourceName}已提交过下载不做处理，item:${Jackson.toJsonString(item)}")
-            }
-        }
-        return processingContent == null
-    }
-}

@@ -6,6 +6,7 @@ import io.github.shoaky.sourcedownloader.component.provider.MetadataVariableProv
 import io.github.shoaky.sourcedownloader.core.*
 import io.github.shoaky.sourcedownloader.core.component.ComponentManager
 import io.github.shoaky.sourcedownloader.core.component.ProcessorWrapper
+import io.github.shoaky.sourcedownloader.core.component.SourceHashingItemFilter
 import io.github.shoaky.sourcedownloader.sdk.component.*
 
 class DefaultProcessorManager(
