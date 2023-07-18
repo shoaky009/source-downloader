@@ -51,6 +51,7 @@ data class CoreSourceContent(
                 sourceFile.status = FileContentStatus.TARGET_EXISTS
                 continue
             }
+            sourceFile.status = FileContentStatus.NORMAL
         }
         updated = true
     }

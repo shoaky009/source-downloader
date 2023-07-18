@@ -522,7 +522,7 @@ class SourceProcessor(
         val movableFiles = content.getMovableFiles(fileMover)
         if (movableFiles.isEmpty()) {
             log.info("Processor:$name item:'${content.sourceItem.title}' no available files to rename")
-            return true
+            return false
         }
         movableFiles.map { it.saveDirectoryPath() }
             .distinct()
