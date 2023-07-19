@@ -22,6 +22,7 @@ scmVersion {
 
 version = scmVersion.version
 val isSnapshot = version.toString().endsWith("-SNAPSHOT", true)
+val javaVersion = 17
 
 subprojects {
     version = rootProject.version
@@ -47,13 +48,23 @@ subprojects {
     tasks.compileKotlin {
         kotlinOptions {
             freeCompilerArgs = listOf("-Xjsr305=strict")
-            jvmTarget = "17"
         }
     }
 
     java {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        toolchain {
+            languageVersion.set(JavaLanguageVersion.of(javaVersion))
+        }
+    }
+
+    kotlin {
+        jvmToolchain(javaVersion)
+        // 打开k2 mockito有点问题
+        // sourceSets.all {
+        //     languageSettings {
+        //         languageVersion = "2.0"
+        //     }
+        // }
     }
 }
 
