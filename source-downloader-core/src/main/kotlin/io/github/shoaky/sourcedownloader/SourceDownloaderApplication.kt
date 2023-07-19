@@ -171,8 +171,9 @@ class SourceDownloaderApplication(
             componentManager.destroy(name)
         }
 
-        if (instanceManager is DefaultInstanceManager) {
-            instanceManager.destroyAll()
+        val im = instanceManager
+        if (im is DefaultInstanceManager) {
+            im.destroyAll()
         }
 
         createComponents()

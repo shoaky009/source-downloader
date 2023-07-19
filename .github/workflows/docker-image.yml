@@ -12,6 +12,8 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.build.outputs.version }}
     steps:
       - uses: actions/checkout@v3
 
@@ -25,14 +27,14 @@ jobs:
       - name: Build with Gradle
         id: build
         run: |
-          echo version="$(./gradlew cV --no-daemon | grep "Project version" | sed "s/.*:\ //")"
           ./gradlew build -x test -PsdPlugins=common,telegram4j --no-daemon
+          echo version="$(./gradlew cV --no-daemon | grep "Project version" | sed "s/.*:\ //")" >> "$GITHUB_OUTPUT"
 
       - name: Docker Metadata
         id: metadata
         uses: docker/metadata-action@v4
         with:
-          images: ${{ github.event.repository.name }}
+          images: ${{ github.repository }}
           tags: |
             type=raw,value=dev
 
