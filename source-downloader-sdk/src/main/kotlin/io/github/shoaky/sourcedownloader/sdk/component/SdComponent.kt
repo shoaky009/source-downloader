@@ -139,6 +139,7 @@ interface Source<T : SourceItemPointer> : SdComponent {
      */
     fun fetch(pointer: T?, limit: Int = 50): Iterable<PointedItem<T>>
 
+    // fun defaultPointer(): T
 }
 
 interface Downloader : SdComponent {

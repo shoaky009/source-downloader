@@ -45,6 +45,10 @@ abstract class BaseRequest<T : Any> {
         httpHeaders[name] = value.toString()
     }
 
+    fun setHeaders(headers: Map<String, String>) {
+        httpHeaders.putAll(headers)
+    }
+
     companion object {
 
         val stringTypeReference = jacksonTypeRef<String>()

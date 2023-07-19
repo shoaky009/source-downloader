@@ -2,7 +2,6 @@ package io.github.shoaky.sourcedownloader.sdk.component
 
 import com.google.common.collect.Iterables
 import io.github.shoaky.sourcedownloader.sdk.NullPointer
-import io.github.shoaky.sourcedownloader.sdk.OffsetPointer
 import io.github.shoaky.sourcedownloader.sdk.PointedItem
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 
@@ -25,5 +24,3 @@ abstract class AlwaysLatestSource : Source<NullPointer> {
 
     abstract fun fetch(): Iterable<SourceItem>
 }
-
-interface OffsetSource : Source<OffsetPointer>
