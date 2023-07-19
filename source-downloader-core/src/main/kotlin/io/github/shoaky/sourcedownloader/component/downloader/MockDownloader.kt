@@ -34,6 +34,10 @@ class MockDownloader(
         return downloadPath
     }
 
+    override fun cancel(sourceItem: SourceItem) {
+        // Do nothing
+    }
+
     override fun move(sourceContent: SourceContent): Boolean {
         sourceContent.sourceFiles
             .forEach {

@@ -27,11 +27,16 @@ class ComponentsTest {
 }
 
 private class DownloaderCp : Downloader {
+
     override fun submit(task: DownloadTask) {
         throw NotImplementedError()
     }
 
     override fun defaultDownloadPath(): Path {
+        throw NotImplementedError()
+    }
+
+    override fun cancel(sourceItem: SourceItem) {
         throw NotImplementedError()
     }
 
@@ -47,6 +52,10 @@ private class MultiCp : TorrentDownloader, FileTagger {
     }
 
     override fun defaultDownloadPath(): Path {
+        throw NotImplementedError()
+    }
+
+    override fun cancel(sourceItem: SourceItem) {
         throw NotImplementedError()
     }
 

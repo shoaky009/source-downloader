@@ -2,6 +2,7 @@ package io.github.shoaky.sourcedownloader.common
 
 import io.github.shoaky.sourcedownloader.sdk.*
 import io.github.shoaky.sourcedownloader.sdk.component.VariableProvider
+import io.github.shoaky.sourcedownloader.sdk.util.replaces
 import org.apache.commons.lang3.math.NumberUtils
 import kotlin.io.path.nameWithoutExtension
 
@@ -15,15 +16,18 @@ object EpisodeVariableProvider : VariableProvider {
         RegexValueParser(Regex("(\\d+)话")),
         RegexValueParser("EP(\\d+)".toRegex(RegexOption.IGNORE_CASE)),
         RegexValueParser("S(\\d+)E(\\d+)".toRegex(RegexOption.IGNORE_CASE)),
+        RegexValueParser("E(\\d+)".toRegex()),
         CommonEpisodeValueParser,
         // 连续数字只出现过一次的
         RegexValueParser("^\\D*?(\\d+)\\D*?\$".toRegex()),
     )
 
+    private val replaces = listOf("480P", "720P", "1080P", "2160P")
+
     override fun createSourceGroup(sourceItem: SourceItem): SourceItemGroup {
         return FunctionalItemGroup { path ->
-            val filename = path.nameWithoutExtension
-            val episode = parserChain.firstNotNullOfOrNull { it.parse(filename) }
+            val string = path.nameWithoutExtension.replaces(replaces, "")
+            val episode = parserChain.firstNotNullOfOrNull { it.parse(string) }
 
             val vars = MapPatternVariables()
             padNumber(episode)?.run {
@@ -50,12 +54,14 @@ object EpisodeVariableProvider : VariableProvider {
 }
 
 private interface ValueParser {
+
     fun parse(value: String): Number?
 }
 
 private class RegexValueParser(
     private val regex: Regex
 ) : ValueParser {
+
     override fun parse(value: String): Number? {
         return regex.find(value)?.groupValues?.lastOrNull()?.toInt()
     }

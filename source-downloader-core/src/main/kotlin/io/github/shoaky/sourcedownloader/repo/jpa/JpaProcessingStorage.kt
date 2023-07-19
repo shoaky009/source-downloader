@@ -18,6 +18,7 @@ class JpaProcessingStorage(
     private val processorSourceStateRepository: ProcessorSourceStateRepository,
 
     ) : ProcessingStorage {
+
     override fun save(content: ProcessingContent): ProcessingContent {
         val record = ProcessingRecord()
         record.processorName = content.processorName
@@ -62,6 +63,11 @@ class JpaProcessingStorage(
         return convert(record)
     }
 
+    override fun findByItemHashing(itemHashing: List<String>): List<ProcessingContent> {
+        return processingRecordRepository.findBySourceItemHashingIn(itemHashing)
+            .mapNotNull { convert(it) }
+    }
+
     private fun convert(record: ProcessingRecord?): ProcessingContent? {
         return record?.let {
             val processingContent = ProcessingContent(
@@ -80,19 +86,17 @@ class JpaProcessingStorage(
         }
     }
 
-    override fun saveTargetPath(paths: ProcessingTargetPath) {
+    override fun saveTargetPath(targetPaths: List<ProcessingTargetPath>) {
         val now = LocalDateTime.now()
-        val processingId = paths.itemHashing
-        val processorName = paths.processorName
-        val map = paths.targetPaths.map {
+        val paths = targetPaths.map {
             val rc = TargetPathRecord()
-            rc.id = it.toString()
-            rc.processorName = processorName
-            rc.itemHashing = processingId
+            rc.id = it.targetPath.toString()
+            rc.processorName = it.processorName
+            rc.itemHashing = it.itemHashing
             rc.createTime = now
             rc
         }
-        targetPathRepository.saveAll(map)
+        targetPathRepository.saveAll(paths)
     }
 
     override fun targetPathExists(paths: List<Path>): Boolean {
@@ -132,15 +136,15 @@ class JpaProcessingStorage(
         })
     }
 
-    override fun findTargetPath(path: Path): ProcessingTargetPath? {
-        val targetPath = targetPathRepository.findByIdOrNull(path.toString())
-            ?: return null
-
-        return ProcessingTargetPath(
-            listOf(Path(targetPath.id)),
-            targetPath.processorName,
-            targetPath.itemHashing
-        )
+    override fun findTargetPaths(paths: List<Path>): List<ProcessingTargetPath> {
+        val ids = paths.map { it.toString() }
+        return targetPathRepository.findAllById(ids).map {
+            ProcessingTargetPath(
+                Path(it.id),
+                it.processorName,
+                it.itemHashing
+            )
+        }
     }
 
     override fun deleteTargetPath(paths: List<Path>) {

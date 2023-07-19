@@ -51,12 +51,17 @@ object Mover : FileMover {
 }
 
 object TestDownloader : Downloader {
+
     override fun submit(task: DownloadTask) {
 
     }
 
     override fun defaultDownloadPath(): Path {
         return Path.of("test")
+    }
+
+    override fun cancel(sourceItem: SourceItem) {
+        NotImplementedError()
     }
 
 }
@@ -71,6 +76,10 @@ object TestTorrentDownloader : TorrentDownloader {
 
     override fun defaultDownloadPath(): Path {
         return Path.of("test")
+    }
+
+    override fun cancel(sourceItem: SourceItem) {
+        NotImplementedError()
     }
 
     override fun move(sourceContent: SourceContent): Boolean {

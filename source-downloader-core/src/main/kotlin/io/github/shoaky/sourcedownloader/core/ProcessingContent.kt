@@ -2,6 +2,7 @@ package io.github.shoaky.sourcedownloader.core
 
 import io.github.shoaky.sourcedownloader.core.file.CoreSourceContent
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
+import io.github.shoaky.sourcedownloader.sdk.component.SourceContentFilter
 import io.github.shoaky.sourcedownloader.util.EnumValue
 import java.time.LocalDateTime
 
@@ -16,6 +17,7 @@ data class ProcessingContent(
     val modifyTime: LocalDateTime? = null,
     val createTime: LocalDateTime = LocalDateTime.now()
 ) {
+
     constructor(processorName: String, sourceContent: CoreSourceContent) : this(
         processorName = processorName,
         sourceHash = sourceContent.sourceItem.hashing(),
@@ -29,6 +31,9 @@ data class ProcessingContent(
          */
         WAITING_TO_RENAME(0),
 
+        /**
+         * 被[SourceContentFilter]过滤
+         */
         FILTERED(2),
 
         /**

@@ -11,3 +11,12 @@ object NeverReplace : FileReplacementDecider {
         return other is NeverReplace
     }
 }
+
+object AlwaysReplace : FileReplacementDecider {
+
+    override fun isReplace(current: SourceContent, before: SourceContent?): Boolean = true
+
+    override fun equals(other: Any?): Boolean {
+        return other is AlwaysReplace
+    }
+}

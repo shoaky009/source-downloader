@@ -153,6 +153,11 @@ interface Downloader : SdComponent {
      */
     fun defaultDownloadPath(): Path
 
+    /**
+     * Cancel the download task
+     */
+    fun cancel(sourceItem: SourceItem)
+
 }
 
 interface ItemFileResolver : SdComponent {

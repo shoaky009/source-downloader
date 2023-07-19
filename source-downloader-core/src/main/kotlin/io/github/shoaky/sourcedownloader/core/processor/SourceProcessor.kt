@@ -287,14 +287,21 @@ class SourceProcessor(
         }
 
         val partition = sourceContent.sourceFiles.partition { it.status == FileContentStatus.REPLACE }
-        val replaceFiles = partition.second
-            .filter { it.status == FileContentStatus.TARGET_EXISTS }
+        val existsFiles = partition.second.filter { it.status == FileContentStatus.TARGET_EXISTS }
+        val support = TargetPathRelationSupport(
+            existsFiles,
+            processingStorage
+        )
+
+        val dropMem = mutableMapOf<String, Boolean>()
+        val replaceFiles = existsFiles
             .map { fileContent ->
                 val copy = sourceContent.copy(
                     sourceFiles = listOf(fileContent)
                 )
-                val before = findBeforeContent(fileContent)
-                val replace = fileReplacementDecider.isReplace(copy, before)
+                val before = support.getContent(fileContent.targetPath())
+                checkBeforeProcessing(before, dropMem)
+                val replace = fileReplacementDecider.isReplace(copy, before?.sourceContent)
                 fileContent to replace
             }.filter { it.second }
             .map { it.first }
@@ -302,18 +309,19 @@ class SourceProcessor(
         return partition.first + replaceFiles
     }
 
-    private fun findBeforeContent(fileContent: CoreFileContent): CoreSourceContent? {
-        val before = processingStorage.findTargetPath(fileContent.targetPath())?.let {
-            return@let if (it.processorName != null && it.itemHashing != null) {
-                processingStorage.findByNameAndHash(it.processorName, it.itemHashing)?.sourceContent
-            } else {
-                null
-            }
-        }?.let { pc ->
-            val filter = pc.sourceFiles.filter { it.targetPath() == fileContent.targetPath() }
-            pc.copy(sourceFiles = filter)
+    private fun checkBeforeProcessing(before: ProcessingContent?, dropMem: MutableMap<String, Boolean>) {
+        if (before == null || before.status != WAITING_TO_RENAME) {
+            return
         }
-        return before
+
+        // drop before task
+        val beforeItem = before.sourceContent.sourceItem
+        val hashing = beforeItem.hashing()
+        dropMem.computeIfAbsent(hashing) {
+            log.info("Drop before id:{} task:{}", before.id, beforeItem)
+            downloader.cancel(beforeItem)
+            true
+        }
     }
 
     private fun createPersistentSourceContent(
@@ -410,12 +418,12 @@ class SourceProcessor(
             log.warn("Processor:${name} 非异步下载器不执行重命名任务")
             return 0
         }
-        val contentGrouping = processingStorage.findRenameContent(name, options.renameTimesThreshold)
+        val downloadStatusGrouping = processingStorage.findRenameContent(name, options.renameTimesThreshold)
             .groupBy({ pc ->
                 DownloadStatus.from(asyncDownloader.isFinished(pc.sourceContent.sourceItem))
             }, { it })
 
-        contentGrouping[DownloadStatus.NOT_FOUND]?.forEach { pc ->
+        downloadStatusGrouping[DownloadStatus.NOT_FOUND]?.forEach { pc ->
             kotlin.runCatching {
                 log.info("Processing下载任务不存在, record:${Jackson.toJsonString(pc)}")
                 processingStorage.save(pc.copy(
@@ -428,14 +436,14 @@ class SourceProcessor(
             }
         }
 
-        contentGrouping[DownloadStatus.FINISHED]?.forEach { pc ->
+        downloadStatusGrouping[DownloadStatus.FINISHED]?.forEach { pc ->
             kotlin.runCatching {
                 processRenameTask(pc)
             }.onFailure {
                 log.error("Processing重命名任务出错, record:${Jackson.toJsonString(pc)}", it)
             }
         }
-        return contentGrouping[DownloadStatus.FINISHED]?.size ?: 0
+        return downloadStatusGrouping[DownloadStatus.FINISHED]?.size ?: 0
     }
 
     private fun processRenameTask(pc: ProcessingContent) {
@@ -490,9 +498,9 @@ class SourceProcessor(
 
     private fun saveTargetPaths(sourceItem: SourceItem, paths: List<Path>) {
         val processingTargetPaths = if (fileReplacementDecider == NeverReplace) {
-            ProcessingTargetPath(paths)
+            paths.map { ProcessingTargetPath(it) }
         } else {
-            ProcessingTargetPath(paths, name, sourceItem.hashing())
+            paths.map { ProcessingTargetPath(it, name, sourceItem.hashing()) }
         }
         processingStorage.saveTargetPath(processingTargetPaths)
     }
@@ -658,3 +666,27 @@ private class ProcessStage(
     }
 }
 
+private class TargetPathRelationSupport(
+    private val files: List<CoreFileContent>,
+    private val processingStorage: ProcessingStorage
+) {
+
+    private val targetPaths = processingStorage.findTargetPaths(
+        files.map { it.targetPath() }
+    )
+
+    private val contents = processingStorage.findByItemHashing(
+        targetPaths.mapNotNull { it.itemHashing }.distinct()
+    ).filter { it.status == RENAMED }
+        .groupBy { it.sourceHash }
+        .mapValues { ent -> ent.value.maxBy { it.createTime } }
+
+    private val targetPathMapping = targetPaths.filter { it.itemHashing != null }
+        .associateBy { it.targetPath }
+
+    fun getContent(targetPath: Path): ProcessingContent? {
+        val processingTargetPath = targetPathMapping[targetPath] ?: return null
+        val itemHashing = processingTargetPath.itemHashing ?: return null
+        return contents[itemHashing]
+    }
+}

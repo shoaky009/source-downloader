@@ -1,6 +1,7 @@
 package io.github.shoaky.sourcedownloader.component.downloader
 
 import io.github.shoaky.sourcedownloader.sdk.DownloadTask
+import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.Downloader
 import org.springframework.core.io.UrlResource
 import java.io.FileOutputStream
@@ -26,6 +27,10 @@ class UrlDownloader(
 
     override fun defaultDownloadPath(): Path {
         return downloadPath
+    }
+
+    override fun cancel(sourceItem: SourceItem) {
+        TODO("Not yet implemented")
     }
 
 }

@@ -72,6 +72,14 @@ class QbittorrentDownloader(
         return Path.of(response.body())
     }
 
+    override fun cancel(sourceItem: SourceItem) {
+        val torrentHash = getTorrentHash(sourceItem)
+        val response = client.execute(
+            TorrentDeleteRequest(listOf(torrentHash))
+        )
+        log.info("cancel item:{} status:{} body:{}", sourceItem, response.statusCode(), response.body())
+    }
+
     override fun isFinished(sourceItem: SourceItem): Boolean? {
         val torrentHash = getTorrentHash(sourceItem)
         val torrent = client.execute(TorrentInfoRequest(hashes = torrentHash))

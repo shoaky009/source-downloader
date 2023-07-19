@@ -35,6 +35,8 @@ class TelegramIntegration(
 
     private val progresses: MutableMap<Path, ProgressiveChannel> = ConcurrentHashMap()
     private val downloadCounting = AtomicInteger(0)
+    private val hashingPathMapping = ConcurrentHashMap<String, Path>()
+
     override fun createSourceGroup(sourceItem: SourceItem): SourceItemGroup {
         val queryMap = sourceItem.link.queryMap()
         val chatId = queryMap["chatId"]?.toLong()
@@ -111,6 +113,8 @@ class TelegramIntegration(
             }
             monitoredChannel
         }
+        val hashing = task.sourceItem.hashing()
+        hashingPathMapping[hashing] = fileDownloadPath
 
         client.downloadFile(document.fileReferenceId)
             .doFirst {
@@ -127,6 +131,7 @@ class TelegramIntegration(
                     log.error("Error closing file channel", it)
                 }
                 progresses.remove(fileDownloadPath)
+                hashingPathMapping[hashing] = fileDownloadPath
             }
             .doOnSuccess {
                 downloadCounting.incrementAndGet()
@@ -151,6 +156,15 @@ class TelegramIntegration(
 
     override fun defaultDownloadPath(): Path {
         return downloadPath
+    }
+
+    /**
+     * Not tested
+     */
+    override fun cancel(sourceItem: SourceItem) {
+        val path = hashingPathMapping[sourceItem.hashing()]
+        val progressiveChannel = progresses[path] ?: return
+        progressiveChannel.close()
     }
 
     override fun stateDetail(): Any {
@@ -258,10 +272,6 @@ class ProgressiveChannel(
 
     override fun close() {
         ch.close()
-    }
-
-    fun getDownloadedBytes(): Long {
-        return downloadedBytes
     }
 
     companion object {

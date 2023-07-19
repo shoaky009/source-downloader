@@ -13,10 +13,12 @@ interface ProcessingStorage {
 
     fun findByNameAndHash(processorName: String, itemHashing: String): ProcessingContent?
 
+    fun findByItemHashing(itemHashing: List<String>): List<ProcessingContent>
+
     /**
      * 需要从targetPath获取到[ProcessingContent]，从而目标文件存在时提供上下文信息做出决策
      */
-    fun saveTargetPath(paths: ProcessingTargetPath)
+    fun saveTargetPath(targetPaths: List<ProcessingTargetPath>)
 
     fun targetPathExists(paths: List<Path>): Boolean
 
@@ -26,7 +28,7 @@ interface ProcessingStorage {
 
     fun save(state: ProcessorSourceState)
 
-    fun findTargetPath(path: Path): ProcessingTargetPath?
+    fun findTargetPaths(paths: List<Path>): List<ProcessingTargetPath>
 
     fun deleteTargetPath(paths: List<Path>)
 }

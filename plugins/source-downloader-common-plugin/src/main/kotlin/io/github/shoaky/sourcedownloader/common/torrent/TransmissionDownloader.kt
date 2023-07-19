@@ -62,6 +62,12 @@ class TransmissionDownloader(
         return client.execute(SessionGet()).body().arguments.downloadPath
     }
 
+    override fun cancel(sourceItem: SourceItem) {
+        val hash = getTorrentHash(sourceItem)
+        val response = client.execute(TorrentDelete(listOf(hash)))
+        log.info("cancel item:{} status:{} body:{}", sourceItem, response.statusCode(), response.body())
+    }
+
     override fun move(sourceContent: SourceContent): Boolean {
         // https://github.com/transmission/transmission/issues/3216
         // NOTE 目前Transmission的API无法完全满足命名种子内部的文件，重命名参数不能包含文件夹
@@ -103,6 +109,7 @@ class TransmissionDownloader(
     }
 
     companion object {
+
         private val log = LoggerFactory.getLogger(TransmissionDownloader::class.java)
     }
 }

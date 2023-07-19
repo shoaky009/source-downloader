@@ -10,5 +10,10 @@ interface ProcessingRecordRepository : JpaRepository<ProcessingRecord, Long> {
 
     fun findByProcessorNameAndSourceItemHashing(processorName: String, sourceItemHashing: String): ProcessingRecord?
 
+    /**
+     * For Testing, do not use in production
+     */
     fun findByProcessorName(processorName: String): List<ProcessingRecord>
+
+    fun findBySourceItemHashingIn(itemHashing: List<String>): List<ProcessingRecord>
 }

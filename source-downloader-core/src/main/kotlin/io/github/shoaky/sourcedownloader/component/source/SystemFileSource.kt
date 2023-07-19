@@ -64,5 +64,9 @@ class SystemFileSource(
         return path
     }
 
+    override fun cancel(sourceItem: SourceItem) {
+        // Do nothing
+    }
+
 }
 
