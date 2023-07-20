@@ -12,7 +12,7 @@ class LimitedExpander<T, R>(
 ) : Iterator<List<R>> {
 
     private var counting = 0
-    private val expandIterator: Iterator<List<R>> = expendItems.map { transform.invoke(it) }.iterator()
+    private val expandIterator: Iterator<List<R>> = expendItems.asSequence().map { transform.invoke(it) }.iterator()
 
     override fun hasNext(): Boolean {
         if (expandIterator.hasNext().not()) {

@@ -1,6 +1,7 @@
 package io.github.shoaky.sourcedownloader.sdk.component
 
 import com.google.common.collect.Iterables
+import io.github.shoaky.sourcedownloader.sdk.ItemPointer
 import io.github.shoaky.sourcedownloader.sdk.NullPointer
 import io.github.shoaky.sourcedownloader.sdk.PointedItem
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
@@ -11,16 +12,17 @@ import io.github.shoaky.sourcedownloader.sdk.SourceItem
 abstract class AlwaysLatestSource : Source<NullPointer> {
 
     final override fun fetch(
-        pointer: NullPointer?,
+        pointer: NullPointer,
         limit: Int
-    ): Iterable<PointedItem<NullPointer>> {
+    ): Iterable<PointedItem<ItemPointer>> {
         return Iterables.transform(fetch()) {
-            PointedItem(
-                it,
-                NullPointer
-            )
+            PointedItem(it, NullPointer)
         }
     }
 
     abstract fun fetch(): Iterable<SourceItem>
+
+    override fun defaultPointer(): NullPointer {
+        return NullPointer
+    }
 }

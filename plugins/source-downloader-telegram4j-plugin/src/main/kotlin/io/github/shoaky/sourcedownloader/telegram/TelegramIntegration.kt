@@ -173,7 +173,7 @@ class TelegramIntegration(
             "downloading" to progresses.map {
                 val channel = it.value
                 mapOf(
-                    "path" to it.key,
+                    "path" to it.key.toString(),
                     "totalSize" to channel.formatTotalSize(),
                     "progress" to channel.formatProgress(),
                     "rate" to channel.formatRate(),

@@ -4,11 +4,10 @@ import com.apptasticsoftware.rssreader.Item
 import com.apptasticsoftware.rssreader.RssReader
 import io.github.shoaky.sourcedownloader.common.rss.defaultRssReader
 import io.github.shoaky.sourcedownloader.common.rss.parseTime
-import io.github.shoaky.sourcedownloader.sdk.PointedItem
-import io.github.shoaky.sourcedownloader.sdk.SourceItem
-import io.github.shoaky.sourcedownloader.sdk.SourceItemPointer
+import io.github.shoaky.sourcedownloader.sdk.*
 import io.github.shoaky.sourcedownloader.sdk.component.Source
 import io.github.shoaky.sourcedownloader.sdk.util.LimitedExpander
+import io.github.shoaky.sourcedownloader.sdk.util.queryMap
 import org.slf4j.LoggerFactory
 import java.net.URI
 import java.time.LocalDateTime
@@ -20,41 +19,58 @@ internal class MikanSource(
     private val mikanSupport: MikanSupport = MikanSupport(null)
 ) : Source<MikanPointer> {
 
-    override fun fetch(pointer: MikanPointer?, limit: Int): Iterable<PointedItem<MikanPointer>> {
+    override fun fetch(pointer: MikanPointer, limit: Int): Iterable<PointedItem<ItemPointer>> {
+        pointer.cleanMonthly()
         val sourceItems = rssReader.read(url)
             .map {
                 fromRssItem(it)
-            }.toList()
+            }
+            .toList()
 
         if (allEpisode.not()) {
             return sourceItems.map {
-                PointedItem(it, MikanPointer(it.date))
+                PointedItem(it, NullPointer)
             }.toList()
         }
 
         val items = sourceItems
+            .filter { it.date.isAfter(pointer.latest) }
             .sortedBy { it.date }
-            .filter { pointer == null || it.date.isAfter(pointer.date) }
-            .map {
-                PointedItem(it, MikanPointer(it.date))
+
+        val expander = LimitedExpander(items, limit) { item ->
+            val fansubRss = mikanSupport.getEpisodePageInfo(item.link.toURL()).fansubRss
+            if (fansubRss == null) {
+                log.debug("FansubRss is null:{}", item)
+                return@LimitedExpander emptyList()
             }
 
-        val expander = LimitedExpander(items, limit) { pi ->
-            val fansubRss = mikanSupport.getEpisodePageInfo(pi.sourceItem.link.toURL()).fansubRss
-                ?: return@LimitedExpander emptyList()
-
+            val fansubQuery = URI(fansubRss).queryMap()
+            val bangumiId = fansubQuery["bangumiId"] ?: error("bangumiId is null")
+            val subGroupId = fansubQuery["subgroupid"] ?: error("subgroupid is null")
             var pointedItems = rssReader.read(fansubRss)
                 .map {
-                    // TODO 改进指针，包括列表内的也能过滤
-                    PointedItem(fromRssItem(it), MikanPointer(pi.sourceItem.date))
-                }.toList()
-                .sortedBy { it.sourceItem.date }
-            if (pointedItems.contains(pi).not()) {
-                log.debug("Item不在RSS列表中:{}", pi)
+                    fromRssItem(it)
+                }
+                .toList()
+                .sortedBy { it.date }
+            if (pointedItems.contains(item).not()) {
+                log.debug("Item不在RSS列表中:{}", item)
                 pointedItems = pointedItems.toMutableList()
-                pointedItems.add(pi)
+                pointedItems.add(item)
             }
+
             pointedItems
+                .map {
+                    PointedItem(
+                        it,
+                        FansubPointer(bangumiId, subGroupId, it.date)
+                    )
+                }
+                .filter {
+                    val key = it.pointer.key()
+                    val date = pointer.shows[key]
+                    date == null || it.sourceItem.date.isAfter(date)
+                }
         }
 
         log.debug("Fetching mikan source pointer is:{}", pointer)
@@ -76,10 +92,39 @@ internal class MikanSource(
             )
         }
     }
+
+    override fun defaultPointer(): MikanPointer {
+        return MikanPointer()
+    }
 }
 
 data class MikanPointer(
-    val date: LocalDateTime? = null
-) : SourceItemPointer {
+    var latest: LocalDateTime = LocalDateTime.MIN,
+    val shows: MutableMap<String, LocalDateTime> = mutableMapOf(),
+) : SourcePointer {
 
+    override fun update(itemPointer: ItemPointer) {
+        if (itemPointer is FansubPointer) {
+            shows[itemPointer.key()] = itemPointer.date
+            latest = maxOf(latest, itemPointer.date)
+        }
+    }
+
+    fun cleanMonthly() {
+        val range = LocalDateTime.now().minusMonths(1L).rangeUntil(LocalDateTime.MAX)
+        shows.entries.removeIf {
+            range.contains(it.value).not()
+        }
+    }
+}
+
+data class FansubPointer(
+    val bangumiId: String,
+    val subGroupId: String,
+    val date: LocalDateTime
+) : ItemPointer {
+
+    fun key(): String {
+        return "$bangumiId-$subGroupId"
+    }
 }

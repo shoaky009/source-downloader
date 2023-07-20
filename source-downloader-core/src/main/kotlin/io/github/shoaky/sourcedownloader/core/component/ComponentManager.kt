@@ -3,7 +3,7 @@ package io.github.shoaky.sourcedownloader.core.component
 import com.fasterxml.jackson.module.kotlin.convertValue
 import io.github.shoaky.sourcedownloader.core.processor.SourceProcessor
 import io.github.shoaky.sourcedownloader.sdk.Properties
-import io.github.shoaky.sourcedownloader.sdk.SourceItemPointer
+import io.github.shoaky.sourcedownloader.sdk.SourcePointer
 import io.github.shoaky.sourcedownloader.sdk.component.*
 import io.github.shoaky.sourcedownloader.util.jackson.yamlMapper
 import kotlin.jvm.optionals.getOrElse
@@ -30,8 +30,8 @@ interface ComponentManager {
         return getAllComponent().map { it.component }.filterIsInstance<Trigger>()
     }
 
-    fun getAllSource(): List<Source<SourceItemPointer>> {
-        return getAllComponent().map { it.component }.filterIsInstance<Source<SourceItemPointer>>()
+    fun getAllSource(): List<Source<SourcePointer>> {
+        return getAllComponent().map { it.component }.filterIsInstance<Source<SourcePointer>>()
     }
 
     fun getAllDownloader(): List<Downloader> {

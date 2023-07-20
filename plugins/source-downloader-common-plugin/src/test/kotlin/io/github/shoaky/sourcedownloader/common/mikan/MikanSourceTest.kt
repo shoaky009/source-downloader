@@ -3,9 +3,11 @@ package io.github.shoaky.sourcedownloader.common.mikan
 import com.apptasticsoftware.rssreader.Item
 import com.apptasticsoftware.rssreader.RssReader
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
+import io.github.shoaky.sourcedownloader.common.anime.FansubPointer
 import io.github.shoaky.sourcedownloader.common.anime.MikanPointer
 import io.github.shoaky.sourcedownloader.common.anime.MikanSource
 import io.github.shoaky.sourcedownloader.common.anime.MikanSupport
+import io.github.shoaky.sourcedownloader.sdk.ItemPointer
 import io.github.shoaky.sourcedownloader.sdk.PointedItem
 import io.github.shoaky.sourcedownloader.sdk.util.Jackson
 import org.junit.jupiter.api.Test
@@ -54,7 +56,28 @@ class MikanSourceTest {
     }
 
     @Test
-    fun test() {
+    fun given_default_pointer() {
+        val mikanPointer = MikanPointer(LocalDateTime.MIN)
+        val result = pointedItems(mikanPointer, 50)
+        assertEquals(16, result.size)
+    }
+
+    @Test
+    fun given_state_pointer() {
+        val mikanPointer = MikanPointer(
+            LocalDateTime.of(2023, 5, 17, 0, 0),
+            mutableMapOf(
+                "2976-583" to LocalDateTime.of(2023, 5, 10, 0, 0)
+            )
+        )
+        val result = pointedItems(mikanPointer, 5)
+        result.forEach {
+            println(it)
+        }
+        assertEquals(3, result.size)
+    }
+
+    private fun pointedItems(mikanPointer: MikanPointer, limit: Int): MutableList<PointedItem<ItemPointer>> {
         val rssReader = Mockito.mock(RssReader::class.java)
         Mockito.`when`(rssReader.read("http://topItems"))
             .thenAnswer {
@@ -75,6 +98,10 @@ class MikanSourceTest {
                     jacksonTypeRef<List<Item>>()
                 ).stream()
             }
+        Mockito.`when`(rssReader.read("https://mikanani.me/RSS/Bangumi?bangumiId=2994&subgroupid=604"))
+            .thenAnswer {
+                emptyList<List<Item>>().stream()
+            }
 
         val support = Mockito.mock(MikanSupport::class.java)
         Mockito.`when`(support.getEpisodePageInfo(
@@ -87,19 +114,17 @@ class MikanSourceTest {
 
         Mockito.`when`(support.getEpisodePageInfo(
             URL("https://mikanani.me/Home/Episode/e3a592a221d70310e6f576f39303d63618e4dc4c"),
-        )).thenReturn(MikanSupport.EpisodePageInfo())
+        )).thenReturn(MikanSupport.EpisodePageInfo(fansubRss = "https://mikanani.me/RSS/Bangumi?bangumiId=2994&subgroupid=604"))
 
         val mikanSource = MikanSource("http://topItems", true, rssReader, support)
 
-        val result = mutableListOf<PointedItem<MikanPointer>>()
-        val limit = 1
-        var sourceItems = mikanSource.fetch(MikanPointer(LocalDateTime.MIN), limit).toList()
-        while (sourceItems.isNotEmpty()) {
-            val first = sourceItems.first()
-            result.addAll(sourceItems)
-            sourceItems = mikanSource.fetch(first.pointer, limit).toList()
+        val result = mutableListOf<PointedItem<ItemPointer>>()
+        val sourceItems = mikanSource.fetch(mikanPointer, limit)
+        for (sourceItem in sourceItems) {
+            val fansubPointer = sourceItem.pointer as FansubPointer
+            mikanPointer.update(fansubPointer)
+            result.add(sourceItem)
         }
-
-        assertEquals(15, result.size)
+        return result
     }
 }

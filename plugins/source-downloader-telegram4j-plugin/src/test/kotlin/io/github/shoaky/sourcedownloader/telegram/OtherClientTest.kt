@@ -30,7 +30,7 @@ class OtherClientTest {
         val downloadPath = Path("/Users/shoaky/temp/downloads")
         val integration = TelegramIntegration(client, downloadPath)
         val source = TelegramSource(DefaultMessageFetcher(client), listOf(ChatConfig(775236548L)))
-        val fetch = source.fetch(null).toList()
+        val fetch = source.fetch(TelegramPointer()).toList()
         for (pointedItem in fetch) {
             val sourceItem = pointedItem.sourceItem
             val resolveFiles = integration.resolveFiles(sourceItem)

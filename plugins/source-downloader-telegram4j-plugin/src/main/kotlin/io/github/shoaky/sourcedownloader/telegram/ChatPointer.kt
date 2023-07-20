@@ -1,13 +1,14 @@
 package io.github.shoaky.sourcedownloader.telegram
 
 import com.fasterxml.jackson.annotation.JsonIgnore
+import io.github.shoaky.sourcedownloader.sdk.ItemPointer
 import telegram4j.core.util.Id
 import kotlin.math.abs
 
 data class ChatPointer(
     val chatId: Long,
     var fromMessageId: Int,
-) {
+) : ItemPointer {
 
     constructor(chatId: Long) : this(chatId, 0)
 
@@ -30,6 +31,7 @@ data class ChatPointer(
     }
 
     private companion object {
+
         const val MIN_MESSAGE_ID = 1
     }
 }

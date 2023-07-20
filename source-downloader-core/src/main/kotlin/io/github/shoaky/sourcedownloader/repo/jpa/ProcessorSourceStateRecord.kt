@@ -1,7 +1,7 @@
 package io.github.shoaky.sourcedownloader.repo.jpa
 
 import com.vladmihalcea.hibernate.type.json.JsonType
-import io.github.shoaky.sourcedownloader.core.PersistentItemPointer
+import io.github.shoaky.sourcedownloader.core.PersistentPointer
 import jakarta.persistence.*
 import org.hibernate.annotations.Type
 import java.time.LocalDateTime
@@ -28,7 +28,7 @@ class ProcessorSourceStateRecord {
 
     @Type(JsonType::class)
     @Column(columnDefinition = "json")
-    lateinit var lastPointer: PersistentItemPointer
+    lateinit var lastPointer: PersistentPointer
     var retryTimes: Int = 0
     var lastActiveTime: LocalDateTime = LocalDateTime.now()
 }

@@ -23,7 +23,7 @@ object AnimeFileFilter : FileContentFilter {
     )
 
     private val normalRegexes = listOf(
-        "NCED|NCOP|\\s+OP|\\s+ED|\\s+MENU|\\s+PV|\\s+CM|\\s+Fonts|^MENU(\\d+)?$|^PV(\\d+)?\$|映像特典".toRegex(RegexOption.IGNORE_CASE),
+        "NCED|NCOP|\\b\\s+OP\\b|\\b\\s+ED\\b|\\s+MENU|\\s+PV|\\s+CM|\\s+Fonts|^MENU(\\d+)?$|^PV(\\d+)?\$|映像特典".toRegex(RegexOption.IGNORE_CASE),
     )
 
     override fun test(content: FileContent): Boolean {

@@ -7,11 +7,11 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 
-class PersistentItemPointerTest {
+class PersistentPointerTest {
 
     @Test
     fun test_serialization() {
-        val pointer = PersistentItemPointer(
+        val pointer = PersistentPointer(
             mutableMapOf(
                 "offset" to 111,
                 "ddd" to "333"
@@ -24,7 +24,7 @@ class PersistentItemPointerTest {
 
     @Test
     fun test_deserialization() {
-        val pointer = Jackson.fromJson<PersistentItemPointer>("""{"offset":111,"ddd":"333"}""", jacksonTypeRef())
+        val pointer = Jackson.fromJson<PersistentPointer>("""{"offset":111,"ddd":"333"}""", jacksonTypeRef())
         assertEquals(111, pointer.values["offset"])
         assertEquals("333", pointer.values["ddd"])
     }
@@ -35,7 +35,7 @@ class PersistentItemPointerTest {
             LocalDate.now(),
             "1"
         )
-        val convert = Jackson.convert(p, PersistentItemPointer::class)
+        val convert = Jackson.convert(p, PersistentPointer::class)
         assertEquals(2, convert.values.size)
         assertEquals("1", convert.values["id"])
     }

@@ -1,7 +1,8 @@
 package io.github.shoaky.sourcedownloader.core
 
+import io.github.shoaky.sourcedownloader.sdk.ItemPointer
 import io.github.shoaky.sourcedownloader.sdk.PointedItem
-import io.github.shoaky.sourcedownloader.sdk.SourceItemPointer
+import io.github.shoaky.sourcedownloader.sdk.SourcePointer
 import io.github.shoaky.sourcedownloader.sdk.component.Source
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -15,7 +16,7 @@ class ProcessorSourceStateTest {
             1,
             "test",
             "test",
-            PersistentItemPointer(
+            PersistentPointer(
                 mutableMapOf(
                     "date" to "2022-01-01",
                     "id" to "1")
@@ -30,12 +31,22 @@ class ProcessorSourceStateTest {
 }
 
 private object TestSource1 : Source<TestPointer1> {
-    override fun fetch(pointer: TestPointer1?, limit: Int): Iterable<PointedItem<TestPointer1>> {
+
+    override fun fetch(pointer: TestPointer1, limit: Int): Iterable<PointedItem<ItemPointer>> {
         return emptyList()
+    }
+
+    override fun defaultPointer(): TestPointer1 {
+        throw NotImplementedError()
     }
 }
 
 data class TestPointer1(
     val date: LocalDate,
     val id: String
-) : SourceItemPointer
+) : SourcePointer {
+
+    override fun update(itemPointer: ItemPointer) {
+        throw NotImplementedError()
+    }
+}

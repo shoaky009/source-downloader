@@ -1,32 +1,28 @@
 package io.github.shoaky.sourcedownloader.telegram
 
-import io.github.shoaky.sourcedownloader.sdk.SourceItemPointer
+import io.github.shoaky.sourcedownloader.sdk.ItemPointer
+import io.github.shoaky.sourcedownloader.sdk.SourcePointer
 
 data class TelegramPointer(
-    val pointers: List<ChatPointer> = emptyList()
-) : SourceItemPointer {
+    // val pointers: List<ChatPointer> = emptyList(),
+    val chatLastMessageIds: MutableMap<Long, Int> = mutableMapOf()
+) : SourcePointer {
 
-    fun refreshChats(chatIds: List<Long>): TelegramPointer {
-        val chatLastMessage = pointers.associateBy { it.chatId }.mapValues { it.value.fromMessageId }
-        val chatPointers = chatIds.map {
-            ChatPointer(it, chatLastMessage.getOrDefault(it, 0))
+    fun refreshChats(chatIds: List<Long>) {
+        val chatLastMessage = chatLastMessageIds.toMap()
+        chatLastMessageIds.clear()
+        chatIds.forEach {
+            chatLastMessageIds[it] = chatLastMessage[it] ?: 0
         }
-        return TelegramPointer(chatPointers)
     }
 
-    fun update(chatPointer: ChatPointer): TelegramPointer {
-        val updateChats = pointers.toMutableList()
-        updateChats.replaceAll { pointer ->
-            if (pointer.parseChatId() == chatPointer.parseChatId()) {
-                chatPointer
-            } else {
-                pointer
-            }
-        }
-        return TelegramPointer(updateChats)
+    fun getLastMessageId(chatId: Long): Int? {
+        return chatLastMessageIds[chatId]
     }
 
-    fun getChatPointer(chatId: Long): ChatPointer? {
-        return pointers.firstOrNull { it.chatId == chatId }
+    override fun update(itemPointer: ItemPointer) {
+        if (itemPointer is ChatPointer) {
+            chatLastMessageIds[itemPointer.chatId] = itemPointer.fromMessageId
+        }
     }
 }

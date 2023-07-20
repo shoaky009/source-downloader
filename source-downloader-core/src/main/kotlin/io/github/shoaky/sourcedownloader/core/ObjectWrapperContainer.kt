@@ -5,7 +5,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import io.github.shoaky.sourcedownloader.core.component.ComponentWrapper
 import io.github.shoaky.sourcedownloader.core.component.ObjectWrapper
 import io.github.shoaky.sourcedownloader.core.component.ProcessorWrapper
-import io.github.shoaky.sourcedownloader.sdk.SourceItemPointer
+import io.github.shoaky.sourcedownloader.sdk.SourcePointer
 import io.github.shoaky.sourcedownloader.sdk.component.*
 import org.springframework.beans.factory.support.DefaultListableBeanFactory
 import org.springframework.core.ResolvableType
@@ -34,7 +34,7 @@ inline fun <reified T : SdComponent> componentTypeRef(): TypeReference<Component
     object : TypeReference<ComponentWrapper<T>>() {}
 
 val triggerTypeRef = componentTypeRef<Trigger>()
-val sourceTypeRef = componentTypeRef<Source<SourceItemPointer>>()
+val sourceTypeRef = componentTypeRef<Source<SourcePointer>>()
 val fileMoverTypeRef = componentTypeRef<FileMover>()
 val downloaderTypeRef = componentTypeRef<Downloader>()
 val fileResolverTypeRef = componentTypeRef<ItemFileResolver>()

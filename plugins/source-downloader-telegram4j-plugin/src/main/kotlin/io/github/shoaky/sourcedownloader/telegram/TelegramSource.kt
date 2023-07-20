@@ -20,13 +20,14 @@ class TelegramSource(
     private val chats: List<ChatConfig>,
 ) : Source<TelegramPointer> {
 
-    override fun fetch(pointer: TelegramPointer?, limit: Int): Iterable<PointedItem<TelegramPointer>> {
+    override fun fetch(pointer: TelegramPointer, limit: Int): Iterable<PointedItem<ChatPointer>> {
+        pointer.refreshChats(chats.map { it.chatId })
         val chatMapping = chats.associateBy { it.chatId }
-        val chatIds = chatMapping.keys.toList()
-        val telegramPointer = pointer?.refreshChats(chatIds) ?: TelegramPointer().refreshChats(chatIds)
-        val chatPointers = telegramPointer.pointers
+        val chatPointers = pointer.chatLastMessageIds.map { (chatId, messageId) ->
+            ChatPointer(chatId, messageId)
+        }
 
-        val result: MutableList<PointedItem<TelegramPointer>> = mutableListOf()
+        val result: MutableList<PointedItem<ChatPointer>> = mutableListOf()
         for (chatPointer in chatPointers) {
             while (result.size < limit) {
                 val beginDate = chatMapping[chatPointer.chatId]?.beginDate
@@ -36,8 +37,7 @@ class TelegramSource(
                 }
                 val items = messages.mapNotNull { message ->
                     val sourceItem = mediaMessageToSourceItem(message, chatPointer) ?: return@mapNotNull null
-                    val update = telegramPointer.update(chatPointer.copy(fromMessageId = message.id()))
-                    PointedItem(sourceItem, update)
+                    PointedItem(sourceItem, chatPointer.copy(fromMessageId = message.id()))
                 }.filter { beginDate == null || beginDate <= it.sourceItem.date.toLocalDate() }
                 result.addAll(items)
                 chatPointer.fromMessageId = messages.last().id()
@@ -76,6 +76,10 @@ class TelegramSource(
         private val zoneId = ZoneId.systemDefault()
         private val timeout: Duration = Duration.ofSeconds(5L)
         const val MEDIA_TYPE_ATTR = "mediaType"
+    }
+
+    override fun defaultPointer(): TelegramPointer {
+        return TelegramPointer()
     }
 }
 

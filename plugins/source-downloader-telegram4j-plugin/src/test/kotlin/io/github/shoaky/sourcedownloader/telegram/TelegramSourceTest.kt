@@ -1,6 +1,5 @@
 package io.github.shoaky.sourcedownloader.telegram
 
-import io.github.shoaky.sourcedownloader.telegram.DefaultMessageFetcher
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
@@ -31,7 +30,7 @@ class TelegramSourceTest {
                 }
         }
         val telegramSource = TelegramSource(fetcher, listOf(ChatConfig(1)))
-        val fetch = telegramSource.fetch(null)
+        val fetch = telegramSource.fetch(TelegramPointer())
         println(fetch)
     }
 }

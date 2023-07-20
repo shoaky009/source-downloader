@@ -7,15 +7,24 @@ import io.github.shoaky.sourcedownloader.sdk.component.Source
  * 该数据会被持久化，用于下一次传递给[Source]时，从上次读取的位置开始读取
  *
  */
-interface SourceItemPointer
+interface SourcePointer {
 
-object NullPointer : SourceItemPointer {
+    fun update(itemPointer: ItemPointer)
+}
+
+object NullPointer : SourcePointer, ItemPointer {
 
     override fun toString(): String {
         return "null"
+    }
+
+    override fun update(itemPointer: ItemPointer) {
+        // Do nothing
     }
 
     override fun equals(other: Any?): Boolean {
         return other is NullPointer
     }
 }
+
+interface ItemPointer

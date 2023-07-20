@@ -16,6 +16,8 @@ class AnimeFileFilterTest {
         "[UHA-WINGS&VCB-Studio] Karakai Jouzu no Takagi-san 2 [Blu-ray & DVD Selling CM][Ma10p_1080p][x265_flac].mkv" to false,
         "NCOP" to false,
         "[UHA-WINGS&VCB-Studio] Karakai Jouzu no Takagi-san 2 [10][Ma10p_1080p][x265_flac].mkv" to true,
+        "[SAIO-Raws] Karakai Jouzu no Takagi-san 2 - 01 [BD 1920x1080 HEVC-10bit OPUS ASSx2].mkv" to true,
+        "[SAIO-Raws] Karakai Jouzu no Takagi-san 2 - 01 [BD 1920x1080 HEVC-10bit EDUS ASSx2].mkv" to true,
     )
 
     @Test

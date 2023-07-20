@@ -34,7 +34,7 @@ class SourceProcessor(
     val name: String,
     // 先这样传入 后面要改
     private val sourceId: String,
-    private val source: Source<SourceItemPointer>,
+    private val source: Source<SourcePointer>,
     private val itemFileResolver: ItemFileResolver,
     private val downloader: Downloader,
     private val fileMover: FileMover,
@@ -124,25 +124,27 @@ class SourceProcessor(
     }
 
     private fun process(dryRun: Boolean = false): List<ProcessingContent> {
-        var lastState = processingStorage.findProcessorSourceState(name, sourceId)
+        val lastState = processingStorage.findProcessorSourceState(name, sourceId)
+        val sourcePointer = lastState?.resolvePointer(source::class) ?: source.defaultPointer()
         log.debug("Processor:{} lastState:{}", name, lastState)
 
-        val itemIterator = retry.execute<Iterator<PointedItem<SourceItemPointer>>, IOException> {
+        val itemIterator = retry.execute<Iterator<PointedItem<ItemPointer>>, IOException> {
             it.setAttribute("stage", ProcessStage("FetchSourceItems", lastState))
-            val pointer = lastState?.resolvePointer(source::class)
-            val iterator = source.fetch(pointer, options.fetchLimit).iterator()
+            val iterator = source.fetch(sourcePointer, options.fetchLimit).iterator()
             iterator
         }
 
         val result = mutableListOf<ProcessingContent>()
-        var lastPointedItem: PointedItem<SourceItemPointer>? = null
 
         val simpleStat = SimpleStat(name)
         for (item in itemIterator) {
             val filterBy = sourceItemFilters.firstOrNull { it.test(item.sourceItem).not() }
             if (filterBy != null) {
                 log.debug("{} Filtered item:{}", filterBy::class.simpleName, item)
-                lastPointedItem = item
+                sourcePointer.update(item.pointer)
+                if (options.pointerBatchMode.not() && dryRun.not()) {
+                    saveState(sourcePointer, lastState)
+                }
                 simpleStat.incFilterCounting()
                 continue
             }
@@ -162,10 +164,9 @@ class SourceProcessor(
                 if (dryRun) {
                     result.add(it)
                 }
-                lastPointedItem = item
+                sourcePointer.update(item.pointer)
                 if (options.pointerBatchMode.not() && dryRun.not()) {
-                    saveSourceState(lastPointedItem, lastState)
-                    lastState = processingStorage.findProcessorSourceState(name, sourceId)
+                    saveState(sourcePointer, lastState)
                 }
             }.getOrElse {
                 ProcessingContent(
@@ -190,45 +191,25 @@ class SourceProcessor(
             log.info("Processor:{}", simpleStat)
         }
 
-        if (dryRun.not()) {
-            saveSourceState(lastPointedItem, lastState)
+        if (dryRun.not() && options.pointerBatchMode) {
+            saveState(sourcePointer, lastState)
         }
         return result
     }
 
-    private fun saveSourceState(lastPointedItem: PointedItem<SourceItemPointer>?, lastState: ProcessorSourceState?) {
-        // not first time but no items
-        if (lastState != null && lastPointedItem == null) {
-            processingStorage.save(
-                lastState.copy(lastActiveTime = LocalDateTime.now())
-            )
-            return
-        }
-
-        // first time and no items
-        if (lastPointedItem == null) {
-            log.info("Processor:${name} Source:${sourceId} no items to process")
-            return
-        }
-        if (lastPointedItem.pointer == lastState?.lastPointer) {
-            log.info("Processor:${name} Source:${sourceId} no pointer to save")
-            return
-        }
-
-        if (lastPointedItem.pointer != lastState?.lastPointer) {
-            log.info("Processor:$name update pointer Source:$sourceId lastPointedItem:$lastPointedItem")
-        }
-        val latestPointer = Jackson.convert(lastPointedItem.pointer, PersistentItemPointer::class)
+    private fun saveState(sourcePointer: SourcePointer, lastState: ProcessorSourceState?) {
         val sourceState = lastState?.copy(
-            processorName = name,
-            sourceId = sourceId,
-            lastPointer = latestPointer,
+            lastPointer = Jackson.convert(sourcePointer, PersistentPointer::class),
             lastActiveTime = LocalDateTime.now()
         ) ?: ProcessorSourceState(
             processorName = name,
             sourceId = sourceId,
-            lastPointer = latestPointer,
+            lastPointer = Jackson.convert(sourcePointer, PersistentPointer::class),
         )
+
+        if (sourceState.lastPointer != lastState?.lastPointer) {
+            log.info("Processor:$name update pointer Source:$sourceId lastPointedItem:$sourceState")
+        }
         processingStorage.save(sourceState)
     }
 

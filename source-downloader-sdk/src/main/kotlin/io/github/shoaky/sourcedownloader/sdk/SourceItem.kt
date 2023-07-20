@@ -9,6 +9,9 @@ data class SourceItem(
     val link: URI,
     val date: LocalDateTime,
     val contentType: String,
+    /**
+     * 该字段在某些场景下有些歧义, 例如:实际Item是会解析成多个HTTP的时候
+     */
     val downloadUri: URI,
     val attributes: Map<String, Any> = emptyMap(),
     val tags: Set<String> = emptySet(),

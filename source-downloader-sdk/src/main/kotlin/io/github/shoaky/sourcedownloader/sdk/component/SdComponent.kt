@@ -130,16 +130,16 @@ interface Trigger : SdComponent, AutoCloseable {
 }
 
 /**
- * @param T the type of the pointer
+ * @param SP the type of the pointer
  */
-interface Source<T : SourceItemPointer> : SdComponent {
+interface Source<SP : SourcePointer> : SdComponent {
 
     /**
      * @param limit the max number of items to be fetched, Not necessarily exactly the number of limits returned, but as close as possible.
      */
-    fun fetch(pointer: T?, limit: Int = 50): Iterable<PointedItem<T>>
+    fun fetch(pointer: SP, limit: Int = 50): Iterable<PointedItem<ItemPointer>>
 
-    // fun defaultPointer(): T
+    fun defaultPointer(): SP
 }
 
 interface Downloader : SdComponent {

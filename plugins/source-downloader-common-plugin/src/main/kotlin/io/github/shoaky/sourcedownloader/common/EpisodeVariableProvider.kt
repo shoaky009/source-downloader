@@ -2,7 +2,7 @@ package io.github.shoaky.sourcedownloader.common
 
 import io.github.shoaky.sourcedownloader.sdk.*
 import io.github.shoaky.sourcedownloader.sdk.component.VariableProvider
-import io.github.shoaky.sourcedownloader.sdk.util.replaces
+import io.github.shoaky.sourcedownloader.sdk.util.TextClear
 import org.apache.commons.lang3.math.NumberUtils
 import kotlin.io.path.nameWithoutExtension
 
@@ -22,11 +22,16 @@ object EpisodeVariableProvider : VariableProvider {
         RegexValueParser("^\\D*?(\\d+)\\D*?\$".toRegex()),
     )
 
-    private val replaces = listOf("480P", "720P", "1080P", "2160P")
+    private val textClear = TextClear(
+        mapOf(
+            Regex("(?:480|720|1080|2160)P", RegexOption.IGNORE_CASE) to "",
+            Regex("\\b[A-Fa-f0-9]{8}\\b", RegexOption.IGNORE_CASE) to "",
+        )
+    )
 
     override fun createSourceGroup(sourceItem: SourceItem): SourceItemGroup {
         return FunctionalItemGroup { path ->
-            val string = path.nameWithoutExtension.replaces(replaces, "")
+            val string = textClear.input(path.nameWithoutExtension)
             val episode = parserChain.firstNotNullOfOrNull { it.parse(string) }
 
             val vars = MapPatternVariables()
