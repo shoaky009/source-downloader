@@ -69,7 +69,7 @@ private class ProcessorController(
             ?: throw ComponentException.processorMissing("Processor $processorName not found"))
         return sourceProcessor.get().dryRun()
             .map { pc ->
-                val fileResult = pc.sourceContent.sourceFiles.map { file ->
+                val fileResult = pc.itemContent.sourceFiles.map { file ->
                     FileResult(
                         file.fileDownloadPath.toString(),
                         file.targetPath().toString(),
@@ -78,10 +78,10 @@ private class ProcessorController(
                         file.status
                     )
                 }
-                val sourceContent = pc.sourceContent
-                val variables = sourceContent.sharedPatternVariables.variables()
+                val itemContent = pc.itemContent
+                val variables = itemContent.sharedPatternVariables.variables()
                 DryRunResult(
-                    sourceContent.sourceItem, variables,
+                    itemContent.sourceItem, variables,
                     fileResult, pc.status.name
                 )
             }

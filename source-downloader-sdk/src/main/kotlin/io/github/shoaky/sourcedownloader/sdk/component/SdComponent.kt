@@ -46,8 +46,8 @@ enum class ComponentTopType(
         listOf("source-item-filter", "item-filter", "sourceItemFilter", "itemFilter")
     ),
     SOURCE_CONTENT_FILTER(
-        SourceContentFilter::class,
-        listOf("source-content-filter", "content-filter", "sourceContentFilter", "contentFilter")
+        ItemContentFilter::class,
+        listOf("item-content-filter", "content-filter", "itemContentFilter", "contentFilter")
     ),
     FILE_CONTENT_FILTER(
         FileContentFilter::class,
@@ -197,9 +197,9 @@ interface VariableProvider : SdComponent {
 interface FileMover : SdComponent {
 
     /**
-     * @param sourceContent the [SourceContent] to be moved
+     * @param itemContent the [ItemContent] to be moved
      */
-    fun move(sourceContent: SourceContent): Boolean
+    fun move(itemContent: ItemContent): Boolean
 
     /**
      * @param paths the target paths
@@ -216,12 +216,12 @@ interface FileMover : SdComponent {
     }
 
     /**
-     * @param sourceContent the [SourceContent] to be replaced
+     * @param itemContent the [ItemContent] to be replaced
      */
-    fun replace(sourceContent: SourceContent): Boolean
+    fun replace(itemContent: ItemContent): Boolean
 }
 
-interface RunAfterCompletion : SdComponent, Consumer<SourceContent>
+interface RunAfterCompletion : SdComponent, Consumer<ItemContent>
 
 /**
  * @return true if the item should be processed
@@ -231,7 +231,7 @@ interface SourceItemFilter : SdComponent, Predicate<SourceItem>
 /**
  * @return true if the item should be processed
  */
-interface SourceContentFilter : SdComponent, Predicate<SourceContent>
+interface ItemContentFilter : SdComponent, Predicate<ItemContent>
 
 /**
  * @return true if the file should be processed
@@ -249,11 +249,11 @@ interface FileTagger : SdComponent {
 interface FileReplacementDecider : SdComponent {
 
     /**
-     * @param current the current [SourceContent], the [SourceContent.sourceFiles] always has one [FileContent] element
-     * @param before the [SourceContent] before the current one, the [SourceContent.sourceFiles] also may empty
-     * @return true if the current [SourceContent] should replace
+     * @param current the current [ItemContent], the [ItemContent.sourceFiles] always has one [FileContent] element
+     * @param before the [ItemContent] before the current one, the [ItemContent.sourceFiles] also may empty
+     * @return true if the current [ItemContent] should replace
      */
-    fun isReplace(current: SourceContent, before: SourceContent?): Boolean
+    fun isReplace(current: ItemContent, before: ItemContent?): Boolean
 
 }
 

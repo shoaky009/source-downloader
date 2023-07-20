@@ -1,7 +1,7 @@
 package io.github.shoaky.sourcedownloader.sdk.component
 
 import io.github.shoaky.sourcedownloader.sdk.DownloadTask
-import io.github.shoaky.sourcedownloader.sdk.SourceContent
+import io.github.shoaky.sourcedownloader.sdk.ItemContent
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
@@ -41,11 +41,12 @@ class RuleTest {
 }
 
 object Mover : FileMover {
-    override fun move(sourceContent: SourceContent): Boolean {
+
+    override fun move(itemContent: ItemContent): Boolean {
         return true
     }
 
-    override fun replace(sourceContent: SourceContent): Boolean {
+    override fun replace(itemContent: ItemContent): Boolean {
         return true
     }
 }
@@ -82,7 +83,7 @@ object TestTorrentDownloader : TorrentDownloader {
         NotImplementedError()
     }
 
-    override fun move(sourceContent: SourceContent): Boolean {
+    override fun move(itemContent: ItemContent): Boolean {
         return true
     }
 

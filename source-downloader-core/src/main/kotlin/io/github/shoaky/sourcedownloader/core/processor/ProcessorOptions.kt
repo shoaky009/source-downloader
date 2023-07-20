@@ -15,7 +15,7 @@ data class ProcessorOptions(
     val variableProviders: List<VariableProvider> = emptyList(),
     val runAfterCompletion: List<RunAfterCompletion> = emptyList(),
     val sourceItemFilters: List<SourceItemFilter> = emptyList(),
-    val sourceContentFilters: List<SourceContentFilter> = emptyList(),
+    val itemContentFilters: List<ItemContentFilter> = emptyList(),
     val fileContentFilters: List<FileContentFilter> = emptyList(),
     val fileTaggers: List<FileTagger> = emptyList(),
     val variableReplacers: List<VariableReplacer> = emptyList(),

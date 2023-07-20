@@ -23,7 +23,7 @@ class JpaProcessingStorage(
         val record = ProcessingRecord()
         record.processorName = content.processorName
         record.sourceItemHashing = content.sourceHash
-        record.sourceContent = content.sourceContent
+        record.itemContent = content.itemContent
         record.renameTimes = content.renameTimes
         record.status = content.status.value
         record.failureReason = content.failureReason
@@ -42,7 +42,7 @@ class JpaProcessingStorage(
                     record.id,
                     record.processorName,
                     record.sourceItemHashing,
-                    record.sourceContent,
+                    record.itemContent,
                     record.renameTimes,
                     ProcessingContent.Status::class.fromValue(record.status),
                     record.failureReason,
@@ -74,7 +74,7 @@ class JpaProcessingStorage(
                 record.id,
                 record.processorName,
                 record.sourceItemHashing,
-                record.sourceContent,
+                record.itemContent,
                 record.renameTimes,
                 ProcessingContent.Status::class.fromValue(record.status),
                 record.failureReason,

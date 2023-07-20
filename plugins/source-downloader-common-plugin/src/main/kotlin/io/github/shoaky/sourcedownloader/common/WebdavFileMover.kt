@@ -1,7 +1,7 @@
 package io.github.shoaky.sourcedownloader.common
 
 import io.github.shoaky.sourcedownloader.external.webdav.*
-import io.github.shoaky.sourcedownloader.sdk.SourceContent
+import io.github.shoaky.sourcedownloader.sdk.ItemContent
 import io.github.shoaky.sourcedownloader.sdk.component.FileMover
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
@@ -14,13 +14,13 @@ open class WebdavFileMover(
     private val deleteSource: Boolean = true,
 ) : FileMover {
 
-    override fun move(sourceContent: SourceContent): Boolean {
+    override fun move(itemContent: ItemContent): Boolean {
         if (uploadFileMode) {
-            return uploadFile(sourceContent)
+            return uploadFile(itemContent)
         }
 
         val webdavPath = webdavClient.webdavPath
-        return sourceContent.sourceFiles.map {
+        return itemContent.sourceFiles.map {
             val src = it.fileDownloadPath.toString()
             val dst = it.targetPath().toString()
             val moveFile = MoveFile("$webdavPath$src", "$webdavPath$dst")
@@ -28,9 +28,9 @@ open class WebdavFileMover(
         }.all { it.statusCode() == HttpStatus.CREATED.value() }
     }
 
-    private fun uploadFile(sourceContent: SourceContent): Boolean {
+    private fun uploadFile(itemContent: ItemContent): Boolean {
         val webdavPath = webdavClient.webdavPath
-        return sourceContent.sourceFiles.map {
+        return itemContent.sourceFiles.map {
             val target = it.targetPath().toString()
             val uploadFile = UploadFile("$webdavPath$target", it.fileDownloadPath)
             val resp = webdavClient.execute(uploadFile)
@@ -59,8 +59,8 @@ open class WebdavFileMover(
         }
     }
 
-    override fun replace(sourceContent: SourceContent): Boolean {
-        return move(sourceContent)
+    override fun replace(itemContent: ItemContent): Boolean {
+        return move(itemContent)
     }
 
     companion object {

@@ -23,7 +23,7 @@ private class ProcessingContentController(
         return storage.save(
             current.copy(
                 // 这个待定，有些字段不允许修改
-                sourceContent = body.sourceContent,
+                itemContent = body.itemContent,
                 renameTimes = body.renameTimes,
                 modifyTime = LocalDateTime.now()
             )

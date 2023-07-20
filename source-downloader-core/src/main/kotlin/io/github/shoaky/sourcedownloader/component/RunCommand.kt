@@ -1,7 +1,7 @@
 package io.github.shoaky.sourcedownloader.component
 
 import io.github.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
-import io.github.shoaky.sourcedownloader.sdk.SourceContent
+import io.github.shoaky.sourcedownloader.sdk.ItemContent
 import io.github.shoaky.sourcedownloader.sdk.component.RunAfterCompletion
 import org.springframework.util.StreamUtils
 
@@ -10,8 +10,8 @@ class RunCommand(
     private val withSubjectSummary: Boolean = false
 ) : RunAfterCompletion {
 
-    override fun accept(sourceContent: SourceContent) {
-        val process = run(sourceContent)
+    override fun accept(itemContent: ItemContent) {
+        val process = run(itemContent)
         if (process.waitFor() != 0) {
             val result = StreamUtils.copyToString(process.inputStream, Charsets.UTF_8)
             log.warn("mikan completed task script exit code is not 0, result:$result")
@@ -22,10 +22,10 @@ class RunCommand(
         }
     }
 
-    private fun process(sourceContent: SourceContent): Process {
+    private fun process(itemContent: ItemContent): Process {
         val cmds = command.toMutableList()
         if (withSubjectSummary) {
-            cmds.add(sourceContent.summaryContent())
+            cmds.add(itemContent.summaryContent())
         }
 
         if (log.isDebugEnabled) {
@@ -36,8 +36,8 @@ class RunCommand(
         return processBuilder.start()
     }
 
-    fun run(sourceContent: SourceContent): Process {
-        return process(sourceContent)
+    fun run(itemContent: ItemContent): Process {
+        return process(itemContent)
     }
 }
 

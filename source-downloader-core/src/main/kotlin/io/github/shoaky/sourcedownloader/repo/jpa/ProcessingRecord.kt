@@ -1,7 +1,7 @@
 package io.github.shoaky.sourcedownloader.repo.jpa
 
 import com.vladmihalcea.hibernate.type.json.JsonType
-import io.github.shoaky.sourcedownloader.core.file.CoreSourceContent
+import io.github.shoaky.sourcedownloader.core.file.CoreItemContent
 import jakarta.persistence.*
 import org.hibernate.annotations.Type
 import java.time.LocalDateTime
@@ -31,7 +31,7 @@ class ProcessingRecord {
 
     @Type(JsonType::class)
     @Column(columnDefinition = "json")
-    lateinit var sourceContent: CoreSourceContent
+    lateinit var itemContent: CoreItemContent
 
     var renameTimes: Int = 0
     var status: Int = 0

@@ -1,8 +1,8 @@
 package io.github.shoaky.sourcedownloader.core
 
-import io.github.shoaky.sourcedownloader.sdk.SourceContent
+import io.github.shoaky.sourcedownloader.sdk.ItemContent
 
 data class ProcessorSubmitDownloadEvent(
     val processorName: String,
-    val sourceContent: SourceContent
+    val itemContent: ItemContent
 )

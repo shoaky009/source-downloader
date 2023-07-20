@@ -2,7 +2,7 @@ package io.github.shoaky.sourcedownloader.sdk
 
 import kotlin.io.path.name
 
-interface SourceContent {
+interface ItemContent {
 
     val sourceItem: SourceItem
     val sourceFiles: List<FileContent>

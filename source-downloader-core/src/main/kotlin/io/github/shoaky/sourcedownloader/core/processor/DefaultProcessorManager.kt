@@ -163,17 +163,17 @@ class DefaultProcessorManager(
             }
         )
 
-        val sourceContentFilters = mutableListOf<SourceContentFilter>()
+        val itemContentFilters = mutableListOf<ItemContentFilter>()
         if (options.contentExpressionExclusions.isNotEmpty() || options.contentExpressionInclusions.isNotEmpty()) {
-            sourceContentFilters.add(ExpressionSourceContentFileter(
+            itemContentFilters.add(ExpressionItemContentFileter(
                 options.contentExpressionExclusions,
                 options.contentExpressionInclusions
             ))
         }
-        sourceContentFilters.addAll(
-            config.options.sourceContentFilters.map {
-                val instanceName = it.getInstanceName(SourceContentFilter::class)
-                container.get(instanceName, sourceContentFilterTypeRef).getAndMarkRef(config.name)
+        itemContentFilters.addAll(
+            config.options.itemContentFilters.map {
+                val instanceName = it.getInstanceName(ItemContentFilter::class)
+                container.get(instanceName, itemContentFilterTypeRef).getAndMarkRef(config.name)
             }
         )
 
@@ -253,7 +253,7 @@ class DefaultProcessorManager(
             providers,
             runs,
             sourceItemFilter,
-            sourceContentFilters,
+            itemContentFilters,
             fileContentFilters,
             taggers,
             variableReplacers,

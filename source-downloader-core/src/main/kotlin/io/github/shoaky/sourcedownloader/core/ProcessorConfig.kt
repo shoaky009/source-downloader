@@ -66,7 +66,7 @@ data class ProcessorConfig(
         @JsonAlias("file-filters")
         val fileContentFilters: List<ComponentId> = emptyList(),
         @JsonAlias("content-filters")
-        val sourceContentFilters: List<ComponentId> = emptyList(),
+        val itemContentFilters: List<ComponentId> = emptyList(),
         @JsonDeserialize(`as` = CorePathPattern::class)
         val savePathPattern: PathPattern = CorePathPattern.ORIGIN,
         @JsonDeserialize(`as` = CorePathPattern::class)

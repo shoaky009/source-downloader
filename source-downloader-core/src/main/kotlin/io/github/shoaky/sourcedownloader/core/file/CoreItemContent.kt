@@ -1,15 +1,15 @@
 package io.github.shoaky.sourcedownloader.core.file
 
+import io.github.shoaky.sourcedownloader.sdk.ItemContent
 import io.github.shoaky.sourcedownloader.sdk.MapPatternVariables
-import io.github.shoaky.sourcedownloader.sdk.SourceContent
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.FileMover
 
-data class CoreSourceContent(
+data class CoreItemContent(
     override val sourceItem: SourceItem,
     override val sourceFiles: List<CoreFileContent>,
     val sharedPatternVariables: MapPatternVariables
-) : SourceContent {
+) : ItemContent {
 
     private var updated: Boolean = false
 

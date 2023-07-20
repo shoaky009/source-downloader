@@ -3,7 +3,7 @@ package io.github.shoaky.sourcedownloader.component
 import io.github.shoaky.sourcedownloader.component.supplier.RunCommandSupplier
 import io.github.shoaky.sourcedownloader.core.CorePathPattern
 import io.github.shoaky.sourcedownloader.core.file.CoreFileContent
-import io.github.shoaky.sourcedownloader.core.file.CoreSourceContent
+import io.github.shoaky.sourcedownloader.core.file.CoreItemContent
 import io.github.shoaky.sourcedownloader.sdk.MapPatternVariables
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sourceItem
@@ -35,7 +35,7 @@ class RunCommandTest {
 
     @Test
     fun run_command() {
-        val process = runCommand.run(CoreSourceContent(sourceItem("1"), listOf(content), MapPatternVariables()))
+        val process = runCommand.run(CoreItemContent(sourceItem("1"), listOf(content), MapPatternVariables()))
         assertEquals(0, process.waitFor())
         val result = process.inputStream.bufferedReader().readText()
         assertEquals("test1", result)
@@ -50,7 +50,7 @@ class RunCommandTest {
                 ))
         )
 
-        val process = apply.run(CoreSourceContent(sourceItem("1"), listOf(content), MapPatternVariables()))
+        val process = apply.run(CoreItemContent(sourceItem("1"), listOf(content), MapPatternVariables()))
         assertEquals(0, process.waitFor())
         val result = process.inputStream.bufferedReader().readText()
         assertEquals("test1 test.txt", result)

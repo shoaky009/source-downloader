@@ -3,7 +3,7 @@ package io.github.shoaky.sourcedownloader.common.torrent
 import bt.metainfo.MetadataService
 import io.github.shoaky.sourcedownloader.external.qbittorrent.*
 import io.github.shoaky.sourcedownloader.sdk.DownloadTask
-import io.github.shoaky.sourcedownloader.sdk.SourceContent
+import io.github.shoaky.sourcedownloader.sdk.ItemContent
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.TorrentDownloader
 import io.github.shoaky.sourcedownloader.sdk.component.TorrentDownloader.Companion.tryParseTorrentHash
@@ -87,9 +87,9 @@ class QbittorrentDownloader(
         return torrents.map { it.progress >= 0.99f }.firstOrNull()
     }
 
-    override fun move(sourceContent: SourceContent): Boolean {
-        val torrentHash = getTorrentHash(sourceContent.sourceItem)
-        val sourceFiles = sourceContent.sourceFiles
+    override fun move(itemContent: ItemContent): Boolean {
+        val torrentHash = getTorrentHash(itemContent.sourceItem)
+        val sourceFiles = itemContent.sourceFiles
 
         val firstFile = sourceFiles.first()
         val saveItemFileRootDirectory = firstFile.fileSaveRootDirectory()

@@ -4,7 +4,7 @@ import com.jayway.jsonpath.DocumentContext
 import com.jayway.jsonpath.JsonPath
 import com.sun.net.httpserver.HttpServer
 import io.github.shoaky.sourcedownloader.component.supplier.SendHttpRequestSupplier
-import io.github.shoaky.sourcedownloader.core.file.CoreSourceContent
+import io.github.shoaky.sourcedownloader.core.file.CoreItemContent
 import io.github.shoaky.sourcedownloader.sdk.MapPatternVariables
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sourceItem
@@ -39,7 +39,7 @@ class SendHttpRequestTest {
         )
 
         apply.accept(
-            CoreSourceContent(
+            CoreItemContent(
                 sourceItem("test"),
                 listOf(),
                 MapPatternVariables()
@@ -69,7 +69,7 @@ class SendHttpRequestTest {
         )
 
         apply.accept(
-            CoreSourceContent(
+            CoreItemContent(
                 sourceItem("test"),
                 listOf(),
                 MapPatternVariables()
@@ -104,7 +104,7 @@ class SendHttpRequestTest {
         )
 
         apply.accept(
-            CoreSourceContent(
+            CoreItemContent(
                 sourceItem("test"),
                 listOf(),
                 MapPatternVariables()

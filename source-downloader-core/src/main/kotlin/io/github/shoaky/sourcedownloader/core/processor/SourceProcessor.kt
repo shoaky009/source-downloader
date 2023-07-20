@@ -4,7 +4,7 @@ import io.github.shoaky.sourcedownloader.component.NeverReplace
 import io.github.shoaky.sourcedownloader.core.*
 import io.github.shoaky.sourcedownloader.core.ProcessingContent.Status.*
 import io.github.shoaky.sourcedownloader.core.file.CoreFileContent
-import io.github.shoaky.sourcedownloader.core.file.CoreSourceContent
+import io.github.shoaky.sourcedownloader.core.file.CoreItemContent
 import io.github.shoaky.sourcedownloader.core.file.FileContentStatus
 import io.github.shoaky.sourcedownloader.sdk.*
 import io.github.shoaky.sourcedownloader.sdk.component.*
@@ -44,7 +44,7 @@ class SourceProcessor(
 ) : Runnable {
 
     private val sourceItemFilters: List<SourceItemFilter> = options.sourceItemFilters
-    private val sourceContentFilters: List<SourceContentFilter> = options.sourceContentFilters
+    private val itemContentFilters: List<ItemContentFilter> = options.itemContentFilters
     private val fileContentFilters: List<FileContentFilter> = options.fileContentFilters
     private val variableProviders = options.variableProviders
     private val runAfterCompletion: List<RunAfterCompletion> = options.runAfterCompletion
@@ -77,7 +77,7 @@ class SourceProcessor(
             "Downloader" to downloader::class.java.simpleName,
             "FileMover" to fileMover::class.java.simpleName,
             "SourceItemFilter" to sourceItemFilters.map { it::class.simpleName },
-            "SourceContentFilter" to sourceContentFilters.map { it::class.simpleName },
+            "ItemContentFilter" to itemContentFilters.map { it::class.simpleName },
             "RunAfterCompletion" to runAfterCompletion.map { it::class.simpleName },
             "DownloadPath" to downloadPath,
             "SourceSavePath" to sourceSavePath,
@@ -169,7 +169,7 @@ class SourceProcessor(
                 }
             }.getOrElse {
                 ProcessingContent(
-                    name, CoreSourceContent(
+                    name, CoreItemContent(
                     item.sourceItem, emptyList(), MapPatternVariables()
                 )).copy(status = FAILURE, failureReason = it.message)
             }
@@ -239,37 +239,37 @@ class SourceProcessor(
             options.variableConflictStrategy,
             options.variableNameReplace
         )
-        val sourceContent = createPersistentSourceContent(variablesAggregation, sourceItem)
-        val filterBy = sourceContentFilters.firstOrNull { it.test(sourceContent).not() }
+        val itemContent = createPersistentItemContent(variablesAggregation, sourceItem)
+        val filterBy = itemContentFilters.firstOrNull { it.test(itemContent).not() }
         if (filterBy != null) {
             log.debug("{} Filtered item:{}", filterBy::class.simpleName, sourceItem)
-            return ProcessingContent(name, sourceContent).copy(status = FILTERED)
+            return ProcessingContent(name, itemContent).copy(status = FILTERED)
         }
 
-        val replaceFiles = getReplaceableFiles(sourceContent)
-        val contentStatus = probeContent(sourceContent, replaceFiles)
+        val replaceFiles = getReplaceableFiles(itemContent)
+        val contentStatus = probeContent(itemContent, replaceFiles)
 
         if (dryRun) {
-            return ProcessingContent(name, sourceContent).copy(status = contentStatus.second)
+            return ProcessingContent(name, itemContent).copy(status = contentStatus.second)
         }
 
         if (contentStatus.first) {
-            val downloadTask = createDownloadTask(sourceContent, replaceFiles)
+            val downloadTask = createDownloadTask(itemContent, replaceFiles)
             // NOTE 非异步下载器会阻塞
             this.downloader.submit(downloadTask)
             log.info("提交下载任务成功, Processor:${name} sourceItem:${sourceItem.title}")
-            val targetPaths = sourceContent.getDownloadFiles(fileMover).map { it.targetPath() }
+            val targetPaths = itemContent.getDownloadFiles(fileMover).map { it.targetPath() }
             saveTargetPaths(sourceItem, targetPaths)
-            Events.post(ProcessorSubmitDownloadEvent(name, sourceContent))
+            Events.post(ProcessorSubmitDownloadEvent(name, itemContent))
         }
 
         if (downloader !is AsyncDownloader) {
-            val moveSuccess = moveFiles(sourceContent)
-            val replaceSuccess = replaceFiles(sourceContent)
+            val moveSuccess = moveFiles(itemContent)
+            val replaceSuccess = replaceFiles(itemContent)
             if (moveSuccess || replaceSuccess) {
-                runAfterCompletions(sourceContent)
+                runAfterCompletions(itemContent)
             }
-            return ProcessingContent(name, sourceContent).copy(status = RENAMED, renameTimes = 1)
+            return ProcessingContent(name, itemContent).copy(status = RENAMED, renameTimes = 1)
         }
 
         var status = WAITING_TO_RENAME
@@ -277,16 +277,16 @@ class SourceProcessor(
             status = contentStatus.second
         }
 
-        return ProcessingContent(name, sourceContent).copy(status = status)
+        return ProcessingContent(name, itemContent).copy(status = status)
     }
 
-    private fun getReplaceableFiles(sourceContent: CoreSourceContent): List<CoreFileContent> {
-        sourceContent.updateFileStatus(fileMover)
+    private fun getReplaceableFiles(itemContent: CoreItemContent): List<CoreFileContent> {
+        itemContent.updateFileStatus(fileMover)
         if (fileReplacementDecider == NeverReplace) {
             return emptyList()
         }
 
-        val partition = sourceContent.sourceFiles.partition { it.status == FileContentStatus.REPLACE }
+        val partition = itemContent.sourceFiles.partition { it.status == FileContentStatus.REPLACE }
         val existsFiles = partition.second.filter { it.status == FileContentStatus.TARGET_EXISTS }
         val support = TargetPathRelationSupport(
             existsFiles,
@@ -296,12 +296,12 @@ class SourceProcessor(
         val dropMem = mutableMapOf<String, Boolean>()
         val replaceFiles = existsFiles
             .map { fileContent ->
-                val copy = sourceContent.copy(
+                val copy = itemContent.copy(
                     sourceFiles = listOf(fileContent)
                 )
                 val before = support.getContent(fileContent.targetPath())
                 checkBeforeProcessing(before, dropMem)
-                val replace = fileReplacementDecider.isReplace(copy, before?.sourceContent)
+                val replace = fileReplacementDecider.isReplace(copy, before?.itemContent)
                 fileContent to replace
             }.filter { it.second }
             .map { it.first }
@@ -315,7 +315,7 @@ class SourceProcessor(
         }
 
         // drop before task
-        val beforeItem = before.sourceContent.sourceItem
+        val beforeItem = before.itemContent.sourceItem
         val hashing = beforeItem.hashing()
         dropMem.computeIfAbsent(hashing) {
             log.info("Drop before id:{} task:{}", before.id, beforeItem)
@@ -324,10 +324,10 @@ class SourceProcessor(
         }
     }
 
-    private fun createPersistentSourceContent(
+    private fun createPersistentItemContent(
         sourceItemGroup: SourceItemGroup,
         sourceItem: SourceItem
-    ): CoreSourceContent {
+    ): CoreItemContent {
         val sharedPatternVariables = sourceItemGroup.sharedPatternVariables()
         val resolveFiles = itemFileResolver.resolveFiles(sourceItem)
         val sourceFiles = sourceItemGroup.filePatternVariables(resolveFiles)
@@ -366,13 +366,13 @@ class SourceProcessor(
                 }
                 filter
             }.map { it.first }
-        return CoreSourceContent(sourceItem, sourceFiles, MapPatternVariables(sharedPatternVariables))
+        return CoreItemContent(sourceItem, sourceFiles, MapPatternVariables(sharedPatternVariables))
     }
 
     /**
      * @return Download or not, [ProcessingContent.Status]
      */
-    private fun probeContent(sc: CoreSourceContent, replaceFiles: List<CoreFileContent>): Pair<Boolean, ProcessingContent.Status> {
+    private fun probeContent(sc: CoreItemContent, replaceFiles: List<CoreFileContent>): Pair<Boolean, ProcessingContent.Status> {
         val files = sc.sourceFiles
         if (files.isEmpty()) {
             return false to NO_FILES
@@ -402,7 +402,7 @@ class SourceProcessor(
         return false to DOWNLOADED
     }
 
-    private fun runAfterCompletions(taskContent: SourceContent) {
+    private fun runAfterCompletions(taskContent: ItemContent) {
         for (task in runAfterCompletion) {
             task.runCatching {
                 this.accept(taskContent)
@@ -420,7 +420,7 @@ class SourceProcessor(
         }
         val downloadStatusGrouping = processingStorage.findRenameContent(name, options.renameTimesThreshold)
             .groupBy({ pc ->
-                DownloadStatus.from(asyncDownloader.isFinished(pc.sourceContent.sourceItem))
+                DownloadStatus.from(asyncDownloader.isFinished(pc.itemContent.sourceItem))
             }, { it })
 
         downloadStatusGrouping[DownloadStatus.NOT_FOUND]?.forEach { pc ->
@@ -430,7 +430,7 @@ class SourceProcessor(
                     status = DOWNLOAD_FAILED,
                     modifyTime = LocalDateTime.now(),
                 ))
-                processingStorage.deleteTargetPath(pc.sourceContent.sourceFiles.map { it.targetPath() })
+                processingStorage.deleteTargetPath(pc.itemContent.sourceFiles.map { it.targetPath() })
             }.onFailure {
                 log.error("Processing更新状态出错, record:${Jackson.toJsonString(pc)}", it)
             }
@@ -447,8 +447,8 @@ class SourceProcessor(
     }
 
     private fun processRenameTask(pc: ProcessingContent) {
-        val sourceContent = pc.sourceContent
-        val sourceFiles = sourceContent.sourceFiles
+        val itemContent = pc.itemContent
+        val sourceFiles = itemContent.sourceFiles
         val replacers = options.variableReplacers.toTypedArray()
         sourceFiles.forEach {
             // 这边设计不太好, CoreFileContent改为纯数据, 计算targetPath改为RenameContext之类的来计算
@@ -473,14 +473,14 @@ class SourceProcessor(
         }
 
         val allSuccess = runCatching {
-            moveFiles(sourceContent)
-            replaceFiles(sourceContent)
+            moveFiles(itemContent)
+            replaceFiles(itemContent)
         }.onFailure {
             log.error("重命名出错, record:${Jackson.toJsonString(pc)}", it)
         }.getOrDefault(false)
 
         if (allSuccess) {
-            runAfterCompletions(sourceContent)
+            runAfterCompletions(itemContent)
         }
 
         val renameTimesThreshold = options.renameTimesThreshold
@@ -509,7 +509,7 @@ class SourceProcessor(
         return safeRunner
     }
 
-    private fun createDownloadTask(content: CoreSourceContent, replaceFiles: List<CoreFileContent>): DownloadTask {
+    private fun createDownloadTask(content: CoreItemContent, replaceFiles: List<CoreFileContent>): DownloadTask {
         val downloadFiles = content.sourceFiles
             .filter { it.status != FileContentStatus.TARGET_EXISTS }
             .map { it.fileDownloadPath }.toMutableList()
@@ -526,7 +526,7 @@ class SourceProcessor(
         )
     }
 
-    private fun moveFiles(content: CoreSourceContent): Boolean {
+    private fun moveFiles(content: CoreItemContent): Boolean {
         val movableFiles = content.getMovableFiles(fileMover)
         if (movableFiles.isEmpty()) {
             log.info("Processor:$name item:'${content.sourceItem.title}' no available files to rename")
@@ -542,17 +542,17 @@ class SourceProcessor(
         )
     }
 
-    private fun replaceFiles(sourceContent: CoreSourceContent): Boolean {
-        val replaceableFiles = getReplaceableFiles(sourceContent)
+    private fun replaceFiles(itemContent: CoreItemContent): Boolean {
+        val replaceableFiles = getReplaceableFiles(itemContent)
         if (replaceableFiles.isEmpty()) {
             return true
         }
         log.info(
             "Processor:{} sourceItem:{} replaceFiles:{}",
-            name, sourceContent.sourceItem.title, replaceableFiles.map { it.targetPath() }
+            name, itemContent.sourceItem.title, replaceableFiles.map { it.targetPath() }
         )
 
-        return fileMover.replace(sourceContent.copy(sourceFiles = replaceableFiles))
+        return fileMover.replace(itemContent.copy(sourceFiles = replaceableFiles))
     }
 
     override fun toString(): String {

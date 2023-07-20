@@ -61,15 +61,15 @@ class SourceProcessorTest : InitializingBean {
         processor.runRename()
 
         val contents = processingStorage.findByProcessorName("NormalCase")
-            .associateBy { it.sourceContent.sourceItem.title }
+            .associateBy { it.itemContent.sourceItem.title }
         assertEquals(3, contents.size)
 
         val d1 =
-            contents["test1"]!!.sourceContent.sharedPatternVariables.getVariables()["sourceItemDate"]!!
+            contents["test1"]!!.itemContent.sharedPatternVariables.getVariables()["sourceItemDate"]!!
         val d2 =
-            contents["test2"]!!.sourceContent.sharedPatternVariables.getVariables()["sourceItemDate"]!!
+            contents["test2"]!!.itemContent.sharedPatternVariables.getVariables()["sourceItemDate"]!!
         val d3 =
-            contents["test-dir"]!!.sourceContent.sharedPatternVariables.getVariables()["sourceItemDate"]!!
+            contents["test-dir"]!!.itemContent.sharedPatternVariables.getVariables()["sourceItemDate"]!!
 
         assert(savePath.resolve(Path("test1", d1, "test1 - 1.jpg")).exists())
         assert(savePath.resolve(Path("test2", d2, "test2 - 1.jpg")).exists())
@@ -99,15 +99,15 @@ class SourceProcessorTest : InitializingBean {
 
         processor.run()
         val records = processingStorage.findByProcessorName("FileStatusCase").sortedBy { it.id }
-            .associateBy { it.sourceContent.sourceItem.title }
+            .associateBy { it.itemContent.sourceItem.title }
 
         downloadedFile.deleteIfExists()
         targetFile.deleteIfExists()
-        assertEquals(FileContentStatus.NORMAL, records["test1"]!!.sourceContent.sourceFiles.first().status)
-        assertEquals(FileContentStatus.NORMAL, records["test2"]!!.sourceContent.sourceFiles.first().status)
+        assertEquals(FileContentStatus.NORMAL, records["test1"]!!.itemContent.sourceFiles.first().status)
+        assertEquals(FileContentStatus.NORMAL, records["test2"]!!.itemContent.sourceFiles.first().status)
 
         val sourceFile =
-            records["test-dir"]!!.sourceContent.sourceFiles.first { it.fileDownloadPath.name == "test3.jpg" }
+            records["test-dir"]!!.itemContent.sourceFiles.first { it.fileDownloadPath.name == "test3.jpg" }
         assertEquals(FileContentStatus.TARGET_EXISTS, sourceFile.status)
     }
 
@@ -119,9 +119,9 @@ class SourceProcessorTest : InitializingBean {
         processor.run()
         val records = processingStorage.findByProcessorName("FileStatusCase2").sortedBy { it.id }
 
-        val record = records.first { it.sourceContent.sourceItem.title == "test-dir" }
-        assertEquals(FileContentStatus.FILE_CONFLICT, record.sourceContent.sourceFiles[0].status)
-        assertEquals(FileContentStatus.FILE_CONFLICT, record.sourceContent.sourceFiles[1].status)
+        val record = records.first { it.itemContent.sourceItem.title == "test-dir" }
+        assertEquals(FileContentStatus.FILE_CONFLICT, record.itemContent.sourceFiles[0].status)
+        assertEquals(FileContentStatus.FILE_CONFLICT, record.itemContent.sourceFiles[1].status)
     }
 
     @Test

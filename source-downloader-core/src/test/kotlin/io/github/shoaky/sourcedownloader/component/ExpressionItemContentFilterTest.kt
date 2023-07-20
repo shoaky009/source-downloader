@@ -1,20 +1,20 @@
 package io.github.shoaky.sourcedownloader.component
 
-import io.github.shoaky.sourcedownloader.core.file.CoreSourceContent
+import io.github.shoaky.sourcedownloader.core.file.CoreItemContent
 import io.github.shoaky.sourcedownloader.sdk.MapPatternVariables
 import io.github.shoaky.sourcedownloader.sourceItem
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
-class ExpressionSourceContentFilterTest {
+class ExpressionItemContentFilterTest {
 
     @Test
     fun content_exclusions() {
-        val filter = ExpressionSourceContentFileter(exclusions = listOf(
+        val filter = ExpressionItemContentFileter(exclusions = listOf(
             "files.filter(x, 'video' in x.tags).size() < 3"
         ))
 
-        val sc1 = CoreSourceContent(
+        val sc1 = CoreItemContent(
             sourceItem(),
             listOf(
                 createFileContent(tags = mutableSetOf("video")),
@@ -24,7 +24,7 @@ class ExpressionSourceContentFilterTest {
         )
         assertEquals(false, filter.test(sc1))
 
-        val sc2 = CoreSourceContent(
+        val sc2 = CoreItemContent(
             sourceItem(),
             listOf(
                 createFileContent(tags = mutableSetOf("video")),
@@ -40,11 +40,11 @@ class ExpressionSourceContentFilterTest {
 
     @Test
     fun content_inclusions() {
-        val filter = ExpressionSourceContentFileter(inclusions = listOf(
+        val filter = ExpressionItemContentFileter(inclusions = listOf(
             "files.filter(x, 'video' in x.tags).size() == 1"
         ))
 
-        val sc1 = CoreSourceContent(
+        val sc1 = CoreItemContent(
             sourceItem(),
             listOf(
                 createFileContent(tags = mutableSetOf("image")),
@@ -54,7 +54,7 @@ class ExpressionSourceContentFilterTest {
         )
         assertEquals(false, filter.test(sc1))
 
-        val sc2 = CoreSourceContent(
+        val sc2 = CoreItemContent(
             sourceItem(),
             listOf(
                 createFileContent(tags = mutableSetOf("image")),

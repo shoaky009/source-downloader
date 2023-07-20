@@ -1,16 +1,16 @@
 package io.github.shoaky.sourcedownloader.component
 
-import io.github.shoaky.sourcedownloader.sdk.SourceContent
-import io.github.shoaky.sourcedownloader.sdk.component.SourceContentFilter
+import io.github.shoaky.sourcedownloader.sdk.ItemContent
+import io.github.shoaky.sourcedownloader.sdk.component.ItemContentFilter
 import io.github.shoaky.sourcedownloader.util.scriptHost
 import org.projectnessie.cel.checker.Decls
 import org.projectnessie.cel.tools.Script
 import org.slf4j.LoggerFactory
 
-class ExpressionSourceContentFileter(
+class ExpressionItemContentFileter(
     exclusions: List<String> = emptyList(),
     inclusions: List<String> = emptyList(),
-) : SourceContentFilter {
+) : ItemContentFilter {
 
     private val exclusionScripts: List<Script> by lazy {
         exclusions.map {
@@ -21,7 +21,7 @@ class ExpressionSourceContentFileter(
         inclusions.map { buildScript(it) }
     }
 
-    override fun test(content: SourceContent): Boolean {
+    override fun test(content: ItemContent): Boolean {
         val item = content.sourceItem
         val itemVars = bindItemScriptVars(item)
         val sourceFiles = content.sourceFiles
@@ -51,7 +51,7 @@ class ExpressionSourceContentFileter(
 
     companion object {
 
-        private val log = LoggerFactory.getLogger(ExpressionSourceContentFileter::class.java)
+        private val log = LoggerFactory.getLogger(ExpressionItemContentFileter::class.java)
         private fun buildScript(expression: String): Script {
             return scriptHost.buildScript(expression)
                 .withDeclarations(

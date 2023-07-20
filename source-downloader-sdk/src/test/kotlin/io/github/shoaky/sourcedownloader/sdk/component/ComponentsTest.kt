@@ -2,7 +2,7 @@ package io.github.shoaky.sourcedownloader.sdk.component
 
 import io.github.shoaky.sourcedownloader.sdk.DownloadTask
 import io.github.shoaky.sourcedownloader.sdk.FileContent
-import io.github.shoaky.sourcedownloader.sdk.SourceContent
+import io.github.shoaky.sourcedownloader.sdk.ItemContent
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
@@ -59,7 +59,7 @@ private class MultiCp : TorrentDownloader, FileTagger {
         throw NotImplementedError()
     }
 
-    override fun move(sourceContent: SourceContent): Boolean {
+    override fun move(itemContent: ItemContent): Boolean {
         throw NotImplementedError()
     }
 

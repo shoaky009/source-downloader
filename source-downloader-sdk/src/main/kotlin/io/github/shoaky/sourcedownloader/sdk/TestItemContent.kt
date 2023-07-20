@@ -1,6 +1,6 @@
 package io.github.shoaky.sourcedownloader.sdk
 
-data class TestSourceContent(
+data class TestItemContent(
     override val sourceItem: SourceItem,
     override val sourceFiles: List<FileContent>
-) : SourceContent
+) : ItemContent

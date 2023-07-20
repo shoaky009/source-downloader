@@ -1,8 +1,8 @@
 package io.github.shoaky.sourcedownloader.core
 
-import io.github.shoaky.sourcedownloader.core.file.CoreSourceContent
+import io.github.shoaky.sourcedownloader.core.file.CoreItemContent
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
-import io.github.shoaky.sourcedownloader.sdk.component.SourceContentFilter
+import io.github.shoaky.sourcedownloader.sdk.component.ItemContentFilter
 import io.github.shoaky.sourcedownloader.util.EnumValue
 import java.time.LocalDateTime
 
@@ -10,7 +10,7 @@ data class ProcessingContent(
     var id: Long? = null,
     val processorName: String,
     val sourceHash: String,
-    val sourceContent: CoreSourceContent,
+    val itemContent: CoreItemContent,
     val renameTimes: Int = 0,
     val status: Status = Status.WAITING_TO_RENAME,
     val failureReason: String? = null,
@@ -18,10 +18,10 @@ data class ProcessingContent(
     val createTime: LocalDateTime = LocalDateTime.now()
 ) {
 
-    constructor(processorName: String, sourceContent: CoreSourceContent) : this(
+    constructor(processorName: String, itemContent: CoreItemContent) : this(
         processorName = processorName,
-        sourceHash = sourceContent.sourceItem.hashing(),
-        sourceContent = sourceContent
+        sourceHash = itemContent.sourceItem.hashing(),
+        itemContent = itemContent
     )
 
     enum class Status(val value: Int) : EnumValue<Int> {
@@ -32,7 +32,7 @@ data class ProcessingContent(
         WAITING_TO_RENAME(0),
 
         /**
-         * 被[SourceContentFilter]过滤
+         * 被[ItemContentFilter]过滤
          */
         FILTERED(2),
 

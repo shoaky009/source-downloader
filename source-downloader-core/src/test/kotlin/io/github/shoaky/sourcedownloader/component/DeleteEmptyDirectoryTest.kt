@@ -3,7 +3,7 @@ package io.github.shoaky.sourcedownloader.component
 import io.github.shoaky.sourcedownloader.component.supplier.DeleteEmptyDirectorySupplier
 import io.github.shoaky.sourcedownloader.core.CorePathPattern
 import io.github.shoaky.sourcedownloader.core.file.CoreFileContent
-import io.github.shoaky.sourcedownloader.core.file.CoreSourceContent
+import io.github.shoaky.sourcedownloader.core.file.CoreItemContent
 import io.github.shoaky.sourcedownloader.sdk.MapPatternVariables
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sourceItem
@@ -25,7 +25,7 @@ class DeleteEmptyDirectoryTest {
         itemDownloadPath.resolve("test").createDirectories()
         itemDownloadPath.resolve("daaaa").createDirectories()
 
-        val sc = CoreSourceContent(
+        val sc = CoreItemContent(
             sourceItem(),
             listOf(
                 CoreFileContent(
@@ -47,7 +47,7 @@ class DeleteEmptyDirectoryTest {
     fun given_not_empty() {
         val itemDownloadPath = testResourcePath.resolve("mockito-extensions")
 
-        val sc = CoreSourceContent(
+        val sc = CoreItemContent(
             sourceItem(),
             listOf(
                 CoreFileContent(

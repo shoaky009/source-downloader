@@ -1,6 +1,6 @@
 package io.github.shoaky.sourcedownloader.sdk.component
 
-import io.github.shoaky.sourcedownloader.sdk.SourceContent
+import io.github.shoaky.sourcedownloader.sdk.ItemContent
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import kotlin.io.path.deleteIfExists
 
@@ -30,9 +30,9 @@ interface TorrentDownloader : AsyncDownloader, FileMover {
     /**
      * 偷懒的实现，后面可能要调整
      */
-    override fun replace(sourceContent: SourceContent): Boolean {
-        val fileContent = sourceContent.sourceFiles.first()
+    override fun replace(itemContent: ItemContent): Boolean {
+        val fileContent = itemContent.sourceFiles.first()
         fileContent.targetPath().deleteIfExists()
-        return move(sourceContent)
+        return move(itemContent)
     }
 }

@@ -3,7 +3,7 @@ package io.github.shoaky.sourcedownloader.component
 import io.github.shoaky.sourcedownloader.component.supplier.GeneralFileMoverSupplier
 import io.github.shoaky.sourcedownloader.core.CorePathPattern
 import io.github.shoaky.sourcedownloader.core.file.CoreFileContent
-import io.github.shoaky.sourcedownloader.core.file.CoreSourceContent
+import io.github.shoaky.sourcedownloader.core.file.CoreItemContent
 import io.github.shoaky.sourcedownloader.createIfNotExists
 import io.github.shoaky.sourcedownloader.sdk.MapPatternVariables
 import io.github.shoaky.sourcedownloader.sdk.Properties
@@ -56,8 +56,8 @@ class GeneralFileMoverTest {
             CorePathPattern.ORIGIN,
         )
 
-        val sourceContent = CoreSourceContent(sourceItem(), listOf(file1, file2), MapPatternVariables())
-        val result = mover.move(sourceContent)
+        val itemContent = CoreItemContent(sourceItem(), listOf(file1, file2), MapPatternVariables())
+        val result = mover.move(itemContent)
         assert(result)
         Files.deleteIfExists(file1.targetPath())
         Files.deleteIfExists(file2.targetPath())

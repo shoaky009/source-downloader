@@ -8,6 +8,7 @@ import io.github.shoaky.sourcedownloader.sdk.PointedItem
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.SourceItemPointer
 import io.github.shoaky.sourcedownloader.sdk.component.Source
+import io.github.shoaky.sourcedownloader.sdk.util.LimitedExpander
 import org.slf4j.LoggerFactory
 import java.net.URI
 import java.time.LocalDateTime
@@ -38,9 +39,9 @@ internal class MikanSource(
                 PointedItem(it, MikanPointer(it.date))
             }
 
-        val expander = Expander(limit, items) { pi ->
+        val expander = LimitedExpander(items, limit) { pi ->
             val fansubRss = mikanSupport.getEpisodePageInfo(pi.sourceItem.link.toURL()).fansubRss
-                ?: return@Expander emptyList()
+                ?: return@LimitedExpander emptyList()
 
             var pointedItems = rssReader.read(fansubRss)
                 .map {
@@ -77,31 +78,8 @@ internal class MikanSource(
     }
 }
 
-internal data class MikanPointer(
-    val date: LocalDateTime
-) : SourceItemPointer
-
-
-class Expander<T : SourceItemPointer>(
-    private val limit: Int,
-    private val items: List<PointedItem<T>>,
-    private val transform: (PointedItem<T>) -> List<PointedItem<T>>,
-) : Iterator<List<PointedItem<T>>> {
-
-    private var counting = 0
-    private val expand: Iterator<List<PointedItem<T>>> = items.map { transform.invoke(it) }.iterator()
-
-    override fun hasNext(): Boolean {
-        if (expand.hasNext().not()) {
-            return false
-        }
-        return counting < limit
-    }
-
-    override fun next(): List<PointedItem<T>> {
-        val next = expand.next()
-        counting += next.size
-        return next
-    }
+data class MikanPointer(
+    val date: LocalDateTime? = null
+) : SourceItemPointer {
 
 }

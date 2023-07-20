@@ -45,7 +45,7 @@ data class ComponentType(
         fun itemFilter(type: String) = ComponentType(type, SourceItemFilter::class)
 
         @JvmStatic
-        fun contentFilter(type: String) = ComponentType(type, SourceContentFilter::class)
+        fun contentFilter(type: String) = ComponentType(type, ItemContentFilter::class)
 
         @JvmStatic
         fun trigger(type: String) = ComponentType(type, Trigger::class)

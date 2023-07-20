@@ -2,7 +2,7 @@ package io.github.shoaky.sourcedownloader.common.torrent
 
 import io.github.shoaky.sourcedownloader.external.transmission.*
 import io.github.shoaky.sourcedownloader.sdk.DownloadTask
-import io.github.shoaky.sourcedownloader.sdk.SourceContent
+import io.github.shoaky.sourcedownloader.sdk.ItemContent
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.TorrentDownloader
 import org.slf4j.LoggerFactory
@@ -68,12 +68,12 @@ class TransmissionDownloader(
         log.info("cancel item:{} status:{} body:{}", sourceItem, response.statusCode(), response.body())
     }
 
-    override fun move(sourceContent: SourceContent): Boolean {
+    override fun move(itemContent: ItemContent): Boolean {
         // https://github.com/transmission/transmission/issues/3216
         // NOTE 目前Transmission的API无法完全满足命名种子内部的文件，重命名参数不能包含文件夹
 
-        val torrentHash = getTorrentHash(sourceContent.sourceItem)
-        val sourceFiles = sourceContent.sourceFiles
+        val torrentHash = getTorrentHash(itemContent.sourceItem)
+        val sourceFiles = itemContent.sourceFiles
 
         val firstFile = sourceFiles.first()
         val saveItemFileRootDirectory = firstFile.fileSaveRootDirectory()
