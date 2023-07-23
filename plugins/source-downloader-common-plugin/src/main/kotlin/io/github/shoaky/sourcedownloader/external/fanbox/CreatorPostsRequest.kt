@@ -8,8 +8,8 @@ import java.net.URI
 class CreatorPostsRequest(
     val creatorId: String,
     val maxPublishedDatetime: String? = null,
-    val maxId: String? = null,
-    val limit: Int = 10
+    val maxId: Long? = null,
+    val limit: Int = 50
 ) : FanboxRequest<Posts>() {
 
     override val path: String = "/post.listCreator"
@@ -22,8 +22,8 @@ class CreatorPostsRequest(
             return CreatorPostsRequest(
                 queryMap["creatorId"] ?: error("creatorId is required"),
                 queryMap["maxPublishedDatetime"],
-                queryMap["maxId"],
-                queryMap["limit"]?.toInt() ?: 10
+                queryMap["maxId"]?.toLong(),
+                queryMap["limit"]?.toInt() ?: 50
             )
         }
     }

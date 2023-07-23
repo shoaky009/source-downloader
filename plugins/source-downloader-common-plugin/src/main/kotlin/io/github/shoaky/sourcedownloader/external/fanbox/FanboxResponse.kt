@@ -12,7 +12,16 @@ data class FanboxResponse<T>(
 data class Posts(
     val items: List<Post> = emptyList(),
     val nextUrl: URI? = null
-)
+) {
+
+    fun hasNext(): Boolean {
+        return nextUrl != null
+    }
+
+    fun nextRequest(): CreatorPostsRequest? {
+        return nextUrl?.let { CreatorPostsRequest.fromUri(it) }
+    }
+}
 
 data class User(
     val userId: String,
@@ -25,7 +34,7 @@ data class Cover(
 )
 
 data class Post(
-    val id: String,
+    val id: Long,
     val title: String,
     val creatorId: String,
     val isRestricted: Boolean,
@@ -34,7 +43,7 @@ data class Post(
     val isLiked: Boolean,
     val user: User,
     val feeRequired: Int,
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX", timezone = "Asia/Tokyo")
     val publishedDatetime: LocalDateTime,
     val hasAdultContent: Boolean,
     val tags: List<String> = emptyList(),
@@ -70,7 +79,7 @@ data class PostDetail(
     val isLiked: Boolean,
     val user: User,
     val feeRequired: Int,
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX", timezone = "Asia/Tokyo")
     val publishedDatetime: LocalDateTime,
     val hasAdultContent: Boolean,
     val tags: List<String> = emptyList(),

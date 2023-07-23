@@ -1,114 +1,89 @@
 package io.github.shoaky.sourcedownloader.common.fanbox
 
-import io.github.shoaky.sourcedownloader.external.fanbox.*
+import io.github.shoaky.sourcedownloader.external.fanbox.FanboxClient
+import io.github.shoaky.sourcedownloader.external.fanbox.Posts
+import io.github.shoaky.sourcedownloader.external.fanbox.SupportingPostsRequest
+import io.github.shoaky.sourcedownloader.external.fanbox.SupportingRequest
 import io.github.shoaky.sourcedownloader.sdk.ItemPointer
+import io.github.shoaky.sourcedownloader.sdk.NullPointer
 import io.github.shoaky.sourcedownloader.sdk.PointedItem
-import io.github.shoaky.sourcedownloader.sdk.SourcePointer
 import io.github.shoaky.sourcedownloader.sdk.component.Source
 
 class FanboxSource(
-    private val fanboxClient: FanboxClient
+    private val client: FanboxClient,
+    private val mode: Int = 1
 ) : Source<FanboxPointer> {
 
-    override fun fetch(pointer: FanboxPointer, limit: Int): Iterable<PointedItem<CreatorPointer>> {
-        val supporting = fanboxClient.execute(SupportingPostsRequest()).body().body
-
-        // for (sup in supporting) {
-        //     val creatorPointer = pointer.getOrDefault(sup.creatorId)
-        //     val paginateRequest = CreatorPaginateRequest(sup.creatorId)
-        //     val pages = fanboxClient.execute(paginateRequest).body().body
-        // }
-        return supporting.items.map {
-            val item = it.toItem(fanboxClient.server)
-            PointedItem(item, CreatorPointer(it.creatorId))
+    override fun fetch(pointer: FanboxPointer, limit: Int): Iterable<PointedItem<ItemPointer>> {
+        if (mode == 1) {
+            return client.execute(SupportingPostsRequest(50)).body()
+                .body.items.filter { it.isRestricted.not() }
+                .map { PointedItem(it.toItem(client.server), NullPointer) }
         }
-    }
 
-    private fun creatorPosts(pointer: CreatorPointer): List<PointedItem<CreatorPointer>> {
-        val paginateRequest = CreatorPaginateRequest(pointer.creatorId)
-        val pages = fanboxClient.execute(paginateRequest).body().body
-
-        val startPage = pointer.page ?: pages.size
-        val pageUri = pages[startPage - 1]
-        val postsRequest = CreatorPostsRequest.fromUri(pageUri)
-
-        val items = fanboxClient.execute(postsRequest).body().body.items
-        val itemIndex = pointer.itemIndex ?: items.size
-
-        return items.map {
-            val sourceItem = it.toItem(fanboxClient.server)
-            PointedItem(sourceItem, pointer.copy(page = startPage, itemIndex = itemIndex))
+        val supporting = client.execute(SupportingRequest()).body().body
+        val results = mutableListOf<PointedItem<ItemPointer>>()
+        for (sup in supporting) {
+            val creatorId = sup.creatorId
+            val creatorPointer = pointer.creatorPointers[creatorId] ?: CreatorPointer(creatorId)
+            val creatorPostsIterator = CreatorPostsIterator(creatorPointer, client)
+            for (pointedItems in creatorPostsIterator) {
+                results.addAll(pointedItems)
+                if (results.size >= limit) {
+                    break
+                }
+            }
         }
+        return results
     }
 
     override fun defaultPointer(): FanboxPointer {
-        return FanboxPointer(supportingCount = 0)
+        return FanboxPointer()
     }
 
 }
 
-class PaginationExpander<T, SP : SourcePointer, IP : ItemPointer>(
-    private val expanItems: List<T>,
-    private val limit: Int,
-    private val sourcePointer: SP,
-    private val supplier: (T, SP) -> DDD<T, IP>,
-) : Iterator<List<PointedItem<IP>>> {
+private class CreatorPostsIterator(
+    private val creatorPointer: CreatorPointer,
+    private val fanboxClient: FanboxClient,
+) : Iterator<List<PointedItem<ItemPointer>>> {
 
-    private var expanIndex = 0
-    private var totalCounting = 0
-    private var current: DDD<T, IP>? = null
+    private val lastTimeStatus = creatorPointer.touchBottom
+    private var finished = false
+    private var posts: Posts = Posts()
 
     override fun hasNext(): Boolean {
-        return expanIndex < expanItems.size || totalCounting < limit
-    }
-
-    override fun next(): List<PointedItem<IP>> {
-        // val supporting = expanItems[expanIndex]
-        // val ddd = supplier.invoke(supporting, sourcePointer)
-        //
-        // val fetch = ddd.fetch(supporting)
-        // if (fetch.isEmpty()) {
-        //     expanIndex++
-        // }
-        return emptyList()
-    }
-}
-
-interface DDD<T, IP : ItemPointer> {
-
-    fun fetch(pointer: IP): List<PointedItem<IP>>
-
-    fun totalPage(): Int
-
-}
-
-class Fanbox(
-    private val creatorId: String,
-    private val startPage: Int,
-    private val fanboxClient: FanboxClient
-) : DDD<Supporting, CreatorPointer> {
-
-    private val pages by lazy {
-        fanboxClient.execute(
-            CreatorPaginateRequest("")
-        ).body().body
-    }
-
-    override fun fetch(pointer: CreatorPointer): List<PointedItem<CreatorPointer>> {
-        val page = pointer.page
-        val pages = fanboxClient.execute(
-            CreatorPaginateRequest(creatorId)
-        ).body().body
-        val postsRequest = CreatorPostsRequest.fromUri(pages[page + 1])
-        val items = fanboxClient.execute(postsRequest).body().body.items
-        return items.mapIndexed { index, item ->
-            val sourceItem = item.toItem(fanboxClient.server)
-            PointedItem(sourceItem, pointer.copy(page = page, itemIndex = index))
+        if (finished) {
+            return false
         }
+        if (creatorPointer.touchBottom.not()) {
+            return true
+        }
+
+        val lastMaxId = creatorPointer.topId
+        return posts.items.all { it.id != lastMaxId }
     }
 
-    override fun totalPage(): Int {
-        return pages.size
+    override fun next(): List<PointedItem<ItemPointer>> {
+        val request = creatorPointer.nextRequest()
+
+        posts = fanboxClient.execute(request).body().body
+        finished = posts.hasNext().not()
+
+        val items = posts.items.filter { it.isRestricted.not() }
+            .map {
+                creatorPointer.update(it, finished)
+                PointedItem(it.toItem(fanboxClient.server), creatorPointer) to it
+            }
+
+        return if (lastTimeStatus) {
+            items.filter {
+                val lastMaxId = creatorPointer.topId ?: 0L
+                it.second.id > lastMaxId
+            }.map { it.first }
+        } else {
+            items.map { it.first }
+        }
     }
 
 }
