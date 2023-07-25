@@ -54,7 +54,9 @@ object TelegramClientInstanceFactory : InstanceFactory<MTProtoTelegramClient> {
             )
         }
         bootstrap
-            .setReconnectionStrategy(ReconnectionStrategy.immediately())
+            .setReconnectionStrategy(ReconnectionStrategy.fixedInterval(
+                Duration.ofSeconds(config.reconnectionInterval)
+            ))
             .setPingInterval(Duration.ofSeconds(config.pingInterval))
             .setEntityRetrieverStrategy(
                 EntityRetrievalStrategy.preferred(

@@ -1,5 +1,6 @@
 package io.github.shoaky.sourcedownloader.sdk
 
+import io.github.shoaky.sourcedownloader.sdk.component.ItemFileResolver
 import java.net.URI
 import java.nio.file.Path
 
@@ -25,7 +26,9 @@ private object EmptyFileVariable : FileVariable {
 
 data class SourceFile(
     /**
-     * The path of the file relative to the root of the source.
+     * The path of the file.
+     * From [ItemFileResolver], it's a relative path.
+     * In the context of submitting a task, it's an absolute path.
      */
     val path: Path,
     /**

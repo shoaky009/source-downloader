@@ -7,7 +7,7 @@ class TextClear(
     fun input(text: String): String {
         var res = text
         replaces.forEach {
-            res = text.replace(it.key, it.value)
+            res = res.replace(it.key, it.value)
         }
         return res
     }

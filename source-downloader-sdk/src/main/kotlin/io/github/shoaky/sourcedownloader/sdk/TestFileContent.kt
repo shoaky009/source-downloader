@@ -1,5 +1,6 @@
 package io.github.shoaky.sourcedownloader.sdk
 
+import java.net.URI
 import java.nio.file.Path
 
 /**
@@ -7,13 +8,14 @@ import java.nio.file.Path
  */
 data class TestFileContent(
     override val fileDownloadPath: Path,
-    override val downloadPath: Path = fileDownloadPath?.parent ?: fileDownloadPath,
+    override val downloadPath: Path = Path.of(""),
     override val patternVariables: PatternVariables = PatternVariables.EMPTY,
     override val tags: Set<String> = emptySet(),
     val targetPath: Path = fileDownloadPath,
     val itemSaveRootDirectory: Path = fileDownloadPath,
     val itemDownloadRootDirectory: Path = fileDownloadPath,
-    override val attributes: Map<String, Any> = emptyMap()
+    override val attributes: Map<String, Any> = emptyMap(),
+    override val fileUri: URI? = null,
 ) : FileContent {
 
     override fun targetPath(): Path = targetPath

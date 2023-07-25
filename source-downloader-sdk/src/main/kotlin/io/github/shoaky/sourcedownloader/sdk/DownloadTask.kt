@@ -5,7 +5,13 @@ import java.nio.file.Path
 
 data class DownloadTask(
     val sourceItem: SourceItem,
-    val downloadFiles: List<Path>,
+    /**
+     * The absolute path of the file to download.
+     */
+    val downloadFiles: List<SourceFile>,
+    /**
+     * The absolute path of the directory.
+     */
     val downloadPath: Path,
     val options: DownloadOptions = DownloadOptions(),
 ) {
@@ -15,7 +21,7 @@ data class DownloadTask(
     }
 
     fun relativePaths(): List<Path> {
-        return downloadFiles.map {
+        return downloadFiles.map { it.path }.map {
             if (it.isAbsolute) {
                 downloadPath.relativize(it)
             } else {

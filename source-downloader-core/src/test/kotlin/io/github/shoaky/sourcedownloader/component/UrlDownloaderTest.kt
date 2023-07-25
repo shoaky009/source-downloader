@@ -3,6 +3,7 @@ package io.github.shoaky.sourcedownloader.component
 import io.github.shoaky.sourcedownloader.component.supplier.UrlDownloaderSupplier
 import io.github.shoaky.sourcedownloader.sdk.DownloadTask
 import io.github.shoaky.sourcedownloader.sdk.Properties
+import io.github.shoaky.sourcedownloader.sdk.SourceFile
 import io.github.shoaky.sourcedownloader.sourceItem
 import io.github.shoaky.sourcedownloader.testResourcePath
 import org.junit.jupiter.api.Test
@@ -38,7 +39,7 @@ class UrlDownloaderTest {
         val task = DownloadTask(
             sourceItem,
             listOf(
-                targetPath
+                SourceFile(targetPath)
             ),
             downloadPath = savePath
         )

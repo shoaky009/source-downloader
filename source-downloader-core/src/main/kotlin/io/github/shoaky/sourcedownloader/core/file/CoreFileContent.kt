@@ -6,6 +6,7 @@ import io.github.shoaky.sourcedownloader.sdk.FileContent
 import io.github.shoaky.sourcedownloader.sdk.MapPatternVariables
 import io.github.shoaky.sourcedownloader.sdk.PathPattern
 import io.github.shoaky.sourcedownloader.sdk.PatternVariables
+import java.net.URI
 import java.nio.file.Path
 import kotlin.io.path.extension
 import kotlin.io.path.name
@@ -21,7 +22,8 @@ data class CoreFileContent(
     val filenamePattern: PathPattern,
     override val attributes: Map<String, Any> = emptyMap(),
     var status: FileContentStatus = FileContentStatus.UNDETECTED,
-    override val tags: MutableSet<String> = mutableSetOf()
+    override val tags: MutableSet<String> = mutableSetOf(),
+    override val fileUri: URI? = null,
 ) : FileContent {
 
     private var variableErrorStrategy: VariableErrorStrategy = VariableErrorStrategy.STAY

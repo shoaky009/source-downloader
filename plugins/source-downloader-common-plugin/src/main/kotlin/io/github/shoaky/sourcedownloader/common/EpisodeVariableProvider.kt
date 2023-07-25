@@ -20,6 +20,7 @@ object EpisodeVariableProvider : VariableProvider {
         CommonEpisodeValueParser,
         // 连续数字只出现过一次的
         RegexValueParser("^\\D*?(\\d+)\\D*?\$".toRegex()),
+        RegexValueParser("#(\\d+)".toRegex()),
     )
 
     private val textClear = TextClear(

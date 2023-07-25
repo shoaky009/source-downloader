@@ -321,7 +321,8 @@ class SourceProcessor(
                     MapPatternVariables(sourceFile.patternVariables().variables()),
                     savePathPattern,
                     filenamePattern,
-                    resolveFile.attributes
+                    resolveFile.attributes,
+                    fileUri = resolveFile.fileUri
                 )
                 val tags = taggers.mapNotNull { it.tag(sourceFileContent) }
                     .onEach {
@@ -493,15 +494,17 @@ class SourceProcessor(
     private fun createDownloadTask(content: CoreItemContent, replaceFiles: List<CoreFileContent>): DownloadTask {
         val downloadFiles = content.sourceFiles
             .filter { it.status != FileContentStatus.TARGET_EXISTS }
-            .map { it.fileDownloadPath }.toMutableList()
+            .toMutableList()
         if (log.isDebugEnabled) {
             log.debug("{} 创建下载任务文件, files:{}", content.sourceItem.title, downloadFiles)
         }
 
-        downloadFiles.addAll(replaceFiles.map { it.fileDownloadPath })
+        downloadFiles.addAll(replaceFiles)
         return DownloadTask(
             content.sourceItem,
-            downloadFiles,
+            downloadFiles.map {
+                SourceFile(it.fileDownloadPath, it.attributes, it.fileUri)
+            },
             downloadPath,
             options.downloadOptions
         )
@@ -563,7 +566,7 @@ private class LoggingRetryListener : RetryListener {
         throwable: Throwable
     ) {
         val stage = context.getAttribute("stage")
-        log.info(
+        log.warn(
             "第{}次重试失败, stage:{}, message:{}",
             context.retryCount,
             "${throwable::class.simpleName}:${throwable.message}",

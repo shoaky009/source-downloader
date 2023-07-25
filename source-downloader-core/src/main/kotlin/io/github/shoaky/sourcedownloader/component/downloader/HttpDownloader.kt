@@ -9,11 +9,13 @@ import java.nio.file.Path
 
 class HttpDownloader(
     private val downloadPath: Path,
-    private val client: HttpClient = httpClient
+    private val client: HttpClient = httpClient,
 ) : Downloader {
 
     override fun submit(task: DownloadTask) {
-        task.options.tags
+        if (task.options.preferFileUri) {
+
+        }
     }
 
     override fun defaultDownloadPath(): Path {

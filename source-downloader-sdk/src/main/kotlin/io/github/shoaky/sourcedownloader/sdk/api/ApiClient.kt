@@ -1,13 +1,12 @@
 package io.github.shoaky.sourcedownloader.sdk.api
 
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
-import com.google.common.net.HttpHeaders
 import com.google.common.net.MediaType
 import com.google.common.net.UrlEscapers
 import io.github.shoaky.sourcedownloader.sdk.util.Jackson
 import io.github.shoaky.sourcedownloader.sdk.util.appendPrefix
+import io.github.shoaky.sourcedownloader.sdk.util.http.httpClient
 import org.slf4j.LoggerFactory
-import java.net.CookieManager
 import java.net.URI
 import java.net.URLEncoder
 import java.net.http.HttpClient
@@ -15,13 +14,17 @@ import java.net.http.HttpRequest
 import java.net.http.HttpRequest.BodyPublishers
 import java.net.http.HttpResponse
 
+typealias GHttpHeaders = com.google.common.net.HttpHeaders
+
 interface ApiClient {
 
     fun <R : BaseRequest<T>, T : Any> execute(endpoint: URI, request: R): HttpResponse<T>
 
 }
 
-abstract class HookedApiClient : ApiClient {
+abstract class HookedApiClient(
+    val client: HttpClient = httpClient,
+) : ApiClient {
 
     override fun <R : BaseRequest<T>, T : Any> execute(endpoint: URI, request: R): HttpResponse<T> {
         val requestBuilder = HttpRequest.newBuilder(endpoint)
@@ -43,14 +46,14 @@ abstract class HookedApiClient : ApiClient {
         }
         requestBuilder.method(request.httpMethod, bodyPublisher)
         request.mediaType?.let {
-            request.setHeader(HttpHeaders.CONTENT_TYPE, it)
+            request.setHeader(GHttpHeaders.CONTENT_TYPE, it)
         }
         request.httpHeaders().forEach { (name, value) -> requestBuilder.header(name, value) }
 
         val httpRequest = requestBuilder.build()
 
         val httpResponse = try {
-            httpClient.send(httpRequest, request.bodyHandler())
+            client.send(httpRequest, request.bodyHandler())
         } catch (e: Exception) {
             throw e
         }
@@ -124,8 +127,6 @@ abstract class HookedApiClient : ApiClient {
 
     companion object {
 
-        val cookieManager = CookieManager()
-        private val httpClient: HttpClient = HttpClient.newBuilder().cookieHandler(cookieManager).build()
         private val log = LoggerFactory.getLogger(BaseRequest::class.java)
 
         private fun <K, V> Map<K, V?>.filterNotNullValues(): Map<K, V> =

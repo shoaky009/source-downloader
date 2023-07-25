@@ -1,5 +1,6 @@
 package io.github.shoaky.sourcedownloader.sdk
 
+import java.net.URI
 import java.nio.file.Path
 
 interface FileContent {
@@ -25,6 +26,11 @@ interface FileContent {
      * The attributes of the file.
      */
     val attributes: Map<String, Any>
+
+    /**
+     * The URI of the file.
+     */
+    val fileUri: URI?
 
     /**
      * @return The target path of the file. e.g. /mnt/save/2023-01-01/test.txt

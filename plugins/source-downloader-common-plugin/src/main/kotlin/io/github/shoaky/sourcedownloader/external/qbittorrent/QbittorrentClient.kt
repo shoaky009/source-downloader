@@ -3,6 +3,7 @@ package io.github.shoaky.sourcedownloader.external.qbittorrent
 import io.github.shoaky.sourcedownloader.sdk.api.BaseRequest
 import io.github.shoaky.sourcedownloader.sdk.api.HookedApiClient
 import io.github.shoaky.sourcedownloader.sdk.util.Jackson
+import io.github.shoaky.sourcedownloader.sdk.util.http.defaultCookieManager
 import org.slf4j.LoggerFactory
 import java.net.HttpCookie
 import java.net.URL
@@ -39,7 +40,7 @@ class QbittorrentClient(private val qbittorrentConfig: QbittorrentConfig) : Hook
     }
 
     private fun getSidCookie(): HttpCookie? {
-        val cookies = cookieManager.cookieStore.get(endpoint)
+        val cookies = defaultCookieManager.cookieStore.get(endpoint)
         if (log.isDebugEnabled) {
             log.debug("qBittorrent cookies:${Jackson.toJsonString(cookies)}")
         }
@@ -76,6 +77,7 @@ class QbittorrentClient(private val qbittorrentConfig: QbittorrentConfig) : Hook
     }
 
     companion object {
+
         const val sidCookieName = "SID"
         const val successResponse = "Ok."
         private val log = LoggerFactory.getLogger(QbittorrentClient::class.java)

@@ -93,7 +93,7 @@ class TelegramIntegration(
             log.warn("SourceItem document not found: ${task.sourceItem}")
             return
         }
-        val fileDownloadPath = task.downloadFiles.first()
+        val fileDownloadPath = task.downloadFiles.map { it.path }.first()
         fileDownloadPath.parent.createDirectories()
         val document = documentOp.get()
 

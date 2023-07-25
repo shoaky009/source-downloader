@@ -20,9 +20,9 @@ class MockDownloader(
 
     override fun submit(task: DownloadTask) {
         val dp = task.downloadPath
-        task.downloadFiles.filter { it.notExists() }
+        task.downloadFiles.filter { it.path.notExists() }
             .forEach {
-                val resolve = dp.resolve(it)
+                val resolve = dp.resolve(it.path)
                 if (resolve.parent != dp && resolve.parent.notExists()) {
                     resolve.parent.createDirectories()
                 }
