@@ -3,13 +3,15 @@ package io.github.shoaky.sourcedownloader.telegram
 import com.fasterxml.jackson.annotation.JsonAlias
 import io.github.shoaky.sourcedownloader.sdk.InstanceFactory
 import io.github.shoaky.sourcedownloader.sdk.Properties
-import io.github.shoaky.sourcedownloader.telegram.auth.QrCodeAuthorization
+import io.github.shoaky.sourcedownloader.telegram.auth.QRCallback
 import io.netty.util.ResourceLeakDetector
 import org.slf4j.LoggerFactory
 import reactor.core.publisher.Hooks
 import telegram4j.core.MTProtoTelegramClient
+import telegram4j.core.auth.QRAuthorizationHandler
 import telegram4j.core.retriever.EntityRetrievalStrategy
 import telegram4j.core.retriever.PreferredEntityRetriever
+import telegram4j.mtproto.client.ReconnectionStrategy
 import telegram4j.mtproto.resource.EventLoopResources
 import telegram4j.mtproto.resource.ProxyResources
 import telegram4j.mtproto.resource.TcpClientResources
@@ -33,7 +35,7 @@ object TelegramClientInstanceFactory : InstanceFactory<MTProtoTelegramClient> {
         val bootstrap = MTProtoTelegramClient.create(
             config.apiId,
             config.apiHash,
-            QrCodeAuthorization::authorize
+            QRAuthorizationHandler(QRCallback())
         )
 
         val proxyResource = props.getOrNull<URI>("proxy")?.let {
@@ -52,7 +54,7 @@ object TelegramClientInstanceFactory : InstanceFactory<MTProtoTelegramClient> {
             )
         }
         bootstrap
-            .setReconnectionInterval(Duration.ofSeconds(config.reconnectionInterval))
+            .setReconnectionStrategy(ReconnectionStrategy.immediately())
             .setPingInterval(Duration.ofSeconds(config.pingInterval))
             .setEntityRetrieverStrategy(
                 EntityRetrievalStrategy.preferred(
