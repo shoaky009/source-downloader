@@ -16,11 +16,17 @@ internal class MikanSource(
     private val url: String,
     private val allEpisode: Boolean = false,
     private val rssReader: RssReader = defaultRssReader,
-    private val mikanSupport: MikanSupport = MikanSupport(null)
+    private val mikanSupport: MikanSupport = MikanSupport(null),
+    /**
+     * 该字段只是用于单元测试时候的控制，不要在正常使用时候设置为false
+     */
+    private val cleanPointer: Boolean = true,
 ) : Source<MikanPointer> {
 
     override fun fetch(pointer: MikanPointer, limit: Int): Iterable<PointedItem<ItemPointer>> {
-        pointer.cleanMonthly()
+        if (cleanPointer) {
+            pointer.cleanMonthly()
+        }
         val sourceItems = rssReader.read(url)
             .map {
                 fromRssItem(it)

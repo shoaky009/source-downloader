@@ -116,7 +116,7 @@ class MikanSourceTest {
             URL("https://mikanani.me/Home/Episode/e3a592a221d70310e6f576f39303d63618e4dc4c"),
         )).thenReturn(MikanSupport.EpisodePageInfo(fansubRss = "https://mikanani.me/RSS/Bangumi?bangumiId=2994&subgroupid=604"))
 
-        val mikanSource = MikanSource("http://topItems", true, rssReader, support)
+        val mikanSource = MikanSource("http://topItems", true, rssReader, support, false)
 
         val result = mutableListOf<PointedItem<ItemPointer>>()
         val sourceItems = mikanSource.fetch(mikanPointer, limit)
