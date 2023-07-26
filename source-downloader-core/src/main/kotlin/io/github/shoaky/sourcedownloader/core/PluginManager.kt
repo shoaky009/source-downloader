@@ -3,7 +3,7 @@ package io.github.shoaky.sourcedownloader.core
 import io.github.shoaky.sourcedownloader.config.SourceDownloaderProperties
 import io.github.shoaky.sourcedownloader.core.component.ComponentManager
 import io.github.shoaky.sourcedownloader.sdk.InstanceManager
-import io.github.shoaky.sourcedownloader.sdk.Plugin
+import io.github.shoaky.sourcedownloader.sdk.plugin.Plugin
 import org.springframework.core.io.support.SpringFactoriesLoader
 import org.springframework.stereotype.Component
 import java.util.*

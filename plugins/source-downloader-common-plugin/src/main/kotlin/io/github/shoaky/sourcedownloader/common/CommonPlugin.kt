@@ -5,9 +5,9 @@ import io.github.shoaky.sourcedownloader.common.supplier.AnimeVariableProviderSu
 import io.github.shoaky.sourcedownloader.common.supplier.MikanVariableProviderSupplier
 import io.github.shoaky.sourcedownloader.common.torrent.QbittorrentClientInstanceFactory
 import io.github.shoaky.sourcedownloader.common.torrent.QbittorrentDownloaderSupplier
-import io.github.shoaky.sourcedownloader.sdk.Plugin
-import io.github.shoaky.sourcedownloader.sdk.PluginContext
-import io.github.shoaky.sourcedownloader.sdk.PluginDescription
+import io.github.shoaky.sourcedownloader.sdk.plugin.Plugin
+import io.github.shoaky.sourcedownloader.sdk.plugin.PluginContext
+import io.github.shoaky.sourcedownloader.sdk.plugin.PluginDescription
 import io.github.shoaky.sourcedownloader.sdk.util.getObjectSuppliers
 
 internal class CommonPlugin : Plugin {

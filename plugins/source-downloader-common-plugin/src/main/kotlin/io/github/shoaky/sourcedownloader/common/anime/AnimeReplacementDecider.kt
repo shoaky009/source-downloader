@@ -8,7 +8,12 @@ object AnimeReplacementDecider : FileReplacementDecider {
     private val versionRegex = Regex("\\[v\\d+]", RegexOption.IGNORE_CASE)
 
     override fun isReplace(current: ItemContent, before: ItemContent?): Boolean {
-        // 简单写一个 后续继续补充
+        val title = current.sourceItem.title
+        // 有水印的不要
+        if (title.contains("bilibili", true) || title.contains("仅限港澳台地区", true)) {
+            return false
+        }
+
         return version(current, before)
     }
 

@@ -1,5 +1,8 @@
-package io.github.shoaky.sourcedownloader.sdk
+package io.github.shoaky.sourcedownloader.sdk.plugin
 
+import io.github.shoaky.sourcedownloader.sdk.InstanceFactory
+import io.github.shoaky.sourcedownloader.sdk.InstanceManager
+import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
 import java.nio.file.Path
 

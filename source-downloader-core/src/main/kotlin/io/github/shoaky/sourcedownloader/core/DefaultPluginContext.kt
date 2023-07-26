@@ -5,6 +5,7 @@ import io.github.shoaky.sourcedownloader.config.SourceDownloaderProperties
 import io.github.shoaky.sourcedownloader.core.component.ComponentManager
 import io.github.shoaky.sourcedownloader.sdk.*
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
+import io.github.shoaky.sourcedownloader.sdk.plugin.PluginContext
 import org.springframework.stereotype.Component
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentHashMap

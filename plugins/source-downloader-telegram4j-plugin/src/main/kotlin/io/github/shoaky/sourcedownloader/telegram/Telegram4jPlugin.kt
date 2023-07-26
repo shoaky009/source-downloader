@@ -1,8 +1,8 @@
 package io.github.shoaky.sourcedownloader.telegram
 
-import io.github.shoaky.sourcedownloader.sdk.Plugin
-import io.github.shoaky.sourcedownloader.sdk.PluginContext
-import io.github.shoaky.sourcedownloader.sdk.PluginDescription
+import io.github.shoaky.sourcedownloader.sdk.plugin.Plugin
+import io.github.shoaky.sourcedownloader.sdk.plugin.PluginContext
+import io.github.shoaky.sourcedownloader.sdk.plugin.PluginDescription
 import telegram4j.core.MTProtoTelegramClient
 
 class Telegram4jPlugin : Plugin {

@@ -208,7 +208,7 @@ class SourceProcessor(
         )
 
         if (sourceState.lastPointer != lastState?.lastPointer) {
-            log.info("Processor:$name update pointer Source:$sourceId lastPointedItem:$sourceState")
+            log.info("Processor:'$name' update pointer lastPointedItem:${sourceState.lastPointer.values}")
         }
         processingStorage.save(sourceState)
     }
@@ -467,7 +467,7 @@ class SourceProcessor(
 
         val renameTimesThreshold = options.renameTimesThreshold
         if (pc.renameTimes == renameTimesThreshold) {
-            log.warn("重命名${renameTimesThreshold}次重试失败record:${Jackson.toJsonString(pc)}")
+            log.warn("重命名${renameTimesThreshold}次重试失败, record:${Jackson.toJsonString(pc)}")
         }
 
         val toUpdate = pc.copy(
@@ -569,8 +569,8 @@ private class LoggingRetryListener : RetryListener {
         log.warn(
             "第{}次重试失败, stage:{}, message:{}",
             context.retryCount,
+            stage,
             "${throwable::class.simpleName}:${throwable.message}",
-            stage
         )
     }
 
