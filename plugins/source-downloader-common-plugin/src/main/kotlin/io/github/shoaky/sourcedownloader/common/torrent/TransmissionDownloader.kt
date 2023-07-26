@@ -3,6 +3,7 @@ package io.github.shoaky.sourcedownloader.common.torrent
 import io.github.shoaky.sourcedownloader.external.transmission.*
 import io.github.shoaky.sourcedownloader.sdk.DownloadTask
 import io.github.shoaky.sourcedownloader.sdk.ItemContent
+import io.github.shoaky.sourcedownloader.sdk.SourceFile
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.TorrentDownloader
 import org.slf4j.LoggerFactory
@@ -62,7 +63,7 @@ class TransmissionDownloader(
         return client.execute(SessionGet()).body().arguments.downloadPath
     }
 
-    override fun cancel(sourceItem: SourceItem) {
+    override fun cancel(sourceItem: SourceItem, files: List<SourceFile>) {
         val hash = getTorrentHash(sourceItem)
         val response = client.execute(TorrentDelete(listOf(hash)))
         log.info("cancel item:{} status:{} body:{}", sourceItem, response.statusCode(), response.body())

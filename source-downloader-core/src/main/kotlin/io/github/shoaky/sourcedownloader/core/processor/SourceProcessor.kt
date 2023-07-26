@@ -295,12 +295,15 @@ class SourceProcessor(
             return
         }
 
+        val files = before.itemContent.sourceFiles.map {
+            SourceFile(it.fileDownloadPath, it.attributes, it.fileUri)
+        }
         // drop before task
         val beforeItem = before.itemContent.sourceItem
         val hashing = beforeItem.hashing()
         dropMem.computeIfAbsent(hashing) {
             log.info("Drop before id:{} task:{}", before.id, beforeItem)
-            downloader.cancel(beforeItem)
+            downloader.cancel(beforeItem, files)
             true
         }
     }

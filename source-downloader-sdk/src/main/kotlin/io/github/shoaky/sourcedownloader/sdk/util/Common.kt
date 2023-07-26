@@ -6,7 +6,6 @@ import java.net.URI
 import java.util.*
 import kotlin.reflect.KClass
 
-
 fun String.find(vararg regexes: Regex): String? {
     for (regex in regexes) {
         val match = regex.find(this)
@@ -42,6 +41,48 @@ fun URI.queryMap(): Map<String, String> {
         split[0] to split[1]
     }
 }
+
+const val KILOBYTE = 1024.0
+const val MEGABYTE = KILOBYTE * 1024.0
+const val GIGABYTE = MEGABYTE * 1024.0
+
+val Long.readableRate: String
+    get() = when {
+        this > GIGABYTE -> {
+            String.format("%.2f GiB/s", this / GIGABYTE)
+        }
+
+        this > MEGABYTE -> {
+            String.format("%.2f MiB/s", this / MEGABYTE)
+        }
+
+        this > KILOBYTE -> {
+            String.format("%.2f KiB/s", this / KILOBYTE)
+        }
+
+        else -> {
+            "$this B/s"
+        }
+    }
+
+val Long.readableSize: String
+    get() = when {
+        this > GIGABYTE -> {
+            String.format("%.2f GiB", this / GIGABYTE)
+        }
+
+        this > MEGABYTE -> {
+            String.format("%.2f MiB", this / MEGABYTE)
+        }
+
+        this > KILOBYTE -> {
+            String.format("%.2f KiB", this / KILOBYTE)
+        }
+
+        else -> {
+            "$this B"
+        }
+    }
 
 // TODO native image会失败，后面再看
 fun getObjectSuppliers(

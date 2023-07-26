@@ -14,7 +14,7 @@ class FanboxFileResolver(
     override fun resolveFiles(sourceItem: SourceItem): List<SourceFile> {
         val request = PostInfoRequest(sourceItem.link.path.split("/").last())
         val post = fanboxClient.execute(request).body().body
-
+        // TODO 还有其他类型的文件
         return post.body.images.mapIndexed { _, image ->
             SourceFile(
                 Path(image.id),

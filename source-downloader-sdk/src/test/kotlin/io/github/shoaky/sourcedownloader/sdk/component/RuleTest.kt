@@ -2,6 +2,7 @@ package io.github.shoaky.sourcedownloader.sdk.component
 
 import io.github.shoaky.sourcedownloader.sdk.DownloadTask
 import io.github.shoaky.sourcedownloader.sdk.ItemContent
+import io.github.shoaky.sourcedownloader.sdk.SourceFile
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
@@ -61,7 +62,7 @@ object TestDownloader : Downloader {
         return Path.of("test")
     }
 
-    override fun cancel(sourceItem: SourceItem) {
+    override fun cancel(sourceItem: SourceItem, files: List<SourceFile>) {
         NotImplementedError()
     }
 
@@ -79,7 +80,7 @@ object TestTorrentDownloader : TorrentDownloader {
         return Path.of("test")
     }
 
-    override fun cancel(sourceItem: SourceItem) {
+    override fun cancel(sourceItem: SourceItem, files: List<SourceFile>) {
         NotImplementedError()
     }
 

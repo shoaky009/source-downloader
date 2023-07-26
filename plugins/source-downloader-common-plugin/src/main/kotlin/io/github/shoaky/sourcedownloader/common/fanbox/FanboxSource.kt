@@ -11,11 +11,11 @@ import io.github.shoaky.sourcedownloader.sdk.component.Source
 
 class FanboxSource(
     private val client: FanboxClient,
-    private val mode: Int = 1
+    private val mode: String? = null
 ) : Source<FanboxPointer> {
 
     override fun fetch(pointer: FanboxPointer, limit: Int): Iterable<PointedItem<ItemPointer>> {
-        if (mode == 1) {
+        if (mode == "LatestOnly") {
             return client.execute(SupportingPostsRequest(50)).body()
                 .body.items.filter { it.isRestricted.not() }
                 .map { PointedItem(it.toItem(client.server), NullPointer) }

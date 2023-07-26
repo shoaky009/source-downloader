@@ -4,6 +4,7 @@ import bt.metainfo.MetadataService
 import io.github.shoaky.sourcedownloader.external.qbittorrent.*
 import io.github.shoaky.sourcedownloader.sdk.DownloadTask
 import io.github.shoaky.sourcedownloader.sdk.ItemContent
+import io.github.shoaky.sourcedownloader.sdk.SourceFile
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.TorrentDownloader
 import io.github.shoaky.sourcedownloader.sdk.component.TorrentDownloader.Companion.tryParseTorrentHash
@@ -72,7 +73,7 @@ class QbittorrentDownloader(
         return Path.of(response.body())
     }
 
-    override fun cancel(sourceItem: SourceItem) {
+    override fun cancel(sourceItem: SourceItem, files: List<SourceFile>) {
         val torrentHash = getTorrentHash(sourceItem)
         val response = client.execute(
             TorrentDeleteRequest(listOf(torrentHash))

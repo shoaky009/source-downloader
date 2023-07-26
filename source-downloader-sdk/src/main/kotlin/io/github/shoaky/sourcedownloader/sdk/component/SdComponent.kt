@@ -157,7 +157,7 @@ interface Downloader : SdComponent {
     /**
      * Cancel the download task
      */
-    fun cancel(sourceItem: SourceItem)
+    fun cancel(sourceItem: SourceItem, files: List<SourceFile>)
 
 }
 

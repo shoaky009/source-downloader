@@ -161,7 +161,7 @@ class TelegramIntegration(
     /**
      * Not tested
      */
-    override fun cancel(sourceItem: SourceItem) {
+    override fun cancel(sourceItem: SourceItem, files: List<SourceFile>) {
         val path = hashingPathMapping[sourceItem.hashing()]
         val progressiveChannel = progresses[path] ?: return
         progressiveChannel.close()

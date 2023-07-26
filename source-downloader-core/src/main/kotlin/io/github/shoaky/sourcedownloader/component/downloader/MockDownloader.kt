@@ -2,6 +2,7 @@ package io.github.shoaky.sourcedownloader.component.downloader
 
 import io.github.shoaky.sourcedownloader.sdk.DownloadTask
 import io.github.shoaky.sourcedownloader.sdk.ItemContent
+import io.github.shoaky.sourcedownloader.sdk.SourceFile
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.TorrentDownloader
 import java.nio.file.Files
@@ -34,7 +35,7 @@ class MockDownloader(
         return downloadPath
     }
 
-    override fun cancel(sourceItem: SourceItem) {
+    override fun cancel(sourceItem: SourceItem, files: List<SourceFile>) {
         // Do nothing
     }
 

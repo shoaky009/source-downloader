@@ -1,6 +1,7 @@
 package io.github.shoaky.sourcedownloader.component.source
 
 import io.github.shoaky.sourcedownloader.sdk.DownloadTask
+import io.github.shoaky.sourcedownloader.sdk.SourceFile
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.AlwaysLatestSource
 import io.github.shoaky.sourcedownloader.sdk.component.Downloader
@@ -64,7 +65,7 @@ class SystemFileSource(
         return path
     }
 
-    override fun cancel(sourceItem: SourceItem) {
+    override fun cancel(sourceItem: SourceItem, files: List<SourceFile>) {
         // Do nothing
     }
 
