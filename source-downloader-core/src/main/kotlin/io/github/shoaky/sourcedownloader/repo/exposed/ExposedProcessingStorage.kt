@@ -1,0 +1,234 @@
+package io.github.shoaky.sourcedownloader.repo.exposed
+
+import io.github.shoaky.sourcedownloader.core.ProcessingContent
+import io.github.shoaky.sourcedownloader.core.ProcessingStorage
+import io.github.shoaky.sourcedownloader.core.ProcessorSourceState
+import io.github.shoaky.sourcedownloader.core.processor.ProcessingTargetPath
+import io.github.shoaky.sourcedownloader.repo.ProcessingQuery
+import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
+import org.jetbrains.exposed.sql.transactions.transaction
+import org.springframework.stereotype.Component
+import java.nio.file.Path
+import kotlin.io.path.Path
+
+typealias EProcessorSourceState = io.github.shoaky.sourcedownloader.repo.exposed.ProcessorSourceState
+
+@Component
+class ExposedProcessingStorage : ProcessingStorage {
+
+    override fun save(content: ProcessingContent): ProcessingContent {
+        return transaction {
+            if (content.id != null) {
+                Processings.update({ Processings.id eq content.id }) {
+                    it[processorName] = content.processorName
+                    it[sourceItemHashing] = content.sourceHash
+                    it[itemContent] = content.itemContent
+                    it[renameTimes] = content.renameTimes
+                    it[status] = content.status
+                    it[failureReason] = content.failureReason
+                    it[modifyTime] = content.modifyTime
+                }
+                return@transaction content
+            }
+            val id = Processings.insertAndGetId {
+                it[processorName] = content.processorName
+                it[sourceItemHashing] = content.sourceHash
+                it[itemContent] = content.itemContent
+                it[renameTimes] = content.renameTimes
+                it[status] = content.status
+                it[failureReason] = content.failureReason
+                it[modifyTime] = content.modifyTime
+                it[createTime] = content.createTime
+            }
+            content.copy(id = id.value)
+        }
+    }
+
+    override fun save(state: ProcessorSourceState): ProcessorSourceState {
+        return transaction {
+            // 暂时先这样写，后面再优化
+            if (state.id != null) {
+                ProcessorSourceStates.update({ ProcessorSourceStates.id eq state.id }) {
+                    it[processorName] = state.processorName
+                    it[sourceId] = state.sourceId
+                    it[lastPointer] = state.lastPointer
+                    it[retryTimes] = state.retryTimes
+                    it[lastActiveTime] = state.lastActiveTime
+                }
+                return@transaction state
+            }
+            val id = ProcessorSourceStates.insertAndGetId {
+                it[processorName] = state.processorName
+                it[sourceId] = state.sourceId
+                it[lastPointer] = state.lastPointer
+                it[retryTimes] = state.retryTimes
+                it[lastActiveTime] = state.lastActiveTime
+            }
+            state.copy(id = id.value)
+        }
+    }
+
+    override fun findRenameContent(name: String, renameTimesThreshold: Int): List<ProcessingContent> {
+        return transaction {
+            Processing.find {
+                Processings.processorName eq name and Processings.status.eq(ProcessingContent.Status.WAITING_TO_RENAME) and (Processings.renameTimes less renameTimesThreshold)
+            }.map {
+                ProcessingContent(
+                    id = it.id.value,
+                    processorName = it.processorName,
+                    sourceHash = it.sourceItemHashing,
+                    itemContent = it.itemContent,
+                    renameTimes = it.renameTimes,
+                    status = it.status,
+                    failureReason = it.failureReason,
+                    modifyTime = it.modifyTime,
+                    createTime = it.createTime
+                )
+            }
+        }
+    }
+
+    override fun deleteProcessingContent(id: Long) {
+        transaction {
+            Processings.deleteWhere { Processings.id eq id }
+        }
+    }
+
+    override fun findByNameAndHash(processorName: String, itemHashing: String): ProcessingContent? {
+        return transaction {
+            Processing.find {
+                Processings.processorName eq processorName and (Processings.sourceItemHashing eq itemHashing)
+            }.firstOrNull()?.let {
+                ProcessingContent(
+                    id = it.id.value,
+                    processorName = it.processorName,
+                    sourceHash = it.sourceItemHashing,
+                    itemContent = it.itemContent,
+                    renameTimes = it.renameTimes,
+                    status = it.status,
+                    failureReason = it.failureReason,
+                    modifyTime = it.modifyTime,
+                    createTime = it.createTime
+                )
+            }
+        }
+    }
+
+    override fun findByItemHashing(itemHashing: List<String>): List<ProcessingContent> {
+        return transaction {
+            Processing.find {
+                Processings.sourceItemHashing inList itemHashing
+            }.map {
+                ProcessingContent(
+                    id = it.id.value,
+                    processorName = it.processorName,
+                    sourceHash = it.sourceItemHashing,
+                    itemContent = it.itemContent,
+                    renameTimes = it.renameTimes,
+                    status = it.status,
+                    failureReason = it.failureReason,
+                    modifyTime = it.modifyTime,
+                    createTime = it.createTime
+                )
+            }
+        }
+    }
+
+    override fun saveTargetPath(targetPaths: List<ProcessingTargetPath>) {
+        transaction {
+            TargetPaths.batchUpsert(targetPaths, keys = arrayOf(TargetPaths.id)) { table, path ->
+                table[id] = path.targetPath.toString()
+                table[processorName] = path.processorName
+                table[itemHashing] = path.itemHashing
+            }
+        }
+    }
+
+    override fun targetPathExists(paths: List<Path>): Boolean {
+        return transaction {
+            TargetPaths.select {
+                TargetPaths.id inList paths.map { it.toString() }
+            }.adjustSlice { slice(TargetPaths.id) }.limit(1).count() > 0
+        }
+    }
+
+    override fun findById(id: Long): ProcessingContent? {
+        return transaction {
+            Processing.findById(id)?.let {
+                ProcessingContent(
+                    id = it.id.value,
+                    processorName = it.processorName,
+                    sourceHash = it.sourceItemHashing,
+                    itemContent = it.itemContent,
+                    renameTimes = it.renameTimes,
+                    status = it.status,
+                    failureReason = it.failureReason,
+                    modifyTime = it.modifyTime,
+                    createTime = it.createTime
+                )
+            }
+        }
+    }
+
+    override fun findProcessorSourceState(processorName: String, sourceId: String): ProcessorSourceState? {
+        return transaction {
+            EProcessorSourceState.find {
+                ProcessorSourceStates.processorName eq processorName and (ProcessorSourceStates.sourceId eq sourceId)
+            }.firstOrNull()?.let {
+                ProcessorSourceState(
+                    id = it.id.value,
+                    processorName = it.processorName,
+                    sourceId = it.sourceId,
+                    lastPointer = it.lastPointer,
+                    retryTimes = it.retryTimes,
+                    lastActiveTime = it.lastActiveTime
+                )
+            }
+        }
+    }
+
+    override fun findTargetPaths(paths: List<Path>): List<ProcessingTargetPath> {
+        return transaction {
+            TargetPath.find {
+                TargetPaths.id inList paths.map { it.toString() }
+            }.map {
+                ProcessingTargetPath(
+                    processorName = it.processorName,
+                    itemHashing = it.itemHashing,
+                    targetPath = Path(it.id.value),
+                )
+            }
+        }
+    }
+
+    override fun deleteTargetPath(paths: List<Path>) {
+        transaction {
+            TargetPaths.deleteWhere {
+                id inList paths.map { it.toString() }
+            }
+        }
+    }
+
+    override fun query(query: ProcessingQuery): List<ProcessingContent> {
+        return transaction {
+            val builder = Processings.selectAll()
+            query.apply(builder)
+            builder
+                .map {
+                    ProcessingContent(
+                        id = it[Processings.id].value,
+                        processorName = it[Processings.processorName],
+                        sourceHash = it[Processings.sourceItemHashing],
+                        itemContent = it[Processings.itemContent],
+                        renameTimes = it[Processings.renameTimes],
+                        status = it[Processings.status],
+                        failureReason = it[Processings.failureReason],
+                        modifyTime = it[Processings.modifyTime],
+                        createTime = it[Processings.createTime]
+                    )
+                }
+        }
+    }
+}

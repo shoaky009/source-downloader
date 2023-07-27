@@ -50,12 +50,10 @@ class SourceProcessor(
     private val runAfterCompletion: List<RunAfterCompletion> = options.runAfterCompletion
     private val taggers: List<FileTagger> = options.fileTaggers
     private var fileReplacementDecider: FileReplacementDecider = options.fileReplacementDecider
-
     private val downloadPath = downloader.defaultDownloadPath().toAbsolutePath()
     private val sourceSavePath: Path = sourceSavePath.toAbsolutePath()
     private val filenamePattern = options.filenamePattern
     private val savePathPattern = options.savePathPattern
-
     private var renameTaskFuture: ScheduledFuture<*>? = null
     private val safeRunner by lazy {
         SafeRunner(this)
@@ -93,24 +91,23 @@ class SourceProcessor(
         }
         renameTaskFuture?.cancel(false)
         renameTaskFuture = renameScheduledExecutor.scheduleAtFixedRate({
-            log.debug("Processor:${name} 开始重命名任务...")
+            log.debug("Processor':${name}' 开始重命名任务...")
             var modified = false
             val measureTime = measureTime {
                 try {
                     modified = runRename() > 0
                 } catch (e: Exception) {
-                    log.error("Processor:${name} 重命名任务出错", e)
+                    log.error("Processor:'${name}' 重命名任务出错", e)
                 }
                 System.currentTimeMillis()
             }
 
             if (modified) {
-                log.info("Processor:${name} 重命名任务完成 took:${measureTime.inWholeMilliseconds}ms")
+                log.info("Processor:'${name}' 重命名任务完成 took:${measureTime.inWholeMilliseconds}ms")
             }
-
             val renameCostTimeThreshold = 100L
             if (modified.not() && measureTime.inWholeMilliseconds > renameCostTimeThreshold) {
-                log.warn("Processor:${name} 重命名任务没有修改 took:${measureTime.inWholeMilliseconds}ms")
+                log.warn("Processor:'${name}' 重命名任务没有修改 took:${measureTime.inWholeMilliseconds}ms")
             }
         }, 5L, interval.seconds, TimeUnit.SECONDS)
     }
@@ -125,8 +122,13 @@ class SourceProcessor(
 
     private fun process(dryRun: Boolean = false): List<ProcessingContent> {
         val lastState = processingStorage.findProcessorSourceState(name, sourceId)
-        val sourcePointer = lastState?.resolvePointer(source::class) ?: source.defaultPointer()
-        log.debug("Processor:{} lastState:{}", name, lastState)
+            ?: ProcessorSourceState(
+                processorName = name,
+                sourceId = sourceId,
+                lastPointer = Jackson.convert(source.defaultPointer(), PersistentPointer::class)
+            )
+        val sourcePointer = lastState.resolvePointer(source::class)
+        log.debug("Processor:'{}' lastState:{}", name, lastState)
 
         val itemIterator = retry.execute<Iterator<PointedItem<ItemPointer>>, IOException> {
             it.setAttribute("stage", ProcessStage("FetchSourceItems", lastState))
@@ -135,7 +137,6 @@ class SourceProcessor(
         }
 
         val result = mutableListOf<ProcessingContent>()
-
         val simpleStat = SimpleStat(name)
         for (item in itemIterator) {
             val filterBy = sourceItemFilters.firstOrNull { it.test(item.sourceItem).not() }
@@ -155,9 +156,9 @@ class SourceProcessor(
                 }
             }.onFailure {
                 // 失败的hook
-                log.error("Processor:${name}处理失败, item:$item", it)
+                log.error("Processor:'${name}'处理失败, item:$item", it)
                 if (options.itemErrorContinue.not()) {
-                    log.warn("Processor:${name}处理失败, item:$item, 退出本次触发处理, 如果未能解决该处理器将无法继续处理后续Item")
+                    log.warn("Processor:'${name}'处理失败, item:$item, 退出本次触发处理, 如果未能解决该处理器将无法继续处理后续Item")
                     return result
                 }
             }.onSuccess {
@@ -197,20 +198,17 @@ class SourceProcessor(
         return result
     }
 
-    private fun saveState(sourcePointer: SourcePointer, lastState: ProcessorSourceState?) {
-        val sourceState = lastState?.copy(
+    private fun saveState(sourcePointer: SourcePointer, lastState: ProcessorSourceState) {
+        val sourceState = lastState.copy(
             lastPointer = Jackson.convert(sourcePointer, PersistentPointer::class),
             lastActiveTime = LocalDateTime.now()
-        ) ?: ProcessorSourceState(
-            processorName = name,
-            sourceId = sourceId,
-            lastPointer = Jackson.convert(sourcePointer, PersistentPointer::class),
         )
 
-        if (sourceState.lastPointer != lastState?.lastPointer) {
-            log.info("Processor:'$name' update pointer lastPointedItem:${sourceState.lastPointer.values}")
+        if (sourceState.lastPointer != lastState.lastPointer) {
+            log.info("Processor:'$name' update pointer:${sourceState.lastPointer}")
         }
-        processingStorage.save(sourceState)
+        val save = processingStorage.save(sourceState)
+        lastState.id = save.id
     }
 
     private fun processItem(sourceItem: SourceItem, dryRun: Boolean = false): ProcessingContent {
@@ -220,7 +218,7 @@ class SourceProcessor(
             options.variableConflictStrategy,
             options.variableNameReplace
         )
-        val itemContent = createPersistentItemContent(variablesAggregation, sourceItem)
+        val itemContent = createItemContent(variablesAggregation, sourceItem)
         val filterBy = itemContentFilters.firstOrNull { it.test(itemContent).not() }
         if (filterBy != null) {
             log.debug("{} Filtered item:{}", filterBy::class.simpleName, sourceItem)
@@ -252,7 +250,6 @@ class SourceProcessor(
             }
             return ProcessingContent(name, itemContent).copy(status = RENAMED, renameTimes = 1)
         }
-
         var status = WAITING_TO_RENAME
         if (contentStatus.first.not()) {
             status = contentStatus.second
@@ -266,14 +263,12 @@ class SourceProcessor(
         if (fileReplacementDecider == NeverReplace) {
             return emptyList()
         }
-
         val partition = itemContent.sourceFiles.partition { it.status == FileContentStatus.REPLACE }
         val existsFiles = partition.second.filter { it.status == FileContentStatus.TARGET_EXISTS }
         val support = TargetPathRelationSupport(
             existsFiles,
             processingStorage
         )
-
         val dropMem = mutableMapOf<String, Boolean>()
         val replaceFiles = existsFiles
             .map { fileContent ->
@@ -294,7 +289,6 @@ class SourceProcessor(
         if (before == null || before.status != WAITING_TO_RENAME) {
             return
         }
-
         val files = before.itemContent.sourceFiles.map {
             SourceFile(it.fileDownloadPath, it.attributes, it.fileUri)
         }
@@ -308,7 +302,7 @@ class SourceProcessor(
         }
     }
 
-    private fun createPersistentItemContent(
+    private fun createItemContent(
         sourceItemGroup: SourceItemGroup,
         sourceItem: SourceItem
     ): CoreItemContent {
@@ -331,7 +325,6 @@ class SourceProcessor(
                     .onEach {
                         sourceFileContent.tags.add(it)
                     }
-
                 val fileOptions = options.getTaggedOptions(tags)
                 val replacedContent = fileOptions.let { ops ->
                     sourceFileContent.copy(
@@ -365,7 +358,6 @@ class SourceProcessor(
         if (replaceFiles.isNotEmpty()) {
             return true to WAITING_TO_RENAME
         }
-
         val targetPaths = files.map { it.targetPath() }
         // 预防这一批次的Item有相同的目标，并且是AsyncDownloader的情况下会重复下载
         if (processingStorage.targetPathExists(targetPaths)) {
@@ -375,7 +367,6 @@ class SourceProcessor(
         if (fileMover.exists(targetPaths)) {
             return false to TARGET_ALREADY_EXISTS
         }
-
         val current = files.map { it.fileDownloadPath.exists() }
         if (current.all { it }) {
             return false to WAITING_TO_RENAME
@@ -400,7 +391,7 @@ class SourceProcessor(
     fun runRename(): Int {
         val asyncDownloader = downloader as? AsyncDownloader
         if (asyncDownloader == null) {
-            log.warn("Processor:${name} 非异步下载器不执行重命名任务")
+            log.warn("Processor:'${name}' 非异步下载器不执行重命名任务")
             return 0
         }
         val downloadStatusGrouping = processingStorage.findRenameContent(name, options.renameTimesThreshold)
@@ -456,7 +447,6 @@ class SourceProcessor(
             log.info("全部目标文件已存在，无需重命名，record:${Jackson.toJsonString(pc)}")
             return
         }
-
         val allSuccess = runCatching {
             moveFiles(itemContent)
             replaceFiles(itemContent)
@@ -467,12 +457,10 @@ class SourceProcessor(
         if (allSuccess) {
             runAfterCompletions(itemContent)
         }
-
         val renameTimesThreshold = options.renameTimesThreshold
         if (pc.renameTimes == renameTimesThreshold) {
             log.warn("重命名${renameTimesThreshold}次重试失败, record:${Jackson.toJsonString(pc)}")
         }
-
         val toUpdate = pc.copy(
             renameTimes = pc.renameTimes.inc(),
             status = RENAMED,
@@ -516,7 +504,7 @@ class SourceProcessor(
     private fun moveFiles(content: CoreItemContent): Boolean {
         val movableFiles = content.getMovableFiles(fileMover)
         if (movableFiles.isEmpty()) {
-            log.info("Processor:$name item:'${content.sourceItem.title}' no available files to rename")
+            log.info("Processor:'$name' item:'${content.sourceItem.title}' no available files to rename")
             return false
         }
         movableFiles.map { it.saveDirectoryPath() }
@@ -524,6 +512,12 @@ class SourceProcessor(
             .forEach {
                 fileMover.createDirectories(it)
             }
+
+        if (log.isDebugEnabled) {
+            content.sourceFiles.forEach {
+                log.debug("Move file:'${it.fileDownloadPath}' to '${it.targetPath()}'")
+            }
+        }
         return fileMover.move(
             content.copy(sourceFiles = movableFiles)
         )
@@ -535,7 +529,7 @@ class SourceProcessor(
             return true
         }
         log.info(
-            "Processor:{} sourceItem:{} replaceFiles:{}",
+            "Processor:'{}' sourceItem:{} replaceFiles:{}",
             name, itemContent.sourceItem.title, replaceableFiles.map { it.targetPath() }
         )
 
@@ -627,16 +621,16 @@ private class SafeRunner(
     private var running = false
     override fun run() {
         val name = processor.name
-        log.info("Processor:${name} 触发获取源信息")
+        log.info("Processor:'${name}' 触发获取源信息")
         if (running) {
-            log.info("Processor:${name} 上一次任务还未完成，跳过本次任务")
+            log.info("Processor:'${name}' 上一次任务还未完成，跳过本次任务")
             return
         }
         running = true
         try {
             processor.run()
         } catch (e: Exception) {
-            log.error("Processor:${name} 执行失败", e)
+            log.error("Processor:'${name}' 执行失败", e)
         } finally {
             running = false
         }
@@ -661,13 +655,11 @@ private class TargetPathRelationSupport(
     private val targetPaths = processingStorage.findTargetPaths(
         files.map { it.targetPath() }
     )
-
     private val contents = processingStorage.findByItemHashing(
         targetPaths.mapNotNull { it.itemHashing }.distinct()
     ).filter { it.status == RENAMED }
         .groupBy { it.sourceHash }
         .mapValues { ent -> ent.value.maxBy { it.createTime } }
-
     private val targetPathMapping = targetPaths.filter { it.itemHashing != null }
         .associateBy { it.targetPath }
 

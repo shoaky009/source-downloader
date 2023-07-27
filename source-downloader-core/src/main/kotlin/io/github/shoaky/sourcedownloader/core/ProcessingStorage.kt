@@ -1,6 +1,7 @@
 package io.github.shoaky.sourcedownloader.core
 
 import io.github.shoaky.sourcedownloader.core.processor.ProcessingTargetPath
+import io.github.shoaky.sourcedownloader.repo.ProcessingQuery
 import java.nio.file.Path
 
 interface ProcessingStorage {
@@ -26,9 +27,11 @@ interface ProcessingStorage {
 
     fun findProcessorSourceState(processorName: String, sourceId: String): ProcessorSourceState?
 
-    fun save(state: ProcessorSourceState)
+    fun save(state: ProcessorSourceState): ProcessorSourceState
 
     fun findTargetPaths(paths: List<Path>): List<ProcessingTargetPath>
 
     fun deleteTargetPath(paths: List<Path>)
+
+    fun query(query: ProcessingQuery): List<ProcessingContent>
 }

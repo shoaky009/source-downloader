@@ -1,10 +1,11 @@
 package io.github.shoaky.sourcedownloader.integration
 
+import io.github.shoaky.sourcedownloader.core.ProcessingStorage
 import io.github.shoaky.sourcedownloader.core.component.ComponentManager
 import io.github.shoaky.sourcedownloader.core.file.FileContentStatus
 import io.github.shoaky.sourcedownloader.core.processor.ProcessorManager
 import io.github.shoaky.sourcedownloader.createIfNotExists
-import io.github.shoaky.sourcedownloader.repo.jpa.ProcessingRecordRepository
+import io.github.shoaky.sourcedownloader.repo.ProcessingQuery
 import io.github.shoaky.sourcedownloader.testResourcePath
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeEach
@@ -23,7 +24,7 @@ import kotlin.test.assertNotNull
 class SourceProcessorTest : InitializingBean {
 
     @Autowired
-    lateinit var processingStorage: ProcessingRecordRepository
+    lateinit var processingStorage: ProcessingStorage
 
     @Autowired
     lateinit var processorManager: ProcessorManager
@@ -42,7 +43,6 @@ class SourceProcessorTest : InitializingBean {
 
         sourcePath.resolve("test1.jpg").createIfNotExists()
         sourcePath.resolve("test2.jpg").createIfNotExists()
-
         val source3 = sourcePath.resolve("test-dir")
         source3.createDirectories()
         source3.resolve("test3.jpg").createIfNotExists()
@@ -59,11 +59,9 @@ class SourceProcessorTest : InitializingBean {
 
         processor.run()
         processor.runRename()
-
-        val contents = processingStorage.findByProcessorName("NormalCase")
+        val contents = processingStorage.query(ProcessingQuery("NormalCase"))
             .associateBy { it.itemContent.sourceItem.title }
         assertEquals(3, contents.size)
-
         val d1 =
             contents["test1"]!!.itemContent.sharedPatternVariables.getVariables()["sourceItemDate"]!!
         val d2 =
@@ -82,10 +80,9 @@ class SourceProcessorTest : InitializingBean {
     fun normal_dry_run() {
         val processor = processorManager.getProcessor("NormalCaseCopy")?.get()
         assertNotNull(processor, "Processor NormalCaseCopy not found")
-
         val contents = processor.dryRun()
         assertEquals(3, contents.size)
-        assertEquals(0, processingStorage.findByProcessorName("NormalCaseCopy").size)
+        assertEquals(0, processingStorage.query(ProcessingQuery("NormalCaseCopy")).size)
     }
 
     @Test
@@ -93,19 +90,17 @@ class SourceProcessorTest : InitializingBean {
         val downloadedFile = downloadPath.resolve("test2.jpg").createIfNotExists()
         val targetFile = savePath.resolve("test-dir")
             .resolve("test3.jpg").createIfNotExists()
-
         val processor = processorManager.getProcessor("FileStatusCase")?.get()
         assertNotNull(processor, "Processor FileStatusCase not found")
 
         processor.run()
-        val records = processingStorage.findByProcessorName("FileStatusCase").sortedBy { it.id }
+        val records = processingStorage.query(ProcessingQuery("FileStatusCase")).sortedBy { it.id }
             .associateBy { it.itemContent.sourceItem.title }
 
         downloadedFile.deleteIfExists()
         targetFile.deleteIfExists()
         assertEquals(FileContentStatus.NORMAL, records["test1"]!!.itemContent.sourceFiles.first().status)
         assertEquals(FileContentStatus.NORMAL, records["test2"]!!.itemContent.sourceFiles.first().status)
-
         val sourceFile =
             records["test-dir"]!!.itemContent.sourceFiles.first { it.fileDownloadPath.name == "test3.jpg" }
         assertEquals(FileContentStatus.TARGET_EXISTS, sourceFile.status)
@@ -117,17 +112,10 @@ class SourceProcessorTest : InitializingBean {
         assertNotNull(processor, "Processor FileStatusCase2 not found")
 
         processor.run()
-        val records = processingStorage.findByProcessorName("FileStatusCase2").sortedBy { it.id }
-
+        val records = processingStorage.query(ProcessingQuery("FileStatusCase2")).sortedBy { it.id }
         val record = records.first { it.itemContent.sourceItem.title == "test-dir" }
         assertEquals(FileContentStatus.FILE_CONFLICT, record.itemContent.sourceFiles[0].status)
         assertEquals(FileContentStatus.FILE_CONFLICT, record.itemContent.sourceFiles[1].status)
-    }
-
-    @Test
-    fun error_continue() {
-        // val processor = processorManager.getProcessor("ErrorContinueCase")?.get()
-        // processor?.run()
     }
 
     // 待测试场景
@@ -140,7 +128,7 @@ class SourceProcessorTest : InitializingBean {
     // 7.tagFilenamePattern option测试
     // 8.replaceVariable option测试
     // 9.fileReplacement 测试
-
+    // 10.error_continue
     companion object {
 
         private val savePath = testResourcePath.resolve("target")
@@ -158,8 +146,6 @@ class SourceProcessorTest : InitializingBean {
     }
 
     override fun afterPropertiesSet() {
-        componentManager.registerSupplier(
-
-        )
+//        componentManager.registerSupplier()
     }
 }

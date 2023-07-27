@@ -11,13 +11,10 @@ dependencies {
     // basic
     implementation(project(":source-downloader-sdk"))
     implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     implementation("org.flywaydb:flyway-core")
     implementation(libs.sqlite.jdbc)
-    implementation(libs.hibernate.community.dialects)
-    implementation(libs.hibernate.core)
     // runtimeOnly("com.h2database:h2")
     // kotlin
     implementation("org.jetbrains.kotlin:kotlin-reflect")
@@ -34,6 +31,8 @@ dependencies {
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml")
     implementation(enforcedPlatform(libs.cel.bom))
     implementation(libs.cel.tools)
+    implementation(libs.exposed.spring.boot.stater)
+    implementation(libs.bundles.exposed)
 
     resolveBuildInPlugins()
 }

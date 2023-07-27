@@ -1,6 +1,8 @@
 spring:
+
   application:
     name: source-downloader
+
   main:
     banner-mode: off
     allow-bean-definition-overriding: true
@@ -10,17 +12,21 @@ spring:
     url: jdbc:sqlite:${source-downloader.data-location}source-downloader.db
     #driver-class-name: org.h2.Driver
     driver-class-name: org.sqlite.JDBC
-  jpa:
-    open-in-view: false
-    database-platform: org.hibernate.community.dialect.SQLiteDialect
-    hibernate:
-      ddl-auto: none
+  #  jpa:
+  #    open-in-view: false
+  #    database-platform: org.hibernate.community.dialect.SQLiteDialect
+  #    hibernate:
+  #      ddl-auto: none
   flyway:
     locations:
       - classpath:/db/migration
     user: ${spring.datasource.username}
     password: ${spring.datasource.password}
-
+  exposed:
+    generate-ddl: false
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.jdbc.JdbcTemplateAutoConfiguration
 source-downloader:
   data-location: ${SOURCE_DOWNLOADER_DATA_LOCATION:./}
 ---
@@ -37,7 +43,8 @@ spring:
     show-sql: true
     properties:
       hibernate.format_sql: true
-
+  exposed:
+    show-sql: true
 logging:
   level:
     telegram4j: debug
@@ -54,7 +61,8 @@ spring:
   datasource:
     # FIXME Windows下会错误
     url: jdbc:sqlite:test.db
-
+  exposed:
+    show-sql: true
 source-downloader:
   data-location: src/test/resources
 
