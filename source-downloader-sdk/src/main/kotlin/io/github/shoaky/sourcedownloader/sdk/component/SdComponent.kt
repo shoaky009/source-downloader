@@ -140,6 +140,9 @@ interface Source<SP : SourcePointer> : SdComponent {
     fun fetch(pointer: SP, limit: Int = 50): Iterable<PointedItem<ItemPointer>>
 
     fun defaultPointer(): SP
+
+    @Deprecated("为了能够传递HttpHeader临时瞎定义的后面要改", ReplaceWith("none"))
+    fun headers(): Map<String, String> = emptyMap()
 }
 
 interface Downloader : SdComponent {

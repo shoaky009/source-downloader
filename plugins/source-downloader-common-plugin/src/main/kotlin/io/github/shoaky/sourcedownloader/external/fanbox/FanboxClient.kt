@@ -12,7 +12,7 @@ class FanboxClient(
     val server: URI = URI("https://api.fanbox.cc")
 ) : HookedApiClient() {
 
-    private val basicHeaders = mapOf(
+    val basicHeaders = mapOf(
         HttpHeaders.COOKIE to "FANBOXSESSID=$sessionId",
         HttpHeaders.ORIGIN to "https://www.fanbox.cc",
         HttpHeaders.REFERER to "https://www.fanbox.cc/",
@@ -34,4 +34,5 @@ class FanboxClient(
 
     override fun <R : BaseRequest<T>, T : Any> afterRequest(response: HttpResponse<T>, request: R) {
     }
+
 }

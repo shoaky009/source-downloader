@@ -491,13 +491,16 @@ class SourceProcessor(
         }
 
         downloadFiles.addAll(replaceFiles)
+        val headers = HashMap(source.headers())
+        headers.putAll(options.downloadOptions.headers)
+        val downloadOptions = options.downloadOptions
         return DownloadTask(
             content.sourceItem,
             downloadFiles.map {
                 SourceFile(it.fileDownloadPath, it.attributes, it.fileUri)
             },
             downloadPath,
-            options.downloadOptions
+            downloadOptions.copy(headers = headers)
         )
     }
 
@@ -648,8 +651,8 @@ private class ProcessStage(
 }
 
 private class TargetPathRelationSupport(
-    private val files: List<CoreFileContent>,
-    private val processingStorage: ProcessingStorage
+    files: List<CoreFileContent>,
+    processingStorage: ProcessingStorage
 ) {
 
     private val targetPaths = processingStorage.findTargetPaths(

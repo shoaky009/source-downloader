@@ -20,7 +20,6 @@ class FanboxSource(
                 .body.items.filter { it.isRestricted.not() }
                 .map { PointedItem(it.toItem(client.server), NullPointer) }
         }
-
         val supporting = client.execute(SupportingRequest()).body().body
         val results = mutableListOf<PointedItem<ItemPointer>>()
         for (sup in supporting) {
@@ -41,6 +40,9 @@ class FanboxSource(
         return FanboxPointer()
     }
 
+    override fun headers(): Map<String, String> {
+        return client.basicHeaders
+    }
 }
 
 private class CreatorPostsIterator(
@@ -59,7 +61,6 @@ private class CreatorPostsIterator(
         if (creatorPointer.touchBottom.not()) {
             return true
         }
-
         val lastMaxId = creatorPointer.topId
         return posts.items.all { it.id != lastMaxId }
     }
@@ -69,7 +70,6 @@ private class CreatorPostsIterator(
 
         posts = fanboxClient.execute(request).body().body
         finished = posts.hasNext().not()
-
         val items = posts.items.filter { it.isRestricted.not() }
             .map {
                 creatorPointer.update(it, finished)
