@@ -10,15 +10,32 @@ object AnimeReplacementDecider : FileReplacementDecider {
     override fun isReplace(current: ItemContent, before: ItemContent?): Boolean {
         val title = current.sourceItem.title
         // 有水印的不要
-        if (title.contains("bilibili", true) || title.contains("仅限港澳台地区", true)) {
+        if (isBilibili(title)) {
             return false
+        }
+
+        if (replaceBilibili(before)) {
+            return true
         }
 
         return version(current, before)
     }
 
+    private fun replaceBilibili(before: ItemContent?): Boolean {
+        if (before == null) {
+            return false
+        }
+        val title = before.sourceItem.title
+        return isBilibili(title)
+    }
+
     private fun version(current: ItemContent, before: ItemContent?): Boolean {
+        // enhance, before version greater than current version don't replace
         val title = current.sourceItem.title
         return versionRegex.find(title)?.let { true } ?: false
+    }
+
+    private fun isBilibili(text: String): Boolean {
+        return text.contains("bilibili", true) || text.contains("仅限港澳台地区", true)
     }
 }
