@@ -1,7 +1,6 @@
 package io.github.shoaky.sourcedownloader.external.fanbox
 
 import com.fasterxml.jackson.annotation.JsonFormat
-import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import java.net.URI
 import java.time.LocalDateTime
 
@@ -48,26 +47,7 @@ data class Post(
     val hasAdultContent: Boolean,
     val tags: List<String> = emptyList(),
     val cover: Cover? = null
-) {
-
-    fun toItem(server: URI): SourceItem {
-        val uri = server.resolve("posts/${id}")
-        return SourceItem(
-            title,
-            uri,
-            publishedDatetime,
-            "fanbox",
-            uri,
-            mapOf(
-                "likes" to likeCount,
-                "comments" to commentCount,
-                "adult" to hasAdultContent,
-                "fee" to feeRequired
-            ),
-            tags.toSet()
-        )
-    }
-}
+)
 
 data class PostDetail(
     val id: String,

@@ -1,13 +1,12 @@
 package io.github.shoaky.sourcedownloader.common.fanbox
 
-import io.github.shoaky.sourcedownloader.external.fanbox.FanboxClient
-import io.github.shoaky.sourcedownloader.external.fanbox.Posts
-import io.github.shoaky.sourcedownloader.external.fanbox.SupportingPostsRequest
-import io.github.shoaky.sourcedownloader.external.fanbox.SupportingRequest
+import io.github.shoaky.sourcedownloader.external.fanbox.*
 import io.github.shoaky.sourcedownloader.sdk.ItemPointer
 import io.github.shoaky.sourcedownloader.sdk.NullPointer
 import io.github.shoaky.sourcedownloader.sdk.PointedItem
+import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.Source
+import java.net.URI
 
 class FanboxSource(
     private val client: FanboxClient,
@@ -15,18 +14,18 @@ class FanboxSource(
 ) : Source<FanboxPointer> {
 
     override fun fetch(pointer: FanboxPointer, limit: Int): Iterable<PointedItem<ItemPointer>> {
-        if (mode == "LatestOnly") {
-            return client.execute(SupportingPostsRequest(50)).body()
+        if (mode == "latestOnly") {
+            return client.execute(SupportingPostsRequest(30)).body()
                 .body.items.filter { it.isRestricted.not() }
-                .map { PointedItem(it.toItem(client.server), NullPointer) }
+                .map { PointedItem(toItem(client.server, it), NullPointer) }
         }
-        val supporting = client.execute(SupportingRequest()).body().body
+        val supportings = client.execute(SupportingRequest()).body().body
         val results = mutableListOf<PointedItem<ItemPointer>>()
-        for (sup in supporting) {
-            val creatorId = sup.creatorId
+        for (supporting in supportings) {
+            val creatorId = supporting.creatorId
             val creatorPointer = pointer.creatorPointers[creatorId] ?: CreatorPointer(creatorId)
-            val creatorPostsIterator = CreatorPostsIterator(creatorPointer, client)
-            for (pointedItems in creatorPostsIterator) {
+            val iterator = CreatorPostsIterator(creatorPointer, client, supporting)
+            for (pointedItems in iterator) {
                 results.addAll(pointedItems)
                 if (results.size >= limit) {
                     break
@@ -47,12 +46,17 @@ class FanboxSource(
 
 private class CreatorPostsIterator(
     private val creatorPointer: CreatorPointer,
-    private val fanboxClient: FanboxClient,
+    private val client: FanboxClient,
+    supporting: Supporting
 ) : Iterator<List<PointedItem<ItemPointer>>> {
 
     private val lastTimeStatus = creatorPointer.touchBottom
     private var finished = false
     private var posts: Posts = Posts()
+    private val supportingAttrs = mapOf(
+        "creatorId" to supporting.creatorId,
+        "dd" to supporting.user
+    )
 
     override fun hasNext(): Boolean {
         if (finished) {
@@ -68,12 +72,12 @@ private class CreatorPostsIterator(
     override fun next(): List<PointedItem<ItemPointer>> {
         val request = creatorPointer.nextRequest()
 
-        posts = fanboxClient.execute(request).body().body
+        posts = client.execute(request).body().body
         finished = posts.hasNext().not()
         val items = posts.items.filter { it.isRestricted.not() }
             .map {
                 creatorPointer.update(it, finished)
-                PointedItem(it.toItem(fanboxClient.server), creatorPointer) to it
+                PointedItem(toItem(client.server, it), creatorPointer) to it
             }
 
         return if (lastTimeStatus) {
@@ -86,4 +90,25 @@ private class CreatorPostsIterator(
         }
     }
 
+}
+
+private fun toItem(server: URI, post: Post): SourceItem {
+    val uri = server.resolve("posts/${post.id}")
+    return SourceItem(
+        post.title,
+        uri,
+        post.publishedDatetime,
+        "fanbox",
+        uri,
+        mapOf<String, Any>(
+            "likes" to post.likeCount,
+            "comments" to post.commentCount,
+            "adult" to post.hasAdultContent,
+            "fee" to post.feeRequired,
+            "username" to post.user.name,
+            "userId" to post.user.userId,
+            "creatorId" to post.creatorId
+        ),
+        post.tags.toSet()
+    )
 }

@@ -9,7 +9,7 @@ import java.nio.file.Path
 object HttpDownloaderSupplier : ComponentSupplier<HttpDownloader> {
 
     override fun apply(props: Properties): HttpDownloader {
-        val path = props.get<Path>("path")
+        val path = props.get<Path>("download-path")
         return HttpDownloader(path)
     }
 
