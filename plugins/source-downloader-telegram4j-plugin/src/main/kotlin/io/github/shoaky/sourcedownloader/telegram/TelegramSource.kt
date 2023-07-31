@@ -55,7 +55,7 @@ class TelegramSource(
             is MessageMediaPhoto -> {
                 return SourceItem("$chatId-${message.id()}.jpg", uri,
                     messageDateTime, "image/jpg", uri,
-                    attributes = mapOf(MEDIA_TYPE_ATTR to "photo"))
+                    attrs = mapOf(MEDIA_TYPE_ATTR to "photo"))
             }
 
             is MessageMediaDocument -> {

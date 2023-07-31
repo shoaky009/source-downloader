@@ -27,7 +27,7 @@ data class CorePathPattern(
     private var variableReplacers: MutableList<VariableReplacer> = mutableListOf()
 ) : PathPattern {
 
-    private val expressions: List<Expression> by lazy {
+    internal val expressions: List<Expression> by lazy {
         val matcher = variablePatternRegex.matcher(pattern)
         val expressions = mutableListOf<Expression>()
         while (matcher.find()) {
@@ -40,10 +40,10 @@ data class CorePathPattern(
         this.variableReplacers.addAll(variableReplacers)
     }
 
-    override fun parse(provider: PatternVariables): ParseResult {
+    override fun parse(patternVariables: PatternVariables): ParseResult {
         val matcher = variablePatternRegex.matcher(pattern)
         val pathBuilder = StringBuilder()
-        val variables = provider.variables().mapValues { entry ->
+        val variables = patternVariables.variables().mapValues { entry ->
             var text = entry.value
             variableReplacers.forEach {
                 val before = text
@@ -94,7 +94,7 @@ data class CorePathPattern(
 
 }
 
-private class Expression(
+internal class Expression(
     val raw: String
 ) {
 

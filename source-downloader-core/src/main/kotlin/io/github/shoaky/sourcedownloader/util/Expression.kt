@@ -49,7 +49,6 @@ class CelLibrary : Library {
                     Decls.Bool
                 )
             ),
-
             )
         return listOf(options)
     }

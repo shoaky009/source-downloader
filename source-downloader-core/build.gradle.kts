@@ -30,7 +30,7 @@ dependencies {
     implementation("org.springframework.retry:spring-retry")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml")
     implementation(enforcedPlatform(libs.cel.bom))
-    implementation(libs.cel.tools)
+    implementation(libs.bundles.cel)
     implementation(libs.exposed.spring.boot.stater)
     implementation(libs.bundles.exposed)
 

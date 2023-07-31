@@ -6,6 +6,7 @@ import kotlin.io.path.extension
 import kotlin.io.path.name
 import kotlin.io.path.nameWithoutExtension
 
+@Deprecated("将内置通用变量")
 object MetadataVariableProvider : VariableProvider {
     override fun createSourceGroup(sourceItem: SourceItem): SourceItemGroup {
         return MetadataSourceItemGroup(sourceItem)
@@ -43,7 +44,7 @@ class MetadataSourceItemGroup(
         vars.addVariable("sourceItemYear", date.year.toString())
         vars.addVariable("sourceItemMonth", date.month.toString())
         vars.addVariable("sourceItemDayOfMonth", date.dayOfMonth.toString())
-        sourceItem.attributes.forEach { (t, u) ->
+        sourceItem.attrs.forEach { (t, u) ->
             vars.addVariable("attr.$t", u.toString())
         }
         return vars

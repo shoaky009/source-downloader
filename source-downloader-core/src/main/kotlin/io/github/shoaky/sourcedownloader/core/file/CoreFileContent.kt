@@ -24,6 +24,9 @@ data class CoreFileContent(
     var status: FileContentStatus = FileContentStatus.UNDETECTED,
     override val tags: MutableSet<String> = mutableSetOf(),
     override val fileUri: URI? = null,
+    // 为旧数据做兼容, 后续改成非NULL类型
+    val targetSavePath: Path? = null,
+    val targetFilename: String? = null,
 ) : FileContent {
 
     private var variableErrorStrategy: VariableErrorStrategy = VariableErrorStrategy.STAY
@@ -31,6 +34,7 @@ data class CoreFileContent(
     @Transient
     private val allVariables = MapPatternVariables(patternVariables)
 
+    @Deprecated("不使用实时计算的方式，处理后直接存储目标路径不受处理器新配置变化而改变")
     private val targetPath: Path by lazy {
         val saveDirectoryPath = saveDirectoryPath()
         val result = targetFilename0()
@@ -45,7 +49,8 @@ data class CoreFileContent(
     }
 
     override fun targetPath(): Path {
-        return targetPath
+        targetFilename ?: return targetPath
+        return targetSavePath?.resolve(targetFilename) ?: targetPath
     }
 
     override fun saveDirectoryPath(): Path {
@@ -96,7 +101,6 @@ data class CoreFileContent(
             if (targetFilename.isBlank()) {
                 return fileDownloadPath.name to true
             }
-
             val extension = fileDownloadPath.extension
             if (targetFilename.endsWith(extension)) {
                 return targetFilename to true

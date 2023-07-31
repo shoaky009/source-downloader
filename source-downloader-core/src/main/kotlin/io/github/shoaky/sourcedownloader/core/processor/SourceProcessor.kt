@@ -567,7 +567,7 @@ private class LoggingRetryListener : RetryListener {
     ) {
         val stage = context.getAttribute("stage")
         log.warn(
-            "第{}次重试失败, stage:{}, message:{}",
+            "第{}次重试失败, {}, message:{}",
             context.retryCount,
             stage,
             "${throwable::class.simpleName}:${throwable.message}",
@@ -646,7 +646,7 @@ private class ProcessStage(
 ) {
 
     override fun toString(): String {
-        return "stage='$stage', subject=$subject"
+        return "stage:'$stage', subject:$subject"
     }
 }
 

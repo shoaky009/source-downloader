@@ -68,6 +68,6 @@ fun bindItemScriptVars(item: SourceItem): Map<String, Any> {
             .build(),
         "link" to item.link,
         "tags" to item.tags.toList(),
-        "attrs" to item.attributes
+        "attrs" to item.attrs
     )
 }

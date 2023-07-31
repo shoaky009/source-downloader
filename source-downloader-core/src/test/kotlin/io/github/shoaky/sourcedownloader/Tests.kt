@@ -9,21 +9,23 @@ import kotlin.io.path.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
 
-
 val testResourcePath = Path("src", "test", "resources")
 
 fun sourceItem(title: String = "test", contentType: String = "",
-               link: String = "http://localhost", downloadUrl: String = "http://localhost"
+               link: String = "http://localhost", downloadUrl: String = "http://localhost",
+               attrs: Map<String, Any> = emptyMap(),
+               tags: Set<String> = emptySet()
 ): SourceItem {
     return SourceItem(
         title,
         URI(link),
         LocalDateTime.now(),
         contentType,
-        URI(downloadUrl)
+        URI(downloadUrl),
+        attrs,
+        tags
     )
 }
-
 
 fun Path.createIfNotExists(): Path {
     if (this.exists()) {
