@@ -1,6 +1,8 @@
 package io.github.shoaky.sourcedownloader.core
 
-import com.fasterxml.jackson.annotation.*
+import com.fasterxml.jackson.annotation.JsonAlias
+import com.fasterxml.jackson.annotation.JsonFormat
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer
@@ -77,7 +79,7 @@ data class ProcessorConfig(
         val downloadOptions: DownloadOptions = DownloadOptions(),
         val variableConflictStrategy: VariableConflictStrategy = VariableConflictStrategy.SMART,
         val renameTimesThreshold: Int = 3,
-        val provideMetadataVariables: Boolean = true,
+//        val provideMetadataVariables: Boolean = true,
         val saveProcessingContent: Boolean = true,
         val itemExpressionExclusions: List<String> = emptyList(),
         val itemExpressionInclusions: List<String> = emptyList(),

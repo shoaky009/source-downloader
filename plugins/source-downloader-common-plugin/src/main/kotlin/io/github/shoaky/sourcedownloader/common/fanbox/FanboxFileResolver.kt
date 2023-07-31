@@ -17,7 +17,7 @@ class FanboxFileResolver(
         // TODO 还有其他类型的文件
         return post.body.images.mapIndexed { _, image ->
             SourceFile(
-                Path(image.id),
+                Path("${image.id}.${image.extension}"),
                 mapOf(
                     "type" to "image",
                     "height" to image.height,

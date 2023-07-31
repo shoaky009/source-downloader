@@ -1,6 +1,9 @@
 package io.github.shoaky.sourcedownloader.sdk.component
 
-import io.github.shoaky.sourcedownloader.sdk.*
+import io.github.shoaky.sourcedownloader.sdk.DownloadTask
+import io.github.shoaky.sourcedownloader.sdk.ItemContent
+import io.github.shoaky.sourcedownloader.sdk.SourceFile
+import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
 import kotlin.test.assertContentEquals
@@ -60,7 +63,7 @@ private class MultiCp : TorrentDownloader, FileTagger {
         throw NotImplementedError()
     }
 
-    override fun tag(fileContent: FileContent): String? {
+    override fun tag(fileContent: SourceFile): String? {
         throw NotImplementedError()
     }
 

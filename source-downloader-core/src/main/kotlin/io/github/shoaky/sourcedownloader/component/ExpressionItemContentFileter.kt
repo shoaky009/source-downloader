@@ -29,7 +29,7 @@ class ExpressionItemContentFileter(
             "files" to sourceFiles.map {
                 mapOf(
                     "tags" to it.tags.toList(),
-                    "attrs" to it.attributes,
+                    "attrs" to it.attrs,
                     "vars" to it.patternVariables.variables()
                 )
             }

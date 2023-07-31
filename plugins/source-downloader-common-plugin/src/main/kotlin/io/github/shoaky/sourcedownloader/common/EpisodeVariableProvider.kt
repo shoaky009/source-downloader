@@ -31,8 +31,8 @@ object EpisodeVariableProvider : VariableProvider {
     )
 
     override fun createSourceGroup(sourceItem: SourceItem): SourceItemGroup {
-        return FunctionalItemGroup { path ->
-            val string = textClear.input(path.nameWithoutExtension)
+        return FunctionalItemGroup { file ->
+            val string = textClear.input(file.path.nameWithoutExtension)
             val episode = parserChain.firstNotNullOfOrNull { it.parse(string) }
 
             val vars = MapPatternVariables()

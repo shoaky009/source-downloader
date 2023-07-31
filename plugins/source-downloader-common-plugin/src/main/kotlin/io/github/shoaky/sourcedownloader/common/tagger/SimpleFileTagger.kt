@@ -1,6 +1,6 @@
 package io.github.shoaky.sourcedownloader.common.tagger
 
-import io.github.shoaky.sourcedownloader.sdk.FileContent
+import io.github.shoaky.sourcedownloader.sdk.SourceFile
 import io.github.shoaky.sourcedownloader.sdk.component.FileTagger
 import org.apache.tika.Tika
 import org.apache.tika.mime.MimeTypes
@@ -12,8 +12,8 @@ object SimpleFileTagger : FileTagger {
     private val log = LoggerFactory.getLogger(SimpleFileTagger::class.java)
     private val tika = Tika()
 
-    override fun tag(fileContent: FileContent): String? {
-        val name = fileContent.fileDownloadPath.name
+    override fun tag(fileContent: SourceFile): String? {
+        val name = fileContent.path.name
         if (name.lastIndexOf(".") < 0) {
             return null
         }

@@ -1,14 +1,10 @@
 package io.github.shoaky.sourcedownloader.core
 
-import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonValue
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.google.api.expr.v1alpha1.Expr
 import io.github.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
 import io.github.shoaky.sourcedownloader.sdk.PathPattern
-import io.github.shoaky.sourcedownloader.sdk.PathPattern.ExpressionResult
-import io.github.shoaky.sourcedownloader.sdk.PathPattern.ParseResult
-import io.github.shoaky.sourcedownloader.sdk.PatternVariables
 import io.github.shoaky.sourcedownloader.util.jackson.PathPatternDeserializer
 import io.github.shoaky.sourcedownloader.util.scriptHost
 import org.projectnessie.cel.Env
@@ -20,14 +16,9 @@ import java.util.regex.Pattern
 data class CorePathPattern(
     @get:JsonValue
     override val pattern: String,
-    /**
-     * 不在[PatternVariables]装饰替换的原因是不想做成全局的，而是每个[PathPattern]有自己独立的替换规则
-     */
-    @JsonIgnore
-    private var variableReplacers: MutableList<VariableReplacer> = mutableListOf()
 ) : PathPattern {
 
-    internal val expressions: List<Expression> by lazy {
+    val expressions: List<Expression> by lazy {
         val matcher = variablePatternRegex.matcher(pattern)
         val expressions = mutableListOf<Expression>()
         while (matcher.find()) {
@@ -36,57 +27,8 @@ data class CorePathPattern(
         expressions
     }
 
-    fun addReplacer(vararg variableReplacers: VariableReplacer) {
-        this.variableReplacers.addAll(variableReplacers)
-    }
-
-    override fun parse(patternVariables: PatternVariables): ParseResult {
-        val matcher = variablePatternRegex.matcher(pattern)
-        val pathBuilder = StringBuilder()
-        val variables = patternVariables.variables().mapValues { entry ->
-            var text = entry.value
-            variableReplacers.forEach {
-                val before = text
-                text = it.replace(entry.key, text)
-                if (before != text) {
-                    log.debug("replace variable '{}' from '{}' to '{}'", entry.key, before, text)
-                }
-            }
-            text
-        }
-
-        val variableResults = mutableListOf<ExpressionResult>()
-
-        var expressionIndex = 0
-        while (matcher.find()) {
-            val expression = expressions[expressionIndex]
-            val value = expression.eval(variables)
-            variableResults.add(ExpressionResult(expression.raw, value != null || expression.isOptional()))
-            if (value != null) {
-                matcher.appendReplacement(pathBuilder, value)
-            } else if (expression.isOptional()) {
-                matcher.appendReplacement(pathBuilder, "")
-            }
-            expressionIndex = expressionIndex.inc()
-        }
-        matcher.appendTail(pathBuilder)
-        return ParseResult(pathBuilder.toString(), variableResults)
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as CorePathPattern
-
-        return pattern == other.pattern
-    }
-
-    override fun hashCode(): Int {
-        return pattern.hashCode()
-    }
-
     companion object {
+
         private val variablePatternRegex: Pattern = Pattern.compile("\\{(.+?)}|:\\{(.+?)}")
         val ORIGIN = CorePathPattern("")
 
@@ -94,20 +36,23 @@ data class CorePathPattern(
 
 }
 
-internal class Expression(
+class Expression(
     val raw: String
 ) {
 
     private val script: Script by lazy {
         val buildScript = scriptHost.buildScript(parseRaw())
         buildScript.withDeclarations(
-            *this.getDeclaredVariables().map { Decls.newVar(it, Decls.String) }.toTypedArray()
+            Decls.newVar("item.attrs", Decls.newMapType(Decls.String, Decls.String)),
+            Decls.newVar("file.attrs", Decls.newMapType(Decls.String, Decls.String)),
+            Decls.newVar("item.date", Decls.String),
+            Decls.newVar("item.title", Decls.String),
+            *this.getDeclaredVariables().map { Decls.newVar(it, Decls.String) }.toTypedArray(),
         )
-        buildScript
-            .build()
+        buildScript.build()
     }
 
-    fun eval(variables: Map<String, String>): String? {
+    fun eval(variables: Map<String, Any>): String? {
         val expression = parseRaw()
         return runCatching {
             script.execute(String::class.java, variables)

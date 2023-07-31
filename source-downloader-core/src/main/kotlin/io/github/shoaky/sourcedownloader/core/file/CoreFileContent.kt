@@ -1,133 +1,41 @@
 package io.github.shoaky.sourcedownloader.core.file
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import io.github.shoaky.sourcedownloader.core.CorePathPattern
 import io.github.shoaky.sourcedownloader.sdk.FileContent
 import io.github.shoaky.sourcedownloader.sdk.MapPatternVariables
-import io.github.shoaky.sourcedownloader.sdk.PathPattern
-import io.github.shoaky.sourcedownloader.sdk.PatternVariables
 import java.net.URI
 import java.nio.file.Path
-import kotlin.io.path.extension
-import kotlin.io.path.name
 
 data class CoreFileContent(
     override val fileDownloadPath: Path,
     val sourceSavePath: Path,
     override val downloadPath: Path,
     override val patternVariables: MapPatternVariables,
-    @JsonDeserialize(`as` = CorePathPattern::class)
-    val fileSavePathPattern: PathPattern,
-    @JsonDeserialize(`as` = CorePathPattern::class)
-    val filenamePattern: PathPattern,
-    override val attributes: Map<String, Any> = emptyMap(),
-    var status: FileContentStatus = FileContentStatus.UNDETECTED,
-    override val tags: MutableSet<String> = mutableSetOf(),
+    val fileSavePathPattern: CorePathPattern,
+    val filenamePattern: CorePathPattern,
+    val targetSavePath: Path,
+    val targetFilename: String,
+    override val attrs: Map<String, Any> = emptyMap(),
+    override val tags: Set<String> = emptySet(),
     override val fileUri: URI? = null,
-    // 为旧数据做兼容, 后续改成非NULL类型
-    val targetSavePath: Path? = null,
-    val targetFilename: String? = null,
+    val errors: List<String> = emptyList(),
+    var status: FileContentStatus = FileContentStatus.UNDETECTED,
 ) : FileContent {
 
-    private var variableErrorStrategy: VariableErrorStrategy = VariableErrorStrategy.STAY
-
-    @Transient
-    private val allVariables = MapPatternVariables(patternVariables)
-
-    @Deprecated("不使用实时计算的方式，处理后直接存储目标路径不受处理器新配置变化而改变")
     private val targetPath: Path by lazy {
-        val saveDirectoryPath = saveDirectoryPath()
-        val result = targetFilename0()
-        if (result.second.not() && variableErrorStrategy == VariableErrorStrategy.STAY) {
-            return@lazy fileDownloadPath
-        }
-        saveDirectoryPath.resolve(result.first)
-    }
-
-    fun setVariableErrorStrategy(strategy: VariableErrorStrategy) {
-        variableErrorStrategy = strategy
+        targetSavePath.resolve(targetFilename)
     }
 
     override fun targetPath(): Path {
-        targetFilename ?: return targetPath
-        return targetSavePath?.resolve(targetFilename) ?: targetPath
+        return targetPath
     }
 
     override fun saveDirectoryPath(): Path {
-        val parse = fileSavePathPattern.parse(allVariables)
-        if (parse.success()) {
-            if (VariableErrorStrategy.TO_UNRESOLVED == variableErrorStrategy) {
-                val success = filenamePattern.parse(allVariables).success()
-                if (success.not()) {
-                    return sourceSavePath.resolve(parse.path).resolve(UNRESOLVED)
-                }
-            }
-            return sourceSavePath.resolve(parse.path)
-        }
-
-        return when (variableErrorStrategy) {
-            VariableErrorStrategy.ORIGINAL,
-            VariableErrorStrategy.STAY -> {
-                fileDownloadPath.parent
-            }
-
-            VariableErrorStrategy.PATTERN -> {
-                sourceSavePath.resolve(parse.path)
-            }
-
-            VariableErrorStrategy.TO_UNRESOLVED -> {
-                fileDownloadRelativeParentDirectory()?.let {
-                    sourceSavePath.resolve(UNRESOLVED).resolve(it)
-                } ?: sourceSavePath.resolve(UNRESOLVED)
-            }
-        }
-    }
-
-    fun addSharedVariables(shared: PatternVariables) {
-        allVariables.addVariables(shared)
-    }
-
-    /**
-     * @return Pair<targetFilename, isSuccess>
-     */
-    private fun targetFilename0(): Pair<String, Boolean> {
-        if (filenamePattern == CorePathPattern.ORIGIN) {
-            return fileDownloadPath.name to true
-        }
-        val parse = filenamePattern.parse(allVariables)
-        val success = parse.success()
-        if (success) {
-            val targetFilename = parse.path
-            if (targetFilename.isBlank()) {
-                return fileDownloadPath.name to true
-            }
-            val extension = fileDownloadPath.extension
-            if (targetFilename.endsWith(extension)) {
-                return targetFilename to true
-            }
-            return "$targetFilename.$extension" to true
-        }
-
-        return when (variableErrorStrategy) {
-            VariableErrorStrategy.STAY,
-            VariableErrorStrategy.TO_UNRESOLVED,
-            VariableErrorStrategy.ORIGINAL -> {
-                fileDownloadPath.name to false
-            }
-
-            VariableErrorStrategy.PATTERN -> {
-                val target = parse.path
-                val extension = fileDownloadPath.extension
-                if (target.endsWith(extension)) {
-                    return target to false
-                }
-                "$target.$extension" to false
-            }
-        }
+        return targetSavePath
     }
 
     fun targetFilename(): String {
-        return targetFilename0().first
+        return targetFilename
     }
 
     override fun fileSaveRootDirectory(): Path? {
@@ -144,14 +52,5 @@ data class CoreFileContent(
             return null
         }
         return res
-    }
-
-    fun currentVariables(): PatternVariables {
-        return allVariables
-    }
-
-    companion object {
-
-        private const val UNRESOLVED = "unresolved"
     }
 }

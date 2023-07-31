@@ -1,6 +1,6 @@
 package io.github.shoaky.sourcedownloader.common.anime
 
-import io.github.shoaky.sourcedownloader.sdk.FileContent
+import io.github.shoaky.sourcedownloader.sdk.SourceFile
 import io.github.shoaky.sourcedownloader.sdk.component.FileTagger
 import kotlin.io.path.nameWithoutExtension
 
@@ -11,8 +11,8 @@ object AnimeTagger : FileTagger {
 
     private val sp = listOf("特别篇")
 
-    override fun tag(fileContent: FileContent): String? {
-        val filename = fileContent.fileDownloadPath.nameWithoutExtension
+    override fun tag(fileContent: SourceFile): String? {
+        val filename = fileContent.path.nameWithoutExtension
         val isSp = sp.any {
             filename.contains(it)
         }

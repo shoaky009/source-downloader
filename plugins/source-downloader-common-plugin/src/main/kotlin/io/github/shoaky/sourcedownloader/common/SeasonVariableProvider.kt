@@ -18,10 +18,10 @@ object SeasonVariableProvider : VariableProvider {
     )
 
     override fun createSourceGroup(sourceItem: SourceItem): SourceItemGroup {
-        return FunctionalItemGroup { path ->
+        return FunctionalItemGroup { file ->
             var seasonNumber = 1
             for (function in rules) {
-                val apply = function.apply(sourceItem to path)
+                val apply = function.apply(sourceItem to file.path)
                 if (apply != null) {
                     seasonNumber = apply
                     break

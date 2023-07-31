@@ -15,15 +15,14 @@ import kotlin.test.assertEquals
  * This test may fail on Windows, because security policy may prevent running PowerShell scripts.
  */
 class RunCommandTest {
+
     private val command = if (System.getProperty("os.name").contains("windows", true))
         listOf("powershell.exe", Path("src", "test", "resources", "script", "test.ps1").toAbsolutePath().toString(), "test1")
     else
         listOf(Path("src", "test", "resources", "script", "test.sh").toAbsolutePath().toString(), "test1")
-
     private val runCommand = RunCommandSupplier.apply(
         Properties.fromMap(mapOf("command" to command))
     )
-
     private val content = CoreFileContent(
         Path("test.txt"),
         Path("test.txt"),
@@ -31,6 +30,8 @@ class RunCommandTest {
         MapPatternVariables(mapOf("date" to "2022-01-01", "name" to "test")),
         CorePathPattern.ORIGIN,
         CorePathPattern.ORIGIN,
+        Path("test.txt"),
+        ""
     )
 
     @Test
@@ -49,7 +50,6 @@ class RunCommandTest {
                     "withSubjectSummary" to true
                 ))
         )
-
         val process = apply.run(CoreItemContent(sourceItem("1"), listOf(content), MapPatternVariables()))
         assertEquals(0, process.waitFor())
         val result = process.inputStream.bufferedReader().readText()

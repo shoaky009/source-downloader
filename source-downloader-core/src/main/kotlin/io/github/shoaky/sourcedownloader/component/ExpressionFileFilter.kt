@@ -32,7 +32,7 @@ class ExpressionFileFilter(
             "tags" to content.tags.toList(),
             "ext" to content.fileDownloadPath.extension.lowercase(),
             "vars" to content.patternVariables.variables(),
-            "attr" to content.attributes,
+            "attr" to content.attrs,
             "paths" to paths
         )
 

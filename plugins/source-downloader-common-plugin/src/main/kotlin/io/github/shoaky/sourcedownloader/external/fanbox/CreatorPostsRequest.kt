@@ -9,7 +9,7 @@ class CreatorPostsRequest(
     val creatorId: String,
     val maxPublishedDatetime: String? = null,
     val maxId: Long? = null,
-    val limit: Int = 50
+    val limit: Int = 25
 ) : FanboxRequest<Posts>() {
 
     override val path: String = "/post.listCreator"

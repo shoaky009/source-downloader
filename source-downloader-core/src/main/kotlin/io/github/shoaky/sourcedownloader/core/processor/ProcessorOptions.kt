@@ -35,7 +35,7 @@ data class ProcessorOptions(
     val itemErrorContinue: Boolean = true,
 ) {
 
-    fun getTaggedOptions(tags: List<String>): TaggedFileOptions? {
+    fun getTaggedOptions(tags: Set<String>): TaggedFileOptions? {
         if (tags.isEmpty()) {
             return null
         }

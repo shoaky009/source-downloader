@@ -31,6 +31,7 @@ dependencies {
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml")
     implementation(enforcedPlatform(libs.cel.bom))
     implementation(libs.bundles.cel)
+    implementation("org.openjdk.nashorn:nashorn-core:15.4")
     implementation(libs.exposed.spring.boot.stater)
     implementation(libs.bundles.exposed)
 

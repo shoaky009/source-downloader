@@ -19,7 +19,7 @@ object LanguageVariableProvider : VariableProvider {
     override fun createSourceGroup(sourceItem: SourceItem): SourceItemGroup {
         return FunctionalItemGroup(
             function = {
-                val name = it.nameWithoutExtension.replaces(replaces, " ")
+                val name = it.path.nameWithoutExtension.replaces(replaces, " ")
                 val language = languages.entries.firstOrNull { (regex, _) -> regex.containsMatchIn(name) }?.value
                     ?: return@FunctionalItemGroup FileVariable.EMPTY
 

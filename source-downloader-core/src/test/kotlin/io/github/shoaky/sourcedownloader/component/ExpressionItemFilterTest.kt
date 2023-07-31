@@ -49,7 +49,6 @@ class ExpressionItemFilterTest {
         assertEquals(false, filter.test(sourceItem.copy("1wsaqazfff")))
     }
 //
-
     @Test
     fun test_720p() {
         val sourceItem = sourceItem("[Nekomoe kissaten][The iDOLM@STER CINDERELLA GIRLS U149][02][720p][JPSC]")
@@ -72,7 +71,6 @@ fun createFileContent(
     sourcePathPattern: CorePathPattern = CorePathPattern.ORIGIN,
     tags: MutableSet<String> = mutableSetOf()
 ): CoreFileContent {
-
     return CoreFileContent(
         path,
         sourcePath,
@@ -80,6 +78,8 @@ fun createFileContent(
         patternVariables,
         pathPattern,
         sourcePathPattern,
-        tags = tags
+        Path(""),
+        "",
+        tags = tags,
     )
 }

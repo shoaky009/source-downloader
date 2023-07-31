@@ -246,7 +246,7 @@ interface FileTagger : SdComponent {
     /**
      * @return the tag of the file, null if no tag
      */
-    fun tag(fileContent: FileContent): String?
+    fun tag(fileContent: SourceFile): String?
 }
 
 interface FileReplacementDecider : SdComponent {

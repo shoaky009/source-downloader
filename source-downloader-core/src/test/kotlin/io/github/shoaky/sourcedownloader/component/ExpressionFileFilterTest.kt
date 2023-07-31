@@ -60,7 +60,7 @@ class ExpressionFileFilterTest {
         )
         assertEquals(
             true, filter.test(
-                TestFileContent(path, attributes = mapOf("size" to path.fileSize())),
+            TestFileContent(path, attrs = mapOf("size" to path.fileSize())),
             )
         )
     }
@@ -85,7 +85,7 @@ class ExpressionFileFilterTest {
             downloadPath = downloadPath,
             tags = setOf("video"),
             patternVariables = MapPatternVariables(mapOf("test" to "test")),
-            attributes = mapOf("size" to 100)
+            attrs = mapOf("size" to 100)
         )
         assertEquals(true, filter.test(testFileContent))
     }

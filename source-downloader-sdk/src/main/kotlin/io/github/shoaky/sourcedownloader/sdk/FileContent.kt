@@ -25,7 +25,7 @@ interface FileContent {
     /**
      * The attributes of the file.
      */
-    val attributes: Map<String, Any>
+    val attrs: Map<String, Any>
 
     /**
      * The URI of the file.

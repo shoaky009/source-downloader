@@ -2,7 +2,6 @@ package io.github.shoaky.sourcedownloader.core.processor
 
 import io.github.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
 import io.github.shoaky.sourcedownloader.component.*
-import io.github.shoaky.sourcedownloader.component.provider.MetadataVariableProvider
 import io.github.shoaky.sourcedownloader.core.*
 import io.github.shoaky.sourcedownloader.core.component.ComponentManager
 import io.github.shoaky.sourcedownloader.core.component.ProcessorWrapper
@@ -210,9 +209,9 @@ class DefaultProcessorManager(
         val providers = config.providerInstanceNames().map {
             container.get(it, variableProviderTypeRef).getAndMarkRef(config.name)
         }.toMutableList()
-        if (options.provideMetadataVariables) {
-            providers.add(MetadataVariableProvider)
-        }
+//        if (options.provideMetadataVariables) {
+//            providers.add(MetadataVariableProvider)
+//        }
 
         val fileReplacementDeciderName = options.fileReplacementDecider.getInstanceName(FileReplacementDecider::class)
         val fileReplacementDecider = container.get(
@@ -238,18 +237,18 @@ class DefaultProcessorManager(
             )
             TaggedFileOptions(
                 taggedOptions.savePathPattern?.let {
-                    CorePathPattern(it.pattern, variableReplacers)
+                    CorePathPattern(it.pattern)
                 },
                 taggedOptions.filenamePattern?.let {
-                    CorePathPattern(it.pattern, variableReplacers)
+                    CorePathPattern(it.pattern)
                 },
                 taggedFileContentFilters
             )
         }
 
         return ProcessorOptions(
-            CorePathPattern(options.savePathPattern.pattern, variableReplacers),
-            CorePathPattern(options.filenamePattern.pattern, variableReplacers),
+            CorePathPattern(options.savePathPattern.pattern),
+            CorePathPattern(options.filenamePattern.pattern),
             providers,
             runs,
             sourceItemFilter,

@@ -13,11 +13,6 @@ data class CoreItemContent(
 
     private var updated: Boolean = false
 
-    init {
-        sourceFiles.forEach {
-            it.addSharedVariables(sharedPatternVariables)
-        }
-    }
 
     fun updateFileStatus(fileMover: FileMover) {
         if (updated) {
@@ -30,14 +25,7 @@ data class CoreItemContent(
         val undetectedFiles = sourceFiles.filter { it.status == FileContentStatus.UNDETECTED }
         for (sourceFile in undetectedFiles) {
             // 校验顺序不可换
-            val filenameResult = sourceFile.filenamePattern.parse(sourceFile.currentVariables())
-            if (filenameResult.success().not()) {
-                sourceFile.status = FileContentStatus.VARIABLE_ERROR
-                continue
-            }
-
-            val pathResult = sourceFile.fileSavePathPattern.parse(sourceFile.currentVariables())
-            if (pathResult.success().not()) {
+            if (sourceFile.errors.isNotEmpty()) {
                 sourceFile.status = FileContentStatus.VARIABLE_ERROR
                 continue
             }

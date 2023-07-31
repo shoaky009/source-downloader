@@ -52,9 +52,13 @@ class SourceProcessor(
     private var fileReplacementDecider: FileReplacementDecider = options.fileReplacementDecider
     private val downloadPath = downloader.defaultDownloadPath().toAbsolutePath()
     private val sourceSavePath: Path = sourceSavePath.toAbsolutePath()
-    private val filenamePattern = options.filenamePattern
-    private val savePathPattern = options.savePathPattern
+    private val filenamePattern = options.filenamePattern as CorePathPattern
+    private val savePathPattern = options.savePathPattern as CorePathPattern
     private var renameTaskFuture: ScheduledFuture<*>? = null
+    private val renamer: Renamer = Renamer(
+        options.variableErrorStrategy,
+        options.variableReplacers,
+    )
     private val safeRunner by lazy {
         SafeRunner(this)
     }
@@ -129,13 +133,11 @@ class SourceProcessor(
             )
         val sourcePointer = lastState.resolvePointer(source::class)
         log.debug("Processor:'{}' lastState:{}", name, lastState)
-
         val itemIterator = retry.execute<Iterator<PointedItem<ItemPointer>>, IOException> {
             it.setAttribute("stage", ProcessStage("FetchSourceItems", lastState))
             val iterator = source.fetch(sourcePointer, options.fetchLimit).iterator()
             iterator
         }
-
         val result = mutableListOf<ProcessingContent>()
         val simpleStat = SimpleStat(name)
         for (item in itemIterator) {
@@ -224,7 +226,6 @@ class SourceProcessor(
             log.debug("{} Filtered item:{}", filterBy::class.simpleName, sourceItem)
             return ProcessingContent(name, itemContent).copy(status = FILTERED)
         }
-
         val replaceFiles = getReplaceableFiles(itemContent)
         val contentStatus = probeContent(itemContent, replaceFiles)
 
@@ -290,7 +291,7 @@ class SourceProcessor(
             return
         }
         val files = before.itemContent.sourceFiles.map {
-            SourceFile(it.fileDownloadPath, it.attributes, it.fileUri)
+            SourceFile(it.fileDownloadPath, it.attrs, it.fileUri)
         }
         // drop before task
         val beforeItem = before.itemContent.sourceItem
@@ -307,35 +308,28 @@ class SourceProcessor(
         sourceItem: SourceItem
     ): CoreItemContent {
         val sharedPatternVariables = sourceItemGroup.sharedPatternVariables()
-        val resolveFiles = itemFileResolver.resolveFiles(sourceItem)
-        val sourceFiles = sourceItemGroup.filePatternVariables(resolveFiles)
+        val resolvedFiles = itemFileResolver.resolveFiles(sourceItem)
+        val sourceFiles = sourceItemGroup.filePatternVariables(resolvedFiles)
             .mapIndexed { index, sourceFile ->
-                val resolveFile = resolveFiles[index]
-                val sourceFileContent = CoreFileContent(
+                val resolveFile = resolvedFiles[index]
+                val tags = taggers.mapNotNull { it.tag(resolveFile) }.toSet()
+                val fileOptions = options.getTaggedOptions(tags)
+                val rawFileContent = RawFileContent(
                     downloadPath.resolve(resolveFile.path),
                     sourceSavePath,
                     downloadPath,
-                    MapPatternVariables(sourceFile.patternVariables().variables()),
-                    savePathPattern,
-                    filenamePattern,
+                    MapPatternVariables(sourceFile.patternVariables()),
+                    fileOptions?.savePathPattern ?: savePathPattern,
+                    fileOptions?.filenamePattern ?: filenamePattern,
                     resolveFile.attributes,
-                    fileUri = resolveFile.fileUri
+                    tags,
+                    resolveFile.fileUri
                 )
-                val tags = taggers.mapNotNull { it.tag(sourceFileContent) }
-                    .onEach {
-                        sourceFileContent.tags.add(it)
-                    }
-                val fileOptions = options.getTaggedOptions(tags)
-                val replacedContent = fileOptions.let { ops ->
-                    sourceFileContent.copy(
-                        filenamePattern = ops?.filenamePattern ?: filenamePattern,
-                        fileSavePathPattern = ops?.savePathPattern ?: savePathPattern
-                    )
-                }
-                replacedContent.setVariableErrorStrategy(options.variableErrorStrategy)
-                replacedContent.addSharedVariables(sharedPatternVariables)
-                replacedContent to fileOptions
-            }.filter { pair ->
+                // TODO renamer实例根据tag来创建
+                val fileContent = renamer.createFileContent(sourceItem, rawFileContent, sharedPatternVariables)
+                fileContent to fileOptions
+            }
+            .filter { pair ->
                 val path = pair.first
                 val filters = pair.second?.fileContentFilters ?: fileContentFilters
                 val filter = filters.all { it.test(path) }
@@ -425,16 +419,13 @@ class SourceProcessor(
     private fun processRenameTask(pc: ProcessingContent) {
         val itemContent = pc.itemContent
         val sourceFiles = itemContent.sourceFiles
-        val replacers = options.variableReplacers.toTypedArray()
-        sourceFiles.forEach {
-            // 这边设计不太好, CoreFileContent改为纯数据, 计算targetPath改为RenameContext之类的来计算
-            it.setVariableErrorStrategy(options.variableErrorStrategy)
-            val filenamePattern = it.filenamePattern as CorePathPattern
-            filenamePattern.addReplacer(*replacers)
-            val fileSavePathPattern = it.fileSavePathPattern as CorePathPattern
-            fileSavePathPattern.addReplacer(*replacers)
-        }
-
+//        sourceFiles.forEach {
+// 这边设计不太好, CoreFileContent改为纯数据, 计算targetPath改为RenameContext之类的来计算
+//            val filenamePattern = it.filenamePattern as CorePathPattern
+//            filenamePattern.addReplacer(*replacers)
+//            val fileSavePathPattern = it.fileSavePathPattern as CorePathPattern
+//            fileSavePathPattern.addReplacer(*replacers)
+//        }
         if (sourceFiles.all { it.status != FileContentStatus.REPLACE } &&
             fileMover.exists(sourceFiles.map { it.targetPath() })
         ) {
@@ -497,7 +488,7 @@ class SourceProcessor(
         return DownloadTask(
             content.sourceItem,
             downloadFiles.map {
-                SourceFile(it.fileDownloadPath, it.attributes, it.fileUri)
+                SourceFile(it.fileDownloadPath, it.attrs, it.fileUri)
             },
             downloadPath,
             downloadOptions.copy(headers = headers)

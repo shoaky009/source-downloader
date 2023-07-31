@@ -24,7 +24,6 @@ class DeleteEmptyDirectoryTest {
 
         itemDownloadPath.resolve("test").createDirectories()
         itemDownloadPath.resolve("daaaa").createDirectories()
-
         val sc = CoreItemContent(
             sourceItem(),
             listOf(
@@ -35,6 +34,8 @@ class DeleteEmptyDirectoryTest {
                     MapPatternVariables(),
                     CorePathPattern.ORIGIN,
                     CorePathPattern.ORIGIN,
+                    Path(""),
+                    ""
                 )
             ),
             MapPatternVariables()
@@ -46,7 +47,6 @@ class DeleteEmptyDirectoryTest {
     @Test
     fun given_not_empty() {
         val itemDownloadPath = testResourcePath.resolve("mockito-extensions")
-
         val sc = CoreItemContent(
             sourceItem(),
             listOf(
@@ -57,6 +57,8 @@ class DeleteEmptyDirectoryTest {
                     MapPatternVariables(),
                     CorePathPattern.ORIGIN,
                     CorePathPattern.ORIGIN,
+                    Path(""),
+                    ""
                 )
             ),
             MapPatternVariables()

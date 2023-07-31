@@ -75,7 +75,8 @@ private class ProcessorController(
                         file.targetPath().toString(),
                         file.patternVariables.variables(),
                         file.tags,
-                        file.status
+                        file.status,
+                        file.errors.joinToString(" ")
                     )
                 }
                 val itemContent = pc.itemContent
@@ -106,5 +107,6 @@ private data class FileResult(
     val to: String,
     val variables: Map<String, Any>,
     val tags: Collection<String>,
-    val status: FileContentStatus
+    val status: FileContentStatus,
+    val error: String? = null
 )

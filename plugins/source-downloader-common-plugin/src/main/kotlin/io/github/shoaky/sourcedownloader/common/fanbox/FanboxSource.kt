@@ -24,7 +24,7 @@ class FanboxSource(
         for (supporting in supportings) {
             val creatorId = supporting.creatorId
             val creatorPointer = pointer.creatorPointers[creatorId] ?: CreatorPointer(creatorId)
-            val iterator = CreatorPostsIterator(creatorPointer, client, supporting)
+            val iterator = CreatorPostsIterator(creatorPointer, client)
             for (pointedItems in iterator) {
                 results.addAll(pointedItems)
                 if (results.size >= limit) {
@@ -47,16 +47,11 @@ class FanboxSource(
 private class CreatorPostsIterator(
     private val creatorPointer: CreatorPointer,
     private val client: FanboxClient,
-    supporting: Supporting
 ) : Iterator<List<PointedItem<ItemPointer>>> {
 
     private val lastTimeStatus = creatorPointer.touchBottom
     private var finished = false
     private var posts: Posts = Posts()
-    private val supportingAttrs = mapOf(
-        "creatorId" to supporting.creatorId,
-        "dd" to supporting.user
-    )
 
     override fun hasNext(): Boolean {
         if (finished) {
@@ -105,8 +100,8 @@ private fun toItem(server: URI, post: Post): SourceItem {
             "comments" to post.commentCount,
             "adult" to post.hasAdultContent,
             "fee" to post.feeRequired,
+            "postId" to post.id,
             "username" to post.user.name,
-            "userId" to post.user.userId,
             "creatorId" to post.creatorId
         ),
         post.tags.toSet()

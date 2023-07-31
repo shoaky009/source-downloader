@@ -11,6 +11,7 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.springframework.stereotype.Component
 import java.nio.file.Path
+import java.time.LocalDateTime
 import kotlin.io.path.Path
 
 typealias EProcessorSourceState = io.github.shoaky.sourcedownloader.repo.exposed.ProcessorSourceState
@@ -138,10 +139,12 @@ class ExposedProcessingStorage : ProcessingStorage {
 
     override fun saveTargetPath(targetPaths: List<ProcessingTargetPath>) {
         transaction {
+            val now = LocalDateTime.now()
             TargetPaths.batchUpsert(targetPaths, keys = arrayOf(TargetPaths.id)) { table, path ->
                 table[id] = path.targetPath.toString()
                 table[processorName] = path.processorName
                 table[itemHashing] = path.itemHashing
+                table[createTime] = now
             }
         }
     }

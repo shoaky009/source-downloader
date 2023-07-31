@@ -8,8 +8,8 @@ import kotlin.io.path.name
 
 class AnitomVariableProvider : VariableProvider {
     override fun createSourceGroup(sourceItem: SourceItem): SourceItemGroup {
-        return FunctionalItemGroup { path ->
-            val parse = AnitomyJ.parse(path.name)
+        return FunctionalItemGroup { file ->
+            val parse = AnitomyJ.parse(file.path.name)
                 .associateBy({
                     CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_CAMEL,
                         it.category.name.removePrefix("kElement")
