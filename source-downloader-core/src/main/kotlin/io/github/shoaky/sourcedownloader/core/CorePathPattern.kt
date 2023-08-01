@@ -63,20 +63,20 @@ class Expression(
     }
 
     private fun parseRaw(): String {
-        if (raw.startsWith(":")) {
+        if (raw.startsWith(OPTIONAL_EXPRESSION_PREFIX)) {
             return raw.substring(2, raw.length - 1)
         }
         return raw.substring(1, raw.length - 1)
     }
 
-    fun getDeclaredVariables(): Set<String> {
+    private fun getDeclaredVariables(): Set<String> {
         val env = Env.newEnv()
         val parse = env.parse(parseRaw())
         return extractIdentifiers(parse.ast.expr)
     }
 
     fun isOptional(): Boolean {
-        return raw.startsWith(":")
+        return raw.startsWith(OPTIONAL_EXPRESSION_PREFIX)
     }
 
     private fun extractIdentifiers(expr: Expr): Set<String> {
@@ -119,5 +119,10 @@ class Expression(
             }
         }
         return identifiers
+    }
+
+    companion object {
+
+        private const val OPTIONAL_EXPRESSION_PREFIX = ":"
     }
 }
