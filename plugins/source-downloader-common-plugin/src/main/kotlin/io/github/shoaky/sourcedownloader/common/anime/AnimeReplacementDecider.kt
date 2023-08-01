@@ -36,6 +36,11 @@ object AnimeReplacementDecider : FileReplacementDecider {
     }
 
     private fun isBilibili(text: String): Boolean {
-        return text.contains("bilibili", true) || text.contains("仅限港澳台地区", true)
+        listOf("bilibili", "仅限港澳台地区", "仅限台湾地区", "b-global").forEach {
+            if (text.contains(it, true)) {
+                return true
+            }
+        }
+        return false
     }
 }
