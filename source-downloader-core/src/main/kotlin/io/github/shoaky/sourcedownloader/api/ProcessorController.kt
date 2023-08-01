@@ -8,6 +8,7 @@ import io.github.shoaky.sourcedownloader.core.processor.ProcessorManager
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentException
 import org.springframework.web.bind.annotation.*
+import kotlin.concurrent.thread
 
 @RestController
 @RequestMapping("/api/processor")
@@ -86,6 +87,15 @@ private class ProcessorController(
                     fileResult, pc.status.name
                 )
             }
+    }
+
+    @GetMapping("/trigger/{processorName}")
+    fun trigger(@PathVariable processorName: String) {
+        val sourceProcessor = (processorManager.getProcessor(processorName)
+            ?: throw ComponentException.processorMissing("Processor $processorName not found"))
+        thread {
+            sourceProcessor.get().safeTask().run()
+        }
     }
 
 }
