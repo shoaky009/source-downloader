@@ -69,7 +69,18 @@ data class PostDetail(
 
 data class Media(
     val images: List<Image> = emptyList(),
-    val text: String? = null
+    val files: List<File> = emptyList(),
+    val text: String? = null,
+    val fileMap: Map<String, File> = emptyMap(),
+    val imageMap: Map<String, Image> = emptyMap(),
+)
+
+data class File(
+    val id: String,
+    val extension: String,
+    val name: String,
+    val size: Long,
+    val url: URI,
 )
 
 data class Image(
