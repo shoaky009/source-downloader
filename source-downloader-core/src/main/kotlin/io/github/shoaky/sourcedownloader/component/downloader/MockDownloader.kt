@@ -24,7 +24,7 @@ class MockDownloader(
         task.downloadFiles.filter { it.path.notExists() }
             .forEach {
                 val resolve = dp.resolve(it.path)
-                if (resolve.parent != dp && resolve.parent.notExists()) {
+                if (resolve.parent.notExists()) {
                     resolve.parent.createDirectories()
                 }
                 Files.createFile(resolve)

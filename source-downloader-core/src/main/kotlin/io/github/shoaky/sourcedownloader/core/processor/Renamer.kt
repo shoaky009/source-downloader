@@ -1,6 +1,5 @@
 package io.github.shoaky.sourcedownloader.core.processor
 
-import io.github.shoaky.sourcedownloader.SourceDownloaderApplication
 import io.github.shoaky.sourcedownloader.core.CorePathPattern
 import io.github.shoaky.sourcedownloader.core.VariableReplacer
 import io.github.shoaky.sourcedownloader.core.file.CoreFileContent
@@ -9,8 +8,10 @@ import io.github.shoaky.sourcedownloader.sdk.MapPatternVariables
 import io.github.shoaky.sourcedownloader.sdk.PathPattern
 import io.github.shoaky.sourcedownloader.sdk.PatternVariables
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
+import org.slf4j.LoggerFactory
 import java.net.URI
 import java.nio.file.Path
+import java.time.LocalDate
 import java.util.regex.Pattern
 import kotlin.io.path.extension
 import kotlin.io.path.name
@@ -129,7 +130,7 @@ class Renamer(
                 val before = text
                 text = it.replace(entry.key, text)
                 if (before != text) {
-                    SourceDownloaderApplication.log.debug("replace variable '{}' from '{}' to '{}'", entry.key, before, text)
+                    log.debug("replace variable '{}' from '{}' to '{}'", entry.key, before, text)
                 }
             }
             text
@@ -159,6 +160,7 @@ class Renamer(
 
         private const val UNRESOLVED = "unresolved"
         private val variablePatternRegex: Pattern = Pattern.compile("\\{(.+?)}|:\\{(.+?)}")
+        private val log = LoggerFactory.getLogger(ProcessingContext::class.java)
     }
 }
 
@@ -187,6 +189,13 @@ data class ProcessingContext(
         map
     }
 }
+
+private data class ItemVars(
+    val title: String,
+    val date: LocalDate,
+    val year: Int,
+    val month: Int,
+)
 
 private data class ResultWrapper<T>(
     val value: T,

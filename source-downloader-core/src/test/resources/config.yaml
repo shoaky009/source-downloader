@@ -1,69 +1,133 @@
 components:
   source:
-    - name: "test-files"
-      type: "system-file"
+    - name: "normal-case"
+      type: "fixed"
       props:
-        path: "src/test/resources/sources"
+        content:
+          - item:
+              title: "test1"
+              link: "file://test1"
+              date: "2022-01-01T00:00:00"
+              contentType: "file"
+              downloadUri: "file://test1"
+            files:
+              - path: "test1.jpg"
+          - item:
+              title: "test2"
+              link: "file://test2"
+              date: "2022-01-01T00:00:00"
+              contentType: "file"
+              downloadUri: "file://test2"
+            files:
+              - path: "test2.jpg"
+          - item:
+              title: "test-dir"
+              link: "file://test-dir"
+              date: "2022-01-01T00:00:00"
+              contentType: "file"
+              downloadUri: "file://test-dir"
+            files:
+              - path: "test3.jpg"
+              - path: "test4.jpg"
     - name: "error-item"
-      type: "uri"
+      type: "fixed"
       props:
-        uri: "file://src/test/resources/test-item/error-items.json"
+        content:
+          - item:
+              title: "error"
+              link: "file://error"
+              date: "2022-01-01T00:00:00"
+              contentType: "file"
+              downloadUri: "file://test1"
+            files:
+              - path: "test1.jpg"
+  file-resolver:
+    - name: "normal-case"
+      type: "fixed"
+    - name: "error-item"
+      type: "fixed"
   downloader:
-    - name: "test-files"
-      type: "system-file"
     - name: "mock"
       type: "mock"
       props:
         download-path: "src/test/resources/downloads"
+  file-tagger:
+    - name: "mapping-test1file"
+      type: "mapped"
+      props:
+        mapping:
+          test1.jpg: test1
+
 processors:
   - name: "NormalCase"
-    source: "system-file:test-files"
-    item-file-resolver: "system-file"
-    downloader: "system-file:test-files"
+    source: "fixed:normal-case"
+    item-file-resolver: "fixed:normal-case"
+    downloader: "mock"
     file-mover: "general"
-    save-path: "src/test/resources/target"
+    save-path: "src/test/resources/target/NormalCase"
+    variable-providers:
+      - "sequence"
     options:
-      save-path-pattern: "{sourceItemTitle}/{sourceItemDate}/"
+      save-path-pattern: "{itemTitle}/{itemDate}/"
       filename-pattern: "{filename} - {sequence}"
   - name: "NormalCaseCopy"
-    source: "system-file:test-files"
-    item-file-resolver: "system-file"
-    downloader: "system-file:test-files"
+    source: "fixed:normal-case"
+    item-file-resolver: "fixed:normal-case"
+    downloader: "mock"
     file-mover: "general"
-    save-path: "src/test/resources/target"
+    save-path: "src/test/resources/target/NormalCaseCopy"
+    variable-providers:
+      - "sequence"
     options:
-      save-path-pattern: "{sourceItemTitle}/{sourceItemDate}/"
+      save-path-pattern: "{itemTitle}/{itemDate}/"
       filename-pattern: "{filename} - {sequence}"
   - name: "FileStatusCase"
-    source: "system-file:test-files"
-    item-file-resolver: "system-file"
+    source: "fixed:normal-case"
+    item-file-resolver: "fixed:normal-case"
     downloader: "mock"
     file-mover: "general"
-    save-path: "src/test/resources/target"
+    save-path: "src/test/resources/target/FileStatusCase"
     options:
-      save-path-pattern: "{sourceItemTitle}"
+      save-path-pattern: "{itemTitle}"
   - name: "FileStatusCase2"
-    source: "system-file:test-files"
-    item-file-resolver: "system-file"
+    source: "fixed:normal-case"
+    item-file-resolver: "fixed:normal-case"
     downloader: "mock"
     file-mover: "general"
-    save-path: "src/test/resources/target"
+    save-path: "src/test/resources/target/FileStatusCase2"
     options:
       save-path-pattern: "1"
       filename-pattern: "1"
   - name: "PointerStorageCase"
-    source: "system-file:test-files"
-    item-file-resolver: "system-file"
+    source: "fixed:normal-case"
+    item-file-resolver: "fixed:normal-case"
     downloader: "mock"
     file-mover: "general"
-    save-path: "src/test/resources/target"
+    save-path: "src/test/resources/target/PointerStorageCase"
     options:
-      save-path-pattern: "{sourceItemTitle}"
+      save-path-pattern: "{itemTitle}"
   - name: "ErrorContinueCase"
-    source: "uri:error-item"
-    item-file-resolver: "system-file"
+    source: "fixed:error-item"
+    item-file-resolver: "fixed:error-item"
     downloader: "mock"
     file-mover: "general"
-    save-path: "src/test/resources/target"
+    save-path: "src/test/resources/target/ErrorContinueCase"
     options:
       item-error-continue: false
+  - name: "Tagged"
+    source: "fixed:normal-case"
+    item-file-resolver: "fixed:normal-case"
+    downloader: "mock"
+    file-mover: "general"
+    save-path: "src/test/resources/target/Tagged"
+    variable-providers:
+      - "sequence"
+    options:
+      save-path-pattern: "{itemTitle}/{itemDate}/"
+      filename-pattern: "{filename} - {sequence}"
+      file-taggers:
+        - "mapped:mapping-test1file"
+      tagged-file-options:
+        test1:
+          save-path-pattern: "{itemTitle}"
+          filename-pattern: "{filename}"

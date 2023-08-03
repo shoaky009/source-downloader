@@ -85,7 +85,7 @@ class ComponentControllerTest {
     @Test
     fun delete_ref_component() {
         mockMvc.perform(
-            delete("/api/component/source/uri/error-item")
+            delete("/api/component/source/fixed/error-item")
         ).andExpect(status().is4xxClientError)
     }
 

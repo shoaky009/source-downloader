@@ -13,11 +13,7 @@ class RestorableConfigOperator(
 
     private val cache = path.readText()
 
-    fun restore() {
-        path.writeText(cache)
-    }
-
     override fun destroy() {
-        restore()
+        path.writeText(cache)
     }
 }

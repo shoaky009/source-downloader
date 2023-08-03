@@ -18,7 +18,7 @@ anitomyJ = "0.0.7"
 atomashpolskiy-bt = "1.10"
 tika = "2.7.0"
 jsoup = "1.16.1"
-exposed = "0.40.1"
+exposed = "0.41.1"
 
 [libraries]
 springboot-dependencies = { module = "org.springframework.boot:spring-boot-dependencies", version.ref = "springboot" }
