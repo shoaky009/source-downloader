@@ -18,7 +18,7 @@ anitomyJ = "0.0.7"
 atomashpolskiy-bt = "1.10"
 tika = "2.7.0"
 jsoup = "1.16.1"
-exposed = "0.41.1"
+exposed = "0.42.0"
 
 [libraries]
 springboot-dependencies = { module = "org.springframework.boot:spring-boot-dependencies", version.ref = "springboot" }
@@ -42,13 +42,13 @@ bt-dht = { module = "com.github.atomashpolskiy:bt-dht", version.ref = "atomashpo
 tika-core = { module = "org.apache.tika:tika-core", version.ref = "tika" }
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
 exposed-java-time = { module = "org.jetbrains.exposed:exposed-java-time", version.ref = "exposed" }
-#exposed-json = { module = "org.jetbrains.exposed:exposed-json", version.ref = "exposed" }
+exposed-json = { module = "org.jetbrains.exposed:exposed-json", version.ref = "exposed" }
 exposed-spring-boot-stater = { module = "org.jetbrains.exposed:exposed-spring-boot-starter", version.ref = "exposed" }
 
 [bundles]
 cel = ["cel-tools"]
 bt = ["bt-core", "bt-dht"]
-exposed = ["exposed-java-time", "exposed-spring-boot-stater"]
+exposed = ["exposed-java-time", "exposed-spring-boot-stater", "exposed-json"]
 
 [plugins]
 springboot = { id = "org.springframework.boot", version.ref = "springboot" }
