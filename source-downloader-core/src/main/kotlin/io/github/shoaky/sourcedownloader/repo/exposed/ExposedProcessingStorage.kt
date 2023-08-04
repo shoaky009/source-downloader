@@ -23,7 +23,9 @@ class ExposedProcessingStorage : ProcessingStorage {
     override fun save(content: ProcessingContent): ProcessingContent {
         return transaction {
             val id = Processings.upsert(Processings.id) {
-                it[id] = DaoEntityID(content.id, Processings)
+                if (content.id != null) {
+                    it[id] = DaoEntityID(content.id, Processings)
+                }
                 it[processorName] = content.processorName
                 it[sourceItemHashing] = content.sourceHash
                 it[itemContent] = content.itemContent
@@ -41,7 +43,9 @@ class ExposedProcessingStorage : ProcessingStorage {
         return transaction {
             // 暂时先这样写，后面再优化
             val id = ProcessorSourceStates.upsert(ProcessorSourceStates.id) {
-                it[id] = DaoEntityID(state.id, ProcessorSourceStates)
+                if (state.id != null) {
+                    it[id] = DaoEntityID(state.id, ProcessorSourceStates)
+                }
                 it[processorName] = state.processorName
                 it[sourceId] = state.sourceId
                 it[lastPointer] = state.lastPointer

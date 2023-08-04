@@ -51,10 +51,6 @@ data class ProcessingContent(
          */
         RENAMED(5),
 
-        /**
-         * 已存在在下载目录中
-         */
-        DOWNLOADED(6),
 
         /**
          * [SourceItem]无文件

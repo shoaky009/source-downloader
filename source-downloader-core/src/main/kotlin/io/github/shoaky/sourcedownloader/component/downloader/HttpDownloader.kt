@@ -81,7 +81,7 @@ class HttpDownloader(
         return progresses.map {
             val dl = it.value
             mapOf(
-                "file" to dl.file.path.toFile(),
+                "file" to dl.file.path.toString(),
                 "speed" to dl.bodyHandler.speedOfRate()
             )
         }

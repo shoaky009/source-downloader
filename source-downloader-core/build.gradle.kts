@@ -21,8 +21,8 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
 
-    implementation(libs.kotlinx.coroutines.core)
-    runtimeOnly(libs.kotlinx.coroutines.core.jvm)
+    // implementation(libs.kotlinx.coroutines.core)
+    // runtimeOnly(libs.kotlinx.coroutines.core.jvm)
 
     // others
     implementation(libs.commons.collections4)

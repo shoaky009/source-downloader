@@ -105,6 +105,7 @@ class DefaultComponentManager(
                 obj.close()
             }
             objectWrapperContainer.remove(instanceName)
+            Events.unregister(wrapper)
         }
     }
 
