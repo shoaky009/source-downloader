@@ -206,7 +206,9 @@ class SourceProcessor(
             lastActiveTime = LocalDateTime.now()
         )
 
-        if (currentSourceState.lastPointer != lastState.lastPointer) {
+        val lastP = lastState.resolvePointer(source::class)
+        val currP = currentSourceState.resolvePointer(source::class)
+        if (currP != lastP) {
             log.info("Processor:'$name' update pointer:${currentSourceState.lastPointer}")
         }
         val save = processingStorage.save(currentSourceState)
