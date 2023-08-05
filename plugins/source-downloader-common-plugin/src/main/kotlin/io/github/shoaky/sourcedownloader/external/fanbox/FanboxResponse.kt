@@ -65,15 +65,38 @@ data class PostDetail(
     val tags: List<String> = emptyList(),
     val cover: Cover? = null,
     val body: Media,
+    val coverImageUrl: URI? = null
 )
 
 data class Media(
+    val blocks: List<Block> = emptyList(),
     val images: List<Image> = emptyList(),
     val files: List<File> = emptyList(),
     val text: String? = null,
     val fileMap: Map<String, File> = emptyMap(),
     val imageMap: Map<String, Image> = emptyMap(),
-)
+) {
+
+    fun imageWithOrder(): List<Image> {
+        val res = images.toMutableList()
+        blocks.filter { it.type == "image" }.forEach { block ->
+            imageMap[block.imageId]?.let { image ->
+                res.add(image)
+            }
+        }
+        return res
+    }
+
+    fun fileWithOrder(): List<File> {
+        val ig = files.toMutableList()
+        blocks.filter { it.type == "file" }.forEach { block ->
+            fileMap[block.fileId]?.let { file ->
+                ig.add(file)
+            }
+        }
+        return ig
+    }
+}
 
 data class File(
     val id: String,
@@ -99,4 +122,11 @@ data class Supporting(
     val creatorId: String,
     val user: User,
     val hasAdultContent: Boolean
+)
+
+data class Block(
+    val type: String,
+    val text: String? = null,
+    val imageId: String? = null,
+    val fileId: String? = null
 )
