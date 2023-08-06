@@ -77,7 +77,7 @@ private class ProcessorController(
                         file.patternVariables.variables(),
                         file.tags,
                         file.status,
-                        file.errors.joinToString(" ")
+                        file.errors.takeIf { it.isNotEmpty() }?.joinToString(", ")
                     )
                 }
                 val itemContent = pc.itemContent

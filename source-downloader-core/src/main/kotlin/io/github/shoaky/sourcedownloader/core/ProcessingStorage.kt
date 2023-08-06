@@ -19,7 +19,7 @@ interface ProcessingStorage {
     /**
      * 需要从targetPath获取到[ProcessingContent]，从而目标文件存在时提供上下文信息做出决策
      */
-    fun saveTargetPath(targetPaths: List<ProcessingTargetPath>)
+    fun saveTargetPaths(targetPaths: List<ProcessingTargetPath>)
 
     fun targetPathExists(paths: List<Path>): Boolean
 

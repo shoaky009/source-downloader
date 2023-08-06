@@ -11,7 +11,6 @@ import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import org.slf4j.LoggerFactory
 import java.net.URI
 import java.nio.file.Path
-import java.time.LocalDate
 import java.util.regex.Pattern
 import kotlin.io.path.extension
 import kotlin.io.path.name
@@ -189,13 +188,6 @@ data class ProcessingContext(
         map
     }
 }
-
-private data class ItemVars(
-    val title: String,
-    val date: LocalDate,
-    val year: Int,
-    val month: Int,
-)
 
 private data class ResultWrapper<T>(
     val value: T,

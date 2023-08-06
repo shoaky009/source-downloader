@@ -41,6 +41,11 @@ class SourceProcessor(
     private val options: ProcessorOptions = ProcessorOptions(),
 ) : Runnable {
 
+    private val downloadPath = downloader.defaultDownloadPath().toAbsolutePath()
+    private val sourceSavePath: Path = sourceSavePath.toAbsolutePath()
+    private val filenamePattern = options.filenamePattern as CorePathPattern
+    private val savePathPattern = options.savePathPattern as CorePathPattern
+    private var renameTaskFuture: ScheduledFuture<*>? = null
     private val sourceItemFilters: List<SourceItemFilter> = options.sourceItemFilters
     private val itemContentFilters: List<ItemContentFilter> = options.itemContentFilters
     private val fileContentFilters: List<FileContentFilter> = options.fileContentFilters
@@ -48,11 +53,6 @@ class SourceProcessor(
     private val runAfterCompletion: List<RunAfterCompletion> = options.runAfterCompletion
     private val taggers: List<FileTagger> = options.fileTaggers
     private var fileReplacementDecider: FileReplacementDecider = options.fileReplacementDecider
-    private val downloadPath = downloader.defaultDownloadPath().toAbsolutePath()
-    private val sourceSavePath: Path = sourceSavePath.toAbsolutePath()
-    private val filenamePattern = options.filenamePattern as CorePathPattern
-    private val savePathPattern = options.savePathPattern as CorePathPattern
-    private var renameTaskFuture: ScheduledFuture<*>? = null
     private val renamer: Renamer = Renamer(
         options.variableErrorStrategy,
         options.variableReplacers,
@@ -455,7 +455,7 @@ class SourceProcessor(
         } else {
             paths.map { ProcessingTargetPath(it, name, sourceItem.hashing()) }
         }
-        processingStorage.saveTargetPath(processingTargetPaths)
+        processingStorage.saveTargetPaths(processingTargetPaths)
     }
 
     fun safeTask(): Runnable {

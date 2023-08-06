@@ -5,7 +5,6 @@ import io.github.shoaky.sourcedownloader.core.ProcessingStorage
 import io.github.shoaky.sourcedownloader.core.ProcessorSourceState
 import io.github.shoaky.sourcedownloader.core.processor.ProcessingTargetPath
 import io.github.shoaky.sourcedownloader.repo.ProcessingQuery
-import org.jetbrains.exposed.dao.DaoEntityID
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
@@ -22,37 +21,80 @@ class ExposedProcessingStorage : ProcessingStorage {
 
     override fun save(content: ProcessingContent): ProcessingContent {
         return transaction {
-            val id = Processings.upsert(Processings.id) {
-                if (content.id != null) {
-                    it[id] = DaoEntityID(content.id, Processings)
+            if (content.id != null) {
+                Processings.update({ Processings.id eq content.id }) {
+                    it[processorName] = content.processorName
+                    it[sourceItemHashing] = content.sourceHash
+                    it[itemContent] = content.itemContent
+                    it[renameTimes] = content.renameTimes
+                    it[status] = content.status
+                    it[failureReason] = content.failureReason
+                    it[modifyTime] = content.modifyTime
                 }
-                it[processorName] = content.processorName
-                it[sourceItemHashing] = content.sourceHash
-                it[itemContent] = content.itemContent
-                it[renameTimes] = content.renameTimes
-                it[status] = content.status
-                it[failureReason] = content.failureReason
-                it[modifyTime] = content.modifyTime
-                it[createTime] = content.createTime
-            } get Processings.id
-            content.copy(id = id.value)
+                content
+            } else {
+                val id = Processings.insertAndGetId {
+                    it[processorName] = content.processorName
+                    it[sourceItemHashing] = content.sourceHash
+                    it[itemContent] = content.itemContent
+                    it[renameTimes] = content.renameTimes
+                    it[status] = content.status
+                    it[failureReason] = content.failureReason
+                    it[modifyTime] = content.modifyTime
+                    it[createTime] = content.createTime
+                }
+                content.copy(id = id.value)
+            }
+            // NOTE upsert id会返回0, 暂时不能用返回的
+//            val id = Processings.upsert(Processings.id) {
+//                if (content.id != null) {
+//                    it[id] = DaoEntityID(content.id, Processings)
+//                }
+//                it[processorName] = content.processorName
+//                it[sourceItemHashing] = content.sourceHash
+//                it[itemContent] = content.itemContent
+//                it[renameTimes] = content.renameTimes
+//                it[status] = content.status
+//                it[failureReason] = content.failureReason
+//                it[modifyTime] = content.modifyTime
+//                it[createTime] = content.createTime
+//            } get Processings.id
+//            content.copy(id = id.value)
         }
     }
 
     override fun save(state: ProcessorSourceState): ProcessorSourceState {
         return transaction {
-            // 暂时先这样写，后面再优化
-            val id = ProcessorSourceStates.upsert(ProcessorSourceStates.id) {
-                if (state.id != null) {
-                    it[id] = DaoEntityID(state.id, ProcessorSourceStates)
+            if (state.id != null) {
+                ProcessorSourceStates.update({ ProcessorSourceStates.id eq state.id }) {
+                    it[processorName] = state.processorName
+                    it[sourceId] = state.sourceId
+                    it[lastPointer] = state.lastPointer
+                    it[retryTimes] = state.retryTimes
+                    it[lastActiveTime] = state.lastActiveTime
                 }
-                it[processorName] = state.processorName
-                it[sourceId] = state.sourceId
-                it[lastPointer] = state.lastPointer
-                it[retryTimes] = state.retryTimes
-                it[lastActiveTime] = state.lastActiveTime
-            } get ProcessorSourceStates.id
-            state.copy(id = id.value)
+                state
+            } else {
+                val id = ProcessorSourceStates.insertAndGetId {
+                    it[processorName] = state.processorName
+                    it[sourceId] = state.sourceId
+                    it[lastPointer] = state.lastPointer
+                    it[retryTimes] = state.retryTimes
+                    it[lastActiveTime] = state.lastActiveTime
+                }
+                state.copy(id = id.value)
+            }
+            // NOTE upsert id会返回0, 暂时不能用返回的
+//            val id = ProcessorSourceStates.upsert(ProcessorSourceStates.id) {
+//                if (state.id != null) {
+//                    it[id] = DaoEntityID(state.id, ProcessorSourceStates)
+//                }
+//                it[processorName] = state.processorName
+//                it[sourceId] = state.sourceId
+//                it[lastPointer] = state.lastPointer
+//                it[retryTimes] = state.retryTimes
+//                it[lastActiveTime] = state.lastActiveTime
+//            } get ProcessorSourceStates.id
         }
     }
 
@@ -122,7 +164,7 @@ class ExposedProcessingStorage : ProcessingStorage {
         }
     }
 
-    override fun saveTargetPath(targetPaths: List<ProcessingTargetPath>) {
+    override fun saveTargetPaths(targetPaths: List<ProcessingTargetPath>) {
         transaction {
             val now = LocalDateTime.now()
             TargetPaths.batchUpsert(targetPaths, TargetPaths.id) { path ->
