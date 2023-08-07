@@ -11,7 +11,7 @@ import io.github.shoaky.sourcedownloader.external.bangumi.BgmTvApiClient
 import io.github.shoaky.sourcedownloader.external.bangumi.SearchSubjectV0Request
 import io.github.shoaky.sourcedownloader.sdk.*
 import io.github.shoaky.sourcedownloader.sdk.component.VariableProvider
-import io.github.shoaky.sourcedownloader.sdk.util.replaces
+import io.github.shoaky.sourcedownloader.sdk.util.TextClear
 import org.slf4j.LoggerFactory
 
 class AnimeVariableProvider(
@@ -45,7 +45,6 @@ class AnimeVariableProvider(
     private fun searchAnime(title: String): Anime {
         val hasJp = hasLanguage(title, Character.UnicodeScript.HIRAGANA, Character.UnicodeScript.KATAKANA)
         val hasChinese = hasLanguage(title, Character.UnicodeScript.HAN)
-
         var anilistResult: Title? = null
         if (hasJp || hasChinese.not()) {
             val response = anilistClient.execute(Search(title)).body()
@@ -64,7 +63,6 @@ class AnimeVariableProvider(
                 anilistResult.native
             )
         }
-
         val body = bgmTvApiClient.execute(
             SearchSubjectV0Request(anilistResult?.native ?: title)
         ).body()
@@ -80,7 +78,6 @@ class AnimeVariableProvider(
                 subjectItem.name
             )
         }
-
         // 这里是中文的情况
         val response = anilistClient.execute(
             Search(subjectItem.name)
@@ -101,23 +98,13 @@ class AnimeVariableProvider(
         )
     }
 
-    private fun extractTitle(sourceItem: SourceItem): String {
-        val text = sourceItem.title.replaces(
-            leftBrReplaces, "["
-        ).replaces(
-            rightBrReplaces, "]"
-        ).replaces(
-            emptyReplaces, "", false
-        ).replaces(
-            bReplaces, " "
-        ).replace(Regex("S(\\d+)"), "Season $1")
-
+    fun extractTitle(sourceItem: SourceItem): String {
+        val text = textClear.input(sourceItem.title)
         val removedBucket = text.replace(bracketsRegex, "").trim()
         if (removedBucket.length > 12) {
             val sp = listOf("/", "|").firstOrNull {
                 removedBucket.contains(it)
             } ?: return removedBucket
-
             // 优先选择日语，最后是中文尽可能用anilist搜索
             val title = removedBucket.split(sp)
                 .map { TitleScore(it) }
@@ -130,7 +117,6 @@ class AnimeVariableProvider(
         if (removedBucket.isNotBlank()) {
             return removedBucket
         }
-
         val matches = bracketsRegex.findAll(text).toList()
         if (matches.size == 1) {
             return matches[0].value.removePrefix("[").removeSuffix("]")
@@ -149,15 +135,17 @@ class AnimeVariableProvider(
 
     companion object {
 
-        private val leftBrReplaces = listOf("(", "【", "（")
-        private val rightBrReplaces = listOf(")", "】", "）")
-        private val emptyReplaces = listOf(
-            "~", "！", "～", "Special", "SP", "TV", "-",
-            "S01", "Season 1", "Season 01",
-            "BDBOX", "BD-BOX", "+", "OVA"
-        )
-        private val bReplaces = listOf(
-            "。", "，", "～"
+        private val textClear = TextClear(
+            mapOf(
+                Regex("\\d{2}-\\d{2}|全\\d+话|全\\d+話") to "",
+                Regex("\\+OVA|\\+OAD") to "",
+                Regex("[(【（]") to "[",
+                Regex("[)】）]") to "]",
+                Regex("[。，～]") to " ",
+                Regex("[~！～\\-+]") to "",
+                Regex("Special|SP|TV|S01|Season 1|Season 01|BDBOX|BD-BOX") to "",
+                Regex("S(\\d+)") to "Season $1",
+            )
         )
         private val bracketsRegex = Regex("\\[.*?]")
     }
@@ -172,13 +160,17 @@ private class TitleScore(
 
     private fun byLanguage(title: String): Int {
         return title.codePoints().map {
-            when (Character.UnicodeScript.of(it)) {
-                Character.UnicodeScript.HAN -> 1
-                Character.UnicodeScript.HIRAGANA -> 10
-                Character.UnicodeScript.KATAKANA -> 10
-                else -> 1
-            }
+            characterScores.getOrDefault(Character.UnicodeScript.of(it), 1)
         }.sum()
+    }
+
+    companion object {
+
+        private val characterScores = mapOf(
+            Character.UnicodeScript.HAN to 1,
+            Character.UnicodeScript.HIRAGANA to 10,
+            Character.UnicodeScript.KATAKANA to 10,
+        )
     }
 }
 
