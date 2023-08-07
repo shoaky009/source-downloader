@@ -99,7 +99,7 @@ class RenamerTest {
             patternVariables = MapPatternVariables(mapOf("name" to "test", "season" to "01"))
         )
         val content1 = defaultRenamer.createFileContent(sourceItem(), raw, MapPatternVariables())
-        assertEquals(null, content1.fileSaveRootDirectory())
+        assertEquals(sourceSavePath.resolve("test"), content1.fileSaveRootDirectory())
         val content2 = defaultRenamer.createFileContent(sourceItem(), raw.copy(savePathPattern = CorePathPattern.ORIGIN), MapPatternVariables())
         assertEquals(null, content2.fileSaveRootDirectory())
     }

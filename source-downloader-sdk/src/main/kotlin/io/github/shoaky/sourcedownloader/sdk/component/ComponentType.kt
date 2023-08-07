@@ -57,14 +57,13 @@ data class ComponentType(
         fun fileFilter(type: String) = ComponentType(type, FileContentFilter::class)
 
         @JvmStatic
-        fun fileTagger(type: String): ComponentType {
-            return ComponentType(type, FileTagger::class)
-        }
+        fun fileTagger(type: String): ComponentType = ComponentType(type, FileTagger::class)
 
         @JvmStatic
-        fun fileReplacementDecider(type: String): ComponentType {
-            return ComponentType(type, FileReplacementDecider::class)
-        }
+        fun fileReplacementDecider(type: String): ComponentType = ComponentType(type, FileReplacementDecider::class)
+
+        @JvmStatic
+        fun itemExistsDetector(type: String): ComponentType = ComponentType(type, ItemExistsDetector::class)
 
         @JvmStatic
         fun types(): List<String> {
@@ -77,7 +76,6 @@ data class ComponentType(
         }
 
         val topTypeClasses = SdComponent::class.sealedSubclasses
-
         private val componentTypes = topTypeClasses
             .associateBy {
                 val simpleName = it.simpleName!!

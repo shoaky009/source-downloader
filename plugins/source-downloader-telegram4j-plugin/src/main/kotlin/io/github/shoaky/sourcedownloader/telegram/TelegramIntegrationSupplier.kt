@@ -15,8 +15,8 @@ class TelegramIntegrationSupplier(
     override fun apply(props: Properties): TelegramIntegration {
         val clientName = props.get<String>("client")
         val downloadPath = props.get<Path>("download-path")
-        val load = pluginContext.getInstanceManager().load(clientName, MTProtoTelegramClient::class.java)
-        return TelegramIntegration(load, downloadPath)
+        val client = pluginContext.getInstanceManager().load(clientName, MTProtoTelegramClient::class.java)
+        return TelegramIntegration(client, downloadPath)
     }
 
     override fun supplyTypes(): List<ComponentType> {

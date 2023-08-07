@@ -56,7 +56,7 @@ class DefaultProcessorManager(
 
         val processorWrapper = ProcessorWrapper(config.name, processor)
         container.put(processorBeanName, processorWrapper)
-        log.info("处理器初始化完成:$processor")
+        log.info("Processor:'${processor.name}'初始化完成")
 
         val task = processor.safeTask()
         config.triggerInstanceNames().map {
@@ -209,14 +209,15 @@ class DefaultProcessorManager(
         val providers = config.providerInstanceNames().map {
             container.get(it, variableProviderTypeRef).getAndMarkRef(config.name)
         }.toMutableList()
-//        if (options.provideMetadataVariables) {
-//            providers.add(MetadataVariableProvider)
-//        }
 
         val fileReplacementDeciderName = options.fileReplacementDecider.getInstanceName(FileReplacementDecider::class)
         val fileReplacementDecider = container.get(
             fileReplacementDeciderName, fileReplacementDeciderRef
         ).component
+        val itemExistsDetector = options.itemExistsDetector?.let {
+            val instanceName = it.getInstanceName(ItemFileResolver::class)
+            container.get(instanceName, itemExistsDetectorRef).component
+        } ?: SimpleItemExistsDetector
 
         val variableReplacers: MutableList<VariableReplacer> = mutableListOf(
             *options.variableReplacers.toTypedArray(), WindowsPathReplacer
@@ -269,7 +270,8 @@ class DefaultProcessorManager(
             options.pointerBatchMode,
             options.category,
             options.tags,
-            options.itemErrorContinue
+            options.itemErrorContinue,
+            itemExistsDetector,
         )
     }
 }

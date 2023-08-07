@@ -63,6 +63,11 @@ open class WebdavFileMover(
         return move(itemContent)
     }
 
+    override fun listPath(path: Path): List<Path> {
+        // TODO implement
+        return super.listPath(path)
+    }
+
     companion object {
 
         private val log = LoggerFactory.getLogger(WebdavFileMover::class.java)

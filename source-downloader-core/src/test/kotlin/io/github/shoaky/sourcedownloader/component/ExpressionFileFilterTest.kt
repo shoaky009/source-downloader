@@ -1,8 +1,8 @@
 package io.github.shoaky.sourcedownloader.component
 
 import io.github.shoaky.sourcedownloader.component.supplier.ExpressionFileFilterSupplier
+import io.github.shoaky.sourcedownloader.sdk.FixedFileContent
 import io.github.shoaky.sourcedownloader.sdk.MapPatternVariables
-import io.github.shoaky.sourcedownloader.sdk.TestFileContent
 import io.github.shoaky.sourcedownloader.testResourcePath
 import org.junit.jupiter.api.Test
 import kotlin.io.path.Path
@@ -15,10 +15,9 @@ class ExpressionFileFilterTest {
         val filter = ExpressionFileFilterSupplier.expressions(
             listOf("filename == '1.txt'")
         )
-        val testFileContent1 = TestFileContent(Path("1.txt"))
+        val testFileContent1 = FixedFileContent(Path("1.txt"))
         assertEquals(false, filter.test(testFileContent1))
-
-        val testFileContent2 = TestFileContent(Path("2.txt"))
+        val testFileContent2 = FixedFileContent(Path("2.txt"))
         assertEquals(true, filter.test(testFileContent2))
     }
 
@@ -27,10 +26,9 @@ class ExpressionFileFilterTest {
         val filter = ExpressionFileFilterSupplier.expressions(
             inclusions = listOf("filename == '1.txt'")
         )
-        val testFileContent1 = TestFileContent(Path("1.txt"))
+        val testFileContent1 = FixedFileContent(Path("1.txt"))
         assertEquals(true, filter.test(testFileContent1))
-
-        val testFileContent2 = TestFileContent(Path("2.txt"))
+        val testFileContent2 = FixedFileContent(Path("2.txt"))
         assertEquals(false, filter.test(testFileContent2))
     }
 
@@ -60,7 +58,7 @@ class ExpressionFileFilterTest {
         )
         assertEquals(
             true, filter.test(
-            TestFileContent(path, attrs = mapOf("size" to path.fileSize())),
+            FixedFileContent(path, attrs = mapOf("size" to path.fileSize())),
             )
         )
     }
@@ -80,7 +78,7 @@ class ExpressionFileFilterTest {
             )
         )
         val downloadPath = testResourcePath.resolve("downloads")
-        val testFileContent = TestFileContent(
+        val testFileContent = FixedFileContent(
             fileDownloadPath = downloadPath.resolve(Path("book", "test.txt")),
             downloadPath = downloadPath,
             tags = setOf("video"),
@@ -101,7 +99,7 @@ class ExpressionFileFilterTest {
         )
 
         val downloadPath = testResourcePath.resolve("downloads")
-        val file1 = TestFileContent(
+        val file1 = FixedFileContent(
             fileDownloadPath = downloadPath.resolve(Path("SPs", "test.txt")),
             downloadPath = downloadPath,
             tags = setOf("video"),
@@ -122,7 +120,7 @@ class ExpressionFileFilterTest {
         )
 
         val downloadPath = testResourcePath.resolve("downloads")
-        val file1 = TestFileContent(
+        val file1 = FixedFileContent(
             fileDownloadPath = downloadPath.resolve(Path("SP", "test.txt")),
             downloadPath = downloadPath,
             tags = setOf("video"),

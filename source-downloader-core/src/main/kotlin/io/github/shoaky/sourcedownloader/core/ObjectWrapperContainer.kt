@@ -45,6 +45,7 @@ val itemContentFilterTypeRef = componentTypeRef<ItemContentFilter>()
 val runAfterCompletionTypeRef = componentTypeRef<RunAfterCompletion>()
 val fileTaggerTypeRef = componentTypeRef<FileTagger>()
 val fileReplacementDeciderRef = componentTypeRef<FileReplacementDecider>()
+val itemExistsDetectorRef = componentTypeRef<ItemExistsDetector>()
 val processorTypeRef = jacksonTypeRef<ProcessorWrapper>()
 
 class SpringObjectWrapperContainer(

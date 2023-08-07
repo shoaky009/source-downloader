@@ -1,9 +1,8 @@
 package io.github.shoaky.sourcedownloader.sdk.component
 
-import com.fasterxml.jackson.annotation.JsonValue
-import com.google.common.base.CaseFormat
 import io.github.shoaky.sourcedownloader.sdk.*
 import java.net.URI
+import java.nio.file.Files
 import java.nio.file.Path
 import java.util.function.Consumer
 import java.util.function.Predicate
@@ -11,7 +10,6 @@ import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
 import kotlin.reflect.KClass
 import kotlin.reflect.full.allSuperclasses
-import kotlin.reflect.full.isSuperclassOf
 
 /**
  * The base interface of all components
@@ -24,71 +22,6 @@ fun <T : SdComponent> KClass<T>.componentSuperClasses(): List<KClass<out SdCompo
         .filter { it != SdComponent::class && it != Any::class }
         .filterIsInstanceTo(result)
     return result.toList()
-}
-
-enum class ComponentTopType(
-    val klass: KClass<out SdComponent>,
-    val names: List<String>
-) {
-
-    TRIGGER(Trigger::class, listOf("trigger")),
-    SOURCE(Source::class, listOf("source")),
-    DOWNLOADER(Downloader::class, listOf("downloader")),
-    ITEM_FILE_RESOLVER(
-        ItemFileResolver::class,
-        listOf("item-file-resolver", "file-resolver", "itemFileResolver", "fileResolver")
-    ),
-    VARIABLE_PROVIDER(VariableProvider::class, listOf("provider", "variable-provider", "variableProvider")),
-    FILE_MOVER(FileMover::class, listOf("mover", "file-mover", "fileMover")),
-    RUN_AFTER_COMPLETION(RunAfterCompletion::class, listOf("run-after-completion", "run", "runAfterCompletion")),
-    SOURCE_ITEM_FILTER(
-        SourceItemFilter::class,
-        listOf("source-item-filter", "item-filter", "sourceItemFilter", "itemFilter")
-    ),
-    SOURCE_CONTENT_FILTER(
-        ItemContentFilter::class,
-        listOf("item-content-filter", "content-filter", "itemContentFilter", "contentFilter")
-    ),
-    FILE_CONTENT_FILTER(
-        FileContentFilter::class,
-        listOf("file-content-filter", "file-filter", "fileContentFilter", "fileFilter")
-    ),
-    TAGGER(FileTagger::class, listOf("file-tagger", "tagger")),
-    FILE_REPLACEMENT_DECIDER(
-        FileReplacementDecider::class,
-        listOf("file-replacement-decider", "replacement-decider", "fileReplacementDecider", "replacementDecider")
-    ),
-    ;
-
-    @JsonValue
-    fun lowerHyphenName(): String {
-        return CaseFormat.UPPER_UNDERSCORE.to(
-            CaseFormat.LOWER_HYPHEN,
-            this.name
-        )
-    }
-
-    companion object {
-
-        private val nameMapping: Map<String, ComponentTopType> = entries.flatMap {
-            it.names.map { name -> name to it }
-        }.toMap()
-
-        fun fromClass(klass: KClass<out SdComponent>): List<ComponentTopType> {
-            if (klass == SdComponent::class) {
-                throw ComponentException.other("can not create instance of SdComponent.class")
-            }
-
-            return entries.filter {
-                it.klass.isSuperclassOf(klass)
-            }
-        }
-
-        fun fromName(name: String): ComponentTopType? {
-            return nameMapping[name]
-        }
-
-    }
 }
 
 interface Trigger : SdComponent, AutoCloseable {
@@ -222,6 +155,14 @@ interface FileMover : SdComponent {
      * @param itemContent the [ItemContent] to be replaced
      */
     fun replace(itemContent: ItemContent): Boolean
+
+    /**
+     * @param path the path to be listed
+     * @return The absolute paths in the directory
+     */
+    fun listPath(path: Path): List<Path> {
+        return Files.list(path).toList()
+    }
 }
 
 interface RunAfterCompletion : SdComponent, Consumer<ItemContent>
@@ -257,6 +198,18 @@ interface FileReplacementDecider : SdComponent {
      * @return true if the current [ItemContent] should replace
      */
     fun isReplace(current: ItemContent, before: ItemContent?): Boolean
+
+}
+
+/**
+ * Decide item download or not
+ */
+interface ItemExistsDetector : SdComponent {
+
+    /**
+     * @return true if exists, item will not be downloaded
+     */
+    fun exists(fileMover: FileMover, content: ItemContent): Boolean
 
 }
 

@@ -5,6 +5,7 @@ import io.github.shoaky.sourcedownloader.sdk.FileContent
 import io.github.shoaky.sourcedownloader.sdk.MapPatternVariables
 import java.net.URI
 import java.nio.file.Path
+import kotlin.io.path.Path
 
 data class CoreFileContent(
     override val fileDownloadPath: Path,
@@ -43,14 +44,17 @@ data class CoreFileContent(
         if (sourceSavePath == saveDirectoryPath) {
             return null
         }
-        val depth = fileSavePathPattern.depth()
-        var res = saveDirectoryPath
-        for (i in 0..depth) {
-            res = saveDirectoryPath.parent
-        }
-        if (sourceSavePath == res) {
-            return null
-        }
-        return res
+        val prefix = saveDirectoryPath.toString().removePrefix(sourceSavePath.toString())
+        val resolve = sourceSavePath.resolve(Path(prefix).firstOrNull() ?: Path(""))
+        return resolve.takeIf { it != sourceSavePath }
+//        val depth = fileSavePathPattern.depth()
+//        var res = saveDirectoryPath
+//        for (i in 0..depth) {
+//            res = saveDirectoryPath.parent
+//        }
+//        if (sourceSavePath == res) {
+//            return null
+//        }
+//        return res
     }
 }

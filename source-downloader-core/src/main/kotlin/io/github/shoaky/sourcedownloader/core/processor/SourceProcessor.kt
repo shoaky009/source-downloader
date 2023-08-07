@@ -6,6 +6,7 @@ import io.github.shoaky.sourcedownloader.core.ProcessingContent.Status.*
 import io.github.shoaky.sourcedownloader.core.file.CoreFileContent
 import io.github.shoaky.sourcedownloader.core.file.CoreItemContent
 import io.github.shoaky.sourcedownloader.core.file.FileContentStatus
+import io.github.shoaky.sourcedownloader.core.file.ReadonlyFileMover
 import io.github.shoaky.sourcedownloader.sdk.*
 import io.github.shoaky.sourcedownloader.sdk.component.*
 import io.github.shoaky.sourcedownloader.sdk.util.Jackson
@@ -52,7 +53,9 @@ class SourceProcessor(
     private val variableProviders = options.variableProviders
     private val runAfterCompletion: List<RunAfterCompletion> = options.runAfterCompletion
     private val taggers: List<FileTagger> = options.fileTaggers
-    private var fileReplacementDecider: FileReplacementDecider = options.fileReplacementDecider
+    private val fileReplacementDecider: FileReplacementDecider = options.fileReplacementDecider
+    private val itemExistsDetector: ItemExistsDetector = options.itemExistsDetector
+    private val readonlyFileMover = ReadonlyFileMover(fileMover)
     private val renamer: Renamer = Renamer(
         options.variableErrorStrategy,
         options.variableReplacers,
@@ -131,13 +134,11 @@ class SourceProcessor(
             )
         val sourcePointer = lastState.resolvePointer(source::class)
         log.debug("Processor:'{}' lastState:{}", name, lastState)
-
         val itemIterator = retry.execute<Iterator<PointedItem<ItemPointer>>, IOException> {
             it.setAttribute("stage", ProcessStage("FetchSourceItems", lastState))
             val iterator = source.fetch(sourcePointer, options.fetchLimit).iterator()
             iterator
         }
-
         val result = mutableListOf<ProcessingContent>()
         val simpleStat = SimpleStat(name)
         for (item in itemIterator) {
@@ -205,7 +206,6 @@ class SourceProcessor(
             lastPointer = Jackson.convert(currentPointer, PersistentPointer::class),
             lastActiveTime = LocalDateTime.now()
         )
-
         val lastP = lastState.resolvePointer(source::class)
         val currP = currentSourceState.resolvePointer(source::class)
         if (currP != lastP) {
@@ -350,16 +350,18 @@ class SourceProcessor(
         if (replaceFiles.isNotEmpty()) {
             return true to WAITING_TO_RENAME
         }
-        val targetPaths = files.map { it.targetPath() }
+
+        if (itemExistsDetector.exists(readonlyFileMover, sc)) {
+            if (log.isDebugEnabled) {
+                log.debug("Detect already exists item:{}, files:{}", sc.sourceItem, sc.sourceFiles)
+            }
+            return false to TARGET_ALREADY_EXISTS
+        }
         // 预防这一批次的Item有相同的目标，并且是AsyncDownloader的情况下会重复下载
+        val targetPaths = files.map { it.targetPath() }
         if (processingStorage.targetPathExists(targetPaths)) {
             return false to TARGET_ALREADY_EXISTS
         }
-
-        if (fileMover.exists(targetPaths)) {
-            return false to TARGET_ALREADY_EXISTS
-        }
-
         val allExists = fileMover.exists(files.map { it.fileDownloadPath })
         return if (allExists) {
             false to WAITING_TO_RENAME
