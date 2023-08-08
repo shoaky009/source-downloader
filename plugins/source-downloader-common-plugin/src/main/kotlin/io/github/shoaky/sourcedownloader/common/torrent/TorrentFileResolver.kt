@@ -18,6 +18,9 @@ import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
 import kotlin.io.path.Path
 
+/**
+ * Torrent文件解析器，支持磁力连接但是不推荐不太稳定
+ */
 object TorrentFileResolver : ItemFileResolver {
 
     private val metadataService = MetadataService()

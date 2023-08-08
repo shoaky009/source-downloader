@@ -8,6 +8,9 @@ import org.springframework.http.HttpStatus
 import java.nio.file.Path
 import kotlin.io.path.deleteIfExists
 
+/**
+ * Webdav协议文件移动器，可以理解为上传到Webdav服务器
+ */
 open class WebdavFileMover(
     private val webdavClient: WebdavClient,
     private val uploadFileMode: Boolean = true,

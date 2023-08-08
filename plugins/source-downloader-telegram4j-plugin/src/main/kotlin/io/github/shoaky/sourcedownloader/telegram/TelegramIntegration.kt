@@ -28,6 +28,9 @@ import kotlin.io.path.*
 import kotlin.jvm.optionals.getOrDefault
 import kotlin.jvm.optionals.getOrNull
 
+/**
+ * Telegram集成，提供下载、解析文件、变量提供
+ */
 class TelegramIntegration(
     private val client: MTProtoTelegramClient,
     private val downloadPath: Path

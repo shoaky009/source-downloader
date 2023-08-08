@@ -21,7 +21,6 @@ import java.net.InetSocketAddress
 import java.net.URI
 import java.nio.file.Path
 import java.time.Duration
-import java.util.*
 import java.util.function.Function
 import kotlin.io.path.createDirectories
 
@@ -35,7 +34,7 @@ object TelegramClientInstanceFactory : InstanceFactory<MTProtoTelegramClient> {
         val bootstrap = MTProtoTelegramClient.create(
             config.apiId,
             config.apiHash,
-            QRAuthorizationHandler(QRCallback())
+            QRAuthorizationHandler(QRCallback)
         )
 
         val proxyResource = props.getOrNull<URI>("proxy")?.let {

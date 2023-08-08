@@ -10,6 +10,9 @@ import io.github.shoaky.sourcedownloader.sdk.util.Jackson
 import java.net.URI
 import kotlin.io.path.name
 
+/**
+ * 通过openai来解析文件名中的变量，resolveVariables填写需要的变量名和描述
+ */
 class OpenAiVariableProvider(
     private val openAiBaseUri: URI,
     private val openAiClient: OpenAiClient,
@@ -29,7 +32,7 @@ class OpenAiVariableProvider(
         val systemRole: String = """
             你现在是一个文件解析器，从文件名中解析信息
             需要的信息有:${resolveVariables}
-            如果不存在字段无需返回，不要有其他会干扰json解析的字符
+            如果不存在字段无需返回，不返回其他会干扰json解析的字符
         """.trimIndent()
     )
 }

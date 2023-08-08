@@ -6,6 +6,9 @@ import io.github.shoaky.sourcedownloader.sdk.component.ItemFileResolver
 import org.springframework.core.io.UrlResource
 import kotlin.io.path.Path
 
+/**
+ * URL文件解析器，只会返回单个文件
+ */
 object UrlFileResolver : ItemFileResolver {
     override fun resolveFiles(sourceItem: SourceItem): List<SourceFile> {
         val urlResource = UrlResource(sourceItem.downloadUri)

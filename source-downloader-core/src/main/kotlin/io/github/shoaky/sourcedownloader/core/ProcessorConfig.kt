@@ -104,7 +104,8 @@ data class ProcessorConfig(
         val category: String? = null,
         val tags: Set<String> = emptySet(),
         val itemErrorContinue: Boolean = true,
-        val taggedFileOptions: Map<String, Tagged> = emptyMap()
+        val taggedFileOptions: Map<String, Tagged> = emptyMap(),
+        val manualSources: List<ComponentId> = emptyList()
     )
 
     data class Tagged(

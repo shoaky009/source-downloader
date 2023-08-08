@@ -66,6 +66,9 @@ data class ComponentType(
         fun itemExistsDetector(type: String): ComponentType = ComponentType(type, ItemExistsDetector::class)
 
         @JvmStatic
+        fun manualSource(type: String): ComponentType = ComponentType(type, ManualSource::class)
+
+        @JvmStatic
         fun types(): List<String> {
             return componentTypes.keys.toList()
         }

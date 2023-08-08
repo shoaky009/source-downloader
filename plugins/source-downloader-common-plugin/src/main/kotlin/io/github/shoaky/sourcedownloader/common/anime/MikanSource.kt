@@ -12,7 +12,10 @@ import org.slf4j.LoggerFactory
 import java.net.URI
 import java.time.LocalDateTime
 
-internal class MikanSource(
+/**
+ * 通过Mikan的RSS源获取资源
+ */
+class MikanSource(
     private val url: String,
     private val allEpisode: Boolean = false,
     private val rssReader: RssReader = defaultRssReader,

@@ -15,6 +15,9 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 
+/**
+ * 从头迭代Telegram给定的chatId的文件消息
+ */
 class TelegramSource(
     private val messageFetcher: TelegramMessageFetcher,
     private val chats: List<ChatConfig>,

@@ -3,6 +3,9 @@ package io.github.shoaky.sourcedownloader.common.anime
 import io.github.shoaky.sourcedownloader.sdk.ItemContent
 import io.github.shoaky.sourcedownloader.sdk.component.FileReplacementDecider
 
+/**
+ * 针对动画资源的替换决策器，替换Bilibili的源，如果有版本号例如v2v3会进行替换
+ */
 object AnimeReplacementDecider : FileReplacementDecider {
 
     private val versionRegex = Regex("\\[v\\d+]", RegexOption.IGNORE_CASE)

@@ -8,6 +8,9 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 import org.springframework.web.util.pattern.PathPatternParser
 import kotlin.concurrent.thread
 
+/**
+ * Webhook触发器
+ */
 class WebhookTrigger(
     private val path: String,
     private val method: String = "GET",

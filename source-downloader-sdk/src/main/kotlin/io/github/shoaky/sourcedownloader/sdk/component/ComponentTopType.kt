@@ -41,6 +41,10 @@ enum class ComponentTopType(
         ItemExistsDetector::class,
         listOf("item-exists-detector", "exists-detector", "itemExistsDetector", "existsDetector")
     ),
+    MANUAL_SOURCE(
+        ManualSource::class,
+        listOf("manual-source")
+    )
     ;
 
     @JsonValue

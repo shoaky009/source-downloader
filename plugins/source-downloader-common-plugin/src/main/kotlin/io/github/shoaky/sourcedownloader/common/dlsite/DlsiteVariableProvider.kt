@@ -14,7 +14,10 @@ import java.net.http.HttpResponse
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-internal class DlsiteVariableProvider(
+/**
+ * 通过RJ号获取DLsite的作品信息，SourceItem中必须有RJ号相关的内容
+ */
+class DlsiteVariableProvider(
     private val locale: String = "zh-cn"
 ) : VariableProvider {
     override fun createSourceGroup(sourceItem: SourceItem): SourceItemGroup {

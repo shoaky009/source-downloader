@@ -24,8 +24,12 @@ data class ComponentWrapper<T : SdComponent>(
         return component
     }
 
-    fun addRef(name: String) {
-        processorRef.add(name)
+    fun addRef(ref: String) {
+        processorRef.add(ref)
+    }
+
+    fun removeRef(ref: String) {
+        processorRef.remove(ref)
     }
 
     fun getRefs(): Set<String> {

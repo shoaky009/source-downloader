@@ -9,6 +9,15 @@ import org.projectnessie.cel.tools.Script
 import org.slf4j.LoggerFactory
 import java.time.ZoneOffset
 
+/**
+ * Item级别的CEL表达式过滤器，可用变量有
+ * title:Item中的title
+ * contentType:Item中的contentType
+ * link:Item中的link
+ * date:日期
+ * attrs:文件额外属性key-value例如{"name":"demo"}
+ * tags:标签，数组类型例如["demo"]
+ */
 class ExpressionItemFilter(
     exclusions: List<String> = emptyList(),
     inclusions: List<String> = emptyList(),

@@ -10,7 +10,7 @@ class ExpressionItemContentFilterTest {
 
     @Test
     fun content_exclusions() {
-        val filter = ExpressionItemContentFileter(exclusions = listOf(
+        val filter = ExpressionItemContentFilter(exclusions = listOf(
             "files.filter(x, 'video' in x.tags).size() < 3"
         ))
 
@@ -40,7 +40,7 @@ class ExpressionItemContentFilterTest {
 
     @Test
     fun content_inclusions() {
-        val filter = ExpressionItemContentFileter(inclusions = listOf(
+        val filter = ExpressionItemContentFilter(inclusions = listOf(
             "files.filter(x, 'video' in x.tags).size() == 1"
         ))
 

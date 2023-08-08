@@ -7,6 +7,9 @@ import org.apache.tika.mime.MimeTypes
 import org.slf4j.LoggerFactory
 import kotlin.io.path.name
 
+/**
+ * 从扩展名中提取文件类型
+ */
 object SimpleFileTagger : FileTagger {
 
     private val log = LoggerFactory.getLogger(SimpleFileTagger::class.java)

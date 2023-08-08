@@ -136,7 +136,11 @@ class DefaultProcessorManager(
         componentManager.getAllTrigger().forEach {
             it.removeTask(safeTask)
         }
+
         container.remove(processorBeanName)
+        componentManager.getAllComponent().forEach {
+            it.removeRef(processorName)
+        }
     }
 
     override fun getAllProcessorNames(): Set<String> {
@@ -164,7 +168,7 @@ class DefaultProcessorManager(
 
         val itemContentFilters = mutableListOf<ItemContentFilter>()
         if (options.contentExpressionExclusions.isNotEmpty() || options.contentExpressionInclusions.isNotEmpty()) {
-            itemContentFilters.add(ExpressionItemContentFileter(
+            itemContentFilters.add(ExpressionItemContentFilter(
                 options.contentExpressionExclusions,
                 options.contentExpressionInclusions
             ))
@@ -214,8 +218,9 @@ class DefaultProcessorManager(
         val fileReplacementDecider = container.get(
             fileReplacementDeciderName, fileReplacementDeciderRef
         ).component
+
         val itemExistsDetector = options.itemExistsDetector?.let {
-            val instanceName = it.getInstanceName(ItemFileResolver::class)
+            val instanceName = it.getInstanceName(ItemExistsDetector::class)
             container.get(instanceName, itemExistsDetectorRef).component
         } ?: SimpleItemExistsDetector
 
@@ -245,6 +250,11 @@ class DefaultProcessorManager(
                 },
                 taggedFileContentFilters
             )
+        }
+
+        options.manualSources.forEach {
+            val instanceName = it.getInstanceName(ManualSource::class)
+            container.get(instanceName, manualSourceRef).getAndMarkRef(config.name)
         }
 
         return ProcessorOptions(

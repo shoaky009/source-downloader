@@ -11,6 +11,9 @@ import kotlin.io.path.createDirectories
 import kotlin.io.path.moveTo
 import kotlin.io.path.notExists
 
+/**
+ * 模拟下载器，通过创建空文件表示文件已下载完成
+ */
 class MockDownloader(
     private val downloadPath: Path
 ) : TorrentDownloader {

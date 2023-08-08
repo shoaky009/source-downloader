@@ -36,11 +36,11 @@ class ExpressionFileFilterTest {
     fun test_multiple() {
         val filter = ExpressionFileFilterSupplier.expressions(
             exclusions = listOf(
-                "attr['size'] > 1024*1024",
+                "attrs['size'] > 1024*1024",
                 "filename.matches('.*qaz.*')"
             ),
             inclusions = listOf(
-                "attr['size'] < 1024*1024",
+                "attrs['size'] < 1024*1024",
                 "filename.matches('.*Test.*')"
             ),
         )
@@ -72,7 +72,7 @@ class ExpressionFileFilterTest {
                 'video' in tags &&
                 ext == 'txt' &&
                 vars['test'] == 'test' &&
-                attr['size'] > 10 &&
+                attrs['size'] > 10 &&
                 'book' in paths
             """.trimIndent()
             )

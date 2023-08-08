@@ -12,6 +12,9 @@ import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import java.nio.file.Path
 
+/**
+ * qBittorrent下载器，支持保种和只下载需要的文件
+ */
 class QbittorrentDownloader(
     private val client: QbittorrentClient,
     private val alwaysDownloadAll: Boolean = false

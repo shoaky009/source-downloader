@@ -6,6 +6,9 @@ import io.github.shoaky.sourcedownloader.sdk.util.TextClear
 import org.apache.commons.lang3.math.NumberUtils
 import kotlin.io.path.nameWithoutExtension
 
+/**
+ * 从文件名中提取出集数
+ */
 object EpisodeVariableProvider : VariableProvider {
 
     private val parserChain: List<ValueParser> = listOf(

@@ -15,12 +15,10 @@ dependencies {
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     implementation("org.flywaydb:flyway-core")
     implementation(libs.sqlite.jdbc)
-    // runtimeOnly("com.h2database:h2")
     // kotlin
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
-
     // implementation(libs.kotlinx.coroutines.core)
     // runtimeOnly(libs.kotlinx.coroutines.core.jvm)
 
@@ -32,8 +30,9 @@ dependencies {
     implementation(enforcedPlatform(libs.cel.bom))
     implementation(libs.bundles.cel)
     // implementation("org.openjdk.nashorn:nashorn-core:15.4")
-    // implementation(libs.exposed.spring.boot.stater)
     implementation(libs.bundles.exposed)
+//    implementation("org.springdoc:springdoc-openapi-starter-webmvc-api:2.2.0")
+//    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0")
 
     resolveBuildInPlugins()
 }

@@ -7,6 +7,9 @@ import java.nio.file.Path
 import kotlin.io.path.name
 import kotlin.io.path.nameWithoutExtension
 
+/**
+ * 针对动画资源的过滤器，默认排除NCOP、NCED、OP、ED、映像特典、PV、CM、Fonts、Scan、Event、Lecture、Preview等文件
+ */
 object AnimeFileFilter : FileContentFilter {
 
     private val replaces = listOf("-", "_", "[", "]", "(", ")", ".")

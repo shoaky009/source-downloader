@@ -9,6 +9,9 @@ import io.github.shoaky.sourcedownloader.sdk.component.TorrentDownloader
 import org.slf4j.LoggerFactory
 import java.nio.file.Path
 
+/**
+ * Transmission下载器，文件移动不支持保种，建议使用硬链接文件移动器
+ */
 class TransmissionDownloader(
     private val client: TransmissionClient,
 ) : TorrentDownloader {

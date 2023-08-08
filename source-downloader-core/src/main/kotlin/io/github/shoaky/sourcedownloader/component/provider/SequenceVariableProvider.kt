@@ -3,6 +3,9 @@ package io.github.shoaky.sourcedownloader.component.provider
 import io.github.shoaky.sourcedownloader.sdk.*
 import io.github.shoaky.sourcedownloader.sdk.component.VariableProvider
 
+/**
+ * 为每个文件提供一个序号
+ */
 object SequenceVariableProvider : VariableProvider {
 
     override fun createSourceGroup(sourceItem: SourceItem): SourceItemGroup {

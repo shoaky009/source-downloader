@@ -7,6 +7,9 @@ import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.ItemFileResolver
 import kotlin.io.path.Path
 
+/**
+ * Fanbox的文件解析器，通过postId调用fanbox api获取文件信息
+ */
 class FanboxFileResolver(
     private val fanboxClient: FanboxClient
 ) : ItemFileResolver {

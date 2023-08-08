@@ -9,6 +9,9 @@ import java.io.FileOutputStream
 import java.nio.channels.Channels
 import java.nio.file.Path
 
+/**
+ * URL下载器，通过SourceItem中的downloadUri下载文件
+ */
 class UrlDownloader(
     private val downloadPath: Path
 ) : Downloader {

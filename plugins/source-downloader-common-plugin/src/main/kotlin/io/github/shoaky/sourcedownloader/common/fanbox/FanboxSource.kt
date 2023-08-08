@@ -8,6 +8,9 @@ import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.Source
 import java.net.URI
 
+/**
+ * 获取对应SessionId用户的赞助者贴子并迭代
+ */
 class FanboxSource(
     private val client: FanboxClient,
     private val mode: String? = null

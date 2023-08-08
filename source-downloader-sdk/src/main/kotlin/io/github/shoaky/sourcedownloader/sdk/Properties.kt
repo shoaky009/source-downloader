@@ -4,8 +4,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentException
 import io.github.shoaky.sourcedownloader.sdk.util.Jackson
 
-class Properties
-private constructor(
+class Properties private constructor(
     val rawValues: MutableMap<String, Any>
 ) {
 

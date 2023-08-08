@@ -6,6 +6,9 @@ import io.github.shoaky.sourcedownloader.sdk.*
 import io.github.shoaky.sourcedownloader.sdk.component.VariableProvider
 import kotlin.io.path.name
 
+/**
+ * Anitom的变量提供
+ */
 class AnitomVariableProvider : VariableProvider {
     override fun createSourceGroup(sourceItem: SourceItem): SourceItemGroup {
         return FunctionalItemGroup { file ->

@@ -11,6 +11,9 @@ import java.nio.file.Path
 import java.time.LocalDateTime
 import kotlin.io.path.*
 
+/**
+ * 从给定的[path]中通过文件系统API获取SourceItem
+ */
 class SystemFileSource(
     val path: Path,
     /**

@@ -7,7 +7,17 @@ import org.projectnessie.cel.checker.Decls
 import org.projectnessie.cel.tools.Script
 import org.slf4j.LoggerFactory
 
-class ExpressionItemContentFileter(
+/**
+ * Item级别的CEL表达式过滤器，可用变量有
+ * title:Item中的title
+ * contentType:Item中的contentType
+ * link:Item中的link
+ * date:日期
+ * attrs:文件额外属性key-value例如{"name":"demo"}
+ * tags:标签，数组类型例如["demo"]
+ * files:Item中所解析出来的文件，数组类型例如[{"tags":["demo"],"attrs":{"name":"demo"},"vars":{"name":"demo"}}]
+ */
+class ExpressionItemContentFilter(
     exclusions: List<String> = emptyList(),
     inclusions: List<String> = emptyList(),
 ) : ItemContentFilter {
@@ -51,7 +61,7 @@ class ExpressionItemContentFileter(
 
     companion object {
 
-        private val log = LoggerFactory.getLogger(ExpressionItemContentFileter::class.java)
+        private val log = LoggerFactory.getLogger(ExpressionItemContentFilter::class.java)
         private fun buildScript(expression: String): Script {
             return scriptHost.buildScript(expression)
                 .withDeclarations(
@@ -60,7 +70,7 @@ class ExpressionItemContentFileter(
                     Decls.newVar("link", Decls.String),
                     Decls.newVar("date", Decls.Timestamp),
                     Decls.newVar("tags", Decls.newListType(Decls.String)),
-                    Decls.newVar("attrs", Decls.newMapType(Decls.String, Decls.Any)),
+                    Decls.newVar("attrs", Decls.newMapType(Decls.String, Decls.Dyn)),
                     Decls.newVar("files", Decls.newListType(Decls.Any))
                 )
                 .build()

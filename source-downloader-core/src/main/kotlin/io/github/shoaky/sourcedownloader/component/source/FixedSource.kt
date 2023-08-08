@@ -5,6 +5,9 @@ import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.AlwaysLatestSource
 import io.github.shoaky.sourcedownloader.sdk.component.ItemFileResolver
 
+/**
+ * 返回固定SourceItem和SourceFile
+ */
 class FixedSource(
     private val content: List<SourceItemContent>
 ) : AlwaysLatestSource(), ItemFileResolver {

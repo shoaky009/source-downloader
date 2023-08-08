@@ -6,6 +6,9 @@ import java.util.*
 import kotlin.concurrent.thread
 import kotlin.concurrent.timerTask
 
+/**
+ * 固定时间间隔触发器
+ */
 class FixedScheduleTrigger(
     private val interval: Duration,
     private val onStartRunTasks: Boolean = false,

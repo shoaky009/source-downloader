@@ -18,6 +18,9 @@ import java.net.http.HttpRequest
 import java.net.http.HttpRequest.BodyPublishers
 import java.net.http.HttpResponse.BodyHandlers
 
+/**
+ * 发送一个HTTP请求
+ */
 class SendHttpRequest(
     private val props: Props
 ) : RunAfterCompletion, ComponentStateful {

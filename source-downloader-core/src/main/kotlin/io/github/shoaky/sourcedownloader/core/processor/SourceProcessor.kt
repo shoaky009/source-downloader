@@ -20,9 +20,7 @@ import java.io.IOException
 import java.nio.file.Path
 import java.time.Duration
 import java.time.LocalDateTime
-import java.util.concurrent.Executors
-import java.util.concurrent.ScheduledFuture
-import java.util.concurrent.TimeUnit
+import java.util.concurrent.*
 import kotlin.time.measureTime
 
 // TODO 基于行为重构，async,sync,dry-run,...
@@ -56,6 +54,7 @@ class SourceProcessor(
     private val fileReplacementDecider: FileReplacementDecider = options.fileReplacementDecider
     private val itemExistsDetector: ItemExistsDetector = options.itemExistsDetector
     private val readonlyFileMover = ReadonlyFileMover(fileMover)
+    private val itemsQueue: BlockingQueue<SourceItem> = LinkedBlockingQueue()
     private val renamer: Renamer = Renamer(
         options.variableErrorStrategy,
         options.variableReplacers,
@@ -526,6 +525,10 @@ class SourceProcessor(
         return info().map {
             "${it.key}: ${it.value}"
         }.joinToString("\n")
+    }
+
+    fun offer(sourceItem: List<SourceItem>) {
+        itemsQueue.addAll(sourceItem)
     }
 
     companion object {

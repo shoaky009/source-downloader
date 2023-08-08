@@ -9,6 +9,9 @@ import java.util.function.Function
 import kotlin.io.path.name
 import kotlin.io.path.nameWithoutExtension
 
+/**
+ * 从文件名或title中提取季度
+ */
 // TODO 改成title, filename, parent有不同的规则
 object SeasonVariableProvider : VariableProvider {
 

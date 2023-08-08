@@ -12,6 +12,9 @@ import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.jvm.optionals.getOrDefault
 
+/**
+ * 通过RSS源获取资源，支持自定义属性映射
+ */
 class RssSource(
     private val url: String,
     private val tags: List<String> = emptyList(),

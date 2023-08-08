@@ -7,6 +7,9 @@ import java.nio.file.attribute.FileTime
 import kotlin.io.path.exists
 import kotlin.io.path.setLastModifiedTime
 
+/**
+ * 更改对应Item文件夹的最后修改时间
+ */
 object TouchItemDirectory : RunAfterCompletion {
 
     override fun accept(t: ItemContent) {

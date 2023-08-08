@@ -14,6 +14,10 @@ import io.github.shoaky.sourcedownloader.sdk.component.VariableProvider
 import io.github.shoaky.sourcedownloader.sdk.util.TextClear
 import org.slf4j.LoggerFactory
 
+/**
+ * 从SourceItem.title中提取和清洗标题给anilist或bgmtv进行搜索获取对应元数据，
+ * 会自动根据title中的语言来决定用哪个网站进行搜索
+ */
 class AnimeVariableProvider(
     private val bgmTvApiClient: BgmTvApiClient,
     private val anilistClient: AnilistClient,

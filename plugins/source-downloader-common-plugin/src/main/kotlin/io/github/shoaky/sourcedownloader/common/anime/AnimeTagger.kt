@@ -5,7 +5,11 @@ import io.github.shoaky.sourcedownloader.sdk.component.FileTagger
 import kotlin.io.path.nameWithoutExtension
 
 /**
- * 先简单实现一个后续继续完善
+ * 对动画常见的特别篇进行标记，规则如下
+ * 特别篇:special
+ * OVA:ova
+ * OAD:oad
+ * 剧场版,劇場版,movie:movie
  */
 object AnimeTagger : FileTagger {
 

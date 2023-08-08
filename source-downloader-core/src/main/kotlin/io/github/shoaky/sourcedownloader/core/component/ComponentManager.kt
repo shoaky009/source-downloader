@@ -46,6 +46,11 @@ interface ComponentManager {
         return getAllComponent().map { it.component }.filterIsInstance<VariableProvider>()
     }
 
+    fun getAllManualSource(): List<ComponentWrapper<ManualSource>> {
+        return getAllComponent().filter { it.type.topType == ComponentTopType.MANUAL_SOURCE }
+            .filterIsInstance<ComponentWrapper<ManualSource>>()
+    }
+
     fun getComponentDescriptions(): List<ComponentDescription>
 
     fun destroy(instanceName: String)

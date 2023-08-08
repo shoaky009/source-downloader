@@ -1,8 +1,6 @@
 spring:
-
   application:
     name: source-downloader
-
   main:
     banner-mode: off
     allow-bean-definition-overriding: true
@@ -66,6 +64,9 @@ spring:
 source-downloader:
   data-location: src/test/resources
 
+springdoc:
+  api-docs:
+    enabled: false
 ---
 spring:
   config:

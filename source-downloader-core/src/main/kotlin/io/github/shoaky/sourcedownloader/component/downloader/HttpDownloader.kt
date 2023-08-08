@@ -18,6 +18,9 @@ import java.time.Instant
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
 
+/**
+ * HTTP下载器，URI取自[SourceFile.fileUri]
+ */
 class HttpDownloader(
     private val downloadPath: Path,
     private val client: HttpClient = httpClient,

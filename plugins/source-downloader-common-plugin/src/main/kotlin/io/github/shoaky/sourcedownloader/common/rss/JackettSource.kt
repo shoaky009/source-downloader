@@ -8,6 +8,9 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 
+/**
+ * 通过Jackett的RSS源获取资源
+ */
 class JackettSource(
     private val url: String,
     private val rssReader: RssReader = defaultRssReader

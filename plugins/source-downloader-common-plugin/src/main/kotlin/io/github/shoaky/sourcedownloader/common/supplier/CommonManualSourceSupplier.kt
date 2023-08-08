@@ -1,19 +1,19 @@
 package io.github.shoaky.sourcedownloader.common.supplier
 
-import io.github.shoaky.sourcedownloader.common.MediaTypeExistsDetector
+import io.github.shoaky.sourcedownloader.common.CommonManualSource
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
 
-object MediaTypeExistsDetectorSupplier : ComponentSupplier<MediaTypeExistsDetector> {
+object CommonManualSourceSupplier : ComponentSupplier<CommonManualSource> {
 
-    override fun apply(props: Properties): MediaTypeExistsDetector {
-        return MediaTypeExistsDetector
+    override fun apply(props: Properties): CommonManualSource {
+        return CommonManualSource
     }
 
     override fun supplyTypes(): List<ComponentType> {
         return listOf(
-            ComponentType.itemExistsDetector("media-type")
+            ComponentType.manualSource("common")
         )
     }
 

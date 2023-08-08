@@ -10,7 +10,15 @@ import org.slf4j.LoggerFactory
 import kotlin.io.path.extension
 import kotlin.io.path.name
 
-
+/**
+ * 文件级别的CEL表达式过滤器，可用变量有
+ * filename:文件名没有扩展名
+ * ext:文件扩展名例如mp4
+ * tags:标签，数组类型例如["demo"]
+ * vars:文件对应的变量key-value例如{"name":"demo"}
+ * attrs:文件额外属性key-value例如{"name":"demo"}
+ * paths:下载文件中的路径，数组类型例如["FATE", "CDs"]
+ */
 class ExpressionFileFilter(
     exclusions: List<String> = emptyList(),
     inclusions: List<String> = emptyList()
@@ -32,7 +40,7 @@ class ExpressionFileFilter(
             "tags" to content.tags.toList(),
             "ext" to content.fileDownloadPath.extension.lowercase(),
             "vars" to content.patternVariables.variables(),
-            "attr" to content.attrs,
+            "attrs" to content.attrs,
             "paths" to paths
         )
 
@@ -62,7 +70,7 @@ class ExpressionFileFilter(
                     Decls.newVar("ext", Decls.String),
                     // abbr. patternVariables
                     Decls.newVar("vars", Decls.newMapType(Decls.String, Decls.String)),
-                    Decls.newVar("attr", Decls.newMapType(Decls.String, Decls.Any)),
+                    Decls.newVar("attrs", Decls.newMapType(Decls.String, Decls.Dyn)),
                     Decls.newVar("paths", Decls.newListType(Decls.String)),
                 )
                 .withLibraries(CelLibrary())

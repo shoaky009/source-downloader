@@ -16,6 +16,5 @@ object FixedSourceSupplier : ComponentSupplier<FixedSource> {
             ComponentType.source("fixed"),
             ComponentType.fileResolver("fixed"),
         )
-
     }
 }

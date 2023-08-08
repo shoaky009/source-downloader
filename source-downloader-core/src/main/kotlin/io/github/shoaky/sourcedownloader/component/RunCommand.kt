@@ -5,6 +5,9 @@ import io.github.shoaky.sourcedownloader.sdk.ItemContent
 import io.github.shoaky.sourcedownloader.sdk.component.RunAfterCompletion
 import org.springframework.util.StreamUtils
 
+/**
+ * 执行命令
+ */
 class RunCommand(
     private val command: List<String>,
     private val withSubjectSummary: Boolean = false

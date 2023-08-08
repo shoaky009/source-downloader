@@ -9,8 +9,9 @@ import org.apache.tika.mime.MediaType
 import kotlin.io.path.name
 import kotlin.io.path.nameWithoutExtension
 
+
 /**
- * If [FileContent.saveDirectoryPath] already contains file with same media type and same name without extension, then it will be skipped
+ * 如果 [FileContent.saveDirectoryPath] 已经包含了相同媒体类型并且文件名(不包含扩展名)一样的文件，那么就认为已经存在
  */
 object MediaTypeExistsDetector : ItemExistsDetector {
 

@@ -5,7 +5,12 @@ import io.github.shoaky.sourcedownloader.sdk.component.VariableProvider
 import io.github.shoaky.sourcedownloader.sdk.util.replaces
 import kotlin.io.path.nameWithoutExtension
 
-// 先写个最简单的
+/**
+ * 通过文件名中的语言标识符来提供语言变量
+ * chs,sc -> zh-CHS
+ * cht,tc -> zh-CHT
+ * ...
+ */
 object LanguageVariableProvider : VariableProvider {
 
     private val replaces = listOf("-", "_", "[", "]", "(", ")", ".")

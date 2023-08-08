@@ -7,6 +7,9 @@ import java.nio.file.Files
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.isSymbolicLink
 
+/**
+ * 通过文件系统API创建硬链接
+ */
 object HardlinkFileMover : FileMover {
 
     override fun move(itemContent: ItemContent): Boolean {
