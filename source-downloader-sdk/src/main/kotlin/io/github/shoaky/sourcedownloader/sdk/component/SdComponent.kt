@@ -1,7 +1,6 @@
 package io.github.shoaky.sourcedownloader.sdk.component
 
 import io.github.shoaky.sourcedownloader.sdk.*
-import java.net.URL
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.function.Consumer
@@ -215,13 +214,5 @@ interface ItemExistsDetector : SdComponent {
 
 // TODO
 interface ManualSource : SdComponent {
-
-//    fun host(): List<String>
-
-    /**
-     * @return Provide matched [url] JavaScript code to convert page to [SourceItem],
-     * basically just some selector values mapped to the [SourceItem] structure. null if not matched
-     */
-    fun getScript(url: URL): SourceItemConvertScript?
 
 }

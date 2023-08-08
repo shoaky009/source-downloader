@@ -9,11 +9,15 @@ package io.github.shoaky.sourcedownloader.sdk
  * linkExtract = window.location.href
  */
 data class SourceItemConvertScript(
+    /**
+     * Item element selector add click event
+     */
+    val itemBox: String,
     val titleExtract: String,
     val linkExtract: String,
     val dateExtract: String,
     val contentTypeExtract: String,
-    val downloadUriExtract: String,
+    val downloadUriExtract: String? = null,
     val attributesExtract: String = "{}",
     val tagsExtract: String = "[]",
 )

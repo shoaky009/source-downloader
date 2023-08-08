@@ -9,9 +9,17 @@ chrome.runtime.onInstalled.addListener(function () {
 
 // 监听右键菜单点击事件
 chrome.contextMenus.onClicked.addListener(function (info, tab) {
-    console.log("click menu")
     if (info.menuItemId === "SourceDownloaderMenu") {
-        // 执行send.js脚本
-        chrome.tabs.executeScript(tab.id, {file: "send.js"});
+        console.log("execute")
+        // current tab url
+
+        // url match script config
+
+        // if not match, return
+
+        // execute each script
+
+        // send to processor
+
     }
 });
