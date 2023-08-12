@@ -24,7 +24,8 @@ object MediaTypeExistsDetector : ItemExistsDetector {
         val savePaths = content.sourceFiles.groupBy { it.saveDirectoryPath() }
 
         for (entry in savePaths) {
-            val currentPathsMediaMapping = fileMover.listPath(entry.key)
+            val path = entry.key
+            val currentPathsMediaMapping = fileMover.listPath(path)
                 .groupBy({
                     MediaType.parse(tika.detect(it.name)).type
                 }, {

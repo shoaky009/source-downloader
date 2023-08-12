@@ -7,6 +7,7 @@ import java.util.function.Consumer
 import java.util.function.Predicate
 import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
+import kotlin.io.path.notExists
 import kotlin.reflect.KClass
 import kotlin.reflect.full.allSuperclasses
 
@@ -160,6 +161,9 @@ interface FileMover : SdComponent {
      * @return The absolute paths in the directory
      */
     fun listPath(path: Path): List<Path> {
+        if (path.notExists()) {
+            return emptyList()
+        }
         return Files.list(path).toList()
     }
 }

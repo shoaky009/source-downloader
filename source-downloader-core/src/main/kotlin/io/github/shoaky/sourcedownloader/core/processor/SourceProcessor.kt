@@ -143,7 +143,7 @@ class SourceProcessor(
         for (item in itemIterator) {
             val filterBy = sourceItemFilters.firstOrNull { it.test(item.sourceItem).not() }
             if (filterBy != null) {
-                log.debug("{} filtered item:{}", filterBy::class.simpleName, item)
+                log.info("{} filtered item:{}", filterBy::class.simpleName, item.sourceItem)
                 sourcePointer.update(item.pointer)
                 if (options.pointerBatchMode.not() && dryRun.not()) {
                     saveSourceState(sourcePointer, lastState)
@@ -258,6 +258,7 @@ class SourceProcessor(
     }
 
     private fun getReplaceableFiles(itemContent: CoreItemContent): List<CoreFileContent> {
+        // FIXME 同一批中不生效，因为TARGET_EXISTS没有检查持久化的路径
         itemContent.updateFileStatus(fileMover)
         if (fileReplacementDecider == NeverReplace) {
             return emptyList()

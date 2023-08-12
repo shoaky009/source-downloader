@@ -53,6 +53,7 @@ private class CreatorPostsIterator(
 ) : Iterator<List<PointedItem<ItemPointer>>> {
 
     private val lastTimeStatus = creatorPointer.touchBottom
+    private val lastMaxId = creatorPointer.topId ?: 0L
     private var finished = false
     private var posts: Posts = Posts()
 
@@ -80,7 +81,6 @@ private class CreatorPostsIterator(
 
         return if (lastTimeStatus) {
             items.filter {
-                val lastMaxId = creatorPointer.topId ?: 0L
                 it.second.id > lastMaxId
             }.map { it.first }
         } else {

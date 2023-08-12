@@ -22,7 +22,7 @@ class FanboxFileResolver(
         post.coverImageUrl?.apply {
             sourceFiles.add(
                 SourceFile(
-                    Path("cover_${post.id}"),
+                    Path("cover_${post.id}.jpeg"),
                     mapOf("type" to "cover"),
                     this
                 ))

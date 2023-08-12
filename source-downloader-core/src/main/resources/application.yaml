@@ -79,5 +79,5 @@ logging:
     name: ${source-downloader.data-location}logs/${spring.application.name}.log
   logback:
     rollingpolicy:
-      max-history: 2
+      max-history: 7
       max-file-size: 100MB

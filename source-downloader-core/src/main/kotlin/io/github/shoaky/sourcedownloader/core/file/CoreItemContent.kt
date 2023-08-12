@@ -13,7 +13,6 @@ data class CoreItemContent(
 
     private var updated: Boolean = false
 
-
     fun updateFileStatus(fileMover: FileMover) {
         if (updated) {
             return
