@@ -44,7 +44,10 @@ processors:
     save-path: /mnt/demo
     options:
       save-path-pattern: "{chatName}-{chatId}"
-      filename-pattern: "{messageId}_{sourceItemTitle}"
+      filename-pattern: "{messageId}_{itemTitle}"
+      #     过滤photo类型的消息
+      #      item-expression-exclusions:
+      #        - "attrs['mediaType'] == 'photo'"
       file-expression-inclusions: [ ]
       file-expression-exclusions: [ ]
       save-processing-content: false
@@ -55,5 +58,6 @@ processors:
         photo:
           filename-pattern: "{messageId}"
       variable-replacers: [ ]
+      # 消息出现失败结束本次处理，下一次还会从失败的消息开始，如果一直失败将会永远停留在该条消息直到成功才会继续
       item-error-continue: false
       pointer-batch-mode: false

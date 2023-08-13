@@ -1,0 +1,37 @@
+instances:
+  - name: fanbox
+    props:
+      #在浏览器中获取fanbox的cookie名为sessionId
+      session-id: "xxx"
+components:
+  source:
+    - name: fanbox
+      type: fanbox
+      props:
+        client: fanbox
+  downloader:
+    - name: http
+      type: http
+      props:
+        download-path: /downloads
+  item-file-resolver:
+    - name: fanbox
+      type: fanbox
+      props:
+        client: fanbox
+
+processors:
+  - name: fanbox
+    triggers:
+      - fixed:1hour
+    source: fanbox
+    downloader: http
+    item-file-resolver: fanbox
+    variable-providers:
+      - "sequence"
+    mover: general
+    save-path: /mnt/doujin/fanbox
+    options:
+      save-path-pattern: "{item.attrs['username']}/{itemDate} {itemTitle}-{item.attrs['postId']}"
+      filename-pattern: "{sequence}"
+      item-error-continue: false
