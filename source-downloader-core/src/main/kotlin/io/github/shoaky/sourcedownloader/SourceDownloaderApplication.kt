@@ -1,9 +1,8 @@
 package io.github.shoaky.sourcedownloader
 
-import io.github.shoaky.sourcedownloader.component.*
-import io.github.shoaky.sourcedownloader.component.supplier.*
 import io.github.shoaky.sourcedownloader.config.SourceDownloaderProperties
-import io.github.shoaky.sourcedownloader.core.*
+import io.github.shoaky.sourcedownloader.core.PluginManager
+import io.github.shoaky.sourcedownloader.core.ProcessorConfigStorage
 import io.github.shoaky.sourcedownloader.core.component.ComponentConfig
 import io.github.shoaky.sourcedownloader.core.component.ComponentConfigStorage
 import io.github.shoaky.sourcedownloader.core.component.ComponentManager
@@ -11,7 +10,10 @@ import io.github.shoaky.sourcedownloader.core.component.DefaultInstanceManager
 import io.github.shoaky.sourcedownloader.core.processor.ProcessorManager
 import io.github.shoaky.sourcedownloader.sdk.InstanceManager
 import io.github.shoaky.sourcedownloader.sdk.Properties
-import io.github.shoaky.sourcedownloader.sdk.component.*
+import io.github.shoaky.sourcedownloader.sdk.component.ComponentException
+import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
+import io.github.shoaky.sourcedownloader.sdk.component.ComponentTopType
+import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
 import io.github.shoaky.sourcedownloader.sdk.util.getObjectSuppliers
 import jakarta.annotation.PreDestroy
 import org.slf4j.LoggerFactory
@@ -47,9 +49,14 @@ class SourceDownloaderApplication(
             }"
         )
 
-        val processorConfigs = processorStorages.flatMap { it.getAllProcessorConfig() }
+        val processorConfigs = processorStorages.flatMap { it.getAllProcessorConfig() }.filter { it.enabled }
         for (processorConfig in processorConfigs) {
-            processorManager.createProcessor(processorConfig)
+            try {
+                processorManager.createProcessor(processorConfig)
+            } catch (e: Exception) {
+                log.error("创建处理器失败:${processorConfig.name}")
+                throw e
+            }
         }
         componentManager.getAllTrigger()
             .forEach {
@@ -114,11 +121,18 @@ class SourceDownloaderApplication(
         val componentKClass = ComponentTopType.fromName(key)?.klass
             ?: throw ComponentException.unsupported("未知组件类型:$key")
 
-        configs.forEach {
-            val type = ComponentType(it.type, componentKClass)
-            componentManager.createComponent(type, it.name, Properties.fromMap(it.props))
-            log.info("成功创建组件${type.topTypeClass.simpleName}:${it.type}:${it.name}")
-        }
+        configs
+            .filter { it.enabled }
+            .forEach {
+                val type = ComponentType(it.type, componentKClass)
+                try {
+                    componentManager.createComponent(type, it.name, Properties.fromMap(it.props))
+                } catch (e: Exception) {
+                    log.error("创建组件失败:${type.topTypeClass.simpleName}:${it.type}:${it.name}")
+                    throw e
+                }
+                log.info("成功创建组件${type.topTypeClass.simpleName}:${it.type}:${it.name}")
+            }
     }
 
     companion object {

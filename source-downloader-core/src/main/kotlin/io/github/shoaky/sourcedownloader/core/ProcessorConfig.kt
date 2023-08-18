@@ -30,6 +30,7 @@ data class ProcessorConfig(
     @JsonSerialize(using = ToStringSerializer::class)
     val savePath: Path,
     val options: Options = Options(),
+    val enabled: Boolean = true
 ) {
 
     fun sourceInstanceName(): String {
