@@ -302,41 +302,48 @@ class SourceProcessor(
         }
     }
 
-    private fun createItemContent(
-        sourceItemGroup: SourceItemGroup,
-        sourceItem: SourceItem
-    ): CoreItemContent {
+    private fun createItemContent(sourceItemGroup: SourceItemGroup, sourceItem: SourceItem): CoreItemContent {
         val sharedPatternVariables = sourceItemGroup.sharedPatternVariables()
-        val resolvedFiles = itemFileResolver.resolveFiles(sourceItem)
-        val sourceFiles = sourceItemGroup.filePatternVariables(resolvedFiles)
-            .mapIndexed { index, sourceFile ->
-                val resolveFile = resolvedFiles[index]
-                val tags = taggers.mapNotNull { it.tag(resolveFile) }.toSet()
-                val fileOptions = options.getTaggedOptions(tags)
+        val resolvedFiles = itemFileResolver.resolveFiles(sourceItem).map { file ->
+            val tags = taggers.mapNotNull { it.tag(file) }.toMutableSet()
+            if (tags.isEmpty() && file.tags.isEmpty()) {
+                return@map file
+            }
+            tags.addAll(file.tags)
+            file.copy(tags = tags)
+        }
+
+        val fileContents = resolvedFiles.groupBy {
+            options.matchFileOption(it)
+        }.flatMap { entry ->
+            val fileOption = entry.key
+            val files = entry.value
+            val fileVariables = sourceItemGroup.filePatternVariables(files)
+            files.mapIndexed { index, file ->
                 val rawFileContent = RawFileContent(
-                    downloadPath.resolve(resolveFile.path),
+                    downloadPath.resolve(file.path),
                     sourceSavePath,
                     downloadPath,
-                    MapPatternVariables(sourceFile.patternVariables()),
-                    fileOptions?.savePathPattern ?: savePathPattern,
-                    fileOptions?.filenamePattern ?: filenamePattern,
-                    resolveFile.attributes,
-                    tags,
-                    resolveFile.fileUri
+                    MapPatternVariables(fileVariables[index].patternVariables()),
+                    fileOption?.savePathPattern ?: savePathPattern,
+                    fileOption?.filenamePattern ?: filenamePattern,
+                    file.attrs,
+                    file.tags,
+                    file.fileUri
                 )
                 val fileContent = renamer.createFileContent(sourceItem, rawFileContent, sharedPatternVariables)
-                fileContent to fileOptions
+                fileContent to fileOption
             }
-            .filter { pair ->
-                val path = pair.first
-                val filters = pair.second?.fileContentFilters ?: fileContentFilters
-                val filter = filters.all { it.test(path) }
-                if (filter.not()) {
-                    log.debug("Filtered file:{}", path)
-                }
-                filter
-            }.map { it.first }
-        return CoreItemContent(sourceItem, sourceFiles, MapPatternVariables(sharedPatternVariables))
+        }.filter { pair ->
+            val path = pair.first
+            val filters = pair.second?.fileContentFilters ?: fileContentFilters
+            val filter = filters.all { it.test(path) }
+            if (filter.not()) {
+                log.debug("Filtered file:{}", path)
+            }
+            filter
+        }.map { it.first }
+        return CoreItemContent(sourceItem, fileContents, MapPatternVariables(sharedPatternVariables))
     }
 
     /**
@@ -570,6 +577,6 @@ private class SimpleStat(
     }
 
     override fun toString(): String {
-        return "$name 处理了${processingCounting}个 过滤了${filterCounting}个, took:${stopWatch.totalTimeMillis}ms"
+        return "'$name' 处理了${processingCounting}个 过滤了${filterCounting}个, took:${stopWatch.totalTimeMillis}ms"
     }
 }

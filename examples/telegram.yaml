@@ -54,9 +54,9 @@ processors:
       file-taggers:
         - "simple"
         - "telegram"
-      tagged-file-options:
-        photo:
-          filename-pattern: "{messageId}"
+      file-grouping:
+        - tags: [ "photo" ]
+          filename-pattern: "{title} S{season}E{episode}:{' - ' + source}:{'.' + language}"
       variable-replacers: [ ]
       # 消息出现失败结束本次处理，下一次还会从失败的消息开始，如果一直失败将会永远停留在该条消息直到成功才会继续
       item-error-continue: false

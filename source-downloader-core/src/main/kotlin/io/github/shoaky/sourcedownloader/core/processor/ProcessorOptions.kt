@@ -7,7 +7,10 @@ import io.github.shoaky.sourcedownloader.core.VariableReplacer
 import io.github.shoaky.sourcedownloader.core.file.VariableErrorStrategy
 import io.github.shoaky.sourcedownloader.sdk.DownloadOptions
 import io.github.shoaky.sourcedownloader.sdk.PathPattern
+import io.github.shoaky.sourcedownloader.sdk.SourceFile
 import io.github.shoaky.sourcedownloader.sdk.component.*
+import io.github.shoaky.sourcedownloader.util.scriptHost
+import org.projectnessie.cel.checker.Decls
 import java.time.Duration
 
 data class ProcessorOptions(
@@ -21,7 +24,8 @@ data class ProcessorOptions(
     val fileTaggers: List<FileTagger> = emptyList(),
     val variableReplacers: List<VariableReplacer> = emptyList(),
     val fileReplacementDecider: FileReplacementDecider = NeverReplace,
-    val taggedFileOptions: Map<String, TaggedFileOptions> = emptyMap(),
+    // val taggedFileOptions: Map<String, FileOptions> = emptyMap(),
+    val fileGrouping: Map<SourceFileMatcher, FileOption> = emptyMap(),
     val saveProcessingContent: Boolean = true,
     val renameTaskInterval: Duration = Duration.ofMinutes(5),
     val downloadOptions: DownloadOptions = DownloadOptions(),
@@ -34,21 +38,49 @@ data class ProcessorOptions(
     val category: String? = null,
     val tags: Set<String> = emptySet(),
     val itemErrorContinue: Boolean = true,
-    val itemExistsDetector: ItemExistsDetector = SimpleItemExistsDetector
+    val itemExistsDetector: ItemExistsDetector = SimpleItemExistsDetector,
 ) {
 
-    fun getTaggedOptions(tags: Set<String>): TaggedFileOptions? {
-        if (tags.isEmpty()) {
-            return null
-        }
-        tags.forEach { tag ->
-            taggedFileOptions[tag]?.let { return it }
-        }
-        return null
+    fun matchFileOption(sourceFile: SourceFile): FileOption? {
+        return fileGrouping.firstNotNullOfOrNull {
+            if (it.key.match(sourceFile)) it else null
+        }?.value
     }
 }
 
-data class TaggedFileOptions(
+interface SourceFileMatcher {
+
+    fun match(sourceFile: SourceFile): Boolean
+
+}
+
+class ExpressionSourceFileMatcher(
+    expression: String
+) : SourceFileMatcher {
+
+    private val script = scriptHost.buildScript(expression).withDeclarations(
+        Decls.newVar("tags", Decls.newListType(Decls.String)),
+        Decls.newVar("attrs", Decls.newMapType(Decls.String, Decls.Dyn))
+    ).build()
+
+    override fun match(sourceFile: SourceFile): Boolean {
+        return script.execute(Boolean::class.java, mapOf(
+            "tags" to sourceFile.tags,
+            "attrs" to sourceFile.attrs)
+        )
+    }
+}
+
+class TagSourceFileMatcher(
+    private val tags: Set<String>
+) : SourceFileMatcher {
+
+    override fun match(sourceFile: SourceFile): Boolean {
+        return sourceFile.tags.containsAll(tags)
+    }
+}
+
+data class FileOption(
     val savePathPattern: CorePathPattern? = null,
     val filenamePattern: CorePathPattern? = null,
     val fileContentFilters: List<FileContentFilter>? = null,

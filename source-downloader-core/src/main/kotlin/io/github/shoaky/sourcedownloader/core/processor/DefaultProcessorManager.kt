@@ -227,25 +227,35 @@ class DefaultProcessorManager(
         val variableReplacers: MutableList<VariableReplacer> = mutableListOf(
             *options.variableReplacers.toTypedArray(), WindowsPathReplacer
         )
-        val taggedOptions = options.taggedFileOptions.mapValues { (_, taggedOptions) ->
+
+        val fileGrouping = mutableMapOf<SourceFileMatcher, FileOption>()
+        for (fileOption in options.fileGrouping) {
             val taggedFileContentFilters = mutableListOf<FileContentFilter>()
-            if (taggedOptions.fileExpressionExclusions.isNotEmpty() || taggedOptions.fileExpressionInclusions.isNotEmpty()) {
+            if (fileOption.fileExpressionExclusions.isNotEmpty() || fileOption.fileExpressionInclusions.isNotEmpty()) {
                 taggedFileContentFilters.add(ExpressionFileFilter(
-                    taggedOptions.fileExpressionExclusions,
-                    taggedOptions.fileExpressionInclusions
+                    fileOption.fileExpressionExclusions,
+                    fileOption.fileExpressionInclusions
                 ))
             }
             taggedFileContentFilters.addAll(
-                taggedOptions.fileContentFilters.map {
+                fileOption.fileContentFilters.map {
                     val instanceName = it.getInstanceName(FileContentFilter::class)
                     container.get(instanceName, fileContentFilterTypeRef).getAndMarkRef(config.name)
                 }
             )
-            TaggedFileOptions(
-                taggedOptions.savePathPattern?.let {
+
+            val matcher = if (fileOption.tags.isNotEmpty()) {
+                TagSourceFileMatcher(fileOption.tags)
+            } else if (fileOption.matchedExpression != null) {
+                ExpressionSourceFileMatcher(fileOption.matchedExpression)
+            } else {
+                throw ComponentException.other("fileGrouping must have tags or matchedExpression")
+            }
+            fileGrouping[matcher] = FileOption(
+                fileOption.savePathPattern?.let {
                     CorePathPattern(it.pattern)
                 },
-                taggedOptions.filenamePattern?.let {
+                fileOption.filenamePattern?.let {
                     CorePathPattern(it.pattern)
                 },
                 taggedFileContentFilters
@@ -268,7 +278,7 @@ class DefaultProcessorManager(
             taggers,
             variableReplacers,
             fileReplacementDecider,
-            taggedOptions,
+            fileGrouping,
             options.saveProcessingContent,
             options.renameTaskInterval,
             options.downloadOptions,

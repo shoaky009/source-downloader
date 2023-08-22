@@ -105,11 +105,13 @@ data class ProcessorConfig(
         val category: String? = null,
         val tags: Set<String> = emptySet(),
         val itemErrorContinue: Boolean = true,
-        val taggedFileOptions: Map<String, Tagged> = emptyMap(),
+        val fileGrouping: List<FileOptionConfig> = emptyList(),
         val manualSources: List<ComponentId> = emptyList()
     )
 
-    data class Tagged(
+    data class FileOptionConfig(
+        val tags: Set<String> = emptySet(),
+        val matchedExpression: String? = null,
         val filenamePattern: CorePathPattern? = null,
         val savePathPattern: CorePathPattern? = null,
         val fileContentFilters: List<ComponentId> = emptyList(),

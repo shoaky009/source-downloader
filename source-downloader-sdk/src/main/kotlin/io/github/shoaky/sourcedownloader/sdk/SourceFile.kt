@@ -13,9 +13,13 @@ data class SourceFile(
     /**
      * The attributes of the file.
      */
-    val attributes: Map<String, Any> = emptyMap(),
+    val attrs: Map<String, Any> = emptyMap(),
     /**
      * The URI of the file.
      */
     val fileUri: URI? = null,
+    /**
+     * The tags of the file.
+     */
+    val tags: Set<String> = emptySet()
 )

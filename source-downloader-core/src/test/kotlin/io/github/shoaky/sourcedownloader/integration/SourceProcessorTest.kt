@@ -5,6 +5,7 @@ import io.github.shoaky.sourcedownloader.core.file.FileContentStatus
 import io.github.shoaky.sourcedownloader.core.processor.ProcessorManager
 import io.github.shoaky.sourcedownloader.createIfNotExists
 import io.github.shoaky.sourcedownloader.repo.ProcessingQuery
+import io.github.shoaky.sourcedownloader.sdk.util.Jackson
 import io.github.shoaky.sourcedownloader.testResourcePath
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Test
@@ -106,6 +107,29 @@ class SourceProcessorTest : InitializingBean {
         assert(selfPath.resolve(Path("test2", "2022-01-01", "test2 - 1.jpg")).exists())
         assert(selfPath.resolve(Path("test-dir", "2022-01-01", "test3 - 1.jpg")).exists())
         assert(selfPath.resolve(Path("test-dir", "2022-01-01", "test4 - 2.jpg")).exists())
+    }
+
+    @Test
+    fun file_grouping_sequence_variable() {
+        val processorName = "FileGroupingSeqVariableCase"
+        val processor = processorManager.getProcessor(processorName)?.get()
+        assertNotNull(processor, "Processor NormalCase not found")
+
+        processor.run()
+        processor.runRename()
+        val contents = processingStorage.query(ProcessingQuery(processorName))
+            .associateBy { it.itemContent.sourceItem.title }
+
+        println(Jackson.toJsonString(contents))
+        val selfPath = savePath.resolve(processorName)
+        assertEquals(3, contents.size)
+
+        assert(selfPath.resolve(Path("test1", "1.jpg")).exists())
+        assert(selfPath.resolve(Path("test2", "1.jpg")).exists())
+        contents.getValue("test-dir").itemContent.sourceFiles.forEach {
+            assertEquals(FileContentStatus.FILE_CONFLICT, it.status)
+            assertEquals("1.jpg", it.targetFilename)
+        }
     }
 
     // 待测试场景

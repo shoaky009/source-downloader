@@ -29,6 +29,9 @@ data class CorePathPattern(
 
     companion object {
 
+        /**
+         * {expression} or :{expression}
+         */
         private val variablePatternRegex: Pattern = Pattern.compile("\\{(.+?)}|:\\{(.+?)}")
         val ORIGIN = CorePathPattern("")
 

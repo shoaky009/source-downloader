@@ -9,7 +9,7 @@ import io.github.shoaky.sourcedownloader.sdk.component.FileTagger
 object TelegramMediaTagger : FileTagger {
 
     override fun tag(fileContent: SourceFile): String? {
-        return fileContent.attributes[TelegramSource.MEDIA_TYPE_ATTR]?.toString()
+        return fileContent.attrs[TelegramSource.MEDIA_TYPE_ATTR]?.toString()
     }
 
 }

@@ -57,6 +57,11 @@ components:
       props:
         mapping:
           test1.jpg: test1
+    - name: "mapping-test3file"
+      type: "mapped"
+      props:
+        mapping:
+          test3.jpg: test3
 
 processors:
   - name: "NormalCase"
@@ -127,7 +132,24 @@ processors:
       filename-pattern: "{filename} - {sequence}"
       file-taggers:
         - "mapped:mapping-test1file"
-      tagged-file-options:
-        test1:
+      file-grouping:
+        - tags: [ "test1" ]
           save-path-pattern: "{itemTitle}"
           filename-pattern: "{filename}"
+  - name: "FileGroupingSeqVariableCase"
+    source: "fixed:normal-case"
+    item-file-resolver: "fixed:normal-case"
+    downloader: "mock"
+    file-mover: "general"
+    save-path: "src/test/resources/target/FileGroupingSeqVariableCase"
+    variable-providers:
+      - "sequence"
+    options:
+      save-path-pattern: "{itemTitle}"
+      filename-pattern: "{sequence}"
+      file-taggers:
+        - "mapped:mapping-test3file"
+      file-grouping:
+        - tags: [ "test3" ]
+          save-path-pattern: "{itemTitle}"
+          filename-pattern: "{sequence}"
