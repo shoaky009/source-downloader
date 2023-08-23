@@ -37,9 +37,8 @@ private class ProcessorController(
         @PathVariable processorName: String,
         @RequestBody processorConfig: ProcessorConfig
     ) {
-        val processor = processorManager.getProcessor(processorName)
-        if (processor != null) {
-            throw ComponentException.processorExists("processor $processorName already exists")
+        if (processorManager.exists(processorName)) {
+            throw ComponentException.processorExists("Processor $processorName already exists")
         }
         configOperator.save(processorName, processorConfig)
         processorManager.createProcessor(processorConfig)
@@ -51,7 +50,6 @@ private class ProcessorController(
         @RequestBody processorConfig: ProcessorConfig
     ) {
         processorManager.getProcessor(processorName)
-            ?: throw ComponentException.processorMissing("processor $processorName not found")
 
         configOperator.save(processorName, processorConfig)
         processorManager.destroy(processorName)
@@ -66,8 +64,7 @@ private class ProcessorController(
 
     @GetMapping("/dry-run/{processorName}")
     fun dryRun(@PathVariable processorName: String): List<DryRunResult> {
-        val sourceProcessor = (processorManager.getProcessor(processorName)
-            ?: throw ComponentException.processorMissing("Processor $processorName not found"))
+        val sourceProcessor = processorManager.getProcessor(processorName)
         return sourceProcessor.get().dryRun()
             .map { pc ->
                 val fileResult = pc.itemContent.sourceFiles.map { file ->
@@ -91,11 +88,16 @@ private class ProcessorController(
 
     @GetMapping("/trigger/{processorName}")
     fun trigger(@PathVariable processorName: String) {
-        val sourceProcessor = (processorManager.getProcessor(processorName)
-            ?: throw ComponentException.processorMissing("Processor $processorName not found"))
+        val sourceProcessor = processorManager.getProcessor(processorName)
         thread {
             sourceProcessor.get().safeTask().run()
         }
+    }
+
+    @PostMapping("/items/{processorName}")
+    suspend fun postItems(@PathVariable processorName: String, @RequestBody items: List<SourceItem>) {
+        val processor = processorManager.getProcessor(processorName).get()
+        processor.run(items)
     }
 
 }

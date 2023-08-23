@@ -10,8 +10,11 @@ import io.github.shoaky.sourcedownloader.core.file.ReadonlyFileMover
 import io.github.shoaky.sourcedownloader.sdk.*
 import io.github.shoaky.sourcedownloader.sdk.component.*
 import io.github.shoaky.sourcedownloader.sdk.util.Jackson
-import io.github.shoaky.sourcedownloader.util.Events
 import io.github.shoaky.sourcedownloader.util.LoggingStageRetryListener
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.launch
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.retry.support.RetryTemplateBuilder
@@ -20,10 +23,12 @@ import java.io.IOException
 import java.nio.file.Path
 import java.time.Duration
 import java.time.LocalDateTime
-import java.util.concurrent.*
+import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledFuture
+import java.util.concurrent.TimeUnit
+import kotlin.reflect.jvm.jvmName
 import kotlin.time.measureTime
 
-// TODO 基于行为重构，async,sync,dry-run,...
 /**
  * 拉在这里，后面看情况重构
  */
@@ -54,7 +59,6 @@ class SourceProcessor(
     private val fileReplacementDecider: FileReplacementDecider = options.fileReplacementDecider
     private val itemExistsDetector: ItemExistsDetector = options.itemExistsDetector
     private val readonlyFileMover = ReadonlyFileMover(fileMover)
-    private val itemsQueue: BlockingQueue<SourceItem> = LinkedBlockingQueue()
     private val renamer: Renamer = Renamer(
         options.variableErrorStrategy,
         options.variableReplacers,
@@ -65,28 +69,35 @@ class SourceProcessor(
     private val renameScheduledExecutor by lazy {
         Executors.newSingleThreadScheduledExecutor()
     }
+    private val itemChannel = Channel<Process>(10)
 
     init {
         scheduleRenameTask(options.renameTaskInterval)
+        listenChannel()
     }
 
-    fun info(): Map<String, Any> {
-        return mapOf(
-            "Processor" to name,
-            "Source" to source::class.java.simpleName,
-            "Providers" to variableProviders.map { it::class.simpleName },
-            "FileResolver" to itemFileResolver::class.java.simpleName,
-            "Downloader" to downloader::class.java.simpleName,
-            "FileMover" to fileMover::class.java.simpleName,
-            "SourceItemFilter" to sourceItemFilters.map { it::class.simpleName },
-            "ItemContentFilter" to itemContentFilters.map { it::class.simpleName },
-            "RunAfterCompletion" to runAfterCompletion.map { it::class.simpleName },
-            "DownloadPath" to downloadPath,
-            "SourceSavePath" to sourceSavePath,
-            "FileContentFilter" to fileContentFilters.map { it::class.simpleName },
-            "Taggers" to taggers.map { it::class.simpleName },
-            "Options" to options,
-        )
+    private fun listenChannel() {
+        @OptIn(DelicateCoroutinesApi::class)
+        GlobalScope.launch {
+            for (process in itemChannel) {
+                process.run()
+            }
+        }
+    }
+
+    override fun run() {
+        NormalProcess().run()
+    }
+
+    fun dryRun(): List<ProcessingContent> {
+        val process = DryRunProcess()
+        process.run()
+        return process.getResult()
+    }
+
+    suspend fun run(sourceItems: List<SourceItem>) {
+        // ManualItemProcess(sourceItems).run()
+        itemChannel.send(ManualItemProcess(sourceItems))
     }
 
     private fun scheduleRenameTask(interval: Duration) {
@@ -116,145 +127,23 @@ class SourceProcessor(
         }, 5L, interval.seconds, TimeUnit.SECONDS)
     }
 
-    override fun run() {
-        process()
-    }
-
-    fun dryRun(): List<ProcessingContent> {
-        return process(true)
-    }
-
-    private fun process(dryRun: Boolean = false): List<ProcessingContent> {
-        val lastState = processingStorage.findProcessorSourceState(name, sourceId)
-            ?: ProcessorSourceState(
-                processorName = name,
-                sourceId = sourceId,
-                lastPointer = Jackson.convert(source.defaultPointer(), PersistentPointer::class)
-            )
-        val sourcePointer = lastState.resolvePointer(source::class)
-        log.debug("Processor:'{}' lastState:{}", name, lastState)
-        val itemIterator = retry.execute<Iterator<PointedItem<ItemPointer>>, IOException> {
-            it.setAttribute("stage", ProcessStage("FetchSourceItems", lastState))
-            val iterator = source.fetch(sourcePointer, options.fetchLimit).iterator()
-            iterator
-        }
-        val result = mutableListOf<ProcessingContent>()
-        val simpleStat = SimpleStat(name)
-        for (item in itemIterator) {
-            val filterBy = sourceItemFilters.firstOrNull { it.test(item.sourceItem).not() }
-            if (filterBy != null) {
-                log.info("{} filtered item:{}", filterBy::class.simpleName, item.sourceItem)
-                sourcePointer.update(item.pointer)
-                if (options.pointerBatchMode.not() && dryRun.not()) {
-                    saveSourceState(sourcePointer, lastState)
-                }
-                simpleStat.incFilterCounting()
-                continue
-            }
-            val processingContent = kotlin.runCatching {
-                retry.execute<ProcessingContent, IOException> {
-                    it.setAttribute("stage", ProcessStage("ProcessItem", item))
-                    processItem(item.sourceItem, dryRun)
-                }
-            }.onFailure {
-                // 失败的hook
-                log.error("Processor:'${name}'处理失败, item:$item", it)
-                if (options.itemErrorContinue.not()) {
-                    log.warn("Processor:'${name}'处理失败, item:$item, 退出本次触发处理, 如果未能解决该处理器将无法继续处理后续Item")
-                    return result
-                }
-            }.onSuccess {
-                if (dryRun) {
-                    result.add(it)
-                }
-                sourcePointer.update(item.pointer)
-                if (options.pointerBatchMode.not() && dryRun.not()) {
-                    saveSourceState(sourcePointer, lastState)
-                }
-            }.getOrElse {
-                ProcessingContent(
-                    name, CoreItemContent(
-                    item.sourceItem, emptyList(), MapPatternVariables()
-                )).copy(status = FAILURE, failureReason = it.message)
-            }
-
-            if (options.saveProcessingContent && dryRun.not()) {
-                processingStorage.save(processingContent)
-            }
-
-            if (FILTERED == processingContent.status || TARGET_ALREADY_EXISTS == processingContent.status) {
-                simpleStat.incFilterCounting()
-            } else {
-                simpleStat.incProcessingCounting()
-            }
-        }
-        simpleStat.stopWatch.stop()
-
-        if (simpleStat.isChanged()) {
-            log.info("Processor:{}", simpleStat)
-        }
-
-        if (dryRun.not() && options.pointerBatchMode) {
-            saveSourceState(sourcePointer, lastState)
-        }
-        return result
-    }
-
-    private fun saveSourceState(currentPointer: SourcePointer, lastState: ProcessorSourceState) {
-        val currentSourceState = lastState.copy(
-            lastPointer = Jackson.convert(currentPointer, PersistentPointer::class),
-            lastActiveTime = LocalDateTime.now()
+    fun info(): Map<String, Any> {
+        return mapOf(
+            "Processor" to name,
+            "Source" to source::class.java.simpleName,
+            "Providers" to variableProviders.map { it::class.simpleName },
+            "FileResolver" to itemFileResolver::class.java.simpleName,
+            "Downloader" to downloader::class.java.simpleName,
+            "FileMover" to fileMover::class.java.simpleName,
+            "SourceItemFilter" to sourceItemFilters.map { it::class.simpleName },
+            "ItemContentFilter" to itemContentFilters.map { it::class.simpleName },
+            "RunAfterCompletion" to runAfterCompletion.map { it::class.simpleName },
+            "DownloadPath" to downloadPath,
+            "SourceSavePath" to sourceSavePath,
+            "FileContentFilter" to fileContentFilters.map { it::class.simpleName },
+            "Taggers" to taggers.map { it::class.simpleName },
+            "Options" to options,
         )
-        val lastP = lastState.resolvePointer(source::class)
-        val currP = currentSourceState.resolvePointer(source::class)
-        if (currP != lastP) {
-            log.info("Processor:'$name' update pointer:${currentSourceState.lastPointer}")
-        }
-        val save = processingStorage.save(currentSourceState)
-        lastState.id = save.id
-    }
-
-    private fun processItem(sourceItem: SourceItem, dryRun: Boolean = false): ProcessingContent {
-        val variablesAggregation = VariableProvidersAggregation(
-            sourceItem,
-            variableProviders.filter { it.support(sourceItem) }.toList(),
-            options.variableConflictStrategy,
-            options.variableNameReplace
-        )
-        val itemContent = createItemContent(variablesAggregation, sourceItem)
-        val filterBy = itemContentFilters.firstOrNull { it.test(itemContent).not() }
-        if (filterBy != null) {
-            log.debug("{} Filtered item:{}", filterBy::class.simpleName, sourceItem)
-            return ProcessingContent(name, itemContent).copy(status = FILTERED)
-        }
-        val replaceFiles = getReplaceableFiles(itemContent)
-        val (shouldDownload, contentStatus) = probeContentStatus(itemContent, replaceFiles)
-
-        if (dryRun) {
-            return ProcessingContent(name, itemContent).copy(status = contentStatus)
-        }
-
-        if (shouldDownload) {
-            val downloadTask = createDownloadTask(itemContent, replaceFiles)
-            // NOTE 非异步下载器会阻塞
-            this.downloader.submit(downloadTask)
-            log.info("提交下载任务成功, Processor:${name} sourceItem:${sourceItem.title}")
-            val targetPaths = itemContent.getDownloadFiles(fileMover).map { it.targetPath() }
-            // TODO 应该先ProcessingContent后再保存targetPaths
-            saveTargetPaths(sourceItem, targetPaths)
-            Events.post(ProcessorSubmitDownloadEvent(name, itemContent))
-        }
-
-        if (downloader !is AsyncDownloader) {
-            val moveSuccess = moveFiles(itemContent)
-            val replaceSuccess = replaceFiles(itemContent)
-            if (moveSuccess || replaceSuccess) {
-                runAfterCompletions(itemContent)
-            }
-            return ProcessingContent(name, itemContent).copy(status = RENAMED, renameTimes = 1)
-        }
-
-        return ProcessingContent(name, itemContent).copy(status = contentStatus)
     }
 
     private fun getReplaceableFiles(itemContent: CoreItemContent): List<CoreFileContent> {
@@ -312,6 +201,7 @@ class SourceProcessor(
             tags.addAll(file.tags)
             file.copy(tags = tags)
         }
+        checkResolvedFiles(sourceItem, resolvedFiles)
 
         val fileContents = resolvedFiles.groupBy {
             options.matchFileOption(it)
@@ -344,6 +234,17 @@ class SourceProcessor(
             filter
         }.map { it.first }
         return CoreItemContent(sourceItem, fileContents, MapPatternVariables(sharedPatternVariables))
+    }
+
+    private fun checkResolvedFiles(sourceItem: SourceItem, resolvedFiles: List<SourceFile>) {
+        val duplicated = resolvedFiles.groupBy { it.path }
+            .filter { it.value.size > 1 }
+            .map { it.key }
+        if (duplicated.isNotEmpty()) {
+            log.error("Processor:'{}' resolver:{} resolved item:{} duplicated files:{}, It's likely that there's an issue with the component's implementation.",
+                name, itemFileResolver::class.jvmName, sourceItem, duplicated)
+            throw IllegalStateException("Duplicated files:$duplicated")
+        }
     }
 
     /**
@@ -475,12 +376,12 @@ class SourceProcessor(
         val downloadFiles = content.sourceFiles
             .filter { it.status != FileContentStatus.TARGET_EXISTS }
             .toMutableList()
+            .apply { this.addAll(replaceFiles) }
+            .distinct()
         if (log.isDebugEnabled) {
             log.debug("{} 创建下载任务文件, files:{}", content.sourceItem.title, downloadFiles)
         }
 
-        downloadFiles.addAll(replaceFiles)
-        downloadFiles.distinct()
         val headers = HashMap(source.headers())
         headers.putAll(options.downloadOptions.headers)
         val downloadOptions = options.downloadOptions
@@ -535,10 +436,6 @@ class SourceProcessor(
         }.joinToString("\n")
     }
 
-    fun offer(sourceItem: List<SourceItem>) {
-        itemsQueue.addAll(sourceItem)
-    }
-
     companion object {
 
         private val retry = RetryTemplateBuilder()
@@ -546,8 +443,211 @@ class SourceProcessor(
             .fixedBackoff(Duration.ofSeconds(5L).toMillis())
             .withListener(LoggingStageRetryListener())
             .build()
+
+        private val filteredStatuses = setOf(FILTERED, TARGET_ALREADY_EXISTS)
     }
 
+    private abstract inner class Process(
+        protected val lastState: ProcessorSourceState = processingStorage.findProcessorSourceState(name, sourceId)
+            ?: ProcessorSourceState(
+                processorName = name,
+                sourceId = sourceId,
+                lastPointer = Jackson.convert(source.defaultPointer(), PersistentPointer::class)
+            ),
+        protected val sourcePointer: SourcePointer = lastState.resolvePointer(source::class),
+        private val itemIterable: Iterable<PointedItem<ItemPointer>> = retry.execute<Iterable<PointedItem<ItemPointer>>, IOException> {
+            it.setAttribute("stage", ProcessStage("FetchSourceItems", lastState))
+            source.fetch(sourcePointer, options.fetchLimit)
+        }
+    ) {
+
+        protected fun processItems() {
+            retry.execute<Iterator<PointedItem<ItemPointer>>, IOException> {
+                it.setAttribute("stage", ProcessStage("FetchSourceItems", lastState))
+                val iterator = source.fetch(sourcePointer, options.fetchLimit).iterator()
+                iterator
+            }
+
+            val simpleStat = SimpleStat(name)
+            for (item in itemIterable) {
+                log.trace("Processor:'{}' start process item:{}", name, item.sourceItem)
+
+                val filterBy = sourceItemFilters.firstOrNull { it.test(item.sourceItem).not() }
+                if (filterBy != null) {
+                    log.info("{} filtered item:{}", filterBy::class.simpleName, item.sourceItem)
+                    onItemFiltered(item)
+                    simpleStat.incFilterCounting()
+                    continue
+                }
+                val processingContent = kotlin.runCatching {
+                    retry.execute<ProcessingContent, IOException> {
+                        it.setAttribute("stage", ProcessStage("ProcessItem", item))
+                        processItem(item.sourceItem)
+                    }
+                }.onFailure {
+                    log.error("Processor:'${name}'处理失败, item:$item", it)
+                    if (options.itemErrorContinue.not()) {
+                        log.warn("Processor:'${name}'处理失败, item:$item, 退出本次触发处理, 如果未能解决该处理器将无法继续处理后续Item")
+                        return
+                    }
+                }.onSuccess {
+                    onItemSuccess(item, it)
+                }.getOrElse {
+                    ProcessingContent(
+                        name, CoreItemContent(
+                        item.sourceItem, emptyList(), MapPatternVariables()
+                    )).copy(status = FAILURE, failureReason = it.message)
+                }
+
+                log.trace("Processor:'{}' finished process item:{}", name, item.sourceItem)
+                onEach(processingContent)
+
+                if (filteredStatuses.contains(processingContent.status)) {
+                    simpleStat.incFilterCounting()
+                } else {
+                    simpleStat.incProcessingCounting()
+                }
+            }
+            onCompletion()
+
+            simpleStat.stopWatch.stop()
+            if (simpleStat.isChanged()) {
+                log.info("Processor:{}", simpleStat)
+            }
+        }
+
+        private fun processItem(sourceItem: SourceItem): ProcessingContent {
+            val variablesAggregation = VariableProvidersAggregation(
+                sourceItem,
+                variableProviders.filter { it.support(sourceItem) }.toList(),
+                options.variableConflictStrategy,
+                options.variableNameReplace
+            )
+            val itemContent = createItemContent(variablesAggregation, sourceItem)
+            log.trace("Processor:'{}' created content item:{}", name, sourceItem)
+
+            val filterBy = itemContentFilters.firstOrNull { it.test(itemContent).not() }
+            if (filterBy != null) {
+                log.info("{} Filtered item:{}", filterBy::class.simpleName, sourceItem)
+                return ProcessingContent(name, itemContent).copy(status = FILTERED)
+            }
+            val replaceFiles = getReplaceableFiles(itemContent)
+            val (shouldDownload, contentStatus) = probeContentStatus(itemContent, replaceFiles)
+            log.trace("Processor:'{}' item:{} ,should download: {}, content status:{}",
+                name, sourceItem, shouldDownload, contentStatus)
+            val processingContent = ProcessingContent(name, itemContent).copy(status = contentStatus)
+
+            if (shouldDownload) {
+                log.trace("Processor:'{}' start download item:{}", name, sourceItem)
+                val success = doDownload(processingContent, replaceFiles)
+                if (success && downloader !is AsyncDownloader) {
+                    log.trace("Processor:'{}' start rename item:{}", name, sourceItem)
+                    val moveSuccess = moveFiles(itemContent)
+                    val replaceSuccess = replaceFiles(itemContent)
+                    if (moveSuccess || replaceSuccess) {
+                        runAfterCompletions(itemContent)
+                    }
+                    return ProcessingContent(name, itemContent).copy(status = RENAMED, renameTimes = 1)
+                }
+            }
+
+            return processingContent
+        }
+
+        open fun onCompletion() {}
+
+        open fun onEach(processingContent: ProcessingContent) {}
+
+        open fun onItemSuccess(item: PointedItem<ItemPointer>, processingContent: ProcessingContent) {}
+
+        open fun onItemFiltered(item: PointedItem<ItemPointer>) {}
+
+        open fun doDownload(pc: ProcessingContent, replaceFiles: List<CoreFileContent>): Boolean {
+            val downloadTask = createDownloadTask(pc.itemContent, replaceFiles)
+            // NOTE 非异步下载器会阻塞
+            downloader.submit(downloadTask)
+            log.info("提交下载任务成功, Processor:${name} sourceItem:${pc.itemContent.sourceItem.title}")
+            val targetPaths = pc.itemContent.getDownloadFiles(fileMover).map { it.targetPath() }
+            // TODO 应该先ProcessingContent后再保存targetPaths
+            saveTargetPaths(pc.itemContent.sourceItem, targetPaths)
+            // Events.post(ProcessorSubmitDownloadEvent(name, itemContent))
+            return true
+        }
+
+        fun run() {
+            processItems()
+        }
+    }
+
+    private inner class NormalProcess : Process() {
+
+        override fun onCompletion() {
+            if (options.pointerBatchMode) {
+                saveSourceState()
+            }
+        }
+
+        override fun onEach(processingContent: ProcessingContent) {
+            if (options.saveProcessingContent) {
+                processingStorage.save(processingContent)
+            }
+        }
+
+        override fun onItemSuccess(item: PointedItem<ItemPointer>, processingContent: ProcessingContent) {
+            sourcePointer.update(item.pointer)
+            if (options.pointerBatchMode.not()) {
+                saveSourceState()
+            }
+        }
+
+        override fun onItemFiltered(item: PointedItem<ItemPointer>) {
+            sourcePointer.update(item.pointer)
+            if (options.pointerBatchMode.not()) {
+                saveSourceState()
+            }
+        }
+
+        private fun saveSourceState() {
+            val currentSourceState = lastState.copy(
+                lastPointer = Jackson.convert(sourcePointer, PersistentPointer::class),
+                lastActiveTime = LocalDateTime.now()
+            )
+            val lastP = lastState.resolvePointer(source::class)
+            val currP = currentSourceState.resolvePointer(source::class)
+            if (currP != lastP) {
+                log.info("Processor:'$name' update pointer:${currentSourceState.lastPointer}")
+            }
+            val save = processingStorage.save(currentSourceState)
+            lastState.id = save.id
+        }
+    }
+
+    private inner class DryRunProcess : Process() {
+
+        private val result: MutableList<ProcessingContent> = mutableListOf()
+
+        override fun onEach(processingContent: ProcessingContent) {
+            result.add(processingContent)
+        }
+
+        fun getResult(): List<ProcessingContent> {
+            return result
+        }
+
+        override fun doDownload(pc: ProcessingContent, replaceFiles: List<CoreFileContent>): Boolean = false
+    }
+
+    private inner class ManualItemProcess(items: List<SourceItem>) : Process(
+        itemIterable = items.map {
+            PointedItem(it, NullPointer)
+        }) {
+
+        override fun onEach(processingContent: ProcessingContent) {
+            if (options.saveProcessingContent) {
+                processingStorage.save(processingContent)
+            }
+        }
+    }
 }
 
 val log: Logger = LoggerFactory.getLogger(SourceProcessor::class.java)

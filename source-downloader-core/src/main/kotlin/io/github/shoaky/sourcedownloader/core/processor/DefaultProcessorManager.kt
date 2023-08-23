@@ -58,21 +58,20 @@ class DefaultProcessorManager(
         container.put(processorBeanName, processorWrapper)
         log.info("Processor:'${processor.name}'初始化完成")
 
-        val task = processor.safeTask()
         config.triggerInstanceNames().map {
             container.get(it, triggerTypeRef).getAndMarkRef(processorName)
         }.forEach {
-            it.addTask(task)
+            it.addTask(processor.safeTask())
         }
         return processorWrapper
     }
 
-    override fun getProcessor(name: String): ProcessorWrapper? {
+    override fun getProcessor(name: String): ProcessorWrapper {
         val processorBeanName = processorBeanName(name)
         return if (container.contains(processorBeanName)) {
             container.get(processorBeanName, processorTypeRef)
         } else {
-            null
+            throw ComponentException.processorMissing("Processor $name not found")
         }
     }
 

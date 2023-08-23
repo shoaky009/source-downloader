@@ -7,7 +7,11 @@ interface ProcessorManager {
 
     fun createProcessor(config: ProcessorConfig): ProcessorWrapper
 
-    fun getProcessor(name: String): ProcessorWrapper?
+    fun getProcessor(name: String): ProcessorWrapper
+
+    fun exists(name: String): Boolean {
+        return getAllProcessorNames().contains(name)
+    }
 
     fun getProcessors(): List<ProcessorWrapper>
 

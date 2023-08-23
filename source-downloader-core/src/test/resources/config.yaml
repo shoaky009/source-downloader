@@ -51,6 +51,10 @@ components:
       type: "mock"
       props:
         download-path: "src/test/resources/downloads"
+    - name: "url"
+      type: "url"
+      props:
+        download-path: "src/test/resources/downloads"
   file-tagger:
     - name: "mapping-test1file"
       type: "mapped"
@@ -153,3 +157,14 @@ processors:
         - tags: [ "test3" ]
           save-path-pattern: "{itemTitle}"
           filename-pattern: "{sequence}"
+  - name: "DryRunCase"
+    source: "fixed:normal-case"
+    item-file-resolver: "fixed:normal-case"
+    downloader: "url"
+    file-mover: "general"
+    save-path: "src/test/resources/target/NormalCase"
+    variable-providers:
+      - "sequence"
+    options:
+      save-path-pattern: "{itemTitle}/{itemDate}/"
+      filename-pattern: "{filename} - {sequence}"

@@ -24,7 +24,6 @@ data class ProcessorOptions(
     val fileTaggers: List<FileTagger> = emptyList(),
     val variableReplacers: List<VariableReplacer> = emptyList(),
     val fileReplacementDecider: FileReplacementDecider = NeverReplace,
-    // val taggedFileOptions: Map<String, FileOptions> = emptyMap(),
     val fileGrouping: Map<SourceFileMatcher, FileOption> = emptyMap(),
     val saveProcessingContent: Boolean = true,
     val renameTaskInterval: Duration = Duration.ofMinutes(5),

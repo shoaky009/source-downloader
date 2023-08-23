@@ -15,7 +15,6 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
 import kotlin.io.path.*
 import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
 
 @SpringBootTest
 @ActiveProfiles("integration-test")
@@ -32,8 +31,7 @@ class SourceProcessorTest : InitializingBean {
     fun normal() {
         val selfPath = savePath.resolve("NormalCase")
 
-        val processor = processorManager.getProcessor("NormalCase")?.get()
-        assertNotNull(processor, "Processor NormalCase not found")
+        val processor = processorManager.getProcessor("NormalCase").get()
 
         processor.run()
         processor.runRename()
@@ -50,8 +48,7 @@ class SourceProcessorTest : InitializingBean {
 
     @Test
     fun normal_dry_run() {
-        val processor = processorManager.getProcessor("NormalCaseCopy")?.get()
-        assertNotNull(processor, "Processor NormalCaseCopy not found")
+        val processor = processorManager.getProcessor("NormalCaseCopy").get()
         val contents = processor.dryRun()
         assertEquals(3, contents.size)
         assertEquals(0, processingStorage.query(ProcessingQuery("NormalCaseCopy")).size)
@@ -63,8 +60,7 @@ class SourceProcessorTest : InitializingBean {
 
         val downloadedFile = downloadPath.resolve("test2.jpg").createIfNotExists()
         val targetFile = selfPath.resolve("test-dir").resolve("test3.jpg").createIfNotExists()
-        val processor = processorManager.getProcessor("FileStatusCase")?.get()
-        assertNotNull(processor, "Processor FileStatusCase not found")
+        val processor = processorManager.getProcessor("FileStatusCase").get()
 
         processor.run()
         val records = processingStorage.query(ProcessingQuery("FileStatusCase")).sortedBy { it.id }
@@ -80,8 +76,7 @@ class SourceProcessorTest : InitializingBean {
 
     @Test
     fun given_conflict_status_files() {
-        val processor = processorManager.getProcessor("FileStatusCase2")?.get()
-        assertNotNull(processor, "Processor FileStatusCase2 not found")
+        val processor = processorManager.getProcessor("FileStatusCase2").get()
 
         processor.run()
         val records = processingStorage.query(ProcessingQuery("FileStatusCase2")).sortedBy { it.id }
@@ -94,8 +89,7 @@ class SourceProcessorTest : InitializingBean {
     fun given_tagged_files() {
         val selfPath = savePath.resolve("Tagged")
 
-        val processor = processorManager.getProcessor("Tagged")?.get()
-        assertNotNull(processor, "Processor NormalCase not found")
+        val processor = processorManager.getProcessor("Tagged").get()
 
         processor.run()
         processor.runRename()
@@ -112,8 +106,7 @@ class SourceProcessorTest : InitializingBean {
     @Test
     fun file_grouping_sequence_variable() {
         val processorName = "FileGroupingSeqVariableCase"
-        val processor = processorManager.getProcessor(processorName)?.get()
-        assertNotNull(processor, "Processor NormalCase not found")
+        val processor = processorManager.getProcessor(processorName).get()
 
         processor.run()
         processor.runRename()
@@ -151,7 +144,6 @@ class SourceProcessorTest : InitializingBean {
         fun clean() {
             savePath.deleteRecursively()
             downloadPath.deleteRecursively()
-            Path("test.db").deleteIfExists()
         }
     }
 

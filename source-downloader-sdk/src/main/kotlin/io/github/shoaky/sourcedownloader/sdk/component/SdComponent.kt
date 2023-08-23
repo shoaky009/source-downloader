@@ -100,7 +100,7 @@ interface Downloader : SdComponent {
 interface ItemFileResolver : SdComponent {
 
     /**
-     * Resolve files from item
+     * Resolve files from item, must not duplicate
      * @return Relative paths
      */
     fun resolveFiles(sourceItem: SourceItem): List<SourceFile>

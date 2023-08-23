@@ -1,7 +1,12 @@
 package io.github.shoaky.sourcedownloader.integration.api
 
-import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.Disabled
+import com.jayway.jsonpath.Configuration
+import com.jayway.jsonpath.JsonPath
+import com.jayway.jsonpath.TypeRef
+import com.jayway.jsonpath.spi.json.JacksonJsonProvider
+import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider
+import io.github.shoaky.sourcedownloader.core.ProcessingStorage
+import io.github.shoaky.sourcedownloader.repo.ProcessingQuery
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
@@ -10,8 +15,9 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
-import kotlin.io.path.Path
-import kotlin.io.path.deleteIfExists
+import org.sqlite.SQLiteException
+import java.nio.file.Path
+import kotlin.io.path.notExists
 
 @SpringBootTest
 @ActiveProfiles("integration-test")
@@ -20,6 +26,9 @@ class ProcessorControllerTest {
 
     @Autowired
     private lateinit var mockMvc: MockMvc
+
+    @Autowired
+    lateinit var processingStorage: ProcessingStorage
 
     @Test
     fun get_processors() {
@@ -39,21 +48,35 @@ class ProcessorControllerTest {
             }
     }
 
+    /**
+     * 接口需要返回处理数据
+     * 不能有真实的下载动作
+     * 不能持久化处理数据
+     */
     @Test
-    @Disabled("增加MockSource后开启,不然创建文件比较麻烦")
     fun dry_run() {
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/processor/dry-run/NormalCase"))
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/processor/dry-run/DryRunCase"))
             .andExpect(MockMvcResultMatchers.status().isOk)
-            .andExpect {
+            .andExpect { mockRes ->
                 MockMvcResultMatchers.jsonPath("$.*").isNotEmpty
-            }
-    }
 
-    companion object {
-        @JvmStatic
-        @AfterAll
-        fun clean() {
-            Path("test.db").deleteIfExists()
+                val config = Configuration.builder()
+                    .jsonProvider(JacksonJsonProvider())
+                    .mappingProvider(JacksonMappingProvider())
+                    .build()
+                val read = JsonPath.parse(mockRes.response.contentAsString, config).read("$.*.fileResults[*].from", object : TypeRef<List<Path>>() {})
+                assert(read.all { it.notExists() })
+            }
+        runCatching {
+            processingStorage.query(ProcessingQuery("DryRunCase"))
+        }.onSuccess {
+            assert(it.isEmpty())
+        }.onFailure {
+            if (it is SQLiteException) {
+
+            }
+            println(it)
         }
     }
+
 }

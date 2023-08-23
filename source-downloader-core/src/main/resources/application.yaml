@@ -8,13 +8,7 @@ spring:
     username: sd
     password: sd
     url: jdbc:sqlite:${source-downloader.data-location}source-downloader.db
-    #driver-class-name: org.h2.Driver
     driver-class-name: org.sqlite.JDBC
-  #  jpa:
-  #    open-in-view: false
-  #    database-platform: org.hibernate.community.dialect.SQLiteDialect
-  #    hibernate:
-  #      ddl-auto: none
   flyway:
     locations:
       - classpath:/db/migration
@@ -25,13 +19,17 @@ spring:
   autoconfigure:
     exclude:
       - org.springframework.boot.autoconfigure.jdbc.JdbcTemplateAutoConfiguration
+  jackson:
+    default-property-inclusion: non_null
 source-downloader:
   data-location: ${SOURCE_DOWNLOADER_DATA_LOCATION:./}
 ---
 spring:
   config:
     activate:
-      on-profile: debug
+      on-profile:
+        - debug
+        - development
   h2:
     console:
       enabled: true
@@ -47,8 +45,9 @@ logging:
   level:
     telegram4j: debug
     reactor: debug
-    io.github.shoaky: debug
+    io.github.shoaky: trace
     org.hibernate.orm.jdbc.bind: trace
+    org.springframework.web: debug
 
 ---
 spring:
@@ -57,8 +56,7 @@ spring:
       on-profile:
         - integration-test
   datasource:
-    # FIXME Windows下会错误
-    url: jdbc:sqlite:test.db
+    url: "jdbc:sqlite::memory:"
   exposed:
     show-sql: true
 source-downloader:

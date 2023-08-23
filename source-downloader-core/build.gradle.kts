@@ -19,8 +19,9 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
-    // implementation(libs.kotlinx.coroutines.core)
-    // runtimeOnly(libs.kotlinx.coroutines.core.jvm)
+    implementation(libs.kotlinx.coroutines.core)
+    runtimeOnly(libs.kotlinx.coroutines.core.jvm)
+    runtimeOnly("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.7.3")
 
     // others
     implementation(libs.commons.collections4)
