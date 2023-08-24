@@ -45,11 +45,11 @@ class SourceDownloaderApplication(
         log.info(
             "Database file located:${
                 environment.getProperty("spring.datasource.url")
-                    ?.removePrefix("jdbc:h2:file:")
+                    ?.removePrefix("jdbc:sqlite:")
             }"
         )
 
-        val processorConfigs = processorStorages.flatMap { it.getAllProcessorConfig() }.filter { it.enabled }
+        val processorConfigs = processorStorages.flatMap { it.getAllProcessorConfig() }
         for (processorConfig in processorConfigs) {
             try {
                 processorManager.createProcessor(processorConfig)
@@ -80,7 +80,7 @@ class SourceDownloaderApplication(
         plugins.forEach {
             val description = it.description()
             val fullName = description.fullName()
-            log.info("成功加载插件$fullName")
+            log.info("Successfully loaded plugin $fullName")
         }
     }
 
@@ -96,7 +96,7 @@ class SourceDownloaderApplication(
             .flatten()
             .distinct()
             .groupBy({ it.topTypeClass.simpleName }, { it.typeName })
-        log.info("组件注册完成:$types")
+        log.info("Component registration completed:$types")
     }
 
     private fun createComponents() {
@@ -106,7 +106,7 @@ class SourceDownloaderApplication(
             for (type in it.supplyTypes()) {
                 val typeName = type.typeName
                 componentManager.createComponent(type, typeName, Properties.EMPTY)
-                log.info("成功创建组件${type.topTypeClass.simpleName}:${typeName}:${typeName}")
+                log.info("Successfully created component ${type.topTypeClass.simpleName}:${typeName}:${typeName}")
             }
         }
 
@@ -127,12 +127,44 @@ class SourceDownloaderApplication(
                 val type = ComponentType(it.type, componentKClass)
                 try {
                     componentManager.createComponent(type, it.name, Properties.fromMap(it.props))
-                } catch (e: Exception) {
-                    log.error("创建组件失败:${type.topTypeClass.simpleName}:${it.type}:${it.name}")
+                } catch (e: ComponentException) {
+                    log.error("Failed to create component ${type.topTypeClass.simpleName}:${it.type}:${it.name}, reason:${e.message}")
                     throw e
                 }
-                log.info("成功创建组件${type.topTypeClass.simpleName}:${it.type}:${it.name}")
+                log.info("Successfully created component ${type.topTypeClass.simpleName}:${it.type}:${it.name}")
             }
+    }
+
+    override fun afterPropertiesSet() {
+        // 加载出现异常不让应用完成启动
+        loadAndInitPlugins()
+        registerInstanceFactories()
+        log.info("Supported component types:${ComponentType.types()}")
+        registerComponentSuppliers()
+        createComponents()
+    }
+
+    private fun registerInstanceFactories() {
+        // instanceManager.registerInstanceFactory()
+    }
+
+    fun reload() {
+        val processorNames = processorManager.getAllProcessorNames()
+        for (name in processorNames) {
+            processorManager.destroy(name)
+        }
+
+        val componentNames = componentManager.getAllComponentNames()
+        for (name in componentNames) {
+            componentManager.destroy(name)
+        }
+
+        if (instanceManager is DefaultInstanceManager) {
+            instanceManager.destroyAll()
+        }
+
+        createComponents()
+        createProcessors()
     }
 
     companion object {
@@ -159,38 +191,5 @@ class SourceDownloaderApplication(
                 System.setProperty("https.proxyPort", url.port.toString())
             }
         }
-    }
-
-    override fun afterPropertiesSet() {
-        // 加载出现异常不让应用完成启动
-        loadAndInitPlugins()
-        registerInstanceFactories()
-        log.info("支持的组件类型:${ComponentType.types()}")
-        registerComponentSuppliers()
-        createComponents()
-    }
-
-    private fun registerInstanceFactories() {
-        // instanceManager.registerInstanceFactory()
-    }
-
-    fun reload() {
-        val processorNames = processorManager.getAllProcessorNames()
-        for (name in processorNames) {
-            processorManager.destroy(name)
-        }
-
-        val componentNames = componentManager.getAllComponentNames()
-        for (name in componentNames) {
-            componentManager.destroy(name)
-        }
-
-        val im = instanceManager
-        if (im is DefaultInstanceManager) {
-            im.destroyAll()
-        }
-
-        createComponents()
-        createProcessors()
     }
 }

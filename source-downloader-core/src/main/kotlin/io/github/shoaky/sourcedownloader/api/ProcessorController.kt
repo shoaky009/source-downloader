@@ -45,7 +45,7 @@ private class ProcessorController(
     }
 
     @PutMapping("/{processorName}")
-    fun reload(
+    fun update(
         @PathVariable processorName: String,
         @RequestBody processorConfig: ProcessorConfig
     ) {
@@ -60,6 +60,13 @@ private class ProcessorController(
     fun delete(@PathVariable processorName: String) {
         processorManager.destroy(processorName)
         configOperator.deleteProcessor(processorName)
+    }
+
+    @GetMapping("/reload/{processorName}")
+    fun reload(@PathVariable processorName: String) {
+        val config = configOperator.getProcessorConfig(processorName)
+        processorManager.destroy(processorName)
+        processorManager.createProcessor(config)
     }
 
     @GetMapping("/dry-run/{processorName}")

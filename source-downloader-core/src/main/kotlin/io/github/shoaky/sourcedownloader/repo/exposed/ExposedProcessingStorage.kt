@@ -176,11 +176,14 @@ class ExposedProcessingStorage : ProcessingStorage {
         }
     }
 
-    override fun targetPathExists(paths: List<Path>): Boolean {
+    override fun targetPathExists(paths: List<Path>, excludedItemHashing: String): List<Boolean> {
+        val ids = paths.map { it.toString() }
         return transaction {
-            TargetPaths.select {
-                TargetPaths.id inList paths.map { it.toString() }
-            }.adjustSlice { slice(TargetPaths.id) }.limit(1).count() > 0
+            val existingIds = TargetPaths
+                .select { TargetPaths.id inList ids and (TargetPaths.itemHashing neq excludedItemHashing) }
+                .map { it[TargetPaths.id].value }
+                .toSet()
+            ids.map { existingIds.contains(it) }
         }
     }
 

@@ -21,7 +21,7 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
     implementation(libs.kotlinx.coroutines.core)
     runtimeOnly(libs.kotlinx.coroutines.core.jvm)
-    runtimeOnly("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.7.3")
+    runtimeOnly(libs.kotlinx.coroutines.reactor)
 
     // others
     implementation(libs.commons.collections4)

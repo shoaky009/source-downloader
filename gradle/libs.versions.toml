@@ -3,8 +3,8 @@ springboot = "3.1.1"
 guava = "32.1.1-jre"
 commons-lang3 = "3.12.0"
 cel = "0.3.18"
-kotlinx-coroutines = "1.7.2"
-kotlin = "1.9.0"
+kotlinx-coroutines = "1.7.3"
+kotlin = "1.9.10"
 graalvm = "0.9.21"
 sqlite = "3.42.0.0"
 hibernate = "6.2.6.Final"
@@ -33,6 +33,7 @@ hibernate-core = { module = "org.hibernate.orm:hibernate-core", version.ref = "h
 hibernate-types = { module = "com.vladmihalcea:hibernate-types-60", version.ref = "hibernate-types" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-core-jvm = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm", version.ref = "kotlinx-coroutines" }
+kotlinx-coroutines-reactor = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-reactor", version.ref = "kotlinx-coroutines" }
 zxing-core = { module = "com.google.zxing:core", version.ref = "zxing" }
 telegram4j = { module = "com.telegram4j:telegram4j-core", version.ref = "telegram4j" }
 rssreader = { module = "com.apptasticsoftware:rssreader", version.ref = "rssreader" }

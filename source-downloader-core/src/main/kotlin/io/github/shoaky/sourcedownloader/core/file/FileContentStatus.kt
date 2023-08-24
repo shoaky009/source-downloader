@@ -27,5 +27,16 @@ enum class FileContentStatus {
     /**
      * 准备替换
      */
+    READY_REPLACE,
+
+    /**
+     * 该文件是被替换了的
+     */
+    REPLACED,
+
+    /**
+     * 该文件是替换的
+     */
     REPLACE
+
 }

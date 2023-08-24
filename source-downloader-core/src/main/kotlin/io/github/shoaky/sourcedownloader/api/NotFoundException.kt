@@ -1,3 +1,3 @@
 package io.github.shoaky.sourcedownloader.api
 
-class NotFoundException : RuntimeException()
+class NotFoundException(override val message: String?) : RuntimeException()

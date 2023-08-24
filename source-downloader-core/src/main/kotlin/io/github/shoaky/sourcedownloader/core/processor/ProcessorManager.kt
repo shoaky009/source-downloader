@@ -5,7 +5,7 @@ import io.github.shoaky.sourcedownloader.core.component.ProcessorWrapper
 
 interface ProcessorManager {
 
-    fun createProcessor(config: ProcessorConfig): ProcessorWrapper
+    fun createProcessor(config: ProcessorConfig)
 
     fun getProcessor(name: String): ProcessorWrapper
 

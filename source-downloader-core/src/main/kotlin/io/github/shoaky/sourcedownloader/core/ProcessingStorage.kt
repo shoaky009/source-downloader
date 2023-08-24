@@ -21,7 +21,7 @@ interface ProcessingStorage {
      */
     fun saveTargetPaths(targetPaths: List<ProcessingTargetPath>)
 
-    fun targetPathExists(paths: List<Path>): Boolean
+    fun targetPathExists(paths: List<Path>, excludedItemHashing: String): List<Boolean>
 
     fun findById(id: Long): ProcessingContent?
 

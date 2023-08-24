@@ -113,7 +113,6 @@ class SourceProcessorTest : InitializingBean {
         val contents = processingStorage.query(ProcessingQuery(processorName))
             .associateBy { it.itemContent.sourceItem.title }
 
-        println(Jackson.toJsonString(contents))
         val selfPath = savePath.resolve(processorName)
         assertEquals(3, contents.size)
 
@@ -125,6 +124,39 @@ class SourceProcessorTest : InitializingBean {
         }
     }
 
+    @Test
+    fun same_processing_async_replace_file() {
+        val processorName = "AsyncReplaceFileCase"
+        val processor = processorManager.getProcessor(processorName).get()
+
+        processor.run()
+        processor.runRename()
+        val contents = processingStorage.query(ProcessingQuery(processorName))
+            .associateBy { it.sourceHash }
+        println(Jackson.toJsonString(contents))
+        // 如果实现了对被替换文件的状态更新，这里需要断言REPLACED
+        assertEquals(FileContentStatus.NORMAL, contents.getValue("a8d643ef958afca3ac59d5193e085381")
+            .itemContent.sourceFiles.first().status)
+        assertEquals(FileContentStatus.REPLACE, contents.getValue("ca26c76c94a3b2d8886143317fcf7b26")
+            .itemContent.sourceFiles.first().status)
+    }
+
+    @Test
+    fun same_processing_sync_replace_file() {
+        val processorName = "SyncReplaceFileCase"
+        val processor = processorManager.getProcessor(processorName).get()
+
+        processor.run()
+        val contents = processingStorage.query(ProcessingQuery(processorName))
+            .associateBy { it.sourceHash }
+        println(Jackson.toJsonString(contents))
+        // 如果实现了对被替换文件的状态更新，这里需要断言REPLACED
+        assertEquals(FileContentStatus.NORMAL, contents.getValue("a8d643ef958afca3ac59d5193e085381")
+            .itemContent.sourceFiles.first().status)
+        assertEquals(FileContentStatus.REPLACE, contents.getValue("ca26c76c94a3b2d8886143317fcf7b26")
+            .itemContent.sourceFiles.first().status)
+    }
+
     // 待测试场景
     // processing_record中的status
     // pointer存储
@@ -132,7 +164,6 @@ class SourceProcessorTest : InitializingBean {
     // variableConflictStrategy option测试
     // variableNameReplace option测试
     // replaceVariable option测试
-    // fileReplacement 测试
     // error_continue
     companion object {
 

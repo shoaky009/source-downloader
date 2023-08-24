@@ -69,7 +69,7 @@ class SourceProcessor(
     private val renameScheduledExecutor by lazy {
         Executors.newSingleThreadScheduledExecutor()
     }
-    private val itemChannel = Channel<Process>(10)
+    private val itemChannel = Channel<Process>(options.channelBufferSize)
 
     init {
         scheduleRenameTask(options.renameTaskInterval)
@@ -146,47 +146,52 @@ class SourceProcessor(
         )
     }
 
-    private fun getReplaceableFiles(itemContent: CoreItemContent): List<CoreFileContent> {
-        // FIXME 同一批中不生效，因为TARGET_EXISTS没有检查持久化的路径
-        itemContent.updateFileStatus(fileMover)
+    private fun identifyFilesToReplace(itemContent: CoreItemContent): List<CoreFileContent> {
         if (fileReplacementDecider == NeverReplace) {
             return emptyList()
         }
-        val partition = itemContent.sourceFiles.partition { it.status == FileContentStatus.REPLACE }
-        val existsFiles = partition.second.filter { it.status == FileContentStatus.TARGET_EXISTS }
+
+        val existsFiles = itemContent.sourceFiles.filter { it.status == FileContentStatus.TARGET_EXISTS }
         val support = TargetPathRelationSupport(
+            itemContent.sourceItem,
             existsFiles,
             processingStorage
         )
         val discardedItems = mutableMapOf<String, Boolean>()
         val replaceFiles = existsFiles
             .map { fileContent ->
+                val before = support.getBeforeContent(fileContent.targetPath())
+                cancelBeforeProcessing(before, fileContent, discardedItems)
                 val copy = itemContent.copy(
                     sourceFiles = listOf(fileContent)
                 )
-                val before = support.getContent(fileContent.targetPath())
-                checkBeforeProcessing(before, discardedItems)
                 val replace = fileReplacementDecider.isReplace(copy, before?.itemContent)
                 fileContent to replace
             }.filter { it.second }
             .map { it.first }
-            .onEach { it.status = FileContentStatus.REPLACE }
-        return partition.first + replaceFiles
+            .onEach {
+                it.status = FileContentStatus.READY_REPLACE
+            }
+        return replaceFiles
     }
 
-    private fun checkBeforeProcessing(before: ProcessingContent?, discardedItems: MutableMap<String, Boolean>) {
+    private fun cancelBeforeProcessing(
+        before: ProcessingContent?,
+        existsFile: CoreFileContent,
+        discardedItems: MutableMap<String, Boolean>) {
         if (before == null || before.status != WAITING_TO_RENAME) {
             return
         }
-        val files = before.itemContent.sourceFiles.map {
+        val files = existsFile.let {
             SourceFile(it.fileDownloadPath, it.attrs, it.fileUri)
         }
         // drop before task
         val beforeItem = before.itemContent.sourceItem
         val hashing = beforeItem.hashing()
         discardedItems.computeIfAbsent(hashing) {
-            log.info("Drop before id:{} task:{}", before.id, beforeItem)
-            downloader.cancel(beforeItem, files)
+            log.info("Processor:'{}' drop before id:{} task:{}", name, before.id, beforeItem)
+            // cancel整个item不太合理，需要以文件的纬度按需取消
+            downloader.cancel(beforeItem, listOf(files))
             true
         }
     }
@@ -265,9 +270,9 @@ class SourceProcessor(
             }
             return false to TARGET_ALREADY_EXISTS
         }
+
         // 预防这一批次的Item有相同的目标，并且是AsyncDownloader的情况下会重复下载
-        val targetPaths = files.map { it.targetPath() }
-        if (processingStorage.targetPathExists(targetPaths)) {
+        if (files.all { it.status == FileContentStatus.TARGET_EXISTS }) {
             return false to TARGET_ALREADY_EXISTS
         }
         val allExists = fileMover.exists(files.map { it.fileDownloadPath })
@@ -325,7 +330,9 @@ class SourceProcessor(
     private fun processRenameTask(pc: ProcessingContent) {
         val itemContent = pc.itemContent
         val sourceFiles = itemContent.sourceFiles
-        if (sourceFiles.all { it.status != FileContentStatus.REPLACE } &&
+
+        if (sourceFiles.all { it.status != FileContentStatus.READY_REPLACE } &&
+            // 是否有必要判断实时的?
             fileMover.exists(sourceFiles.map { it.targetPath() })
         ) {
             val toUpdate = pc.copy(
@@ -338,8 +345,9 @@ class SourceProcessor(
             return
         }
         val allSuccess = runCatching {
-            moveFiles(itemContent)
-            replaceFiles(itemContent)
+            val moved = moveFiles(itemContent)
+            val replaced = replaceFiles(itemContent)
+            moved || replaced
         }.onFailure {
             log.error("重命名出错, record:${Jackson.toJsonString(pc)}", it)
         }.getOrDefault(false)
@@ -418,7 +426,9 @@ class SourceProcessor(
     }
 
     private fun replaceFiles(itemContent: CoreItemContent): Boolean {
-        val replaceableFiles = getReplaceableFiles(itemContent)
+        val replaceableFiles =
+            itemContent.sourceFiles.filter { it.status == FileContentStatus.READY_REPLACE }
+
         if (replaceableFiles.isEmpty()) {
             return true
         }
@@ -427,7 +437,12 @@ class SourceProcessor(
             name, itemContent.sourceItem.title, replaceableFiles.map { it.targetPath() }
         )
 
-        return fileMover.replace(itemContent.copy(sourceFiles = replaceableFiles))
+        val replace = fileMover.replace(itemContent.copy(sourceFiles = replaceableFiles))
+        if (replace) {
+            itemContent.sourceFiles.filter { it.status == FileContentStatus.READY_REPLACE }
+                .onEach { it.status = FileContentStatus.REPLACE }
+        }
+        return replace
     }
 
     override fun toString(): String {
@@ -531,7 +546,20 @@ class SourceProcessor(
                 log.info("{} Filtered item:{}", filterBy::class.simpleName, sourceItem)
                 return ProcessingContent(name, itemContent).copy(status = FILTERED)
             }
-            val replaceFiles = getReplaceableFiles(itemContent)
+
+            // 后面再调整状态的更新方式
+            itemContent.updateFileStatus(fileMover)
+            val processingTargetPaths = processingStorage.targetPathExists(
+                itemContent.sourceFiles.map { it.targetPath() },
+                itemContent.sourceItem.hashing()
+            )
+            itemContent.sourceFiles.onEachIndexed { index, fileContent ->
+                if (fileContent.status == FileContentStatus.NORMAL && processingTargetPaths[index]) {
+                    fileContent.status = FileContentStatus.TARGET_EXISTS
+                }
+            }
+
+            val replaceFiles = identifyFilesToReplace(itemContent)
             val (shouldDownload, contentStatus) = probeContentStatus(itemContent, replaceFiles)
             log.trace("Processor:'{}' item:{} ,should download: {}, content status:{}",
                 name, sourceItem, shouldDownload, contentStatus)

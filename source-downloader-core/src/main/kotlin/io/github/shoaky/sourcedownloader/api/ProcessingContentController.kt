@@ -19,7 +19,9 @@ private class ProcessingContentController(
 
     @PutMapping("/{id}")
     fun modifyProcessingContent(@PathVariable id: Long, @RequestBody body: ProcessingContent): ProcessingContent {
-        val current = storage.findById(id) ?: throw NotFoundException()
+        val current = storage.findById(id) ?: throw NotFoundException(
+            "ProcessingContent with id $id not found"
+        )
         return storage.save(
             current.copy(
                 // 这个待定，有些字段不允许修改

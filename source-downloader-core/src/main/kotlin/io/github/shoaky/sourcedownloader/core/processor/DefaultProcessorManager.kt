@@ -14,7 +14,12 @@ class DefaultProcessorManager(
     private val container: ObjectWrapperContainer,
 ) : ProcessorManager {
 
-    override fun createProcessor(config: ProcessorConfig): ProcessorWrapper {
+    override fun createProcessor(config: ProcessorConfig) {
+        if (config.enabled.not()) {
+            log.info("Processor:'${config.name}' is disabled")
+            return
+        }
+
         val processorBeanName = processorBeanName(config.name)
         val processorName = config.name
         if (container.contains(processorBeanName)) {
@@ -56,14 +61,13 @@ class DefaultProcessorManager(
 
         val processorWrapper = ProcessorWrapper(config.name, processor)
         container.put(processorBeanName, processorWrapper)
-        log.info("Processor:'${processor.name}'初始化完成")
+        log.info("Processor:'${processor.name}' initialization completed")
 
         config.triggerInstanceNames().map {
             container.get(it, triggerTypeRef).getAndMarkRef(processorName)
         }.forEach {
             it.addTask(processor.safeTask())
         }
-        return processorWrapper
     }
 
     override fun getProcessor(name: String): ProcessorWrapper {

@@ -5,9 +5,11 @@ import io.github.shoaky.sourcedownloader.sdk.SourceFile
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.Downloader
 import org.springframework.core.io.UrlResource
-import java.io.FileOutputStream
 import java.nio.channels.Channels
+import java.nio.channels.FileChannel
 import java.nio.file.Path
+import java.nio.file.StandardOpenOption
+import kotlin.io.path.createDirectories
 
 /**
  * URL下载器，通过SourceItem中的downloadUri下载文件
@@ -18,14 +20,23 @@ class UrlDownloader(
 
     override fun submit(task: DownloadTask) {
         val uriResource = UrlResource(task.downloadUri())
-        val filename = uriResource.filename.takeIf { it.isNullOrBlank().not() }
-            ?: task.sourceItem.hashing()
-        val dp = task.downloadPath
+        // if (uriResource.isReadable.not()) {
+        //     throw RuntimeException("uri:${task.downloadUri()} is not readable")
+        // }
 
-        val targetPath = dp.resolve(filename)
         val readableByteChannel = Channels.newChannel(uriResource.inputStream)
-        FileOutputStream(targetPath.toFile()).use {
-            it.channel.transferFrom(readableByteChannel, 0, Long.MAX_VALUE)
+        task.downloadFiles.associateBy { it.path.parent }
+            .forEach {
+                it.key.createDirectories()
+            }
+
+        task.downloadFiles.forEach { file ->
+            FileChannel.open(file.path,
+                StandardOpenOption.WRITE,
+                StandardOpenOption.CREATE
+            ).use {
+                it.transferFrom(readableByteChannel, 0, Long.MAX_VALUE)
+            }
         }
     }
 

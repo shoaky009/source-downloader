@@ -41,10 +41,32 @@ components:
               downloadUri: "file://test1"
             files:
               - path: "test1.jpg"
+    - name: "replace-case"
+      type: "fixed"
+      props:
+        content:
+          - item:
+              title: "test-replace"
+              link: "file://test1"
+              date: "2022-01-01T00:00:00"
+              contentType: "file"
+              downloadUri: "https://baidu.com"
+            files:
+              - path: "test-replace1.jpg"
+          - item:
+              title: "test-replace"
+              link: "file://test2"
+              date: "2022-01-01T00:00:00"
+              contentType: "file"
+              downloadUri: "https://baidu.com"
+            files:
+              - path: "test-replace2.jpg"
   file-resolver:
     - name: "normal-case"
       type: "fixed"
     - name: "error-item"
+      type: "fixed"
+    - name: "replace-case"
       type: "fixed"
   downloader:
     - name: "mock"
@@ -168,3 +190,27 @@ processors:
     options:
       save-path-pattern: "{itemTitle}/{itemDate}/"
       filename-pattern: "{filename} - {sequence}"
+  - name: "AsyncReplaceFileCase"
+    source: "fixed:replace-case"
+    item-file-resolver: "fixed:replace-case"
+    downloader: "mock"
+    file-mover: "general"
+    save-path: "src/test/resources/target/AsyncReplaceFileCase"
+    variable-providers:
+      - "sequence"
+    options:
+      save-path-pattern: "{itemTitle}"
+      filename-pattern: "{sequence}"
+      file-replacement-decider: always
+  - name: "SyncReplaceFileCase"
+    source: "fixed:replace-case"
+    item-file-resolver: "fixed:replace-case"
+    downloader: "url"
+    file-mover: "general"
+    save-path: "src/test/resources/target/SyncReplaceFileCase"
+    variable-providers:
+      - "sequence"
+    options:
+      save-path-pattern: "{itemTitle}"
+      filename-pattern: "{sequence}"
+      file-replacement-decider: always
