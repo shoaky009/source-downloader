@@ -58,6 +58,17 @@ subprojects {
         }
     }
 
+    val archiveName = "source-downloader-$name"
+    tasks.jar {
+        manifest {
+            attributes["Implementation-Version"] = project.version
+            attributes["Implementation-Title"] = archiveName
+        }
+    }
+    tasks.withType<AbstractArchiveTask> {
+        archiveBaseName.set(archiveName)
+    }
+
     kotlin {
         jvmToolchain(javaVersion)
         // 打开k2 mockito有点问题
@@ -67,6 +78,7 @@ subprojects {
         //     }
         // }
     }
+
 }
 
 tasks.jar {

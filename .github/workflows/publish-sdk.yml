@@ -21,6 +21,6 @@ jobs:
           java-version: '17'
           cache: 'gradle'
       - name: Build with Gradle
-        run: ./gradlew source-downloader-sdk:build --no-daemon
+        run: ./gradlew sdk:build --no-daemon
       - name: Publish artifacts
-        run: ./gradlew -PsonatypeUsername=${{ secrets.SONATYPE_USERNAME }} -PsonatypePassword=${{ secrets.SONATYPE_PASSWORD }} -PsigningKey="${{ secrets.SIGNING_KEY }}" -PsigningPassword=${{ secrets.SIGNING_PASSWORD }} source-downloader-sdk:publish --no-daemon
+        run: ./gradlew -PsonatypeUsername=${{ secrets.SONATYPE_USERNAME }} -PsonatypePassword=${{ secrets.SONATYPE_PASSWORD }} -PsigningKey="${{ secrets.SIGNING_KEY }}" -PsigningPassword=${{ secrets.SIGNING_PASSWORD }} sdk:publish --no-daemon

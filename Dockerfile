@@ -1,7 +1,7 @@
 FROM azul/zulu-openjdk-alpine:20-jre as builder
 
 ARG version
-COPY source-downloader-core/build/libs/source-downloader-core-$version.jar application.jar
+COPY core/build/libs/source-downloader-core-$version.jar application.jar
 RUN java -Djarmode=layertools -jar application.jar extract
 
 FROM azul/zulu-openjdk-alpine:20-jre
@@ -20,7 +20,6 @@ WORKDIR /app
 COPY --from=builder dependencies/BOOT-INF /app
 COPY --from=builder snapshot-dependencies/BOOT-INF /app
 COPY --from=builder source-downloader-plugins/BOOT-INF/lib /app/lib
-#COPY --from=builder application/BOOT-INF/lib /app/lib
 COPY --from=builder application/BOOT-INF/classes /app
 COPY --from=builder application/META-INF /app/META-INF
 
