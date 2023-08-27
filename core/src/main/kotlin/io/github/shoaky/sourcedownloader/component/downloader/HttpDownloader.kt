@@ -7,15 +7,14 @@ import io.github.shoaky.sourcedownloader.sdk.component.ComponentStateful
 import io.github.shoaky.sourcedownloader.sdk.component.Downloader
 import io.github.shoaky.sourcedownloader.sdk.util.http.httpClient
 import io.github.shoaky.sourcedownloader.sdk.util.readableRate
+import kotlinx.coroutines.*
 import org.slf4j.LoggerFactory
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
-import java.net.http.HttpResponse
 import java.net.http.HttpResponse.*
 import java.nio.ByteBuffer
 import java.nio.file.Path
 import java.time.Instant
-import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -24,41 +23,47 @@ import java.util.concurrent.ConcurrentHashMap
 class HttpDownloader(
     private val downloadPath: Path,
     private val client: HttpClient = httpClient,
+    parallelism: Int = 5
 ) : Downloader, ComponentStateful {
 
     private val progresses: MutableMap<Path, Downloading> = ConcurrentHashMap()
 
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val dispatchers = Dispatchers.IO.limitedParallelism(parallelism)
+
     override fun submit(task: DownloadTask) {
-        // TODO 改并发下载
-        for (file in task.downloadFiles) {
-            if (file.fileUri == null) {
-                log.info("File uri is null, skip download $file")
-                continue
-            }
-            val bodyHandler = MonitorableBodyHandler(BodyHandlers.ofFile(file.path))
-            val cf = CompletableFuture<HttpResponse<Path>>()
-            val downloading = Downloading(file, bodyHandler, cf)
-            progresses.compute(file.path) { _, oldValue ->
-                oldValue?.run {
-                    throw IllegalStateException("File already downloading: ${file.path}")
+        runBlocking(dispatchers) {
+            task.downloadFiles.forEach {
+                launch {
+                    downloadSourceFile(it, task.options.headers)
                 }
-                downloading
             }
-            val request = HttpRequest.newBuilder(file.fileUri).GET()
-                .apply {
-                    task.options.headers.forEach(this::setHeader)
-                }
-                .build()
-            val future = client.sendAsync(request, bodyHandler).whenComplete { f, t ->
-                val path = f.body()
+        }
+    }
+
+    private suspend fun downloadSourceFile(file: SourceFile, headers: Map<String, String>) {
+        val path = file.path
+        if (progresses.containsKey(path)) {
+            throw IllegalStateException("File already downloading: $path")
+        }
+        val bodyHandler = MonitorableBodyHandler(BodyHandlers.ofFile(path))
+        val request = HttpRequest.newBuilder(file.fileUri).GET()
+            .apply {
+                headers.forEach(this::setHeader)
+            }
+            .build()
+
+        withContext(dispatchers) {
+            val job = launch { client.send(request, bodyHandler) }
+            job.invokeOnCompletion {
                 progresses.remove(path)
-                if (t != null) {
-                    log.error("Download failed: $f", t)
+                if (it != null) {
+                    log.error("Download failed: $path", it)
                 } else {
-                    log.info("Download success: $f")
+                    log.info("Download success: $path")
                 }
-            }.join()
-            downloading.future.complete(future)
+            }
+            progresses[path] = Downloading(file, bodyHandler, job)
         }
     }
 
@@ -69,16 +74,12 @@ class HttpDownloader(
     override fun cancel(sourceItem: SourceItem, files: List<SourceFile>) {
         files.forEach {
             runCatching {
-                progresses[it.path]?.future?.cancel(true)
+                progresses[it.path]?.job?.cancel("Cancel by item: $sourceItem")
             }
             progresses.remove(it.path)
         }
     }
 
-    companion object {
-
-        private val log = LoggerFactory.getLogger(HttpDownloader::class.java)
-    }
 
     override fun stateDetail(): Any {
         return progresses.map {
@@ -89,12 +90,17 @@ class HttpDownloader(
             )
         }
     }
+
+    companion object {
+
+        private val log = LoggerFactory.getLogger(HttpDownloader::class.java)
+    }
 }
 
 private data class Downloading(
     val file: SourceFile,
     val bodyHandler: MonitorableBodyHandler<*>,
-    val future: CompletableFuture<HttpResponse<Path>>
+    val job: Job
 )
 
 class MonitorableBodyHandler<T>(
