@@ -2,7 +2,7 @@ package io.github.shoaky.sourcedownloader.core.processor
 
 import io.github.shoaky.sourcedownloader.component.NeverReplace
 import io.github.shoaky.sourcedownloader.component.SimpleItemExistsDetector
-import io.github.shoaky.sourcedownloader.core.CorePathPattern
+import io.github.shoaky.sourcedownloader.core.file.CorePathPattern
 import io.github.shoaky.sourcedownloader.core.VariableReplacer
 import io.github.shoaky.sourcedownloader.core.file.VariableErrorStrategy
 import io.github.shoaky.sourcedownloader.sdk.DownloadOptions

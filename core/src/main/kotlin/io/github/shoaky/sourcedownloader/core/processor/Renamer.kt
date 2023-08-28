@@ -1,15 +1,11 @@
 package io.github.shoaky.sourcedownloader.core.processor
 
-import io.github.shoaky.sourcedownloader.core.CorePathPattern
+import io.github.shoaky.sourcedownloader.core.file.CorePathPattern
 import io.github.shoaky.sourcedownloader.core.VariableReplacer
 import io.github.shoaky.sourcedownloader.core.file.CoreFileContent
 import io.github.shoaky.sourcedownloader.core.file.VariableErrorStrategy
-import io.github.shoaky.sourcedownloader.sdk.MapPatternVariables
-import io.github.shoaky.sourcedownloader.sdk.PathPattern
-import io.github.shoaky.sourcedownloader.sdk.PatternVariables
-import io.github.shoaky.sourcedownloader.sdk.SourceItem
+import io.github.shoaky.sourcedownloader.sdk.*
 import org.slf4j.LoggerFactory
-import java.net.URI
 import java.nio.file.Path
 import java.util.regex.Pattern
 import kotlin.io.path.extension
@@ -184,7 +180,7 @@ data class ProcessingContext(
     val extraVariables: Map<String, Map<String, String>> by lazy {
         val map = mutableMapOf<String, Map<String, String>>()
         map["item.attrs"] = sourceItem.attrs.mapValues { it.value.toString() }
-        map["file.attrs"] = file.attrs.mapValues { it.value.toString() }
+        map["file.attrs"] = file.sourceFile.attrs.mapValues { it.value.toString() }
         map
     }
 }
@@ -199,25 +195,19 @@ private data class ResultWrapper<T>(
         fun fromFilename(name: String, result: PathPattern.ParseResult = PathPattern.ParseResult(name, emptyList())): ResultWrapper<String> {
             return ResultWrapper(name, result)
         }
-
-        fun fromPath(path: Path, result: PathPattern.ParseResult): ResultWrapper<Path> {
-            return ResultWrapper(path, result)
-        }
     }
 }
 
 data class RawFileContent(
-    val fileDownloadPath: Path,
     val sourceSavePath: Path,
     val downloadPath: Path,
     val patternVariables: MapPatternVariables,
     val savePathPattern: CorePathPattern,
     val filenamePattern: CorePathPattern,
-    val attrs: Map<String, Any>,
-    val tags: Set<String>,
-    val fileUri: URI?
+    val sourceFile: SourceFile,
 ) {
 
+    val fileDownloadPath: Path = downloadPath.resolve(sourceFile.path)
     fun createContent(targetSavePath: Path, filename: String, errors: List<String>): CoreFileContent {
         return CoreFileContent(
             fileDownloadPath,
@@ -228,9 +218,9 @@ data class RawFileContent(
             filenamePattern,
             targetSavePath,
             filename,
-            attrs,
-            tags,
-            fileUri,
+            sourceFile.attrs,
+            sourceFile.tags,
+            sourceFile.fileUri,
             errors,
         )
     }

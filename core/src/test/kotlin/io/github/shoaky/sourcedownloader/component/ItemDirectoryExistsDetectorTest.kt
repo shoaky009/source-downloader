@@ -1,7 +1,7 @@
 package io.github.shoaky.sourcedownloader.component
 
 import io.github.shoaky.sourcedownloader.component.supplier.ItemDirectoryExistsDetectorSupplier
-import io.github.shoaky.sourcedownloader.core.CorePathPattern
+import io.github.shoaky.sourcedownloader.core.file.CorePathPattern
 import io.github.shoaky.sourcedownloader.core.file.CoreFileContent
 import io.github.shoaky.sourcedownloader.core.processor.RenamerTest.Companion.downloadPath
 import io.github.shoaky.sourcedownloader.sdk.FixedItemContent

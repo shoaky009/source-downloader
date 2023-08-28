@@ -3,10 +3,7 @@ package io.github.shoaky.sourcedownloader.core.processor
 import io.github.shoaky.sourcedownloader.component.NeverReplace
 import io.github.shoaky.sourcedownloader.core.*
 import io.github.shoaky.sourcedownloader.core.ProcessingContent.Status.*
-import io.github.shoaky.sourcedownloader.core.file.CoreFileContent
-import io.github.shoaky.sourcedownloader.core.file.CoreItemContent
-import io.github.shoaky.sourcedownloader.core.file.FileContentStatus
-import io.github.shoaky.sourcedownloader.core.file.ReadonlyFileMover
+import io.github.shoaky.sourcedownloader.core.file.*
 import io.github.shoaky.sourcedownloader.sdk.*
 import io.github.shoaky.sourcedownloader.sdk.component.*
 import io.github.shoaky.sourcedownloader.sdk.util.Jackson
@@ -21,7 +18,10 @@ import org.slf4j.LoggerFactory
 import org.springframework.retry.support.RetryTemplateBuilder
 import org.springframework.util.StopWatch
 import java.io.IOException
+import java.nio.channels.Channels
+import java.nio.channels.FileChannel
 import java.nio.file.Path
+import java.nio.file.StandardOpenOption
 import java.time.Duration
 import java.time.LocalDateTime
 import java.util.concurrent.Executors
@@ -46,6 +46,7 @@ class SourceProcessor(
     private val options: ProcessorOptions = ProcessorOptions(),
 ) : Runnable, AutoCloseable {
 
+    private val directDownloader = DirectDownloader(downloader)
     private val downloadPath = downloader.defaultDownloadPath().toAbsolutePath()
     private val sourceSavePath: Path = sourceSavePath.toAbsolutePath()
     private val filenamePattern = options.filenamePattern as CorePathPattern
@@ -59,7 +60,12 @@ class SourceProcessor(
     private val taggers: List<FileTagger> = options.fileTaggers
     private val fileReplacementDecider: FileReplacementDecider = options.fileReplacementDecider
     private val itemExistsDetector: ItemExistsDetector = options.itemExistsDetector
-    private val readonlyFileMover = ReadonlyFileMover(fileMover)
+
+    private val auxiliaryFileMover = IncludingTargetPathsFileMover(
+        processingStorage,
+        ReadonlyFileMover(fileMover)
+    )
+
     private val renamer: Renamer = Renamer(
         options.variableErrorStrategy,
         options.variableReplacers,
@@ -217,15 +223,12 @@ class SourceProcessor(
             val fileVariables = sourceItemGroup.filePatternVariables(files)
             files.mapIndexed { index, file ->
                 val rawFileContent = RawFileContent(
-                    downloadPath.resolve(file.path),
                     sourceSavePath,
                     downloadPath,
                     MapPatternVariables(fileVariables[index].patternVariables()),
                     fileOption?.savePathPattern ?: savePathPattern,
                     fileOption?.filenamePattern ?: filenamePattern,
-                    file.attrs,
-                    file.tags,
-                    file.fileUri
+                    file
                 )
                 val fileContent = renamer.createFileContent(sourceItem, rawFileContent, sharedPatternVariables)
                 fileContent to fileOption
@@ -265,7 +268,7 @@ class SourceProcessor(
             return true to WAITING_TO_RENAME
         }
 
-        if (itemExistsDetector.exists(readonlyFileMover, sc)) {
+        if (itemExistsDetector.exists(auxiliaryFileMover, sc)) {
             if (log.isDebugEnabled) {
                 log.debug("Detect already exists item:{}, files:{}", sc.sourceItem, sc.sourceFiles)
             }
@@ -522,7 +525,7 @@ class SourceProcessor(
                 }
 
                 log.trace("Processor:'{}' finished process item:{}", name, item.sourceItem)
-                onEach(processingContent)
+                onItemCompletion(processingContent)
 
                 if (filteredStatuses.contains(processingContent.status)) {
                     simpleStat.incFilterCounting()
@@ -550,7 +553,7 @@ class SourceProcessor(
 
             val filterBy = itemContentFilters.firstOrNull { it.test(itemContent).not() }
             if (filterBy != null) {
-                log.info("{} Filtered item:{}", filterBy::class.simpleName, sourceItem)
+                log.info("{} filtered item:{}", filterBy::class.simpleName, sourceItem)
                 return ProcessingContent(name, itemContent).copy(status = FILTERED)
             }
 
@@ -591,20 +594,21 @@ class SourceProcessor(
 
         open fun onCompletion() {}
 
-        open fun onEach(processingContent: ProcessingContent) {}
+        open fun onItemCompletion(processingContent: ProcessingContent) {}
 
         open fun onItemSuccess(item: PointedItem<ItemPointer>, processingContent: ProcessingContent) {}
 
         open fun onItemFiltered(item: PointedItem<ItemPointer>) {}
 
         open fun doDownload(pc: ProcessingContent, replaceFiles: List<CoreFileContent>): Boolean {
-            val downloadTask = createDownloadTask(pc.itemContent, replaceFiles)
+            val itemContent = pc.itemContent
+            val downloadTask = createDownloadTask(itemContent, replaceFiles)
             // NOTE 非异步下载器会阻塞
-            downloader.submit(downloadTask)
-            log.info("提交下载任务成功, Processor:${name} sourceItem:${pc.itemContent.sourceItem.title}")
-            val targetPaths = pc.itemContent.getDownloadFiles(fileMover).map { it.targetPath() }
+            directDownloader.submit(downloadTask)
+            log.info("提交下载任务成功, Processor:${name} sourceItem:${itemContent.sourceItem.title}")
+            val targetPaths = itemContent.getDownloadFiles(fileMover).map { it.targetPath() }
             // TODO 应该先ProcessingContent后再保存targetPaths
-            saveTargetPaths(pc.itemContent.sourceItem, targetPaths)
+            saveTargetPaths(itemContent.sourceItem, targetPaths)
             // Events.post(ProcessorSubmitDownloadEvent(name, itemContent))
             return true
         }
@@ -622,7 +626,7 @@ class SourceProcessor(
             }
         }
 
-        override fun onEach(processingContent: ProcessingContent) {
+        override fun onItemCompletion(processingContent: ProcessingContent) {
             if (options.saveProcessingContent) {
                 processingStorage.save(processingContent)
             }
@@ -661,7 +665,7 @@ class SourceProcessor(
 
         private val result: MutableList<ProcessingContent> = mutableListOf()
 
-        override fun onEach(processingContent: ProcessingContent) {
+        override fun onItemCompletion(processingContent: ProcessingContent) {
             result.add(processingContent)
         }
 
@@ -677,7 +681,7 @@ class SourceProcessor(
             PointedItem(it, NullPointer)
         }) {
 
-        override fun onEach(processingContent: ProcessingContent) {
+        override fun onItemCompletion(processingContent: ProcessingContent) {
             if (options.saveProcessingContent) {
                 processingStorage.save(processingContent)
             }

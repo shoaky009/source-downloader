@@ -10,7 +10,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.KotlinModule
-import io.github.shoaky.sourcedownloader.core.CorePathPattern
+import io.github.shoaky.sourcedownloader.core.file.CorePathPattern
 
 class PathPatternDeserializer : StdDeserializer<CorePathPattern>(CorePathPattern::class.java) {
     override fun deserialize(p: JsonParser?, ctxt: DeserializationContext?): CorePathPattern {

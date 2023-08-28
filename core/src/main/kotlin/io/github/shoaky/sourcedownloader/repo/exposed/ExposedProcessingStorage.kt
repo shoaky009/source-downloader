@@ -176,7 +176,7 @@ class ExposedProcessingStorage : ProcessingStorage {
         }
     }
 
-    override fun targetPathExists(paths: List<Path>, excludedItemHashing: String): List<Boolean> {
+    override fun targetPathExists(paths: List<Path>, excludedItemHashing: String?): List<Boolean> {
         val ids = paths.map { it.toString() }
         return transaction {
             val existingIds = TargetPaths

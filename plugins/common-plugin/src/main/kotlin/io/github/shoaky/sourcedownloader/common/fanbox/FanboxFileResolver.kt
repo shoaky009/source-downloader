@@ -25,9 +25,11 @@ class FanboxFileResolver(
                     Path("cover_${post.id}.jpeg"),
                     mapOf("type" to "cover"),
                     this
-                ))
+                )
+            )
         }
-        val images = media.imageWithOrder().distinct().mapIndexed { _, image ->
+
+        val images = media.imagesOrdering().mapIndexed { _, image ->
             SourceFile(
                 Path("${image.id}.${image.extension}"),
                 mapOf(
@@ -39,7 +41,8 @@ class FanboxFileResolver(
             )
         }
         sourceFiles.addAll(images)
-        val fanboxFiles = media.fileWithOrder().distinct().mapIndexed { _, file ->
+
+        val fanboxFiles = media.filesOrdering().mapIndexed { _, file ->
             SourceFile(
                 Path("${file.name}.${file.extension}"),
                 mapOf(
@@ -49,8 +52,33 @@ class FanboxFileResolver(
                 file.url
             )
         }
-
         sourceFiles.addAll(fanboxFiles)
+
+        val textBlock = media.joinTextBlock()
+        if (textBlock.trim().isNotBlank()) {
+            sourceFiles.add(
+                SourceFile(
+                    Path("text.txt"),
+                    mapOf(
+                        "type" to "text",
+                    ),
+                    data = textBlock.byteInputStream()
+                )
+            )
+        }
+
+        val htmls = media.urlEmbedsOrdering().mapNotNull { url ->
+            url.html?.let {
+                SourceFile(
+                    Path("${url.id}.html"),
+                    mapOf(
+                        "type" to "html",
+                    ),
+                    data = it.byteInputStream()
+                )
+            }
+        }
+        sourceFiles.addAll(htmls)
         return sourceFiles
     }
 }

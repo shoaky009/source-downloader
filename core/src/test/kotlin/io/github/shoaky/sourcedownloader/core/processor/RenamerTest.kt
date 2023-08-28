@@ -2,10 +2,11 @@
 
 package io.github.shoaky.sourcedownloader.core.processor
 
-import io.github.shoaky.sourcedownloader.core.CorePathPattern
+import io.github.shoaky.sourcedownloader.core.file.CorePathPattern
 import io.github.shoaky.sourcedownloader.core.RegexVariableReplacer
 import io.github.shoaky.sourcedownloader.core.file.VariableErrorStrategy
 import io.github.shoaky.sourcedownloader.sdk.MapPatternVariables
+import io.github.shoaky.sourcedownloader.sdk.SourceFile
 import io.github.shoaky.sourcedownloader.sourceItem
 import io.github.shoaky.sourcedownloader.testResourcePath
 import org.junit.jupiter.api.AfterAll
@@ -129,7 +130,7 @@ class RenamerTest {
     @Test
     fun given_extension_pattern_should_expected() {
         val raw = createRawFileContent(
-            fileDownloadPath = Path("src", "test", "resources", "downloads", "easd", "222", "1.mp4"),
+            filePath = Path("src", "test", "resources", "downloads", "easd", "222", "1.mp4"),
             filenamePattern = CorePathPattern("{name} - {season}.mp4"),
             patternVariables = MapPatternVariables(mapOf("name" to "test")))
         val content = defaultRenamer.createFileContent(sourceItem(), raw, MapPatternVariables(mapOf("season" to "01")))
@@ -138,10 +139,6 @@ class RenamerTest {
 
     @Test
     fun test_item_download_root_directory() {
-        val c1 = createRawFileContent(downloadPath = testResourcePath)
-        val content = defaultRenamer.createFileContent(sourceItem(), c1, MapPatternVariables())
-        val d1 = content.fileDownloadRootDirectory()
-        assertEquals(testResourcePath.resolve("downloads"), d1)
         val c2 = defaultRenamer.createFileContent(sourceItem(), createRawFileContent(), MapPatternVariables())
         val d2 = c2.fileDownloadRootDirectory()
         assertEquals(null, d2)
@@ -220,8 +217,7 @@ class RenamerTest {
     @Test
     fun test_item_download_relative_parent_directory() {
         val raw = createRawFileContent(
-            testResourcePath.resolve("downloads").resolve("FATE")
-                .resolve("Season 01").resolve("EP01.mp4")
+            Path("FATE", "Season 01", "EP01.mp4"),
         )
         val content = defaultRenamer.createFileContent(sourceItem(), raw, MapPatternVariables())
         assertEquals(Path("FATE", "Season 01"), content.fileDownloadRelativeParentDirectory())
@@ -254,7 +250,7 @@ class RenamerTest {
     @Test
     fun given_unresolved_save_path_with_dir_item() {
         val raw = createRawFileContent(
-            fileDownloadPath = downloadPath.resolve("FATE").resolve("AAAAA.mp4"),
+            Path("FATE", "AAAAA.mp4"),
             patternVariables = MapPatternVariables(mapOf("season" to "01", "episode" to "02")),
             savePathPattern = CorePathPattern("{title}"),
             filenamePattern = CorePathPattern("S{season}E{episode}"),
@@ -267,7 +263,7 @@ class RenamerTest {
     @Test
     fun given_unresolved_save_path_with_no_dir_item() {
         val raw = createRawFileContent(
-            fileDownloadPath = downloadPath.resolve("FATE").resolve("AAAAA.mp4"),
+            Path("FATE", "AAAAA.mp4"),
             patternVariables = MapPatternVariables(mapOf("season" to "01", "episode" to "02")),
             savePathPattern = CorePathPattern("{title}"),
             filenamePattern = CorePathPattern("S{season}E{episode}"),
@@ -280,7 +276,7 @@ class RenamerTest {
     @Test
     fun given_both_unresolved_with_dir_item() {
         val raw = createRawFileContent(
-            fileDownloadPath = downloadPath.resolve("FATE").resolve("AAAAA.mp4"),
+            Path("FATE", "AAAAA.mp4"),
             patternVariables = MapPatternVariables(mapOf("season" to "01", "episode" to "02")),
             savePathPattern = CorePathPattern("{Title}"),
             filenamePattern = CorePathPattern("S{Season}E{Episod}"),
@@ -294,7 +290,7 @@ class RenamerTest {
     @Test
     fun given_both_unresolved_with_no_dir_item() {
         val raw = createRawFileContent(
-            fileDownloadPath = downloadPath.resolve("AAAAA.mp4"),
+            Path("AAAAA.mp4"),
             patternVariables = MapPatternVariables(mapOf("season" to "01", "episode" to "02")),
             savePathPattern = CorePathPattern("{Title}"),
             filenamePattern = CorePathPattern("S{Season}E{Episod}"),
@@ -413,7 +409,7 @@ class RenamerTest {
 }
 
 fun createRawFileContent(
-    fileDownloadPath: Path = RenamerTest.downloadPath.resolve("1.txt"),
+    filePath: Path = Path("1.txt"),
     sourceSavePath: Path = testResourcePath.resolve("target"),
     downloadPath: Path = testResourcePath.resolve("downloads"),
     patternVariables: MapPatternVariables = MapPatternVariables(),
@@ -423,14 +419,11 @@ fun createRawFileContent(
     tags: Set<String> = emptySet()
 ): RawFileContent {
     return RawFileContent(
-        fileDownloadPath,
         sourceSavePath,
         downloadPath,
         patternVariables,
         savePathPattern,
         filenamePattern,
-        attrs,
-        tags,
-        null
+        SourceFile(filePath, attrs, tags = tags)
     )
 }

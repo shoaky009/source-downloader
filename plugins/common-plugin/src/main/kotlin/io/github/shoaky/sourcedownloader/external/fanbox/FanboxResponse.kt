@@ -75,10 +75,12 @@ data class Media(
     val text: String? = null,
     val fileMap: Map<String, File> = emptyMap(),
     val imageMap: Map<String, Image> = emptyMap(),
+    val urlEmbedMap: Map<String, UrlEmbed> = emptyMap()
+    // embed
 ) {
 
-    fun imageWithOrder(): List<Image> {
-        val res = images.toMutableList()
+    fun imagesOrdering(): List<Image> {
+        val res: MutableList<Image> = mutableListOf()
         blocks.filter { it.type == "image" }.forEach { block ->
             imageMap[block.imageId]?.let { image ->
                 res.add(image)
@@ -87,14 +89,28 @@ data class Media(
         return res
     }
 
-    fun fileWithOrder(): List<File> {
-        val ig = files.toMutableList()
+    fun filesOrdering(): List<File> {
+        val res: MutableList<File> = mutableListOf()
         blocks.filter { it.type == "file" }.forEach { block ->
             fileMap[block.fileId]?.let { file ->
-                ig.add(file)
+                res.add(file)
             }
         }
-        return ig
+        return res
+    }
+
+    fun joinTextBlock(): String {
+        return blocks.mapNotNull { it.text }.joinToString("\n")
+    }
+
+    fun urlEmbedsOrdering(): List<UrlEmbed> {
+        val res: MutableList<UrlEmbed> = mutableListOf()
+        blocks.filter { it.type == "url_embed" }.forEach { block ->
+            urlEmbedMap[block.urlEmbedId]?.let { urlEmbed ->
+                res.add(urlEmbed)
+            }
+        }
+        return res
     }
 }
 
@@ -128,5 +144,18 @@ data class Block(
     val type: String,
     val text: String? = null,
     val imageId: String? = null,
-    val fileId: String? = null
+    val fileId: String? = null,
+    val urlEmbedId: String? = null
+)
+
+/**
+ * fanbox.post
+ * default
+ * html.card
+ * html
+ */
+data class UrlEmbed(
+    val html: String? = null,
+    val id: String,
+    val type: String,
 )

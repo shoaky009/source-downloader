@@ -1,8 +1,9 @@
 package io.github.shoaky.sourcedownloader.core.file
 
-import io.github.shoaky.sourcedownloader.core.CorePathPattern
+import com.fasterxml.jackson.annotation.JsonIgnore
 import io.github.shoaky.sourcedownloader.sdk.FileContent
 import io.github.shoaky.sourcedownloader.sdk.MapPatternVariables
+import java.io.InputStream
 import java.net.URI
 import java.nio.file.Path
 import kotlin.io.path.Path
@@ -23,9 +24,7 @@ data class CoreFileContent(
     var status: FileContentStatus = FileContentStatus.UNDETECTED,
 ) : FileContent {
 
-    private val targetPath: Path by lazy {
-        targetSavePath.resolve(targetFilename)
-    }
+    private val targetPath: Path = targetSavePath.resolve(targetFilename)
 
     override fun targetPath(): Path {
         return targetPath
@@ -47,14 +46,5 @@ data class CoreFileContent(
         val prefix = saveDirectoryPath.toString().removePrefix(sourceSavePath.toString())
         val resolve = sourceSavePath.resolve(Path(prefix).firstOrNull() ?: Path(""))
         return resolve.takeIf { it != sourceSavePath }
-//        val depth = fileSavePathPattern.depth()
-//        var res = saveDirectoryPath
-//        for (i in 0..depth) {
-//            res = saveDirectoryPath.parent
-//        }
-//        if (sourceSavePath == res) {
-//            return null
-//        }
-//        return res
     }
 }
