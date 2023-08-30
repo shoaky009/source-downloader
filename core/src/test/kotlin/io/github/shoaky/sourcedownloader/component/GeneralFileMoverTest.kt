@@ -41,7 +41,7 @@ class GeneralFileMoverTest {
     @Test
     fun rename() {
         val file1 = Renamer().createFileContent(sourceItem(), createRawFileContent(
-            downloadPath.resolve("1.txt"),
+            Path("1.txt"),
             savePath,
             downloadPath,
             MapPatternVariables(),
@@ -49,7 +49,7 @@ class GeneralFileMoverTest {
             CorePathPattern.ORIGIN,
         ), PatternVariables.EMPTY)
         val file2 = Renamer().createFileContent(sourceItem(), createRawFileContent(
-            downloadPath.resolve("2.txt"),
+            Path("2.txt"),
             savePath,
             downloadPath,
             MapPatternVariables(),

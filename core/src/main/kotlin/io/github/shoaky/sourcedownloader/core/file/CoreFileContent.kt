@@ -1,9 +1,7 @@
 package io.github.shoaky.sourcedownloader.core.file
 
-import com.fasterxml.jackson.annotation.JsonIgnore
 import io.github.shoaky.sourcedownloader.sdk.FileContent
 import io.github.shoaky.sourcedownloader.sdk.MapPatternVariables
-import java.io.InputStream
 import java.net.URI
 import java.nio.file.Path
 import kotlin.io.path.Path

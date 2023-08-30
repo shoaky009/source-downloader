@@ -31,6 +31,8 @@ interface ProcessingStorage {
 
     fun findTargetPaths(paths: List<Path>): List<ProcessingTargetPath>
 
+    fun findSubPaths(path: Path): List<ProcessingTargetPath>
+
     fun deleteTargetPath(paths: List<Path>)
 
     fun query(query: ProcessingQuery): List<ProcessingContent>

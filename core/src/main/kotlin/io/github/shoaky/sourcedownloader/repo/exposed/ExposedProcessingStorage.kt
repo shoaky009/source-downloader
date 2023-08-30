@@ -236,6 +236,20 @@ class ExposedProcessingStorage : ProcessingStorage {
         }
     }
 
+    override fun findSubPaths(path: Path): List<ProcessingTargetPath> {
+        return transaction {
+            TargetPath.find {
+                TargetPaths.id glob "$path*"
+            }.map {
+                ProcessingTargetPath(
+                    processorName = it.processorName,
+                    itemHashing = it.itemHashing,
+                    targetPath = Path(it.id.value),
+                )
+            }
+        }
+    }
+
     override fun deleteTargetPath(paths: List<Path>) {
         transaction {
             TargetPaths.deleteWhere {
@@ -264,4 +278,18 @@ class ExposedProcessingStorage : ProcessingStorage {
                 }
         }
     }
+}
+
+class GlobOp(
+    private val expr1: Expression<*>,
+    private val pattern: String
+) : Op<Boolean>() {
+
+    override fun toQueryBuilder(queryBuilder: QueryBuilder) {
+        queryBuilder.append(expr1, " GLOB ", "'$pattern'")
+    }
+}
+
+infix fun <S1> Expression<in S1>.glob(pattern: String): Op<Boolean> {
+    return GlobOp(this, pattern)
 }
