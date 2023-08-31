@@ -55,6 +55,7 @@ class HttpDownloader(
 
         withContext(dispatchers) {
             val job = launch { client.send(request, bodyHandler) }
+            progresses[path] = Downloading(file, bodyHandler, job)
             job.invokeOnCompletion {
                 progresses.remove(path)
                 if (it != null) {
@@ -63,7 +64,6 @@ class HttpDownloader(
                     log.info("Download success: $path")
                 }
             }
-            progresses[path] = Downloading(file, bodyHandler, job)
         }
     }
 

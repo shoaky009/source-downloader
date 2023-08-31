@@ -2,8 +2,8 @@
 
 package io.github.shoaky.sourcedownloader.core.processor
 
-import io.github.shoaky.sourcedownloader.core.file.CorePathPattern
 import io.github.shoaky.sourcedownloader.core.RegexVariableReplacer
+import io.github.shoaky.sourcedownloader.core.file.CorePathPattern
 import io.github.shoaky.sourcedownloader.core.file.VariableErrorStrategy
 import io.github.shoaky.sourcedownloader.sdk.MapPatternVariables
 import io.github.shoaky.sourcedownloader.sdk.SourceFile
@@ -356,23 +356,33 @@ class RenamerTest {
     }
 
     @Test
-    fun test_replacement() {
-        val pathPattern = CorePathPattern(
-            "{title}-{source}",
-        )
+    fun test_replacement_given_pattern_variables() {
         val renamer = Renamer(variableReplacers = listOf(
-            RegexVariableReplacer("BDRIP".toRegex(RegexOption.IGNORE_CASE), "BD")
+            RegexVariableReplacer("BDRIP".toRegex(RegexOption.IGNORE_CASE), "BD"),
         ))
-        val parse1 = renamer.parse(MapPatternVariables(mapOf(
-            "title" to "111",
-            "source" to "Web",
-        )), pathPattern)
-        assertEquals("111-Web", parse1.path)
-        val parse = renamer.parse(MapPatternVariables(mapOf(
-            "title" to "111",
-            "source" to "BDrip",
-        )), pathPattern)
-        assertEquals("111-BD", parse.path)
+        val result = renamer.parse(
+            MapPatternVariables(mapOf(
+                "title" to "111",
+                "source" to "Web",
+            )),
+            CorePathPattern("{title}-{source}")
+        )
+        assertEquals("111-Web", result.path)
+    }
+
+    @Test
+    fun test_replacement_given_pattern_variables_and_extra_variables() {
+        val renamer = Renamer(variableReplacers = listOf(
+            RegexVariableReplacer("BDRIP".toRegex(RegexOption.IGNORE_CASE), "BD"),
+            RegexVariableReplacer("333".toRegex(RegexOption.IGNORE_CASE), "111")
+        ))
+
+        val result = renamer.parse(
+            MapPatternVariables(mapOf("source" to "BDrip")),
+            CorePathPattern("{item.attrs['title']}-{source}"),
+            mapOf("item.attrs" to mapOf("title" to "333"))
+        )
+        assertEquals("111-BD", result.path)
     }
 
     @Test

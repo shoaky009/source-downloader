@@ -1,8 +1,11 @@
 package io.github.shoaky.sourcedownloader.core.processor
 
 import io.github.shoaky.sourcedownloader.component.NeverReplace
-import io.github.shoaky.sourcedownloader.core.*
+import io.github.shoaky.sourcedownloader.core.PersistentPointer
+import io.github.shoaky.sourcedownloader.core.ProcessingContent
 import io.github.shoaky.sourcedownloader.core.ProcessingContent.Status.*
+import io.github.shoaky.sourcedownloader.core.ProcessingStorage
+import io.github.shoaky.sourcedownloader.core.ProcessorSourceState
 import io.github.shoaky.sourcedownloader.core.file.*
 import io.github.shoaky.sourcedownloader.sdk.*
 import io.github.shoaky.sourcedownloader.sdk.component.*
@@ -18,10 +21,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.retry.support.RetryTemplateBuilder
 import org.springframework.util.StopWatch
 import java.io.IOException
-import java.nio.channels.Channels
-import java.nio.channels.FileChannel
 import java.nio.file.Path
-import java.nio.file.StandardOpenOption
 import java.time.Duration
 import java.time.LocalDateTime
 import java.util.concurrent.Executors
@@ -459,6 +459,7 @@ class SourceProcessor(
         renameTaskFuture?.cancel(false)
         renameScheduledExecutor.shutdown()
         coroutineScope.cancel("Processor:${name} closed")
+        itemChannel.close()
     }
 
     companion object {

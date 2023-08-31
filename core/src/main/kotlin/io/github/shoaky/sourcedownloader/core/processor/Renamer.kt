@@ -119,22 +119,15 @@ class Renamer(
         val expressions = pathPattern.expressions
         val matcher = variablePatternRegex.matcher(pattern)
         val pathBuilder = StringBuilder()
-        val replacedVariables = patternVariables.variables().mapValues { entry ->
-            var text = entry.value
-            variableReplacers.forEach {
-                val before = text
-                text = it.replace(entry.key, text)
-                if (before != text) {
-                    log.debug("replace variable '{}' from '{}' to '{}'", entry.key, before, text)
-                }
-            }
-            text
+        val replacedVariables = patternVariables.variables().replaceVariables()
+        val replacedExtraVariables = extraVariables.mapValues { (_, value) ->
+            value.replaceVariables()
         }
-        // TODO extraVariables也要替换
+
         val variableResults = mutableListOf<PathPattern.ExpressionResult>()
         var expressionIndex = 0
         val variables = mutableMapOf<String, Any>()
-        variables.putAll(extraVariables)
+        variables.putAll(replacedExtraVariables)
         variables.putAll(replacedVariables)
         while (matcher.find()) {
             val expression = expressions[expressionIndex]
@@ -151,12 +144,28 @@ class Renamer(
         return PathPattern.ParseResult(pathBuilder.toString(), variableResults)
     }
 
+    private fun Map<String, String>.replaceVariables(): Map<String, String> {
+        return this.mapValues { entry ->
+            var text = entry.value
+            variableReplacers.forEach {
+                val before = text
+                text = it.replace(entry.key, text)
+                if (before != text) {
+                    log.debug("replace variable '{}' from '{}' to '{}'", entry.key, before, text)
+                }
+            }
+            text
+        }
+    }
+
     companion object {
 
         private const val UNRESOLVED = "unresolved"
         private val variablePatternRegex: Pattern = Pattern.compile("\\{(.+?)}|:\\{(.+?)}")
         private val log = LoggerFactory.getLogger(ProcessingContext::class.java)
+
     }
+
 }
 
 data class ProcessingContext(
