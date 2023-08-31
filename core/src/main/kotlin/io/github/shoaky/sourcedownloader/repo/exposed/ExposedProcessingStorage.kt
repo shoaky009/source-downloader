@@ -286,7 +286,7 @@ class GlobOp(
 ) : Op<Boolean>() {
 
     override fun toQueryBuilder(queryBuilder: QueryBuilder) {
-        queryBuilder.append(expr1, " GLOB ", "'$pattern'")
+        queryBuilder.append(expr1, " GLOB ", "\"$pattern\"")
     }
 }
 
