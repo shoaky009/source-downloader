@@ -1,9 +1,6 @@
-package io.github.shoaky.sourcedownloader.core.processor
+package io.github.shoaky.sourcedownloader.core.file
 
 import io.github.shoaky.sourcedownloader.core.VariableReplacer
-import io.github.shoaky.sourcedownloader.core.file.CoreFileContent
-import io.github.shoaky.sourcedownloader.core.file.CorePathPattern
-import io.github.shoaky.sourcedownloader.core.file.VariableErrorStrategy
 import io.github.shoaky.sourcedownloader.sdk.*
 import org.slf4j.LoggerFactory
 import java.nio.file.Path

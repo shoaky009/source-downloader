@@ -4,6 +4,8 @@ package io.github.shoaky.sourcedownloader.core.processor
 
 import io.github.shoaky.sourcedownloader.core.RegexVariableReplacer
 import io.github.shoaky.sourcedownloader.core.file.CorePathPattern
+import io.github.shoaky.sourcedownloader.core.file.RawFileContent
+import io.github.shoaky.sourcedownloader.core.file.Renamer
 import io.github.shoaky.sourcedownloader.core.file.VariableErrorStrategy
 import io.github.shoaky.sourcedownloader.sdk.MapPatternVariables
 import io.github.shoaky.sourcedownloader.sdk.SourceFile
