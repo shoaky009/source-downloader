@@ -37,7 +37,7 @@ components:
     - type: qbittorrent
       name: qbittorrent
   #完成后运行
-  run-after-completion:
+  process-listener:
     - type: http
       name: n8n-webhook-telegram-message
       props:
@@ -78,7 +78,7 @@ processors:
       #文件名模板,默认:原文件名
       filename-pattern: "S{season}E{episode}-{sequence}"
       #命名完成后运行的组件,支持多个
-      run-after-completion:
+      process-listeners:
         - "touch-item-directory"
         - "clean-empty-directory"
         - "http:n8n-webhook-telegram-message"
@@ -123,9 +123,9 @@ processors:
       #USE_PATTERN:使用模板
       #STAY:不移动留在downloadPath下
       parsing-failed-strategy: USE_ORIGINAL_FILENAME
-      #在run-after-completion添加touch-item-directory组件,默认:true
+      #在process-listeners添加touch-item-directory组件,默认:true
       touch-item-directory: true
-      #在run-after-completion添加clean-empty-directory组件,默认:true
+      #在process-listeners添加clean-empty-directory组件,默认:true
       clean-empty-directory: true
       #变量提供者中的变量名映射
       variables-name-mapping:

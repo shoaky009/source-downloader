@@ -51,7 +51,7 @@ data class ComponentType(
         fun trigger(type: String) = ComponentType(type, Trigger::class)
 
         @JvmStatic
-        fun run(type: String) = ComponentType(type, RunAfterCompletion::class)
+        fun listener(type: String) = ComponentType(type, ProcessListener::class)
 
         @JvmStatic
         fun fileFilter(type: String) = ComponentType(type, FileContentFilter::class)

@@ -199,15 +199,15 @@ class DefaultProcessorManager(
             }
         )
 
-        val runs = options.runAfterCompletion.map {
-            val instanceName = it.getInstanceName(RunAfterCompletion::class)
-            container.get(instanceName, runAfterCompletionTypeRef).getAndMarkRef(config.name)
+        val listeners = options.processListeners.map {
+            val instanceName = it.getInstanceName(ProcessListener::class)
+            container.get(instanceName, processListenerTypeRef).getAndMarkRef(config.name)
         }.toMutableList()
         if (options.deleteEmptyDirectory) {
-            runs.add(DeleteEmptyDirectory)
+            listeners.add(DeleteEmptyDirectory)
         }
         if (options.touchItemDirectory) {
-            runs.add(TouchItemDirectory)
+            listeners.add(TouchItemDirectory)
         }
 
         val taggers = options.fileTaggers.map {
@@ -276,7 +276,7 @@ class DefaultProcessorManager(
             CorePathPattern(options.savePathPattern.pattern),
             CorePathPattern(options.filenamePattern.pattern),
             providers,
-            runs,
+            listeners,
             sourceItemFilter,
             itemContentFilters,
             fileContentFilters,

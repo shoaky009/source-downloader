@@ -30,8 +30,8 @@ components:
   file-mover:
     - name: qbittorrent
       type: qbittorrent
-  # 如果没有可以去掉
-  run-after-completion:
+  # 完成后发送一个HTTP请求到指定url，如果没有可以去掉并且删除options中的process-listeners
+  process-listener:
     - name: telegram-message-webhook
       type: http
       props:
@@ -60,7 +60,7 @@ processors:
     mover: qbittorrent
     save-path: /mnt/bangumi
     options:
-      run-after-completion:
+      process-listeners:
         - http:telegram-message-webhook
       save-path-pattern: "{name}/Season {season}/"
       filename-pattern: "{nameCn} - S{season}E{episode}"

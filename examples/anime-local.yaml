@@ -46,5 +46,5 @@ processors:
         - "tags.containsAny(['image'], true)"
         - "paths.containsAny(['extra', 'special', 'others', '映像特典'], true)"
       save-processing-content: false
-      run-after-completion:
+      process-listeners:
         - "delete-empty-directory"

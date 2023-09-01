@@ -13,7 +13,7 @@ object SendHttpRequestSupplier : ComponentSupplier<SendHttpRequest> {
 
     override fun supplyTypes(): List<ComponentType> {
         return listOf(
-            ComponentType.run("http")
+            ComponentType.listener("http")
         )
     }
 

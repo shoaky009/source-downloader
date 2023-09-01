@@ -19,7 +19,7 @@ enum class ComponentTopType(
     ),
     VARIABLE_PROVIDER(VariableProvider::class, listOf("provider", "variable-provider", "variableProvider")),
     FILE_MOVER(FileMover::class, listOf("mover", "file-mover", "fileMover")),
-    RUN_AFTER_COMPLETION(RunAfterCompletion::class, listOf("run-after-completion", "run", "runAfterCompletion")),
+    PROCESS_LISTENER(ProcessListener::class, listOf("process-listener", "listener", "run-after-completion")),
     SOURCE_ITEM_FILTER(
         SourceItemFilter::class,
         listOf("source-item-filter", "item-filter", "sourceItemFilter", "itemFilter")

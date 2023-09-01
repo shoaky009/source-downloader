@@ -38,7 +38,7 @@ class SendHttpRequestTest {
             )
         )
 
-        apply.accept(
+        apply.onItemSuccess(
             CoreItemContent(
                 sourceItem("test"),
                 listOf(),
@@ -68,7 +68,7 @@ class SendHttpRequestTest {
             )
         )
 
-        apply.accept(
+        apply.onItemSuccess(
             CoreItemContent(
                 sourceItem("test"),
                 listOf(),
@@ -103,7 +103,7 @@ class SendHttpRequestTest {
             )
         )
 
-        apply.accept(
+        apply.onItemSuccess(
             CoreItemContent(
                 sourceItem("test"),
                 listOf(),

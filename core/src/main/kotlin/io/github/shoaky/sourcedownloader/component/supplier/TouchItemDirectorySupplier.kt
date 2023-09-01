@@ -12,7 +12,7 @@ object TouchItemDirectorySupplier : ComponentSupplier<TouchItemDirectory> {
     }
 
     override fun supplyTypes(): List<ComponentType> {
-        return listOf(ComponentType.run("touch-item-directory"))
+        return listOf(ComponentType.listener("touch-item-directory"))
     }
 
     override fun autoCreateDefault(): Boolean = true

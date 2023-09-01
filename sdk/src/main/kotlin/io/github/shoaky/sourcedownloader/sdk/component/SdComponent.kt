@@ -3,7 +3,6 @@ package io.github.shoaky.sourcedownloader.sdk.component
 import io.github.shoaky.sourcedownloader.sdk.*
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.function.Consumer
 import java.util.function.Predicate
 import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
@@ -169,7 +168,16 @@ interface FileMover : SdComponent {
     }
 }
 
-interface RunAfterCompletion : SdComponent, Consumer<ItemContent>
+interface ProcessListener : SdComponent {
+
+    fun onItemError(sourceItem: SourceItem, throwable: Throwable) {}
+
+    fun onItemSuccess(itemContent: ItemContent) {}
+
+    fun onProcessCompleted(itemContents: List<ItemContent>) {}
+
+    fun onProcessHasFailed(itemContents: List<ItemContent>) {}
+}
 
 /**
  * @return true if the item should be processed

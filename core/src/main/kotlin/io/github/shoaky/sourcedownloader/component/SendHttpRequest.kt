@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.ser.std.ToStringSerializer
 import io.github.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
 import io.github.shoaky.sourcedownloader.sdk.ItemContent
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentStateful
-import io.github.shoaky.sourcedownloader.sdk.component.RunAfterCompletion
+import io.github.shoaky.sourcedownloader.sdk.component.ProcessListener
 import io.github.shoaky.sourcedownloader.sdk.util.Jackson
 import io.github.shoaky.sourcedownloader.sdk.util.http.httpClient
 import org.springframework.http.HttpHeaders
@@ -23,17 +23,17 @@ import java.net.http.HttpResponse.BodyHandlers
  */
 class SendHttpRequest(
     private val props: Props
-) : RunAfterCompletion, ComponentStateful {
+) : ProcessListener, ComponentStateful {
 
-    override fun accept(t: ItemContent) {
+    override fun onItemSuccess(itemContent: ItemContent) {
         val uriComponents = UriComponentsBuilder.fromHttpUrl(props.url)
             .encode().build().expand(
-                mapOf("summary" to t.summaryContent())
+                mapOf("summary" to itemContent.summaryContent())
             )
 
         val headers = mutableMapOf<String, String>()
         headers.putAll(props.headers)
-        val bodyPublishers = buildBodyPublisher(t, headers)
+        val bodyPublishers = buildBodyPublisher(itemContent, headers)
 
         val uri = uriComponents.toUri()
         val request = HttpRequest.newBuilder(uri)

@@ -17,7 +17,7 @@ data class ProcessorOptions(
     val savePathPattern: PathPattern = CorePathPattern.ORIGIN,
     val filenamePattern: PathPattern = CorePathPattern.ORIGIN,
     val variableProviders: List<VariableProvider> = emptyList(),
-    val runAfterCompletion: List<RunAfterCompletion> = emptyList(),
+    val processListeners: List<ProcessListener> = emptyList(),
     val sourceItemFilters: List<SourceItemFilter> = emptyList(),
     val itemContentFilters: List<ItemContentFilter> = emptyList(),
     val fileContentFilters: List<FileContentFilter> = emptyList(),

@@ -56,7 +56,7 @@ class SourceProcessor(
     private val itemContentFilters: List<ItemContentFilter> = options.itemContentFilters
     private val fileContentFilters: List<FileContentFilter> = options.fileContentFilters
     private val variableProviders = options.variableProviders
-    private val runAfterCompletion: List<RunAfterCompletion> = options.runAfterCompletion
+    private val processListeners: List<ProcessListener> = options.processListeners
     private val taggers: List<FileTagger> = options.fileTaggers
     private val fileReplacementDecider: FileReplacementDecider = options.fileReplacementDecider
     private val fileExistsDetector: FileExistsDetector = options.fileExistsDetector
@@ -143,7 +143,7 @@ class SourceProcessor(
             "FileMover" to fileMover::class.java.simpleName,
             "SourceItemFilter" to sourceItemFilters.map { it::class.simpleName },
             "ItemContentFilter" to itemContentFilters.map { it::class.simpleName },
-            "RunAfterCompletion" to runAfterCompletion.map { it::class.simpleName },
+            "Hook" to processListeners.map { it::class.simpleName },
             "DownloadPath" to downloadPath,
             "SourceSavePath" to sourceSavePath,
             "FileContentFilter" to fileContentFilters.map { it::class.simpleName },
@@ -280,16 +280,6 @@ class SourceProcessor(
         }
     }
 
-    private fun runAfterCompletions(taskContent: ItemContent) {
-        for (task in runAfterCompletion) {
-            task.runCatching {
-                this.accept(taskContent)
-            }.onFailure {
-                log.error("${task::class.simpleName}发生错误", it)
-            }
-        }
-    }
-
     fun runRename(): Int {
         val asyncDownloader = downloader as? AsyncDownloader
         if (asyncDownloader == null) {
@@ -352,7 +342,7 @@ class SourceProcessor(
         }.getOrDefault(false)
 
         if (allSuccess) {
-            runAfterCompletions(itemContent)
+            onItemSuccess(itemContent)
         }
         val renameTimesThreshold = options.renameTimesThreshold
         if (pc.renameTimes == renameTimesThreshold) {
@@ -468,6 +458,26 @@ class SourceProcessor(
         private val filteredStatuses = setOf(FILTERED, TARGET_ALREADY_EXISTS)
     }
 
+    private fun onItemSuccess(itemContent: CoreItemContent) {
+        for (task in processListeners) {
+            task.runCatching {
+                this.onItemSuccess(itemContent)
+            }.onFailure {
+                log.error("${task::class.simpleName}发生错误", it)
+            }
+        }
+    }
+
+    private fun onItemError(sourceItem: SourceItem, throwable: Throwable) {
+        for (task in processListeners) {
+            task.runCatching {
+                this.onItemError(sourceItem, throwable)
+            }.onFailure {
+                log.error("${task::class.simpleName}发生错误", it)
+            }
+        }
+    }
+
     private abstract inner class Process(
         protected val lastState: ProcessorSourceState = processingStorage.findProcessorSourceState(name, sourceId)
             ?: ProcessorSourceState(
@@ -507,6 +517,7 @@ class SourceProcessor(
                     }
                 }.onFailure {
                     log.error("Processor:'${name}'处理失败, item:$item", it)
+                    onItemError(item.sourceItem, it)
                     if (options.itemErrorContinue.not()) {
                         log.warn("Processor:'${name}'处理失败, item:$item, 退出本次触发处理, 如果未能解决该处理器将无法继续处理后续Item")
                         return
@@ -579,7 +590,7 @@ class SourceProcessor(
                     val moveSuccess = moveFiles(itemContent)
                     val replaceSuccess = replaceFiles(itemContent)
                     if (moveSuccess || replaceSuccess) {
-                        runAfterCompletions(itemContent)
+                        onItemSuccess(itemContent)
                     }
                     return ProcessingContent(name, itemContent).copy(status = RENAMED, renameTimes = 1)
                 }

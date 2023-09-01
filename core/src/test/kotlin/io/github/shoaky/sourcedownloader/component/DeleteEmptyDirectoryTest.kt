@@ -1,9 +1,9 @@
 package io.github.shoaky.sourcedownloader.component
 
 import io.github.shoaky.sourcedownloader.component.supplier.DeleteEmptyDirectorySupplier
-import io.github.shoaky.sourcedownloader.core.file.CorePathPattern
 import io.github.shoaky.sourcedownloader.core.file.CoreFileContent
 import io.github.shoaky.sourcedownloader.core.file.CoreItemContent
+import io.github.shoaky.sourcedownloader.core.file.CorePathPattern
 import io.github.shoaky.sourcedownloader.sdk.MapPatternVariables
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sourceItem
@@ -40,7 +40,7 @@ class DeleteEmptyDirectoryTest {
             ),
             MapPatternVariables()
         )
-        cp.accept(sc)
+        cp.onItemSuccess(sc)
         assert(itemDownloadPath.notExists())
     }
 
@@ -63,7 +63,7 @@ class DeleteEmptyDirectoryTest {
             ),
             MapPatternVariables()
         )
-        cp.accept(sc)
+        cp.onItemSuccess(sc)
         assert(itemDownloadPath.exists())
     }
 

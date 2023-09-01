@@ -87,11 +87,11 @@ data class ComponentRule internal constructor(
 
         @JvmStatic
         fun allowRunAfterCompletion(value: KClass<out SdComponent>) =
-            ComponentRule(true, ComponentTopType.RUN_AFTER_COMPLETION, value)
+            ComponentRule(true, ComponentTopType.PROCESS_LISTENER, value)
 
         @JvmStatic
         fun notAllowRunAfterCompletion(value: KClass<out SdComponent>) =
-            ComponentRule(false, ComponentTopType.RUN_AFTER_COMPLETION, value)
+            ComponentRule(false, ComponentTopType.PROCESS_LISTENER, value)
 
         @JvmStatic
         fun allowSourceFilter(value: KClass<out SdComponent>) =

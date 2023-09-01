@@ -13,7 +13,7 @@ object DeleteEmptyDirectorySupplier : ComponentSupplier<DeleteEmptyDirectory> {
 
     override fun supplyTypes(): List<ComponentType> {
         return listOf(
-            ComponentType.run("delete-empty-directory")
+            ComponentType.listener("delete-empty-directory")
         )
     }
 

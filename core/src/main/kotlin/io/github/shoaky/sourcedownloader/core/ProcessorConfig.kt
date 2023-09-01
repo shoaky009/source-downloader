@@ -75,7 +75,9 @@ data class ProcessorConfig(
         val savePathPattern: PathPattern = CorePathPattern.ORIGIN,
         @JsonDeserialize(`as` = CorePathPattern::class)
         val filenamePattern: PathPattern = CorePathPattern.ORIGIN,
-        val runAfterCompletion: List<ComponentId> = emptyList(),
+        // 为了兼容
+        @JsonAlias("run-after-completion")
+        val processListeners: List<ComponentId> = emptyList(),
         @JsonFormat(shape = JsonFormat.Shape.STRING)
         val renameTaskInterval: Duration = Duration.ofMinutes(5),
         val downloadOptions: DownloadOptions = DownloadOptions(),
