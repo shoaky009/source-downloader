@@ -174,9 +174,9 @@ interface ProcessListener : SdComponent {
 
     fun onItemSuccess(itemContent: ItemContent) {}
 
-    fun onProcessCompleted(itemContents: List<ItemContent>) {}
+    fun onProcessSuccess(itemContents: List<ItemContent>) {}
 
-    fun onProcessHasFailed(itemContents: List<ItemContent>) {}
+    fun onProcessError(itemContents: List<ItemContent>) {}
 }
 
 /**

@@ -1,7 +1,9 @@
 package io.github.shoaky.sourcedownloader.core.file
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import io.github.shoaky.sourcedownloader.sdk.FileContent
 import io.github.shoaky.sourcedownloader.sdk.MapPatternVariables
+import java.io.InputStream
 import java.net.URI
 import java.nio.file.Path
 import kotlin.io.path.Path
@@ -20,6 +22,8 @@ data class CoreFileContent(
     override val fileUri: URI? = null,
     val errors: List<String> = emptyList(),
     var status: FileContentStatus = FileContentStatus.UNDETECTED,
+    @JsonIgnore
+    val data: InputStream? = null
 ) : FileContent {
 
     private val targetPath: Path = targetSavePath.resolve(targetFilename)

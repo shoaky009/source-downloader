@@ -86,6 +86,7 @@ data class Media(
                 res.add(image)
             }
         }
+        res.addAll(images)
         return res
     }
 
@@ -96,6 +97,7 @@ data class Media(
                 res.add(file)
             }
         }
+        res.addAll(files)
         return res
     }
 

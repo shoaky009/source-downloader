@@ -46,6 +46,11 @@ class HttpDownloader(
         if (progresses.containsKey(path)) {
             throw IllegalStateException("File already downloading: $path")
         }
+        if (file.fileUri == null) {
+            log.info("Skip download: $path case fileUri is null")
+            return
+        }
+
         val bodyHandler = MonitorableBodyHandler(BodyHandlers.ofFile(path))
         val request = HttpRequest.newBuilder(file.fileUri).GET()
             .apply {

@@ -385,7 +385,7 @@ class SourceProcessor(
         return DownloadTask(
             content.sourceItem,
             downloadFiles.map {
-                SourceFile(it.fileDownloadPath, it.attrs, it.fileUri)
+                SourceFile(it.fileDownloadPath, it.attrs, it.fileUri, data = it.data)
             },
             downloadPath,
             downloadOptions.copy(headers = headers)
@@ -628,6 +628,10 @@ class SourceProcessor(
     private inner class NormalProcess : Process() {
 
         override fun onCompletion() {
+            // TODO impl
+            // processListeners.forEach {
+            //     it.onProcessSuccess()
+            // }
             if (options.pointerBatchMode) {
                 saveSourceState()
             }

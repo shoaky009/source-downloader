@@ -228,6 +228,7 @@ data class RawFileContent(
             sourceFile.tags,
             sourceFile.fileUri,
             errors,
+            data = sourceFile.data
         )
     }
 }

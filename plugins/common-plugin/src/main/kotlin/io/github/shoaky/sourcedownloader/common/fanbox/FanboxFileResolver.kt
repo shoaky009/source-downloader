@@ -58,7 +58,7 @@ class FanboxFileResolver(
         if (textBlock.trim().isNotBlank()) {
             sourceFiles.add(
                 SourceFile(
-                    Path("text.txt"),
+                    Path("text_${post.id}.txt"),
                     mapOf(
                         "type" to "text",
                     ),
