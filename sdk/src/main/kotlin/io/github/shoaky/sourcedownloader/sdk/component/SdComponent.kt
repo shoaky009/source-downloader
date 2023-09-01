@@ -138,10 +138,11 @@ interface FileMover : SdComponent {
     fun move(itemContent: ItemContent): Boolean
 
     /**
-     * @param paths the target paths
+     * @param paths the paths
+     * @return true if the path exists
      */
-    fun exists(paths: List<Path>): Boolean {
-        return paths.all { it.exists() }
+    fun exists(paths: List<Path>): List<Boolean> {
+        return paths.map { it.exists() }
     }
 
     /**
@@ -207,12 +208,12 @@ interface FileReplacementDecider : SdComponent {
 /**
  * Decide item download or not
  */
-interface ItemExistsDetector : SdComponent {
+interface FileExistsDetector : SdComponent {
 
     /**
      * @return true if exists, item will not be downloaded
      */
-    fun exists(fileMover: FileMover, content: ItemContent): Boolean
+    fun exists(fileMover: FileMover, content: ItemContent): Map<Path, Boolean>
 
 }
 

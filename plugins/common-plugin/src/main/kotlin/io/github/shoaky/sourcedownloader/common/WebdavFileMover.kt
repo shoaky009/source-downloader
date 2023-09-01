@@ -48,10 +48,10 @@ open class WebdavFileMover(
         }.all { it }
     }
 
-    override fun exists(paths: List<Path>): Boolean {
-        return paths.asSequence().map {
-            webdavClient.execute(FindProp(it.toString()))
-        }.any { it.statusCode() != HttpStatus.NOT_FOUND.value() }
+    override fun exists(paths: List<Path>): List<Boolean> {
+        return paths.map {
+            webdavClient.execute(FindProp(it.toString())).statusCode() == HttpStatus.OK.value()
+        }
     }
 
     override fun createDirectories(path: Path) {

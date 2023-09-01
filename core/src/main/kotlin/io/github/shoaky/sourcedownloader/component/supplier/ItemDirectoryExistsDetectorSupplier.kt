@@ -1,14 +1,14 @@
 package io.github.shoaky.sourcedownloader.component.supplier
 
-import io.github.shoaky.sourcedownloader.component.ItemDirectoryExistsDetector
+import io.github.shoaky.sourcedownloader.component.FileDirectoryExistsDetector
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
 
-object ItemDirectoryExistsDetectorSupplier : ComponentSupplier<ItemDirectoryExistsDetector> {
+object ItemDirectoryExistsDetectorSupplier : ComponentSupplier<FileDirectoryExistsDetector> {
 
-    override fun apply(props: Properties): ItemDirectoryExistsDetector {
-        return ItemDirectoryExistsDetector
+    override fun apply(props: Properties): FileDirectoryExistsDetector {
+        return FileDirectoryExistsDetector
     }
 
     override fun supplyTypes(): List<ComponentType> {

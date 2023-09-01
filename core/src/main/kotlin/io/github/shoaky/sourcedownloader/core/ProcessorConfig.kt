@@ -97,7 +97,7 @@ data class ProcessorConfig(
         @JsonDeserialize(contentAs = RegexVariableReplacer::class)
         val variableReplacers: List<VariableReplacer> = emptyList(),
         val fileReplacementDecider: ComponentId = ComponentId("never"),
-        val itemExistsDetector: ComponentId? = null,
+        val fileExistsDetector: ComponentId? = null,
         val fetchLimit: Int = 50,
         /**
          * 从Source获取Items后，更新pointer的模式，true:处理完这一批更新一次，false:处理完一个更新一次

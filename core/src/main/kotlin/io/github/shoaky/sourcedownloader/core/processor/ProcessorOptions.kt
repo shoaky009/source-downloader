@@ -1,9 +1,9 @@
 package io.github.shoaky.sourcedownloader.core.processor
 
 import io.github.shoaky.sourcedownloader.component.NeverReplace
-import io.github.shoaky.sourcedownloader.component.SimpleItemExistsDetector
-import io.github.shoaky.sourcedownloader.core.file.CorePathPattern
+import io.github.shoaky.sourcedownloader.component.SimpleFileExistsDetector
 import io.github.shoaky.sourcedownloader.core.VariableReplacer
+import io.github.shoaky.sourcedownloader.core.file.CorePathPattern
 import io.github.shoaky.sourcedownloader.core.file.VariableErrorStrategy
 import io.github.shoaky.sourcedownloader.sdk.DownloadOptions
 import io.github.shoaky.sourcedownloader.sdk.PathPattern
@@ -37,7 +37,7 @@ data class ProcessorOptions(
     val category: String? = null,
     val tags: Set<String> = emptySet(),
     val itemErrorContinue: Boolean = true,
-    val itemExistsDetector: ItemExistsDetector = SimpleItemExistsDetector,
+    val fileExistsDetector: FileExistsDetector = SimpleFileExistsDetector,
     val channelBufferSize: Int = 20
 ) {
 

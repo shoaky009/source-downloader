@@ -5,15 +5,16 @@ import io.github.shoaky.sourcedownloader.sdk.component.FileMover
 import java.nio.file.Path
 
 class IncludingTargetPathsFileMover(
+    private val fileMover: FileMover,
     private val storage: ProcessingStorage,
-    private val fileMover: FileMover
 ) : FileMover by fileMover {
 
-    override fun exists(paths: List<Path>): Boolean {
-        if (fileMover.exists(paths)) {
-            return true
+    override fun exists(paths: List<Path>): List<Boolean> {
+        val exists = fileMover.exists(paths)
+        if (exists.all { it }) {
+            return exists
         }
-        return storage.targetPathExists(paths).all { it }
+        return exists.zip(storage.targetPathExists(paths)) { a, b -> a || b }
     }
 
     override fun listPath(path: Path): List<Path> {

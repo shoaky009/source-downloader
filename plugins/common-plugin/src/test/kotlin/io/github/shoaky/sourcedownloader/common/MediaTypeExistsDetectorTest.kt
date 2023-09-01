@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import java.time.LocalDateTime
 import kotlin.io.path.Path
+import kotlin.test.assertContentEquals
 
 class MediaTypeExistsDetectorTest {
 
@@ -27,9 +28,9 @@ class MediaTypeExistsDetectorTest {
         }
         val exists = MediaTypeExistsDetector.exists(
             fileMover, content
-        )
+        ).values
 
-        assert(exists)
+        assertContentEquals(listOf(true), exists)
     }
 
     @Test
@@ -51,8 +52,8 @@ class MediaTypeExistsDetectorTest {
         }
         val exists = MediaTypeExistsDetector.exists(
             fileMover, content
-        )
+        ).values
 
-        assert(exists.not())
+        assertContentEquals(listOf(false), exists)
     }
 }

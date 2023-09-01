@@ -45,7 +45,7 @@ val itemContentFilterTypeRef = componentTypeRef<ItemContentFilter>()
 val runAfterCompletionTypeRef = componentTypeRef<RunAfterCompletion>()
 val fileTaggerTypeRef = componentTypeRef<FileTagger>()
 val fileReplacementDeciderRef = componentTypeRef<FileReplacementDecider>()
-val itemExistsDetectorRef = componentTypeRef<ItemExistsDetector>()
+val fileExistsDetectorRef = componentTypeRef<FileExistsDetector>()
 val manualSourceRef = componentTypeRef<ManualSource>()
 val processorTypeRef = jacksonTypeRef<ProcessorWrapper>()
 

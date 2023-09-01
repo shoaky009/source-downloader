@@ -59,11 +59,10 @@ class SourceProcessor(
     private val runAfterCompletion: List<RunAfterCompletion> = options.runAfterCompletion
     private val taggers: List<FileTagger> = options.fileTaggers
     private val fileReplacementDecider: FileReplacementDecider = options.fileReplacementDecider
-    private val itemExistsDetector: ItemExistsDetector = options.itemExistsDetector
-
+    private val fileExistsDetector: FileExistsDetector = options.fileExistsDetector
     private val auxiliaryFileMover = IncludingTargetPathsFileMover(
+        ReadonlyFileMover(fileMover),
         processingStorage,
-        ReadonlyFileMover(fileMover)
     )
 
     private val renamer: Renamer = Renamer(
@@ -268,18 +267,12 @@ class SourceProcessor(
             return true to WAITING_TO_RENAME
         }
 
-        if (itemExistsDetector.exists(auxiliaryFileMover, sc)) {
-            if (log.isDebugEnabled) {
-                log.debug("Detect already exists item:{}, files:{}", sc.sourceItem, sc.sourceFiles)
-            }
-            return false to TARGET_ALREADY_EXISTS
-        }
-
         // 预防这一批次的Item有相同的目标，并且是AsyncDownloader的情况下会重复下载
         if (files.all { it.status == FileContentStatus.TARGET_EXISTS }) {
+            log.info("Item:{} already exists, files:{}", sc.sourceItem, sc.sourceFiles)
             return false to TARGET_ALREADY_EXISTS
         }
-        val allExists = fileMover.exists(files.map { it.fileDownloadPath })
+        val allExists = fileMover.exists(files.map { it.fileDownloadPath }).all { it }
         return if (allExists) {
             false to WAITING_TO_RENAME
         } else {
@@ -337,7 +330,7 @@ class SourceProcessor(
 
         if (sourceFiles.all { it.status != FileContentStatus.READY_REPLACE } &&
             // 是否有必要判断实时的?
-            fileMover.exists(sourceFiles.map { it.targetPath() })
+            fileMover.exists(sourceFiles.map { it.targetPath() }).all { it }
         ) {
             val toUpdate = pc.copy(
                 renameTimes = pc.renameTimes.inc(),
@@ -348,6 +341,8 @@ class SourceProcessor(
             log.info("全部目标文件已存在，无需重命名，record:${Jackson.toJsonString(pc)}")
             return
         }
+
+        itemContent.updateFileStatus(fileMover, fileExistsDetector)
         val allSuccess = runCatching {
             val moved = moveFiles(itemContent)
             val replaced = replaceFiles(itemContent)
@@ -408,7 +403,7 @@ class SourceProcessor(
     }
 
     private fun moveFiles(content: CoreItemContent): Boolean {
-        val movableFiles = content.getMovableFiles(fileMover)
+        val movableFiles = content.movableFiles()
         if (movableFiles.isEmpty()) {
             log.info("Processor:'$name' item:'${content.sourceItem.title}' no available files to rename")
             return false
@@ -559,7 +554,7 @@ class SourceProcessor(
             }
 
             // 后面再调整状态的更新方式
-            itemContent.updateFileStatus(fileMover)
+            itemContent.updateFileStatus(auxiliaryFileMover, fileExistsDetector)
             val processingTargetPaths = processingStorage.targetPathExists(
                 itemContent.sourceFiles.map { it.targetPath() },
                 itemContent.sourceItem.hashing()
@@ -607,7 +602,7 @@ class SourceProcessor(
             // NOTE 非异步下载器会阻塞
             directDownloader.submit(downloadTask)
             log.info("提交下载任务成功, Processor:${name} sourceItem:${itemContent.sourceItem.title}")
-            val targetPaths = itemContent.getDownloadFiles(fileMover).map { it.targetPath() }
+            val targetPaths = itemContent.downloadableFiles().map { it.targetPath() }
             // TODO 应该先ProcessingContent后再保存targetPaths
             saveTargetPaths(itemContent.sourceItem, targetPaths)
             // Events.post(ProcessorSubmitDownloadEvent(name, itemContent))

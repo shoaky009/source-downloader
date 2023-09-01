@@ -63,7 +63,7 @@ data class ComponentType(
         fun fileReplacementDecider(type: String): ComponentType = ComponentType(type, FileReplacementDecider::class)
 
         @JvmStatic
-        fun itemExistsDetector(type: String): ComponentType = ComponentType(type, ItemExistsDetector::class)
+        fun itemExistsDetector(type: String): ComponentType = ComponentType(type, FileExistsDetector::class)
 
         @JvmStatic
         fun manualSource(type: String): ComponentType = ComponentType(type, ManualSource::class)

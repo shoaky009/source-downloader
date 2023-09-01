@@ -132,9 +132,10 @@ class DefaultProcessorManager(
     override fun destroyProcessor(processorName: String) {
         val processorBeanName = processorBeanName(processorName)
         if (container.contains(processorBeanName).not()) {
-            throw ComponentException.processorMissing("Processor $processorName not exists")
+            throw ComponentException.processorMissing("Processor '$processorName' not exists")
         }
 
+        log.info("Processor:$processorName destroying")
         val processor = container.get(processorBeanName, processorTypeRef).get()
         val safeTask = processor.safeTask()
         componentManager.getAllTrigger().forEach {
@@ -223,10 +224,10 @@ class DefaultProcessorManager(
             fileReplacementDeciderName, fileReplacementDeciderRef
         ).component
 
-        val itemExistsDetector = options.itemExistsDetector?.let {
-            val instanceName = it.getInstanceName(ItemExistsDetector::class)
-            container.get(instanceName, itemExistsDetectorRef).component
-        } ?: SimpleItemExistsDetector
+        val fileExistsDetector = options.fileExistsDetector?.let {
+            val instanceName = it.getInstanceName(FileExistsDetector::class)
+            container.get(instanceName, fileExistsDetectorRef).component
+        } ?: SimpleFileExistsDetector
 
         val variableReplacers: MutableList<VariableReplacer> = mutableListOf(
             *options.variableReplacers.toTypedArray(), WindowsPathReplacer
@@ -295,7 +296,7 @@ class DefaultProcessorManager(
             options.category,
             options.tags,
             options.itemErrorContinue,
-            itemExistsDetector,
+            fileExistsDetector,
         )
     }
 }

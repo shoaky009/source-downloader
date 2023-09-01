@@ -38,7 +38,7 @@ enum class ComponentTopType(
         listOf("file-replacement-decider", "replacement-decider", "fileReplacementDecider", "replacementDecider")
     ),
     ITEM_EXISTS_DETECTOR(
-        ItemExistsDetector::class,
+        FileExistsDetector::class,
         listOf("item-exists-detector", "exists-detector", "itemExistsDetector", "existsDetector")
     ),
     MANUAL_SOURCE(
