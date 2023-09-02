@@ -170,13 +170,24 @@ interface FileMover : SdComponent {
 
 interface ProcessListener : SdComponent {
 
+    /**
+     * Invoked when the item processing fails.
+     * @param sourceItem the item
+     * @param throwable the throwable
+     */
     fun onItemError(sourceItem: SourceItem, throwable: Throwable) {}
 
+    /**
+     * Invoked when the item is processed successfully, which means the item has been downloaded and renamed.
+     */
     fun onItemSuccess(itemContent: ItemContent) {}
 
-    fun onProcessSuccess(itemContents: List<ItemContent>) {}
+    /**
+     * Invoked when the process is completed
+     * @param processContext the [ProcessContext] of the process
+     */
+    fun onProcessCompleted(processContext: ProcessContext) {}
 
-    fun onProcessError(itemContents: List<ItemContent>) {}
 }
 
 /**

@@ -297,6 +297,8 @@ class DefaultProcessorManager(
             options.tags,
             options.itemErrorContinue,
             fileExistsDetector,
+            options.channelBufferSize,
+            options.listenerMode
         )
     }
 }

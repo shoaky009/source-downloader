@@ -102,7 +102,6 @@ class SourceProcessor(
     }
 
     suspend fun run(sourceItems: List<SourceItem>) {
-        // ManualItemProcess(sourceItems).run()
         itemChannel.send(ManualItemProcess(sourceItems))
     }
 
@@ -184,7 +183,8 @@ class SourceProcessor(
     private fun cancelBeforeProcessing(
         before: ProcessingContent?,
         existsFile: CoreFileContent,
-        discardedItems: MutableMap<String, Boolean>) {
+        discardedItems: MutableMap<String, Boolean>
+    ) {
         if (before == null || before.status != WAITING_TO_RENAME) {
             return
         }
@@ -249,8 +249,10 @@ class SourceProcessor(
             .filter { it.value.size > 1 }
             .map { it.key }
         if (duplicated.isNotEmpty()) {
-            log.error("Processor:'{}' resolver:{} resolved item:{} duplicated files:{}, It's likely that there's an issue with the component's implementation.",
-                name, itemFileResolver::class.jvmName, sourceItem, duplicated)
+            log.error(
+                "Processor:'{}' resolver:{} resolved item:{} duplicated files:{}, It's likely that there's an issue with the component's implementation.",
+                name, itemFileResolver::class.jvmName, sourceItem, duplicated
+            )
             throw IllegalStateException("Duplicated files:$duplicated")
         }
     }
@@ -258,7 +260,10 @@ class SourceProcessor(
     /**
      * @return Download or not, [ProcessingContent.Status]
      */
-    private fun probeContentStatus(sc: CoreItemContent, replaceFiles: List<CoreFileContent>): Pair<Boolean, ProcessingContent.Status> {
+    private fun probeContentStatus(
+        sc: CoreItemContent,
+        replaceFiles: List<CoreFileContent>
+    ): Pair<Boolean, ProcessingContent.Status> {
         val files = sc.sourceFiles
         if (files.isEmpty()) {
             return false to NO_FILES
@@ -294,24 +299,38 @@ class SourceProcessor(
         downloadStatusGrouping[DownloadStatus.NOT_FOUND]?.forEach { pc ->
             kotlin.runCatching {
                 log.info("Processing下载任务不存在, record:${Jackson.toJsonString(pc)}")
-                processingStorage.save(pc.copy(
-                    status = DOWNLOAD_FAILED,
-                    modifyTime = LocalDateTime.now(),
-                ))
+                processingStorage.save(
+                    pc.copy(
+                        status = DOWNLOAD_FAILED,
+                        modifyTime = LocalDateTime.now(),
+                    )
+                )
                 processingStorage.deleteTargetPath(pc.itemContent.sourceFiles.map { it.targetPath() })
             }.onFailure {
                 log.error("Processing更新状态出错, record:${Jackson.toJsonString(pc)}", it)
             }
         }
 
-        downloadStatusGrouping[DownloadStatus.FINISHED]?.forEach { pc ->
+        val downloadedContents = downloadStatusGrouping[DownloadStatus.FINISHED] ?: emptyList()
+        downloadedContents.forEach { pc ->
             kotlin.runCatching {
                 processRenameTask(pc)
             }.onFailure {
                 log.error("Processing重命名任务出错, record:${Jackson.toJsonString(pc)}", it)
             }
         }
-        return downloadStatusGrouping[DownloadStatus.FINISHED]?.size ?: 0
+        val context = CoreProcessContext(name, processingStorage)
+        downloadedContents.forEach {
+            context.touch(it)
+        }
+
+        if (downloadedContents.isNotEmpty()) {
+            invokeListeners(ListenerMode.BATCH, false) {
+                this.onProcessCompleted(context)
+            }
+        }
+
+        return downloadedContents.size
     }
 
     private fun processRenameTask(pc: ProcessingContent) {
@@ -333,17 +352,23 @@ class SourceProcessor(
         }
 
         itemContent.updateFileStatus(fileMover, fileExistsDetector)
-        val allSuccess = runCatching {
+        runCatching {
             val moved = moveFiles(itemContent)
             val replaced = replaceFiles(itemContent)
             moved || replaced
         }.onFailure {
             log.error("重命名出错, record:${Jackson.toJsonString(pc)}", it)
+            invokeListeners {
+                this.onItemError(itemContent.sourceItem, it)
+            }
+        }.onSuccess {
+            if (it) {
+                invokeListeners(inProcess = false) {
+                    this.onItemSuccess(itemContent)
+                }
+            }
         }.getOrDefault(false)
 
-        if (allSuccess) {
-            onItemSuccess(itemContent)
-        }
         val renameTimesThreshold = options.renameTimesThreshold
         if (pc.renameTimes == renameTimesThreshold) {
             log.warn("重命名${renameTimesThreshold}次重试失败, record:${Jackson.toJsonString(pc)}")
@@ -458,26 +483,6 @@ class SourceProcessor(
         private val filteredStatuses = setOf(FILTERED, TARGET_ALREADY_EXISTS)
     }
 
-    private fun onItemSuccess(itemContent: CoreItemContent) {
-        for (task in processListeners) {
-            task.runCatching {
-                this.onItemSuccess(itemContent)
-            }.onFailure {
-                log.error("${task::class.simpleName}发生错误", it)
-            }
-        }
-    }
-
-    private fun onItemError(sourceItem: SourceItem, throwable: Throwable) {
-        for (task in processListeners) {
-            task.runCatching {
-                this.onItemError(sourceItem, throwable)
-            }.onFailure {
-                log.error("${task::class.simpleName}发生错误", it)
-            }
-        }
-    }
-
     private abstract inner class Process(
         protected val lastState: ProcessorSourceState = processingStorage.findProcessorSourceState(name, sourceId)
             ?: ProcessorSourceState(
@@ -493,13 +498,18 @@ class SourceProcessor(
     ) {
 
         protected fun processItems() {
+            val stat = ProcessStat(name)
+            stat.stopWatch.start("fetchItems")
+            val context = CoreProcessContext(name, processingStorage)
+
             retry.execute<Iterator<PointedItem<ItemPointer>>, IOException> {
                 it.setAttribute("stage", ProcessStage("FetchSourceItems", lastState))
                 val iterator = source.fetch(sourcePointer, options.fetchLimit).iterator()
                 iterator
             }
+            stat.stopWatch.stop()
 
-            val simpleStat = SimpleStat(name)
+            stat.stopWatch.start("processItems")
             for (item in itemIterable) {
                 log.trace("Processor:'{}' start process item:{}", name, item.sourceItem)
 
@@ -507,10 +517,10 @@ class SourceProcessor(
                 if (filterBy != null) {
                     log.info("{} filtered item:{}", filterBy::class.simpleName, item.sourceItem)
                     onItemFiltered(item)
-                    simpleStat.incFilterCounting()
+                    stat.incFilterCounting()
                     continue
                 }
-                val processingContent = kotlin.runCatching {
+                val processingContent = runCatching {
                     retry.execute<ProcessingContent, IOException> {
                         it.setAttribute("stage", ProcessStage("ProcessItem", item))
                         processItem(item.sourceItem)
@@ -518,6 +528,7 @@ class SourceProcessor(
                 }.onFailure {
                     log.error("Processor:'${name}'处理失败, item:$item", it)
                     onItemError(item.sourceItem, it)
+
                     if (options.itemErrorContinue.not()) {
                         log.warn("Processor:'${name}'处理失败, item:$item, 退出本次触发处理, 如果未能解决该处理器将无法继续处理后续Item")
                         return
@@ -531,20 +542,20 @@ class SourceProcessor(
                     )).copy(status = FAILURE, failureReason = it.message)
                 }
 
+                context.touch(processingContent)
                 log.trace("Processor:'{}' finished process item:{}", name, item.sourceItem)
-                onItemCompletion(processingContent)
+                onItemCompleted(processingContent)
 
                 if (filteredStatuses.contains(processingContent.status)) {
-                    simpleStat.incFilterCounting()
+                    stat.incFilterCounting()
                 } else {
-                    simpleStat.incProcessingCounting()
+                    stat.incProcessingCounting()
                 }
             }
-            onCompletion()
-
-            simpleStat.stopWatch.stop()
-            if (simpleStat.isChanged()) {
-                log.info("Processor:{}", simpleStat)
+            stat.stopWatch.stop()
+            onProcessCompleted(context)
+            if (stat.hasChange()) {
+                log.info("Processor:{}", stat)
             }
         }
 
@@ -578,8 +589,10 @@ class SourceProcessor(
 
             val replaceFiles = identifyFilesToReplace(itemContent)
             val (shouldDownload, contentStatus) = probeContentStatus(itemContent, replaceFiles)
-            log.trace("Processor:'{}' item:{} ,should download: {}, content status:{}",
-                name, sourceItem, shouldDownload, contentStatus)
+            log.trace(
+                "Processor:'{}' item:{} ,should download: {}, content status:{}",
+                name, sourceItem, shouldDownload, contentStatus
+            )
             val processingContent = ProcessingContent(name, itemContent).copy(status = contentStatus)
 
             if (shouldDownload) {
@@ -590,22 +603,24 @@ class SourceProcessor(
                     val moveSuccess = moveFiles(itemContent)
                     val replaceSuccess = replaceFiles(itemContent)
                     if (moveSuccess || replaceSuccess) {
-                        onItemSuccess(itemContent)
+                        return ProcessingContent(name, itemContent).copy(status = RENAMED, renameTimes = 1)
                     }
-                    return ProcessingContent(name, itemContent).copy(status = RENAMED, renameTimes = 1)
+                    return ProcessingContent(name, itemContent).copy(status = FAILURE)
                 }
             }
 
             return processingContent
         }
 
-        open fun onCompletion() {}
+        open fun onProcessCompleted(processContext: ProcessContext) {}
 
-        open fun onItemCompletion(processingContent: ProcessingContent) {}
+        open fun onItemCompleted(processingContent: ProcessingContent) {}
 
         open fun onItemSuccess(item: PointedItem<ItemPointer>, processingContent: ProcessingContent) {}
 
         open fun onItemFiltered(item: PointedItem<ItemPointer>) {}
+
+        open fun onItemError(item: SourceItem, throwable: Throwable) {}
 
         open fun doDownload(pc: ProcessingContent, replaceFiles: List<CoreFileContent>): Boolean {
             val itemContent = pc.itemContent
@@ -625,28 +640,60 @@ class SourceProcessor(
         }
     }
 
+    fun invokeListeners(mode: ListenerMode = ListenerMode.EACH,
+                        inProcess: Boolean = true,
+                        block: ProcessListener.() -> Unit
+    ) {
+        if (inProcess && downloader is AsyncDownloader) {
+            log.trace("Processor:'{}' async downloader not invoke listeners", name)
+            return
+        }
+        if (mode != options.listenerMode) {
+            log.trace("Processor:'{}' listener mode:{} not match", name, mode)
+            return
+        }
+        log.trace("Processor:'{}' invoke listeners", name)
+        for (listener in processListeners) {
+            listener.runCatching {
+                block.invoke(this)
+            }.onFailure {
+                log.error("${listener::class.simpleName}发生错误", it)
+            }
+        }
+    }
+
     private inner class NormalProcess : Process() {
 
-        override fun onCompletion() {
-            // TODO impl
-            // processListeners.forEach {
-            //     it.onProcessSuccess()
-            // }
+        override fun onProcessCompleted(processContext: ProcessContext) {
+            invokeListeners(ListenerMode.BATCH) {
+                this.onProcessCompleted(processContext)
+            }
+
             if (options.pointerBatchMode) {
                 saveSourceState()
             }
         }
 
-        override fun onItemCompletion(processingContent: ProcessingContent) {
+        override fun onItemCompleted(processingContent: ProcessingContent) {
             if (options.saveProcessingContent) {
                 processingStorage.save(processingContent)
             }
         }
 
         override fun onItemSuccess(item: PointedItem<ItemPointer>, processingContent: ProcessingContent) {
+            invokeListeners {
+                this.onItemSuccess(processingContent.itemContent)
+            }
+
             sourcePointer.update(item.pointer)
             if (options.pointerBatchMode.not()) {
                 saveSourceState()
+            }
+        }
+
+        override fun onItemError(item: SourceItem, throwable: Throwable) {
+            invokeListeners(ListenerMode.EACH) {
+                this.onItemError(item, throwable)
             }
         }
 
@@ -676,7 +723,7 @@ class SourceProcessor(
 
         private val result: MutableList<ProcessingContent> = mutableListOf()
 
-        override fun onItemCompletion(processingContent: ProcessingContent) {
+        override fun onItemCompleted(processingContent: ProcessingContent) {
             result.add(processingContent)
         }
 
@@ -692,7 +739,7 @@ class SourceProcessor(
             PointedItem(it, NullPointer)
         }) {
 
-        override fun onItemCompletion(processingContent: ProcessingContent) {
+        override fun onItemCompleted(processingContent: ProcessingContent) {
             if (options.saveProcessingContent) {
                 processingStorage.save(processingContent)
             }
@@ -702,17 +749,13 @@ class SourceProcessor(
 
 val log: Logger = LoggerFactory.getLogger(SourceProcessor::class.java)
 
-private class SimpleStat(
+private class ProcessStat(
     private val name: String,
     var processingCounting: Int = 0,
     var filterCounting: Int = 0,
 ) {
 
-    val stopWatch = StopWatch("$name:fetch")
-
-    init {
-        stopWatch.start()
-    }
+    val stopWatch = StopWatch(name)
 
     fun incProcessingCounting() {
         processingCounting = processingCounting.inc()
@@ -722,11 +765,17 @@ private class SimpleStat(
         filterCounting = filterCounting.inc()
     }
 
-    fun isChanged(): Boolean {
+    fun hasChange(): Boolean {
         return processingCounting > 0 || filterCounting > 0
     }
 
     override fun toString(): String {
-        return "'$name' 处理了${processingCounting}个 过滤了${filterCounting}个, took:${stopWatch.totalTimeMillis}ms"
+        val sb = StringBuilder("'$name' 处理了${processingCounting}个 过滤了${filterCounting}个, ")
+        for (task in stopWatch.taskInfo) {
+            sb.append("; [").append(task.taskName).append("] took ").append(task.timeMillis).append(" ms")
+            val percent = Math.round(100.0 * task.timeMillis / stopWatch.totalTimeMillis)
+            sb.append(" = ").append(percent).append('%')
+        }
+        return sb.toString()
     }
 }

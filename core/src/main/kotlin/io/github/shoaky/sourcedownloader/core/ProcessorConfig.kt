@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ser.std.ToStringSerializer
 import io.github.shoaky.sourcedownloader.core.component.ComponentId
 import io.github.shoaky.sourcedownloader.core.file.CorePathPattern
 import io.github.shoaky.sourcedownloader.core.file.VariableErrorStrategy
+import io.github.shoaky.sourcedownloader.core.processor.ListenerMode
 import io.github.shoaky.sourcedownloader.core.processor.VariableConflictStrategy
 import io.github.shoaky.sourcedownloader.sdk.DownloadOptions
 import io.github.shoaky.sourcedownloader.sdk.PathPattern
@@ -109,7 +110,9 @@ data class ProcessorConfig(
         val tags: Set<String> = emptySet(),
         val itemErrorContinue: Boolean = true,
         val fileGrouping: List<FileOptionConfig> = emptyList(),
-        val manualSources: List<ComponentId> = emptyList()
+        val manualSources: List<ComponentId> = emptyList(),
+        val channelBufferSize: Int = 20,
+        val listenerMode: ListenerMode = ListenerMode.EACH,
     )
 
     data class FileOptionConfig(

@@ -38,7 +38,8 @@ data class ProcessorOptions(
     val tags: Set<String> = emptySet(),
     val itemErrorContinue: Boolean = true,
     val fileExistsDetector: FileExistsDetector = SimpleFileExistsDetector,
-    val channelBufferSize: Int = 20
+    val channelBufferSize: Int = 20,
+    val listenerMode: ListenerMode = ListenerMode.EACH,
 ) {
 
     fun matchFileOption(sourceFile: SourceFile): FileOption? {

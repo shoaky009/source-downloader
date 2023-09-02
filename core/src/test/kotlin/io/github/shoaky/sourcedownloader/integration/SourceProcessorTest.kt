@@ -165,6 +165,7 @@ class SourceProcessorTest : InitializingBean {
     // variableNameReplace option测试
     // replaceVariable option测试
     // error_continue
+    // listener invoke测试
     companion object {
 
         private val savePath = testResourcePath.resolve("target")
