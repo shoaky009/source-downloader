@@ -36,7 +36,7 @@ data class ProcessorOptions(
     val pointerBatchMode: Boolean = true,
     val category: String? = null,
     val tags: Set<String> = emptySet(),
-    val itemErrorContinue: Boolean = true,
+    val itemErrorContinue: Boolean = false,
     val fileExistsDetector: FileExistsDetector = SimpleFileExistsDetector,
     val channelBufferSize: Int = 20,
     val listenerMode: ListenerMode = ListenerMode.EACH,

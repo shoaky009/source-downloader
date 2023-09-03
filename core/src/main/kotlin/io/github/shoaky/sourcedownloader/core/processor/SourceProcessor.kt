@@ -511,7 +511,7 @@ class SourceProcessor(
 
             stat.stopWatch.start("processItems")
             for (item in itemIterable) {
-                log.trace("Processor:'{}' start process item:{}", name, item.sourceItem)
+                log.trace("Processor:'{}' start process item:{}", name, item)
 
                 val filterBy = sourceItemFilters.firstOrNull { it.test(item.sourceItem).not() }
                 if (filterBy != null) {
@@ -543,8 +543,8 @@ class SourceProcessor(
                 }
 
                 context.touch(processingContent)
-                log.trace("Processor:'{}' finished process item:{}", name, item.sourceItem)
                 onItemCompleted(processingContent)
+                log.trace("Processor:'{}' finished process item:{}", name, item)
 
                 if (filteredStatuses.contains(processingContent.status)) {
                     stat.incFilterCounting()
@@ -686,6 +686,7 @@ class SourceProcessor(
             }
 
             sourcePointer.update(item.pointer)
+            log.trace("Processor:'{}' on success update pointer:{}", name, item.pointer)
             if (options.pointerBatchMode.not()) {
                 saveSourceState()
             }
@@ -699,6 +700,7 @@ class SourceProcessor(
 
         override fun onItemFiltered(item: PointedItem<ItemPointer>) {
             sourcePointer.update(item.pointer)
+            log.trace("Processor:'{}' on filtered update pointer:{}", name, item.pointer)
             if (options.pointerBatchMode.not()) {
                 saveSourceState()
             }
@@ -770,7 +772,7 @@ private class ProcessStat(
     }
 
     override fun toString(): String {
-        val sb = StringBuilder("'$name' 处理了${processingCounting}个 过滤了${filterCounting}个, ")
+        val sb = StringBuilder("'$name' 处理了${processingCounting}个 过滤了${filterCounting}个")
         for (task in stopWatch.taskInfo) {
             sb.append("; [").append(task.taskName).append("] took ").append(task.timeMillis).append(" ms")
             val percent = Math.round(100.0 * task.timeMillis / stopWatch.totalTimeMillis)

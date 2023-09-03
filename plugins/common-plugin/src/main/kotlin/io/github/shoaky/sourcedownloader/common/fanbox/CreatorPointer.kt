@@ -9,9 +9,9 @@ data class CreatorPointer(
     val creatorId: String,
     var nextMaxId: Long? = null,
     var nextMaxDate: LocalDateTime? = null,
-    var topId: Long? = null,
-    var topDate: LocalDateTime? = null,
-    var touchBottom: Boolean = false
+    val topId: Long? = null,
+    val topDate: LocalDateTime? = null,
+    val touchBottom: Boolean = false
 ) : ItemPointer {
 
     init {
@@ -23,16 +23,14 @@ data class CreatorPointer(
         }
     }
 
-    fun update(post: Post, isBottom: Boolean) {
-        nextMaxId = post.id
-        nextMaxDate = post.publishedDatetime
-        if (touchBottom.not()) {
-            touchBottom = isBottom
+    fun update(post: Post, isBottom: Boolean): CreatorPointer {
+        val (topId, topDate) = if (post.id > (topId ?: 0L)) {
+            post.id to post.publishedDatetime
+        } else {
+            topId to topDate
         }
-        if (post.id > (topId ?: 0L)) {
-            topId = post.id
-            topDate = post.publishedDatetime
-        }
+        val touchBottom = if (touchBottom.not()) isBottom else touchBottom
+        return CreatorPointer(creatorId, post.id, post.publishedDatetime, topId, topDate, touchBottom)
     }
 
     fun nextRequest(): CreatorPostsRequest {

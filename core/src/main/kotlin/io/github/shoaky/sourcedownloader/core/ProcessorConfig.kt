@@ -108,7 +108,7 @@ data class ProcessorConfig(
         val pointerBatchMode: Boolean = true,
         val category: String? = null,
         val tags: Set<String> = emptySet(),
-        val itemErrorContinue: Boolean = true,
+        val itemErrorContinue: Boolean = false,
         val fileGrouping: List<FileOptionConfig> = emptyList(),
         val manualSources: List<ComponentId> = emptyList(),
         val channelBufferSize: Int = 20,

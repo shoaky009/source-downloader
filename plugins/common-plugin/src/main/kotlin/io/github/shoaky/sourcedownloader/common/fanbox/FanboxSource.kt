@@ -48,11 +48,11 @@ class FanboxSource(
 }
 
 private class CreatorPostsIterator(
-    private val creatorPointer: CreatorPointer,
+    private var creatorPointer: CreatorPointer,
     private val client: FanboxClient,
 ) : Iterator<List<PointedItem<ItemPointer>>> {
 
-    private val lastTimeStatus = creatorPointer.touchBottom
+    private val touchBottom = creatorPointer.touchBottom
     private val lastMaxId = creatorPointer.topId ?: 0L
     private var finished = false
     private var posts: Posts = Posts()
@@ -75,11 +75,12 @@ private class CreatorPostsIterator(
         finished = posts.hasNext().not()
         val items = posts.items.filter { it.isRestricted.not() }
             .map {
-                creatorPointer.update(it, finished)
-                PointedItem(toItem(client.server, it), creatorPointer) to it
+                val update = creatorPointer.update(it, finished)
+                this.creatorPointer = update
+                PointedItem(toItem(client.server, it), update) to it
             }
 
-        return if (lastTimeStatus) {
+        return if (touchBottom) {
             items.filter {
                 it.second.id > lastMaxId
             }.map { it.first }
