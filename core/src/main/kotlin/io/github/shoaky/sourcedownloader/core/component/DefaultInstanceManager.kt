@@ -14,22 +14,22 @@ class DefaultInstanceManager(
     private val instances: MutableMap<String, Any> = ConcurrentHashMap()
 
     @Suppress("UNCHECKED_CAST")
-    override fun <T> load(name: String, klass: Class<T>, props: Properties?): T {
+    override fun <T> loadInstance(name: String, klass: Class<T>, props: Properties?): T {
         var createdFlag = false
         val instance = instances.computeIfAbsent(name) {
             val instanceFactory = instanceFactories[klass] as? InstanceFactory<T>
-                ?: throw RuntimeException("no factory found for $klass")
+                ?: throw RuntimeException("No factory found for $klass")
             val instanceProps = props ?: instanceConfigStorage.getInstanceProps(name)
-            val create = instanceFactory.create(instanceProps) ?: throw RuntimeException("create instance failed")
+            val created = instanceFactory.create(instanceProps) ?: throw RuntimeException("Create instance failed")
             log.info("Successfully created instance $name")
             createdFlag = true
-            create
+            created
         }
 
         if (createdFlag) {
             instances[name] = instance
         }
-        instance as? T ?: throw RuntimeException("instance $name is not instance of $klass")
+        instance as? T ?: throw RuntimeException("Instance $name is not instance of $klass")
         return instance
     }
 
@@ -48,17 +48,22 @@ class DefaultInstanceManager(
         }
     }
 
-    fun destroyAll() {
-        instances.values.forEach {
-            if (it is AutoCloseable) {
-                it.close()
+    override fun destroyInstance(name: String) {
+        instances.remove(name)?.run {
+            if (this is AutoCloseable) {
+                this.close()
             }
         }
-        instances.clear()
+    }
+
+    fun destroyAll() {
+        instances.keys.forEach {
+            destroyInstance(it)
+        }
     }
 }
 
-
 interface InstanceConfigStorage {
+
     fun getInstanceProps(name: String): Properties
 }

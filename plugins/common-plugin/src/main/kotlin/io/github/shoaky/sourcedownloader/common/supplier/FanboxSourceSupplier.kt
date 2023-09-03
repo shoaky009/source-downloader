@@ -12,7 +12,7 @@ class FanboxSourceSupplier(
 ) : ComponentSupplier<FanboxSource> {
 
     override fun apply(props: Properties): FanboxSource {
-        val load = instanceManager.load(props.get("client"), FanboxClient::class.java)
+        val load = instanceManager.loadInstance(props.get("client"), FanboxClient::class.java)
         return FanboxSource(load, props.getOrNull("mode"))
     }
 

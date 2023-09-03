@@ -16,7 +16,7 @@ class FanboxFileResolverSupplier(
 
     override fun apply(props: Properties): FanboxFileResolver {
         return FanboxFileResolver(
-            instanceManager.load(props.get("client"), FanboxClient::class.java)
+            instanceManager.loadInstance(props.get("client"), FanboxClient::class.java)
         )
     }
 

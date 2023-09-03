@@ -19,9 +19,9 @@ class DefaultInstanceManagerTest {
 
     @Test
     fun test() {
-        val instance = instanceManager.load("client1", TestInstance::class.java)
+        val instance = instanceManager.loadInstance("client1", TestInstance::class.java)
         assertEquals(1111, instance.appId)
-        val instance2 = instanceManager.load("client1", TestInstance::class.java)
+        val instance2 = instanceManager.loadInstance("client1", TestInstance::class.java)
         assert(instance === instance2)
     }
 }

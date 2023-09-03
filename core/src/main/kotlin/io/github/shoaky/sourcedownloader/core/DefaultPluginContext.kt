@@ -31,7 +31,7 @@ class DefaultPluginContext(
     }
 
     override fun <T> loadInstance(name: String, klass: Class<T>, props: Properties?): T {
-        return instanceManager.load(name, klass, props)
+        return instanceManager.loadInstance(name, klass, props)
     }
 
     override fun getInstanceManager(): InstanceManager {
