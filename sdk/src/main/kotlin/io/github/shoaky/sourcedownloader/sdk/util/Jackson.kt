@@ -1,9 +1,12 @@
 package io.github.shoaky.sourcedownloader.sdk.util
 
+import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.databind.SerializerProvider
+import com.fasterxml.jackson.databind.ser.std.StdSerializer
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
@@ -63,7 +66,12 @@ object Jackson {
         return convert(any, mapRef)
     }
 
-    // fun <T> fromXml(inputStream: InputStream, type: TypeReference<T>): T {
-    //     return objectMapper.readValue(inputStream, type)
-    // }
+}
+
+class JoinStringSerializer : StdSerializer<Collection<*>>(Collection::class.java) {
+
+    override fun serialize(value: Collection<*>, gen: JsonGenerator, provider: SerializerProvider) {
+        gen.writeString(value.joinToString(","))
+    }
+
 }

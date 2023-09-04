@@ -76,16 +76,15 @@ private class CreatorPostsIterator(
         val items = posts.items.filter { it.isRestricted.not() }
             .map {
                 val update = creatorPointer.update(it, finished)
-                this.creatorPointer = update
+                creatorPointer = update
                 PointedItem(toItem(client.server, it), update) to it
             }
 
         return if (touchBottom) {
-            items.filter {
-                it.second.id > lastMaxId
-            }.map { it.first }
+            items.filter { (_, post) -> post.id > lastMaxId }
+                .map { it.first }
         } else {
-            items.map { it.first }
+            items.map { (item, _) -> item }
         }
     }
 

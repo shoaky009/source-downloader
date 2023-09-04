@@ -1,11 +1,7 @@
 package io.github.shoaky.sourcedownloader.common
 
 import io.github.shoaky.sourcedownloader.common.anime.BgmTvClientInstanceFactory
-import io.github.shoaky.sourcedownloader.common.fanbox.FanboxClientFactory
-import io.github.shoaky.sourcedownloader.common.supplier.AnimeVariableProviderSupplier
-import io.github.shoaky.sourcedownloader.common.supplier.FanboxFileResolverSupplier
-import io.github.shoaky.sourcedownloader.common.supplier.FanboxSourceSupplier
-import io.github.shoaky.sourcedownloader.common.supplier.MikanVariableProviderSupplier
+import io.github.shoaky.sourcedownloader.common.supplier.*
 import io.github.shoaky.sourcedownloader.common.torrent.QbittorrentClientInstanceFactory
 import io.github.shoaky.sourcedownloader.common.torrent.QbittorrentDownloaderSupplier
 import io.github.shoaky.sourcedownloader.sdk.plugin.Plugin
@@ -19,15 +15,14 @@ internal class CommonPlugin : Plugin {
         pluginContext.registerInstanceFactory(
             QbittorrentClientInstanceFactory,
             BgmTvClientInstanceFactory,
-            FanboxClientFactory
         )
         pluginContext.registerSupplier(
             *getObjectSuppliers("io.github.shoaky.sourcedownloader.common.supplier"),
             QbittorrentDownloaderSupplier(pluginContext.getInstanceManager()),
             AnimeVariableProviderSupplier(pluginContext),
             MikanVariableProviderSupplier(pluginContext),
-            FanboxSourceSupplier(pluginContext.getInstanceManager()),
-            FanboxFileResolverSupplier(pluginContext.getInstanceManager())
+            FanboxSourceSupplier,
+            PatreonIntegrationSupplier,
         )
     }
 
