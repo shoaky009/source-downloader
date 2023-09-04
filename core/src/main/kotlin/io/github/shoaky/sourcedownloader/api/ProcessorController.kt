@@ -19,7 +19,7 @@ private class ProcessorController(
 ) {
 
     @GetMapping
-    fun getProcessors(): Any {
+    fun getProcessors(): List<ProcessorInfo> {
         val processors = processorManager.getProcessors()
         return processors.map {
             ProcessorInfo(it.name, it.get().info())
@@ -62,6 +62,11 @@ private class ProcessorController(
         configOperator.deleteProcessor(processorName)
     }
 
+    /**
+     * 只针对Processor配置的重载，涉及到组件或实例变更时没有处理。
+     * 并且有可能会有组件或实例泄漏的问题，但一般数量并不会特别多后续继续优化。
+     *
+     */
     @GetMapping("/reload/{processorName}")
     fun reload(@PathVariable processorName: String) {
         val config = configOperator.getProcessorConfig(processorName)

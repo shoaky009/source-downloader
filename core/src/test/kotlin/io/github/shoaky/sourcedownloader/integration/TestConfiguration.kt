@@ -1,7 +1,7 @@
 package io.github.shoaky.sourcedownloader.integration
 
 import io.github.shoaky.sourcedownloader.config.SourceDownloaderProperties
-import io.github.shoaky.sourcedownloader.core.YamlConfigStorage
+import io.github.shoaky.sourcedownloader.core.YamlConfigOperator
 import org.springframework.boot.autoconfigure.flyway.FlywayDataSource
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties
 import org.springframework.context.annotation.Bean
@@ -17,7 +17,7 @@ class TestConfiguration(
     @Bean
     fun configOperator(): RestorableConfigOperator {
         val path = props.dataLocation.resolve("config.yaml")
-        return RestorableConfigOperator(path, YamlConfigStorage(path))
+        return RestorableConfigOperator(path, YamlConfigOperator(path))
     }
 
     @Bean

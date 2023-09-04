@@ -9,9 +9,9 @@ import java.time.Duration
 import kotlin.io.path.Path
 import kotlin.test.assertEquals
 
-class YamlConfigStorageTest {
+class YamlConfigOperatorTest {
     private val path = Path("src", "test", "resources", "config-test2.yaml")
-    private val storage = YamlConfigStorage(path)
+    private val storage = YamlConfigOperator(path)
 
     @BeforeEach
     fun restore() {

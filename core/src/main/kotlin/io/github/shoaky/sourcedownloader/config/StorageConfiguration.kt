@@ -1,6 +1,6 @@
 package io.github.shoaky.sourcedownloader.config
 
-import io.github.shoaky.sourcedownloader.core.YamlConfigStorage
+import io.github.shoaky.sourcedownloader.core.YamlConfigOperator
 import io.github.shoaky.sourcedownloader.core.component.ConfigOperator
 import io.github.shoaky.sourcedownloader.core.component.DefaultInstanceManager
 import io.github.shoaky.sourcedownloader.core.component.InstanceConfigStorage
@@ -24,18 +24,18 @@ class StorageConfiguration(
         val dataLocation = props.dataLocation
         val configPath = dataLocation.resolve("config.yaml")
         if (configPath.exists()) {
-            return YamlConfigStorage(configPath)
+            return YamlConfigOperator(configPath)
         }
 
         val path = Path("core", "src", "main", "resources", "config.yaml")
         if (path.exists()) {
-            return YamlConfigStorage(path)
+            return YamlConfigOperator(path)
         }
         val defaultPath = Path("config.yaml")
         if (defaultPath.notExists()) {
             defaultPath.createFile()
         }
-        return YamlConfigStorage(defaultPath)
+        return YamlConfigOperator(defaultPath)
     }
 
     @Bean

@@ -11,7 +11,7 @@ import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.inputStream
 
-class YamlConfigStorage(
+class YamlConfigOperator(
     private val configPath: Path = Path("config.yaml")
 ) : ConfigOperator {
 

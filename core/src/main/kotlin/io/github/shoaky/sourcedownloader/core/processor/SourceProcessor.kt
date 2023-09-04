@@ -420,7 +420,7 @@ class SourceProcessor(
     private fun moveFiles(content: CoreItemContent): Boolean {
         val movableFiles = content.movableFiles()
         if (movableFiles.isEmpty()) {
-            log.info("Processor:'$name' item:'${content.sourceItem.title}' no available files to rename")
+            log.info("Processor:'$name' item:'${content.sourceItem}' no available files to rename")
             return false
         }
         movableFiles.map { it.saveDirectoryPath() }
@@ -451,12 +451,12 @@ class SourceProcessor(
             name, itemContent.sourceItem.title, replaceableFiles.map { it.targetPath() }
         )
 
-        val replace = fileMover.replace(itemContent.copy(sourceFiles = replaceableFiles))
-        if (replace) {
+        val replaced = fileMover.replace(itemContent.copy(sourceFiles = replaceableFiles))
+        if (replaced) {
             itemContent.sourceFiles.filter { it.status == FileContentStatus.READY_REPLACE }
                 .onEach { it.status = FileContentStatus.REPLACE }
         }
-        return replace
+        return replaced
     }
 
     override fun toString(): String {

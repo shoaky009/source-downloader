@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer
 import io.github.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
 import io.github.shoaky.sourcedownloader.sdk.ItemContent
-import io.github.shoaky.sourcedownloader.sdk.component.ComponentStateful
 import io.github.shoaky.sourcedownloader.sdk.component.ProcessListener
 import io.github.shoaky.sourcedownloader.sdk.util.Jackson
 import io.github.shoaky.sourcedownloader.sdk.util.http.httpClient
@@ -23,7 +22,7 @@ import java.net.http.HttpResponse.BodyHandlers
  */
 class SendHttpRequest(
     private val props: Props
-) : ProcessListener, ComponentStateful {
+) : ProcessListener {
 
     override fun onItemSuccess(itemContent: ItemContent) {
         val uriComponents = UriComponentsBuilder.fromHttpUrl(props.url)
@@ -71,8 +70,5 @@ class SendHttpRequest(
         val withContentBody: Boolean = false
     )
 
-    override fun stateDetail(): Any {
-        return props
-    }
 }
 

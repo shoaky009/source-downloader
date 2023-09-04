@@ -145,7 +145,7 @@ class SourceDownloaderApplication(
     }
 
     private fun registerInstanceFactories() {
-        // instanceManager.registerInstanceFactory()
+        // Currently no instance factories are registered
     }
 
     fun reload() {
