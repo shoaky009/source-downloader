@@ -4,16 +4,17 @@
 ![JRE](https://img.shields.io/badge/JRE-17+-orange)
 [![GPLv3 license](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://github.com/shoaky009/source-downloader/blob/main/LICENSE)
 ![Test](https://github.com/shoaky009/source-downloader/actions/workflows/test.yml/badge.svg?branch=main)
-[![Codecov](https://codecov.io/gh/shoaky009/source-downloader/branch/main/graph/badge.svg?token=OY727HWBWL)](https://codecov.io/gh/shoaky009/source-downloader)
+[![Codecov](https://codecov.io/gh/shoaky009/source-downloader/branch/main/graph/badge.svg)](https://codecov.io/gh/shoaky009/source-downloader)
 
 ## 主要功能
 - 所有具体的行为由对应组件实现, 通过配置组合不同的组件适应不同的资源处理
 - 自定义触发下载规则
 - 丰富的变量过滤，支持多个纬度和阶段过滤
 - 只下载需要处理的文件, 不同的源一定程度上防止重复下载
-- 模板路径保存(变量由特定类型的组件提供)
+- 模板路径保存(内置部份变量，也可以由特定类型的组件提供额外的)
+- 文件替换规则
+- 应对不同场景额外的选项功能
 - 插件式注册自定义组件
-- 处理器丰富的选项功能
 
 ## 快速部署
 
