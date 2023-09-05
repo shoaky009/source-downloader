@@ -3,6 +3,7 @@
 package io.github.shoaky.sourcedownloader.core.processor
 
 import io.github.shoaky.sourcedownloader.core.RegexVariableReplacer
+import io.github.shoaky.sourcedownloader.core.WindowsPathReplacer
 import io.github.shoaky.sourcedownloader.core.file.CorePathPattern
 import io.github.shoaky.sourcedownloader.core.file.RawFileContent
 import io.github.shoaky.sourcedownloader.core.file.Renamer
@@ -403,6 +404,36 @@ class RenamerTest {
         val targetFilePath = content.targetPath()
         val expected = sourceSavePath.resolve(Path("Idk111", "2022-01-01", "2.txt"))
         assertEquals(expected, targetFilePath)
+    }
+
+    @Test
+    fun given_origin_layout_pattern() {
+        val file1 = createRawFileContent(
+            filePath = Path("wp", "mp3", "origin", "1.mp3"),
+            savePathPattern = CorePathPattern("wp-test/{originLayout}"),
+        )
+
+        val renamer = Renamer(
+            variableReplacers = listOf(
+                WindowsPathReplacer
+            )
+        )
+        val content1 = renamer.createFileContent(sourceItem(), file1, MapPatternVariables())
+        assertEquals(sourceSavePath.resolve(Path("wp-test", "mp3", "origin", "1.mp3")), content1.targetPath())
+
+        val file2 = createRawFileContent(
+            filePath = Path("wp", "1.mp3"),
+            savePathPattern = CorePathPattern("wp-test/{originLayout}"),
+        )
+        val content2 = renamer.createFileContent(sourceItem(), file2, MapPatternVariables())
+        assertEquals(sourceSavePath.resolve(Path("wp-test", "1.mp3")), content2.targetPath())
+
+        val file3 = createRawFileContent(
+            filePath = Path("1.mp3"),
+            savePathPattern = CorePathPattern("wp-test/{originLayout}"),
+        )
+        val content3 = renamer.createFileContent(sourceItem(), file3, MapPatternVariables())
+        assertEquals(sourceSavePath.resolve(Path("wp-test", "1.mp3")), content3.targetPath())
     }
 
     companion object {

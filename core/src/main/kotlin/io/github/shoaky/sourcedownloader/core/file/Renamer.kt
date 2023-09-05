@@ -19,7 +19,7 @@ class Renamer(
         rawFile: RawFileContent,
         group: PatternVariables,
     ): CoreFileContent {
-        val ctx = ProcessingContext(sourceItem, rawFile, group)
+        val ctx = RenameContext(sourceItem, rawFile, group)
         val dirResult = saveDirectoryPath(ctx)
         val filenameResult = targetFilename(ctx)
         val errors = mutableListOf<String>()
@@ -33,13 +33,13 @@ class Renamer(
         return rawFile.createContent(dirResult.value, filenameResult.value, errors)
     }
 
-    private fun targetFilename(ctx: ProcessingContext): ResultWrapper<String> {
+    private fun targetFilename(ctx: RenameContext): ResultWrapper<String> {
         val fileDownloadPath = ctx.file.fileDownloadPath
         val filenamePattern = ctx.file.filenamePattern
         if (filenamePattern == CorePathPattern.ORIGIN) {
             return ResultWrapper.fromFilename(fileDownloadPath.name)
         }
-        val parse = parse(ctx.patternVariables, filenamePattern, ctx.extraVariables)
+        val parse = parse(ctx.patternVariables, filenamePattern, ctx.extraVariables, ctx.extraListVariables)
         val success = parse.success()
         if (success) {
             val targetFilename = parse.path
@@ -72,12 +72,12 @@ class Renamer(
         }
     }
 
-    private fun saveDirectoryPath(ctx: ProcessingContext): ResultWrapper<Path> {
+    private fun saveDirectoryPath(ctx: RenameContext): ResultWrapper<Path> {
         val file = ctx.file
         val fileSavePathPattern = file.savePathPattern
         val sourceSavePath = file.sourceSavePath
         val fileDownloadPath = file.fileDownloadPath
-        val parse = parse(ctx.patternVariables, fileSavePathPattern, ctx.extraVariables)
+        val parse = parse(ctx.patternVariables, fileSavePathPattern, ctx.extraVariables, ctx.extraListVariables)
         if (parse.success()) {
             if (VariableErrorStrategy.TO_UNRESOLVED == variableErrorStrategy) {
                 val success = parse(ctx.patternVariables, file.filenamePattern, ctx.extraVariables).success()
@@ -108,22 +108,29 @@ class Renamer(
         }
     }
 
-    fun parse(patternVariables: PatternVariables,
-              pathPattern: CorePathPattern,
-              extraVariables: Map<String, Map<String, String>> = emptyMap()
+    fun parse(
+        patternVariables: PatternVariables,
+        pathPattern: CorePathPattern,
+        extraVariables: Map<String, Map<String, String>> = emptyMap(),
+        extraListVariables: Map<String, List<String>> = emptyMap(),
     ): PathPattern.ParseResult {
         val pattern = pathPattern.pattern
         val expressions = pathPattern.expressions
         val matcher = variablePatternRegex.matcher(pattern)
-        val pathBuilder = StringBuilder()
+
         val replacedVariables = patternVariables.variables().replaceVariables()
         val replacedExtraVariables = extraVariables.mapValues { (_, value) ->
             value.replaceVariables()
         }
+        val replacedListVariables = extraListVariables.mapValues { (key, value) ->
+            value.joinToString("/") { it.replaceVariable(key) }
+        }
 
+        val pathBuilder = StringBuilder()
         val variableResults = mutableListOf<PathPattern.ExpressionResult>()
         var expressionIndex = 0
         val variables = mutableMapOf<String, Any>()
+        variables.putAll(replacedListVariables)
         variables.putAll(replacedExtraVariables)
         variables.putAll(replacedVariables)
         while (matcher.find()) {
@@ -143,29 +150,33 @@ class Renamer(
 
     private fun Map<String, String>.replaceVariables(): Map<String, String> {
         return this.mapValues { entry ->
-            var text = entry.value
-            variableReplacers.forEach {
-                val before = text
-                text = it.replace(entry.key, text)
-                if (before != text) {
-                    log.debug("replace variable '{}' from '{}' to '{}'", entry.key, before, text)
-                }
-            }
-            text
+            entry.value.replaceVariable(entry.key)
         }
+    }
+
+    private fun String.replaceVariable(name: String): String {
+        var text = this
+        variableReplacers.forEach {
+            val before = text
+            text = it.replace(name, text)
+            if (before != text) {
+                log.debug("replace variable '{}' from '{}' to '{}'", name, before, text)
+            }
+        }
+        return text
     }
 
     companion object {
 
         private const val UNRESOLVED = "unresolved"
         private val variablePatternRegex: Pattern = Pattern.compile("\\{(.+?)}|:\\{(.+?)}")
-        private val log = LoggerFactory.getLogger(ProcessingContext::class.java)
+        private val log = LoggerFactory.getLogger(RenameContext::class.java)
 
     }
 
 }
 
-data class ProcessingContext(
+data class RenameContext(
     val sourceItem: SourceItem,
     val file: RawFileContent,
     val sharedVariables: PatternVariables,
@@ -180,13 +191,23 @@ data class ProcessingContext(
         map["filename"] = file.fileDownloadPath.nameWithoutExtension
 
         map.putAll(sharedVariables.variables())
+        // 文件变量的优先
         map.putAll(file.patternVariables.getVariables())
         MapPatternVariables(map)
     }
-    val extraVariables: Map<String, Map<String, String>> by lazy {
+    val extraVariables: Map<String, Map<String, String>> = run {
         val map = mutableMapOf<String, Map<String, String>>()
         map["item.attrs"] = sourceItem.attrs.mapValues { it.value.toString() }
         map["file.attrs"] = file.sourceFile.attrs.mapValues { it.value.toString() }
+        map
+    }
+
+    /**
+     * Value会被join成字符串，分隔符/
+     */
+    val extraListVariables: Map<String, List<String>> = run {
+        val map = mutableMapOf<String, List<String>>()
+        map["originLayout"] = file.getLayout()
         map
     }
 }
@@ -214,6 +235,19 @@ data class RawFileContent(
 ) {
 
     val fileDownloadPath: Path = downloadPath.resolve(sourceFile.path)
+
+    fun getLayout(): List<String> {
+        val path = if (sourceFile.path.isAbsolute) {
+            downloadPath.relativize(sourceFile.path)
+        } else {
+            sourceFile.path
+        }
+        return path.normalize().drop(1).dropLast(1)
+            .map {
+                it.name
+            }
+    }
+
     fun createContent(targetSavePath: Path, filename: String, errors: List<String>): CoreFileContent {
         return CoreFileContent(
             fileDownloadPath,
