@@ -70,7 +70,9 @@ private class ProcessorController(
     @GetMapping("/reload/{processorName}")
     fun reload(@PathVariable processorName: String) {
         val config = configOperator.getProcessorConfig(processorName)
-        processorManager.destroyProcessor(processorName)
+        if (processorManager.exists(processorName)) {
+            processorManager.destroyProcessor(processorName)
+        }
         processorManager.createProcessor(config)
     }
 

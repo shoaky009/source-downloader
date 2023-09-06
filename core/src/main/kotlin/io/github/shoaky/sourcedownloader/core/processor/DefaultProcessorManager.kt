@@ -80,6 +80,10 @@ class DefaultProcessorManager(
         }
     }
 
+    override fun exists(name: String): Boolean {
+        return container.contains(processorBeanName(name))
+    }
+
     private fun processorBeanName(name: String): String {
         if (name.startsWith("Processor-")) {
             return name

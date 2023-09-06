@@ -1,8 +1,11 @@
-package io.github.shoaky.sourcedownloader.common.mikan.parse
+package io.github.shoaky.sourcedownloader.common.external.season
 
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
-import io.github.shoaky.sourcedownloader.common.anime.parse.*
 import io.github.shoaky.sourcedownloader.common.torrent.R
+import io.github.shoaky.sourcedownloader.external.season.GeneralSeasonParser
+import io.github.shoaky.sourcedownloader.external.season.ParseValue
+import io.github.shoaky.sourcedownloader.external.season.SeasonSupport
+import io.github.shoaky.sourcedownloader.external.season.TmdbSeasonParser
 import io.github.shoaky.sourcedownloader.external.tmdb.*
 import io.github.shoaky.sourcedownloader.sdk.util.Jackson
 import org.junit.jupiter.api.Test
@@ -11,18 +14,17 @@ import java.nio.file.Files
 import kotlin.io.path.Path
 import kotlin.test.assertEquals
 
-
-class SeasonParserChainTest {
+class SeasonChainTest {
 
     @Test
     fun should_all_expected() {
         val tmdbClient = Mockito.mock(TmdbClient::class.java)
 
-        val parserChain = ParserChain(listOf(
-            CommonSeasonParser,
-            TmdbSeasonParser(tmdbClient),
-            DefaultValueSeasonParser
-        ), true)
+        val seasonSupport = SeasonSupport(
+            listOf(GeneralSeasonParser,
+                TmdbSeasonParser(tmdbClient)),
+            withDefault = true
+        )
 
         Files.readAllLines(Path("src", "test", "resources", "season-test.csv"))
             .filter { it.isNullOrBlank().not() }
@@ -52,6 +54,9 @@ class SeasonParserChainTest {
                     val search = split.first()
                     Mockito.`when`(tmdbClient.execute(Mockito.eq(SearchTvShow(search))))
                         .thenReturn(R(pageResult(it.tmdbSearchMockData)))
+                } else {
+                    Mockito.`when`(tmdbClient.execute(Mockito.eq(SearchTvShow(""))))
+                        .thenReturn(R(pageResult(emptyList())))
                 }
                 if (it.tmdbTvShowMockData != null) {
                     val data = it.tmdbTvShowMockData
@@ -59,9 +64,11 @@ class SeasonParserChainTest {
                         .thenReturn(R(data))
                 }
 
-                val name = it.name
-                val season = parserChain.apply(SubjectContent(name), it.filename.trim()).value
-                assertEquals(it.expect, season, "name:${name}")
+                val output = seasonSupport.input(
+                    ParseValue(it.filename, listOf(0)),
+                    ParseValue(it.name)
+                )
+                assertEquals(it.expect, output, "name:${it.name}")
             }
     }
 
@@ -76,9 +83,5 @@ private class MockData(
 )
 
 private fun pageResult(results: List<SearchResult>): PageResult<SearchResult> {
-    return PageResult(
-        1,
-        results,
-        1,
-        1)
+    return PageResult(1, results, 1, 1)
 }

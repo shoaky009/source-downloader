@@ -2,16 +2,18 @@ package io.github.shoaky.sourcedownloader.common.anime
 
 import com.google.common.cache.CacheBuilder
 import com.google.common.cache.CacheLoader
-import io.github.shoaky.sourcedownloader.common.anime.parse.*
 import io.github.shoaky.sourcedownloader.external.bangumi.BgmTvApiClient
 import io.github.shoaky.sourcedownloader.external.bangumi.GetSubjectRequest
 import io.github.shoaky.sourcedownloader.external.bangumi.Subject
+import io.github.shoaky.sourcedownloader.external.season.GeneralSeasonParser
+import io.github.shoaky.sourcedownloader.external.season.ParseValue
+import io.github.shoaky.sourcedownloader.external.season.SeasonSupport
+import io.github.shoaky.sourcedownloader.external.season.SpSeasonParser
 import io.github.shoaky.sourcedownloader.external.tmdb.TmdbClient
 import io.github.shoaky.sourcedownloader.sdk.*
 import io.github.shoaky.sourcedownloader.sdk.component.VariableProvider
 import org.slf4j.LoggerFactory
 import java.net.URI
-import java.net.URL
 
 /**
  * Mikan变量提供器
@@ -26,12 +28,12 @@ class MikanVariableProvider(
 
     override val accuracy: Int = 3
 
-    private val seasonParserChain = ParserChain(
+    private val seasonSupport = SeasonSupport(
         listOf(
-            CommonSeasonParser,
-            TmdbSeasonParser(tmdbClient),
-            DefaultValueSeasonParser
-        ), true
+            SpSeasonParser,
+            GeneralSeasonParser,
+            io.github.shoaky.sourcedownloader.external.season.TmdbSeasonParser(tmdbClient)
+        ), withDefault = true
     )
 
     companion object {
@@ -49,7 +51,7 @@ class MikanVariableProvider(
     private fun getBangumiSubject(mikanBangumiHref: String): Subject {
         kotlin.runCatching {
             val bangumiPageInfo = mikanSupport.getBangumiPageInfo(
-                URL(mikanBangumiHref)
+                URI(mikanBangumiHref).toURL()
             )
             val subjectId = bangumiPageInfo.bgmTvSubjectId
                 ?: throw RuntimeException("从$mikanBangumiHref 获取 BgmTv Subject失败")
@@ -76,9 +78,11 @@ class MikanVariableProvider(
 
         // 有些纯字母的没有中文名
         val searchContent = subject.nameCn.takeIf { it.isNotBlank() } ?: subject.name
-        val result = seasonParserChain.apply(SubjectContent(subject.name, subject.nameCn), sourceItem.title)
 
-        val season = result.padValue() ?: "01"
+        val season = seasonSupport.padValue(
+            ParseValue(subject.name),
+            ParseValue(subject.nameCn),
+        )
         val bangumiInfo = BangumiInfo(
             subject.name,
             searchContent,

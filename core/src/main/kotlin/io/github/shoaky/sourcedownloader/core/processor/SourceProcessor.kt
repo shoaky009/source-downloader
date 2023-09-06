@@ -232,12 +232,11 @@ class SourceProcessor(
                 val fileContent = renamer.createFileContent(sourceItem, rawFileContent, sharedPatternVariables)
                 fileContent to fileOption
             }
-        }.filter { pair ->
-            val path = pair.first
-            val filters = pair.second?.fileContentFilters ?: fileContentFilters
-            val filter = filters.all { it.test(path) }
+        }.filter { (fileContent, fileOption) ->
+            val filters = fileOption?.fileContentFilters ?: fileContentFilters
+            val filter = filters.all { it.test(fileContent) }
             if (filter.not()) {
-                log.debug("Filtered file:{}", path)
+                log.trace("Filtered file:{}", fileContent)
             }
             filter
         }.map { it.first }

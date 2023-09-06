@@ -29,6 +29,9 @@ object EpisodeVariableProvider : VariableProvider {
     private val textClear = TextClear(
         mapOf(
             Regex("(?:480|720|1080|2160)P", RegexOption.IGNORE_CASE) to "",
+            Regex("x(?:264|265)", RegexOption.IGNORE_CASE) to "",
+            Regex("flac|acc", RegexOption.IGNORE_CASE) to "",
+            Regex("ma10p", RegexOption.IGNORE_CASE) to "",
             Regex("\\b[A-Fa-f0-9]{8}\\b", RegexOption.IGNORE_CASE) to "",
         )
     )

@@ -6,7 +6,7 @@ import io.github.shoaky.sourcedownloader.sdk.util.replaces
 import kotlin.io.path.nameWithoutExtension
 
 /**
- * 通过文件名中的语言标识符来提供语言变量
+ * 简单地通过文件名中的语言标识符来提供语言变量
  * chs,sc -> zh-CHS
  * cht,tc -> zh-CHT
  * ...
@@ -15,10 +15,10 @@ object LanguageVariableProvider : VariableProvider {
 
     private val replaces = listOf("-", "_", "[", "]", "(", ")", ".")
     private val languages = mapOf(
-        " chs".toRegex(RegexOption.IGNORE_CASE) to "zh-CHS",
-        " cht".toRegex(RegexOption.IGNORE_CASE) to "zh-CHT",
-        " sc".toRegex(RegexOption.IGNORE_CASE) to "zh-CHS",
-        " tc".toRegex(RegexOption.IGNORE_CASE) to "zh-CHT",
+        " chs| sc".toRegex(RegexOption.IGNORE_CASE) to "zh-CHS",
+        " cht| tc".toRegex(RegexOption.IGNORE_CASE) to "zh-CHT",
+        "jpsc".toRegex(RegexOption.IGNORE_CASE) to "ja-JP.zh-CHS",
+        "jptc".toRegex(RegexOption.IGNORE_CASE) to "ja-JP.zh-CHT",
     )
 
     override fun createSourceGroup(sourceItem: SourceItem): SourceItemGroup {
