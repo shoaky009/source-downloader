@@ -46,7 +46,11 @@ class DefaultComponentManager(
             }
         }
 
-        val component = supplier.apply(props)
+        val component = try {
+            supplier.apply(props)
+        } catch (e: ComponentException) {
+            throw ComponentException.other("Create component $beanName failed cause by ${e.message}")
+        }
         if (objectWrapperContainer.contains(beanName).not()) {
             val componentWrapper = ComponentWrapper(
                 componentType,

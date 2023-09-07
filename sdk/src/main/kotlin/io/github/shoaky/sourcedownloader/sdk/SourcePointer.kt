@@ -9,6 +9,9 @@ import io.github.shoaky.sourcedownloader.sdk.component.Source
  */
 interface SourcePointer {
 
+    /**
+     * 当Process每处理完一个Item都会调用一次该方法，用于更新[SourcePointer]的状态
+     */
     fun update(itemPointer: ItemPointer)
 }
 

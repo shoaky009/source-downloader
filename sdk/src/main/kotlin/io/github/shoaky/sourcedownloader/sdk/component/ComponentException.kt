@@ -5,6 +5,7 @@ class ComponentException
 private constructor(message: String, val type: String) : RuntimeException(message) {
 
     companion object {
+
         @JvmStatic
         fun unsupported(message: String) = ComponentException(message, "unsupported")
 

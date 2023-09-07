@@ -9,10 +9,8 @@ import java.net.http.HttpResponse
 
 class FanboxClient(
     private val sessionId: String,
-    val server: URI = URI("https://api.fanbox.cc")
-) : HookedApiClient() {
-
-    val basicHeaders = mapOf(
+    val server: URI = URI("https://api.fanbox.cc"),
+    val headers: Map<String, String> = mapOf(
         HttpHeaders.COOKIE to "FANBOXSESSID=$sessionId",
         HttpHeaders.ORIGIN to "https://www.fanbox.cc",
         HttpHeaders.REFERER to "https://www.fanbox.cc/",
@@ -21,6 +19,7 @@ class FanboxClient(
         "sec-ch-ua-platform" to "Windows",
         HttpHeaders.USER_AGENT to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
     )
+) : HookedApiClient() {
 
     fun <R : BaseRequest<T>, T : Any> execute(request: R): HttpResponse<T> {
         return execute(server, request)
@@ -28,7 +27,7 @@ class FanboxClient(
 
     override fun <R : BaseRequest<T>, T : Any> beforeRequest(requestBuilder: HttpRequest.Builder, request: R) {
         request.setHeaders(
-            basicHeaders
+            headers
         )
     }
 

@@ -1,20 +1,19 @@
 package io.github.shoaky.sourcedownloader.common.fanbox
 
 import io.github.shoaky.sourcedownloader.external.fanbox.*
-import io.github.shoaky.sourcedownloader.sdk.ItemPointer
-import io.github.shoaky.sourcedownloader.sdk.NullPointer
-import io.github.shoaky.sourcedownloader.sdk.PointedItem
-import io.github.shoaky.sourcedownloader.sdk.SourceItem
+import io.github.shoaky.sourcedownloader.sdk.*
+import io.github.shoaky.sourcedownloader.sdk.component.ItemFileResolver
 import io.github.shoaky.sourcedownloader.sdk.component.Source
 import java.net.URI
+import kotlin.io.path.Path
 
 /**
  * 获取对应SessionId用户的赞助者贴子并迭代
  */
-class FanboxSource(
+class FanboxIntegration(
     private val client: FanboxClient,
     private val mode: String? = null
-) : Source<FanboxPointer> {
+) : Source<FanboxPointer>, ItemFileResolver {
 
     override fun fetch(pointer: FanboxPointer, limit: Int): Iterable<PointedItem<ItemPointer>> {
         if (mode == "latestOnly") {
@@ -43,7 +42,75 @@ class FanboxSource(
     }
 
     override fun headers(): Map<String, String> {
-        return client.basicHeaders
+        return client.headers
+    }
+
+    override fun resolveFiles(sourceItem: SourceItem): List<SourceFile> {
+        val request = PostInfoRequest(sourceItem.link.path.split("/").last())
+        val post = client.execute(request).body().body
+        val media = post.body
+        val sourceFiles = mutableListOf<SourceFile>()
+        post.coverImageUrl?.apply {
+            sourceFiles.add(
+                SourceFile(
+                    Path("cover_${post.id}.jpeg"),
+                    mapOf("type" to "cover"),
+                    this
+                )
+            )
+        }
+
+        val images = media.imagesOrdering().mapIndexed { _, image ->
+            SourceFile(
+                Path("${image.id}.${image.extension}"),
+                mapOf(
+                    "height" to image.height,
+                    "width" to image.width,
+                    "type" to "image"
+                ),
+                image.originalUrl
+            )
+        }
+        sourceFiles.addAll(images)
+
+        val fanboxFiles = media.filesOrdering().mapIndexed { _, file ->
+            SourceFile(
+                Path("${file.name}.${file.extension}"),
+                mapOf(
+                    "size" to file.size,
+                    "type" to "file"
+                ),
+                file.url
+            )
+        }
+        sourceFiles.addAll(fanboxFiles)
+
+        val textBlock = media.joinTextBlock()
+        if (textBlock.trim().isNotBlank()) {
+            sourceFiles.add(
+                SourceFile(
+                    Path("text_${post.id}.txt"),
+                    mapOf(
+                        "type" to "text",
+                    ),
+                    data = textBlock.byteInputStream()
+                )
+            )
+        }
+
+        val htmls = media.urlEmbedsOrdering().mapNotNull { url ->
+            url.html?.let {
+                SourceFile(
+                    Path("${url.id}.html"),
+                    mapOf(
+                        "type" to "html",
+                    ),
+                    data = it.byteInputStream()
+                )
+            }
+        }
+        sourceFiles.addAll(htmls)
+        return sourceFiles
     }
 }
 
