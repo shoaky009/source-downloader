@@ -3,17 +3,14 @@ trigger:
     type: fixed
     props:
       interval: PT30M
-      on-start-run-tasks: true
   - name: 1hour
     type: fixed
     props:
       interval: PT1H
-      on-start-run-tasks: true
   - name: 1day
     type: fixed
     props:
       interval: P1D
-      on-start-run-tasks: true
   - name: webhook
     type: webhook
     props:

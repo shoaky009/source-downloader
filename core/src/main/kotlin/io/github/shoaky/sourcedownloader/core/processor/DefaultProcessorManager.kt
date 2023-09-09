@@ -139,7 +139,7 @@ class DefaultProcessorManager(
             throw ComponentException.processorMissing("Processor '$processorName' not exists")
         }
 
-        log.info("Processor:$processorName destroying")
+        log.info("Processor:'$processorName' destroying")
         val processor = container.get(processorBeanName, processorTypeRef).get()
         val safeTask = processor.safeTask()
         componentManager.getAllTrigger().forEach {

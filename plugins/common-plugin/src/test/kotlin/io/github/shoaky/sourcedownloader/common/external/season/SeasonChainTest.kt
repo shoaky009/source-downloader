@@ -2,10 +2,7 @@ package io.github.shoaky.sourcedownloader.common.external.season
 
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import io.github.shoaky.sourcedownloader.common.torrent.R
-import io.github.shoaky.sourcedownloader.external.season.GeneralSeasonParser
-import io.github.shoaky.sourcedownloader.external.season.ParseValue
-import io.github.shoaky.sourcedownloader.external.season.SeasonSupport
-import io.github.shoaky.sourcedownloader.external.season.TmdbSeasonParser
+import io.github.shoaky.sourcedownloader.external.season.*
 import io.github.shoaky.sourcedownloader.external.tmdb.*
 import io.github.shoaky.sourcedownloader.sdk.util.Jackson
 import org.junit.jupiter.api.Test
@@ -21,8 +18,11 @@ class SeasonChainTest {
         val tmdbClient = Mockito.mock(TmdbClient::class.java)
 
         val seasonSupport = SeasonSupport(
-            listOf(GeneralSeasonParser,
-                TmdbSeasonParser(tmdbClient)),
+            listOf(
+                GeneralSeasonParser,
+                LastStringSeasonParser,
+                TmdbSeasonParser(tmdbClient)
+            ),
             withDefault = true
         )
 

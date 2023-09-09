@@ -4,6 +4,7 @@ import io.github.shoaky.sourcedownloader.core.VariableReplacer
 import io.github.shoaky.sourcedownloader.sdk.*
 import org.slf4j.LoggerFactory
 import java.nio.file.Path
+import java.util.regex.Matcher
 import java.util.regex.Pattern
 import kotlin.io.path.extension
 import kotlin.io.path.name
@@ -133,12 +134,17 @@ class Renamer(
         variables.putAll(replacedListVariables)
         variables.putAll(replacedExtraVariables)
         variables.putAll(replacedVariables)
+
+        if (log.isDebugEnabled) {
+            log.debug("Rename variables:{}", variables)
+        }
         while (matcher.find()) {
             val expression = expressions[expressionIndex]
             val value = expression.eval(variables)
             variableResults.add(PathPattern.ExpressionResult(expression.raw, value != null || expression.isOptional()))
             if (value != null) {
-                matcher.appendReplacement(pathBuilder, value)
+                val replacement = Matcher.quoteReplacement(value)
+                matcher.appendReplacement(pathBuilder, replacement)
             } else if (expression.isOptional()) {
                 matcher.appendReplacement(pathBuilder, "")
             }

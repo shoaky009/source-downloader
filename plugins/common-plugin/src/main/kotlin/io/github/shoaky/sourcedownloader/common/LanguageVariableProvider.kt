@@ -15,8 +15,8 @@ object LanguageVariableProvider : VariableProvider {
 
     private val replaces = listOf("-", "_", "[", "]", "(", ")", ".")
     private val languages = mapOf(
-        " chs| sc".toRegex(RegexOption.IGNORE_CASE) to "zh-CHS",
-        " cht| tc".toRegex(RegexOption.IGNORE_CASE) to "zh-CHT",
+        " chs| sc| gb".toRegex(RegexOption.IGNORE_CASE) to "zh-CHS",
+        " cht| tc| big5".toRegex(RegexOption.IGNORE_CASE) to "zh-CHT",
         "jpsc".toRegex(RegexOption.IGNORE_CASE) to "ja-JP.zh-CHS",
         "jptc".toRegex(RegexOption.IGNORE_CASE) to "ja-JP.zh-CHT",
     )

@@ -626,7 +626,7 @@ class SourceProcessor(
             val downloadTask = createDownloadTask(itemContent, replaceFiles)
             // NOTE 非异步下载器会阻塞
             directDownloader.submit(downloadTask)
-            log.info("提交下载任务成功, Processor:${name} sourceItem:${itemContent.sourceItem.title}")
+            log.info("Processor:'${name}' submit download task:${downloadTask}")
             val targetPaths = itemContent.downloadableFiles().map { it.targetPath() }
             // TODO 应该先ProcessingContent后再保存targetPaths
             saveTargetPaths(itemContent.sourceItem, targetPaths)

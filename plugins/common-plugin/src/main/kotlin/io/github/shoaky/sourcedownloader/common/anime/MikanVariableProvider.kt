@@ -5,10 +5,7 @@ import com.google.common.cache.CacheLoader
 import io.github.shoaky.sourcedownloader.external.bangumi.BgmTvApiClient
 import io.github.shoaky.sourcedownloader.external.bangumi.GetSubjectRequest
 import io.github.shoaky.sourcedownloader.external.bangumi.Subject
-import io.github.shoaky.sourcedownloader.external.season.GeneralSeasonParser
-import io.github.shoaky.sourcedownloader.external.season.ParseValue
-import io.github.shoaky.sourcedownloader.external.season.SeasonSupport
-import io.github.shoaky.sourcedownloader.external.season.SpSeasonParser
+import io.github.shoaky.sourcedownloader.external.season.*
 import io.github.shoaky.sourcedownloader.external.tmdb.TmdbClient
 import io.github.shoaky.sourcedownloader.sdk.*
 import io.github.shoaky.sourcedownloader.sdk.component.VariableProvider
@@ -32,7 +29,8 @@ class MikanVariableProvider(
         listOf(
             SpSeasonParser,
             GeneralSeasonParser,
-            io.github.shoaky.sourcedownloader.external.season.TmdbSeasonParser(tmdbClient)
+            LastStringSeasonParser,
+            TmdbSeasonParser(tmdbClient)
         ), withDefault = true
     )
 
@@ -80,6 +78,7 @@ class MikanVariableProvider(
         val searchContent = subject.nameCn.takeIf { it.isNotBlank() } ?: subject.name
 
         val season = seasonSupport.padValue(
+            ParseValue(sourceItem.title),
             ParseValue(subject.name),
             ParseValue(subject.nameCn),
         )

@@ -45,13 +45,13 @@ class Expression(
 
     private val script: Script by lazy {
         val buildScript = scriptHost.buildScript(parseRaw())
-        buildScript.withDeclarations(
-            Decls.newVar("item.attrs", Decls.newMapType(Decls.String, Decls.String)),
-            Decls.newVar("file.attrs", Decls.newMapType(Decls.String, Decls.String)),
-            Decls.newVar("item.date", Decls.String),
-            Decls.newVar("item.title", Decls.String),
-            *this.getDeclaredVariables().map { Decls.newVar(it, Decls.String) }.toTypedArray(),
-        )
+            .withDeclarations(
+                Decls.newVar("item.attrs", Decls.newMapType(Decls.String, Decls.String)),
+                Decls.newVar("file.attrs", Decls.newMapType(Decls.String, Decls.String)),
+                Decls.newVar("item.date", Decls.String),
+                Decls.newVar("item.title", Decls.String),
+                *this.getDeclaredVariables().map { Decls.newVar(it, Decls.String) }.toTypedArray(),
+            )
         buildScript.build()
     }
 

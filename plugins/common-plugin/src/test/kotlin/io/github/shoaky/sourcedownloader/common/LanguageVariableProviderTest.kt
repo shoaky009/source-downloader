@@ -21,10 +21,11 @@ class LanguageVariableProviderTest {
             SourceFile(Path("dsadsad.chs.ass")),
             SourceFile(Path("dsadsad[CHS].ass")),
             SourceFile(Path("dsadsad_CHS.ass")),
+            SourceFile(Path("[Shirokoi&Airota&VCB-Studio] Non Non Biyori [06][Ma10p_1080p][x265_flac].tc.ass")),
         ))
         val langs = sourceFiles.map {
             it.patternVariables().variables()["language"].toString()
         }
-        assertContentEquals(listOf("zh-CHS", "zh-CHS", "zh-CHS"), langs)
+        assertContentEquals(listOf("zh-CHS", "zh-CHS", "zh-CHS","zh-CHT"), langs)
     }
 }

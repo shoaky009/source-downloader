@@ -1,5 +1,6 @@
 package io.github.shoaky.sourcedownloader.external.season
 
+import io.github.shoaky.sourcedownloader.sdk.util.TextClear
 import org.slf4j.LoggerFactory
 
 class SeasonSupport(
@@ -13,7 +14,9 @@ class SeasonSupport(
 
     fun input(vararg subjects: ParseValue): Int? {
         subjects
-            .map { it.trim() }
+            .map {
+                replaceValueIfNecessary(it)
+            }
             .filter { it.value.isNotBlank() }
             .forEach {
                 val res = if (it.anyResult) {
@@ -29,6 +32,20 @@ class SeasonSupport(
             return 1
         }
         return null
+    }
+
+    private fun replaceValueIfNecessary(subject: ParseValue): ParseValue {
+        if (subject.cleanValue) {
+            val output = clear.input(subject.value).trim()
+            if (output != subject.value) {
+                return subject.copy(value = output)
+            }
+        }
+        val trim = subject.value.trim()
+        if (trim != subject.value) {
+            return subject.copy(value = trim)
+        }
+        return subject
     }
 
     private fun voteValue(subject: ParseValue): Int? {
@@ -66,6 +83,13 @@ class SeasonSupport(
     companion object {
 
         private val log = LoggerFactory.getLogger(SeasonSupport::class.java)
+        private val clear = TextClear(
+            mapOf(
+                Regex("\\(") to "[",
+                Regex("\\)") to "]",
+                Regex("\\[.*?]") to "",
+            )
+        )
 
     }
 
@@ -86,11 +110,8 @@ data class ParseValue(
     val value: String,
     val chainIndexes: List<Int> = emptyList(),
     val anyResult: Boolean = true,
+    val cleanValue: Boolean = true,
 ) {
-
-    fun trim(): ParseValue {
-        return copy(value = value.trim())
-    }
 
     fun chain(parsers: List<SeasonParser>): List<SeasonParser> {
         if (chainIndexes.isEmpty()) {

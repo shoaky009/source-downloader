@@ -20,6 +20,7 @@ object EpisodeVariableProvider : VariableProvider {
         RegexValueParser("EP(\\d+)".toRegex(RegexOption.IGNORE_CASE)),
         RegexValueParser("S(\\d+)E(\\d+)".toRegex(RegexOption.IGNORE_CASE)),
         RegexValueParser("E(\\d+)".toRegex()),
+        RegexValueParser("Episode (\\d+)".toRegex()),
         CommonEpisodeValueParser,
         // 连续数字只出现过一次的
         RegexValueParser("^\\D*?(\\d+)\\D*?\$".toRegex()),
@@ -29,9 +30,10 @@ object EpisodeVariableProvider : VariableProvider {
     private val textClear = TextClear(
         mapOf(
             Regex("(?:480|720|1080|2160)P", RegexOption.IGNORE_CASE) to "",
+            Regex("(1920x1080|3840x2160)", RegexOption.IGNORE_CASE) to "",
             Regex("x(?:264|265)", RegexOption.IGNORE_CASE) to "",
-            Regex("flac|acc", RegexOption.IGNORE_CASE) to "",
-            Regex("ma10p", RegexOption.IGNORE_CASE) to "",
+            Regex("ma10p|hi10p|yuv420p10|10bit|hevc10|aacx2|_", RegexOption.IGNORE_CASE) to "",
+            Regex("4k", RegexOption.IGNORE_CASE) to "",
             Regex("\\b[A-Fa-f0-9]{8}\\b", RegexOption.IGNORE_CASE) to "",
         )
     )

@@ -29,6 +29,7 @@ class PatreonIntegration(
         val postsRequest = PostsRequest(target, cursor = lastCursor)
         val response = client.execute(postsRequest).body()
 
+        val fullName = response.getUser()?.attributes?.fullName
         val nextCursor = response.links?.next?.queryMap()?.get("page[cursor]")
         val items = response.data.filter { it.id > cp.lastPostId }.map { post ->
             val sourceItem = SourceItem(
@@ -37,6 +38,13 @@ class PatreonIntegration(
                 post.attributes.publishedAt.toLocalDateTime(),
                 post.attributes.postType,
                 post.attributes.url,
+                buildMap {
+                    put("campaignId", target)
+                    put("postId", post.id)
+                    fullName?.let {
+                        put("username", it)
+                    }
+                }
             )
             PointedItem(sourceItem, CampaignPointer(target, nextCursor, post.id))
         }
@@ -64,6 +72,8 @@ class PatreonIntegration(
             SourceFile(
                 Path("${media.id}_${media.filename}"),
                 buildMap {
+                    put("mediaId", media.id)
+                    put("filename", media.resolveFilename())
                     media.mimetype?.let { put("mimetype", it) }
                     media.mediaType?.let { put("mediaType", it) }
                     media.size?.let { put("size", it) }
@@ -77,9 +87,10 @@ class PatreonIntegration(
             files.add(
                 SourceFile(
                     Path("${response.data.id}_content.html"),
-                    mapOf("originName" to "content.html"),
+                    mapOf("mimetype" to "text"),
                     data = content.byteInputStream()
-                ))
+                )
+            )
         }
         return files
     }

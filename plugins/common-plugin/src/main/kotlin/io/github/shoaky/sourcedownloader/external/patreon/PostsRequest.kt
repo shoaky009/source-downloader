@@ -32,7 +32,7 @@ class PostsRequest(
     companion object {
 
         private val defaultInclude = listOf(
-            "campaign"
+            "campaign", "user"
         )
         private val defaultPostFields = listOf("content", "current_user_can_view", "embed", "image", "is_paid",
             "meta_image_url", "post_file", "published_at", "patreon_url", "post_type", "preview_asset_type",

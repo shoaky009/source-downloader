@@ -1,6 +1,11 @@
 package io.github.shoaky.sourcedownloader.external.patreon
 
+import com.fasterxml.jackson.annotation.JsonIgnore
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
+import com.google.common.hash.Hashing
+import io.github.shoaky.sourcedownloader.sdk.util.Jackson
 import java.net.URI
 
 data class PostsResponse(
@@ -9,6 +14,28 @@ data class PostsResponse(
     val included: List<JsonNode> = emptyList(),
     val links: Links? = null,
     val meta: Meta,
+) {
+
+    @JsonIgnore
+    fun getUser(): PatreonEntity<User>? {
+        return included.filter { it.get("type").asText() == "user" }
+            .map {
+                Jackson.convert(it, jacksonTypeRef<PatreonEntity<User>>())
+            }.firstOrNull()
+    }
+}
+
+data class PatreonEntity<T>(
+    val id: Long,
+    val type: String,
+    val attributes: T,
+)
+
+data class User(
+    @JsonProperty("full_name")
+    val fullName: String,
+    @JsonProperty("first_name")
+    val firstName: String
 )
 
 data class Media(
@@ -19,7 +46,19 @@ data class Media(
     val mimetype: String? = null,
     val size: Long? = null,
     val metadata: JsonNode? = null,
-)
+) {
+    fun resolveFilename(): String {
+        if (!filename.startsWith("http")) {
+            return filename
+        }
+
+        val segment = downloadUri.path.split("/").last()
+        if (segment.contains('.')) {
+            return segment
+        }
+        return Hashing.crc32().hashString(filename, Charsets.UTF_8).toString()
+    }
+}
 
 data class Meta(
     val pagination: Pagination,

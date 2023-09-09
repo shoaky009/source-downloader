@@ -1,9 +1,6 @@
 package io.github.shoaky.sourcedownloader.common
 
-import io.github.shoaky.sourcedownloader.external.season.GeneralSeasonParser
-import io.github.shoaky.sourcedownloader.external.season.ParseValue
-import io.github.shoaky.sourcedownloader.external.season.SeasonSupport
-import io.github.shoaky.sourcedownloader.external.season.SpSeasonParser
+import io.github.shoaky.sourcedownloader.external.season.*
 import io.github.shoaky.sourcedownloader.sdk.*
 import io.github.shoaky.sourcedownloader.sdk.component.VariableProvider
 
@@ -17,6 +14,7 @@ object SeasonVariableProvider : VariableProvider {
         listOf(
             SpSeasonParser,
             GeneralSeasonParser,
+            LastStringSeasonParser
         ),
         true
     )
