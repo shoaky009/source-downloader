@@ -7,7 +7,6 @@ import io.github.shoaky.sourcedownloader.sdk.component.ItemFileResolver
 import io.github.shoaky.sourcedownloader.sdk.component.VariableProvider
 import io.github.shoaky.sourcedownloader.sdk.util.queryMap
 import reactor.core.scheduler.Schedulers
-import telegram4j.core.MTProtoTelegramClient
 import telegram4j.core.`object`.Document
 import telegram4j.core.`object`.MessageMedia
 import telegram4j.core.`object`.Photo
@@ -32,10 +31,11 @@ import kotlin.jvm.optionals.getOrNull
  * Telegram集成，提供下载、解析文件、变量提供
  */
 class TelegramIntegration(
-    private val client: MTProtoTelegramClient,
+    private val wrapper: TelegramClientWrapper,
     private val downloadPath: Path
 ) : VariableProvider, ItemFileResolver, Downloader, ComponentStateful, AutoCloseable {
 
+    private val client = wrapper.client
     private val progresses: MutableMap<Path, ProgressiveChannel> = ConcurrentHashMap()
     private val downloadCounting = AtomicInteger(0)
     private val hashingPathMapping = ConcurrentHashMap<String, Path>()

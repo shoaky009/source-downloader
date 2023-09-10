@@ -5,7 +5,6 @@ import io.github.shoaky.sourcedownloader.sdk.component.ComponentRule
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
 import io.github.shoaky.sourcedownloader.sdk.plugin.PluginContext
-import telegram4j.core.MTProtoTelegramClient
 import java.nio.file.Path
 
 class TelegramIntegrationSupplier(
@@ -15,7 +14,7 @@ class TelegramIntegrationSupplier(
     override fun apply(props: Properties): TelegramIntegration {
         val clientName = props.get<String>("client")
         val downloadPath = props.get<Path>("download-path")
-        val client = pluginContext.getInstanceManager().loadInstance(clientName, MTProtoTelegramClient::class.java)
+        val client = pluginContext.getInstanceManager().loadInstance(clientName, TelegramClientWrapper::class.java)
         return TelegramIntegration(client, downloadPath)
     }
 

@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonAlias
 import io.github.shoaky.sourcedownloader.sdk.PointedItem
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.Source
-import telegram4j.core.MTProtoTelegramClient
 import telegram4j.tl.*
 import telegram4j.tl.messages.BaseMessages
 import telegram4j.tl.messages.ChannelMessages
@@ -99,8 +98,10 @@ interface TelegramMessageFetcher {
 }
 
 class DefaultMessageFetcher(
-    private val client: MTProtoTelegramClient,
+    private val wrapper: TelegramClientWrapper,
 ) : TelegramMessageFetcher {
+
+    private val client = wrapper.client
 
     override fun fetchMessages(chatPointer: ChatPointer, limit: Int, timeout: Duration): List<BaseMessage> {
         val isChannel = chatPointer.isChannel()

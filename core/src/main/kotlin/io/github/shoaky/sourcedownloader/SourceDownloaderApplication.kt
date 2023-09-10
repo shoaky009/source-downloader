@@ -71,6 +71,9 @@ class SourceDownloaderApplication(
             .forEach {
                 it.stop()
             }
+        destroyAllProcessor()
+        destroyAllComponent()
+        destroyAllInstance()
     }
 
     private fun loadAndInitPlugins() {
@@ -149,22 +152,34 @@ class SourceDownloaderApplication(
     }
 
     fun reload() {
-        val processorNames = processorManager.getAllProcessorNames()
-        for (name in processorNames) {
-            processorManager.destroyProcessor(name)
-        }
+        destroyAllProcessor()
+        destroyAllComponent()
+        destroyAllInstance()
+        createComponents()
+        createProcessors()
+    }
 
+    private fun destroyAllInstance() {
+        if (instanceManager is DefaultInstanceManager) {
+            instanceManager.destroyAll()
+        }
+        log.info("All instances destroyed")
+    }
+
+    private fun destroyAllComponent() {
         val componentNames = componentManager.getAllComponentNames()
         for (name in componentNames) {
             componentManager.destroy(name)
         }
+        log.info("All components destroyed")
+    }
 
-        if (instanceManager is DefaultInstanceManager) {
-            instanceManager.destroyAll()
+    private fun destroyAllProcessor() {
+        val processorNames = processorManager.getAllProcessorNames()
+        for (name in processorNames) {
+            processorManager.destroyProcessor(name)
         }
-
-        createComponents()
-        createProcessors()
+        log.info("All processors destroyed")
     }
 
     companion object {

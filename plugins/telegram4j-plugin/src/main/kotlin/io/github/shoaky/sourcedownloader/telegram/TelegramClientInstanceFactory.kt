@@ -24,9 +24,9 @@ import java.time.Duration
 import java.util.function.Function
 import kotlin.io.path.createDirectories
 
-object TelegramClientInstanceFactory : InstanceFactory<MTProtoTelegramClient> {
+object TelegramClientInstanceFactory : InstanceFactory<TelegramClientWrapper> {
 
-    override fun create(props: Properties): MTProtoTelegramClient {
+    override fun create(props: Properties): TelegramClientWrapper {
         val config = props.parse<ClientConfig>()
         val metadataPath = config.metadataPath.resolve("telegram4j.bin")
         config.metadataPath.createDirectories()
@@ -76,15 +76,27 @@ object TelegramClientInstanceFactory : InstanceFactory<MTProtoTelegramClient> {
             ResourceLeakDetector.setLevel(ResourceLeakDetector.Level.PARANOID)
         }
 
-        return bootstrap.connect()
+        val client = bootstrap.connect()
             .doOnError {
                 log.error("Error while connecting to Telegram", it)
             }
             .blockOptional(Duration.ofSeconds(30)).get()
+        return TelegramClientWrapper(client)
     }
 
-    override fun type(): Class<MTProtoTelegramClient> {
-        return MTProtoTelegramClient::class.java
+    override fun type(): Class<TelegramClientWrapper> {
+        return TelegramClientWrapper::class.java
+    }
+
+}
+
+class TelegramClientWrapper(
+    val client: MTProtoTelegramClient
+) : AutoCloseable {
+
+    override fun close() {
+        client.disconnect().block(Duration.ofSeconds(10L))
+        log.info("Telegram client closed")
     }
 
 }

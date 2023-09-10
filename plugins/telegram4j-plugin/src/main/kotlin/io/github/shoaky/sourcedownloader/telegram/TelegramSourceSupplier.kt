@@ -5,7 +5,6 @@ import io.github.shoaky.sourcedownloader.sdk.component.ComponentRule
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
 import io.github.shoaky.sourcedownloader.sdk.plugin.PluginContext
-import telegram4j.core.MTProtoTelegramClient
 
 class TelegramSourceSupplier(
     private val pluginContext: PluginContext
@@ -14,7 +13,7 @@ class TelegramSourceSupplier(
     override fun apply(props: Properties): TelegramSource {
         val chats = props.get<List<ChatConfig>>("chats")
         val clientName = props.get<String>("client")
-        val client = pluginContext.loadInstance(clientName, MTProtoTelegramClient::class.java)
+        val client = pluginContext.loadInstance(clientName, TelegramClientWrapper::class.java)
         return TelegramSource(DefaultMessageFetcher(client), chats)
     }
 
