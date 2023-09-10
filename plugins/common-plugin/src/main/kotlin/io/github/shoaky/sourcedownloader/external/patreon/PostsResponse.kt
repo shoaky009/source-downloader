@@ -25,12 +25,6 @@ data class PostsResponse(
     }
 }
 
-data class PatreonEntity<T>(
-    val id: Long,
-    val type: String,
-    val attributes: T,
-)
-
 data class User(
     @JsonProperty("full_name")
     val fullName: String,

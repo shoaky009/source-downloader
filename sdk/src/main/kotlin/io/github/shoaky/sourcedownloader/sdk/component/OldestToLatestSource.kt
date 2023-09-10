@@ -15,19 +15,33 @@ abstract class OldestToLatestSource<T, SP : SourcePointer> : Source<SP> {
 
     override fun fetch(pointer: SP, limit: Int): Iterable<PointedItem<ItemPointer>> {
         val targets = targets(pointer)
+        val context = FetchContext(pointer, limit)
+
         val latestToIterator = OldestToLatestIterator(targets, limit) {
-            requestItems(pointer, it)
+            requestItems(context, it)
         }
         return latestToIterator.asSequence().filterNotNull().asIterable()
     }
 
     abstract fun targets(pointer: SP): List<T>
 
-    abstract fun requestItems(pointer: SP, target: T): RequestResult<PointedItem<ItemPointer>>
+    abstract fun requestItems(ctx: FetchContext<SP>, target: T): RequestResult<PointedItem<ItemPointer>>
 
 }
 
-private class OldestToLatestIterator<T, R>(
+data class FetchContext<SP : SourcePointer>(
+    val pointer: SP,
+    val limit: Int,
+    val attrs: MutableMap<String, Any> = mutableMapOf(),
+) {
+
+    fun <T : Any> loadAttr(key: String, loader: () -> T): T {
+        @Suppress("UNCHECKED_CAST")
+        return attrs.getOrPut(key) { loader.invoke() } as T
+    }
+}
+
+class OldestToLatestIterator<T, R>(
     private val targets: List<T>,
     private val limit: Int,
     private val transform: (T) -> RequestResult<R>,

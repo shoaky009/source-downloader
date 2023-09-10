@@ -1,10 +1,12 @@
 package io.github.shoaky.sourcedownloader.external.patreon
 
+import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import io.github.shoaky.sourcedownloader.sdk.util.JoinStringSerializer
+import java.time.YearMonth
 
 class PostsRequest(
     @JsonProperty("filter[campaign_id]")
@@ -27,6 +29,9 @@ class PostsRequest(
     val sort: String = "published_at",
     @JsonProperty("page[cursor]")
     val cursor: String? = null,
+    @JsonProperty("filter[month]")
+    @JsonFormat(pattern = "yyyy-MM")
+    val month: YearMonth? = null,
 ) : PatreonRequest<PostsResponse>() {
 
     companion object {
@@ -34,9 +39,11 @@ class PostsRequest(
         private val defaultInclude = listOf(
             "campaign", "user"
         )
-        private val defaultPostFields = listOf("content", "current_user_can_view", "embed", "image", "is_paid",
+        private val defaultPostFields = listOf(
+            "content", "current_user_can_view", "embed", "image", "is_paid",
             "meta_image_url", "post_file", "published_at", "patreon_url", "post_type", "preview_asset_type",
-            "thumbnail", "thumbnail_url", "title", "url")
+            "thumbnail", "thumbnail_url", "title", "url"
+        )
     }
 
     override val path: String = "/api/posts"
