@@ -75,16 +75,16 @@ class MikanVariableProvider(
         }
 
         // 有些纯字母的没有中文名
-        val searchContent = subject.nameCn.takeIf { it.isNotBlank() } ?: subject.name
-
+        val nameCn = subject.nameCn.takeIf { it.isNotBlank() } ?: subject.name
         val season = seasonSupport.padValue(
-            ParseValue(sourceItem.title),
+            ParseValue(sourceItem.title, listOf(0, 1)),
             ParseValue(subject.name),
-            ParseValue(subject.nameCn),
+            ParseValue(nameCn),
         )
+
         val bangumiInfo = BangumiInfo(
             subject.name,
-            searchContent,
+            nameCn,
             pageInfo.bangumiTitle,
             subject.date.toString(),
             subject.date.year,
