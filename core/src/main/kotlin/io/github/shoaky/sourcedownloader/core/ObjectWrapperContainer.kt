@@ -7,6 +7,7 @@ import io.github.shoaky.sourcedownloader.core.component.ObjectWrapper
 import io.github.shoaky.sourcedownloader.core.component.ProcessorWrapper
 import io.github.shoaky.sourcedownloader.sdk.SourcePointer
 import io.github.shoaky.sourcedownloader.sdk.component.*
+import org.springframework.beans.BeansException
 import org.springframework.beans.factory.support.DefaultListableBeanFactory
 import org.springframework.core.ResolvableType
 
@@ -63,8 +64,12 @@ class SpringObjectWrapperContainer(
 
     override fun <T : Any, W : ObjectWrapper<T>> get(name: String, type: TypeReference<W>): W {
         @Suppress("UNCHECKED_CAST")
-        return applicationContext.getBean(name) as? W
-            ?: throw IllegalArgumentException("Bean $name cannot be cast to ${type.type}")
+        return try {
+            applicationContext.getBean(name) as? W
+                ?: throw IllegalArgumentException("Bean $name cannot be cast to ${type.type}")
+        } catch (e: BeansException) {
+            throw ComponentException.missing("No bean named $name available")
+        }
     }
 
     override fun <T : Any, W : ObjectWrapper<T>> getObjectsOfType(type: TypeReference<W>): Map<String, W> {

@@ -111,7 +111,7 @@ class SourceProcessor(
         }
         renameTaskFuture?.cancel(false)
         renameTaskFuture = renameScheduledExecutor.scheduleAtFixedRate({
-            log.debug("Processor':${name}' 开始重命名任务...")
+            log.debug("Processor:'${name}' 开始重命名任务...")
             var modified = false
             val measureTime = measureTime {
                 try {
@@ -249,7 +249,7 @@ class SourceProcessor(
             .map { it.key }
         if (duplicated.isNotEmpty()) {
             log.error(
-                "Processor:'{}' resolver:{} resolved item:{} duplicated files:{}, It's likely that there's an issue with the component's implementation.",
+                "Processor:'{}' ItemFileResolver:{} resolved item:{} duplicated files:{}, It's likely that there's an issue with the component's implementation.",
                 name, itemFileResolver::class.jvmName, sourceItem, duplicated
             )
             throw IllegalStateException("Duplicated files:$duplicated")
