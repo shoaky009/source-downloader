@@ -70,8 +70,8 @@ processors:
         category: Bangumi
         tags:
           - "mikan-bangumi"
-      # 根据mediaType来判断Item是否存在，例如S01E01.mp4已经存在在savaPath中，那么遇到S01E01.mkv将不会下载，但需要注意Item是会有多个文件的情况
-      item-exists-detector: 'media-type'
+      # 根据mediaType来判断Item是否存在，例如S01E01.mp4已经存在在savaPath中，那么遇到S01E01.mkv将不会下载
+      file-exists-detector: 'media-type'
       provide-metadata-variables: false
       # 目标文件替换策略，anime总是会替换bilibili源和如果当前带版本号的会替换
       #file-replacement-decider: anime
