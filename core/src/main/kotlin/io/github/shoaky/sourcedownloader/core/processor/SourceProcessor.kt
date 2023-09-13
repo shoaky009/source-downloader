@@ -111,23 +111,23 @@ class SourceProcessor(
         }
         renameTaskFuture?.cancel(false)
         renameTaskFuture = renameScheduledExecutor.scheduleAtFixedRate({
-            log.debug("Processor:'${name}' 开始重命名任务...")
+            log.debug("Processor:'$name' 开始重命名任务...")
             var modified = false
             val measureTime = measureTime {
                 try {
                     modified = runRename() > 0
                 } catch (e: Exception) {
-                    log.error("Processor:'${name}' 重命名任务出错", e)
+                    log.error("Processor:'$name' 重命名任务出错", e)
                 }
                 System.currentTimeMillis()
             }
 
             if (modified) {
-                log.info("Processor:'${name}' 重命名任务完成 took:${measureTime.inWholeMilliseconds}ms")
+                log.info("Processor:'$name' 重命名任务完成 took:${measureTime.inWholeMilliseconds}ms")
             }
             val renameCostTimeThreshold = 100L
             if (modified.not() && measureTime.inWholeMilliseconds > renameCostTimeThreshold) {
-                log.warn("Processor:'${name}' 重命名任务没有修改 took:${measureTime.inWholeMilliseconds}ms")
+                log.warn("Processor:'$name' 重命名任务没有修改 took:${measureTime.inWholeMilliseconds}ms")
             }
         }, 5L, interval.seconds, TimeUnit.SECONDS)
     }
@@ -287,7 +287,7 @@ class SourceProcessor(
     fun runRename(): Int {
         val asyncDownloader = downloader as? AsyncDownloader
         if (asyncDownloader == null) {
-            log.warn("Processor:'${name}' 非异步下载器不执行重命名任务")
+            log.warn("Processor:'$name' 非异步下载器不执行重命名任务")
             return 0
         }
         val downloadStatusGrouping = processingStorage.findRenameContent(name, options.renameTimesThreshold)
@@ -467,7 +467,7 @@ class SourceProcessor(
     override fun close() {
         renameTaskFuture?.cancel(false)
         renameScheduledExecutor.shutdown()
-        coroutineScope.cancel("Processor:${name} closed")
+        coroutineScope.cancel("Processor:$name closed")
         itemChannel.close()
     }
 
@@ -525,11 +525,11 @@ class SourceProcessor(
                         processItem(item.sourceItem)
                     }
                 }.onFailure {
-                    log.error("Processor:'${name}'处理失败, item:$item", it)
+                    log.error("Processor:'$name'处理失败, item:$item", it)
                     onItemError(item.sourceItem, it)
 
                     if (options.itemErrorContinue.not()) {
-                        log.warn("Processor:'${name}'处理失败, item:$item, 退出本次触发处理, 如果未能解决该处理器将无法继续处理后续Item")
+                        log.warn("Processor:'$name'处理失败, item:$item, 退出本次触发处理, 如果未能解决该处理器将无法继续处理后续Item")
                         return
                     }
                 }.onSuccess {
@@ -626,7 +626,8 @@ class SourceProcessor(
             val downloadTask = createDownloadTask(itemContent, replaceFiles)
             // NOTE 非异步下载器会阻塞
             directDownloader.submit(downloadTask)
-            log.info("Processor:'${name}' submit download task:${downloadTask}")
+            log.info("Processor:'{}' submit download item:{}, files:{}", name,
+                downloadTask.sourceItem, downloadTask.downloadFiles)
             val targetPaths = itemContent.downloadableFiles().map { it.targetPath() }
             // TODO 应该先ProcessingContent后再保存targetPaths
             saveTargetPaths(itemContent.sourceItem, targetPaths)
