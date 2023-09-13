@@ -23,6 +23,15 @@ spring:
     default-property-inclusion: non_null
 source-downloader:
   data-location: ${SOURCE_DOWNLOADER_DATA_LOCATION:./}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: ALWAYS
 ---
 spring:
   config:

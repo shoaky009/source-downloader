@@ -4,11 +4,13 @@ import io.github.shoaky.sourcedownloader.component.trigger.WebhookTrigger
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping
 
 @Component
 class WebhookTriggerSupplier(
+    @Qualifier("requestMappingHandlerMapping")
     private val requestMapping: RequestMappingHandlerMapping
 ) : ComponentSupplier<WebhookTrigger> {
 
