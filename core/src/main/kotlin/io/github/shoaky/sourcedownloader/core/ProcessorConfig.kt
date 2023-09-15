@@ -84,7 +84,6 @@ data class ProcessorConfig(
         val downloadOptions: DownloadOptions = DownloadOptions(),
         val variableConflictStrategy: VariableConflictStrategy = VariableConflictStrategy.SMART,
         val renameTimesThreshold: Int = 3,
-//        val provideMetadataVariables: Boolean = true,
         val saveProcessingContent: Boolean = true,
         val itemExpressionExclusions: List<String> = emptyList(),
         val itemExpressionInclusions: List<String> = emptyList(),

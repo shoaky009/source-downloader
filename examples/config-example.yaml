@@ -61,7 +61,6 @@ processors:
     source: system-file
     #引用变量提供组件,支持多个
     variable-provider:
-      - "metadata"
       - "ai:gpt"
     #引用item文件解析组件
     item-file-resolver: system-file
@@ -99,8 +98,6 @@ processors:
       variable-conflict-strategy: SMART
       #重命名失败次数阈值,默认:3
       rename-times-threshold: 3
-      #内置metadata变量提供器的选项, 默认true
-      provide-metadata-variables: true
       #保存SourceItem的处理信息
       save-processing-content: true
       #CEL表达式过滤SourceItem,任意一个为true则过滤
