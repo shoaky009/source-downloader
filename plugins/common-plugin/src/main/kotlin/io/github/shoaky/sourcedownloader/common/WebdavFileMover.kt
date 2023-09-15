@@ -2,6 +2,7 @@ package io.github.shoaky.sourcedownloader.common
 
 import io.github.shoaky.sourcedownloader.external.webdav.*
 import io.github.shoaky.sourcedownloader.sdk.ItemContent
+import io.github.shoaky.sourcedownloader.sdk.SourceFile
 import io.github.shoaky.sourcedownloader.sdk.component.FileMover
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
@@ -69,6 +70,11 @@ open class WebdavFileMover(
     override fun listPath(path: Path): List<Path> {
         // TODO implement
         return super.listPath(path)
+    }
+
+    override fun pathMetadata(path: Path): SourceFile {
+        // TODO implement
+        return super.pathMetadata(path)
     }
 
     companion object {

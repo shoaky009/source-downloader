@@ -170,7 +170,9 @@ class SourceProcessor(
                 val copy = itemContent.copy(
                     sourceFiles = listOf(fileContent)
                 )
-                val replace = fileReplacementDecider.isReplace(copy, before?.itemContent)
+
+                val existingFile = fileMover.pathMetadata(fileContent.targetPath())
+                val replace = fileReplacementDecider.isReplace(copy, before?.itemContent, existingFile)
                 fileContent to replace
             }.filter { it.second }
             .map { it.first }

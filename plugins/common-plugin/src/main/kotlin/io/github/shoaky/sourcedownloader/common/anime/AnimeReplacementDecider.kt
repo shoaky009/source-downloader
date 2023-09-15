@@ -1,6 +1,7 @@
 package io.github.shoaky.sourcedownloader.common.anime
 
 import io.github.shoaky.sourcedownloader.sdk.ItemContent
+import io.github.shoaky.sourcedownloader.sdk.SourceFile
 import io.github.shoaky.sourcedownloader.sdk.component.FileReplacementDecider
 
 /**
@@ -10,7 +11,7 @@ object AnimeReplacementDecider : FileReplacementDecider {
 
     private val versionRegex = Regex("\\[v\\d+]", RegexOption.IGNORE_CASE)
 
-    override fun isReplace(current: ItemContent, before: ItemContent?): Boolean {
+    override fun isReplace(current: ItemContent, before: ItemContent?, existingFile: SourceFile): Boolean {
         val title = current.sourceItem.title
         // 有水印的不要
         if (isBilibili(title)) {

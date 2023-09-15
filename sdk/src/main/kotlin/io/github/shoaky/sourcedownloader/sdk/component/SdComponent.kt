@@ -3,10 +3,12 @@ package io.github.shoaky.sourcedownloader.sdk.component
 import io.github.shoaky.sourcedownloader.sdk.*
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.attribute.BasicFileAttributes
 import java.util.function.Predicate
 import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
 import kotlin.io.path.notExists
+import kotlin.io.path.readAttributes
 import kotlin.reflect.KClass
 import kotlin.reflect.full.allSuperclasses
 
@@ -166,6 +168,19 @@ interface FileMover : SdComponent {
         }
         return Files.list(path).toList()
     }
+
+    fun pathMetadata(path: Path): SourceFile {
+        val fileAttributes = path.readAttributes<BasicFileAttributes>()
+        return SourceFile(
+            path = path,
+            attrs = mapOf(
+                "size" to fileAttributes.size(),
+                "lastModifiedTime" to fileAttributes.lastModifiedTime().toMillis(),
+                "creationTime" to fileAttributes.creationTime().toMillis(),
+                "isSymbolicLink" to fileAttributes.isSymbolicLink,
+            )
+        )
+    }
 }
 
 interface ProcessListener : SdComponent {
@@ -218,9 +233,11 @@ interface FileReplacementDecider : SdComponent {
     /**
      * @param current the current [ItemContent], the [ItemContent.sourceFiles] always has one [FileContent] element
      * @param before the [ItemContent] before the current one, the [ItemContent.sourceFiles] also may empty
+     * @param existingFile the existing file, [SourceFile.fileUri] and [SourceFile.data] are always null,
+     * [SourceFile.attrs] contains the file metadata 'size' 'lastModifiedTime' 'creationTime'.
      * @return true if the current [ItemContent] should replace
      */
-    fun isReplace(current: ItemContent, before: ItemContent?): Boolean
+    fun isReplace(current: ItemContent, before: ItemContent?, existingFile: SourceFile): Boolean
 
 }
 
