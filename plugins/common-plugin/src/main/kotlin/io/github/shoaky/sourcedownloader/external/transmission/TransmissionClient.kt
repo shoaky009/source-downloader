@@ -2,6 +2,7 @@ package io.github.shoaky.sourcedownloader.external.transmission
 
 import io.github.shoaky.sourcedownloader.sdk.api.BaseRequest
 import io.github.shoaky.sourcedownloader.sdk.api.HookedApiClient
+import io.github.shoaky.sourcedownloader.sdk.component.ComponentException
 import io.github.shoaky.sourcedownloader.sdk.util.encodeBase64
 import org.springframework.http.HttpHeaders
 import java.net.URI
@@ -20,7 +21,7 @@ class TransmissionClient(
     private val sessionId: String by lazy {
         val response = execute(endpoint, TestCsrfRequest())
         response.headers().firstValue(SESSION_ID_HEADER).orElseThrow {
-            RuntimeException("Can't get session id from response headers")
+            ComponentException.processing("Can't get session id from response headers")
         }
     }
 

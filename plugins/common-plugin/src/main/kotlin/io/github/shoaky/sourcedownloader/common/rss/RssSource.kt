@@ -5,6 +5,7 @@ import com.apptasticsoftware.rssreader.RssReader
 import io.github.shoaky.sourcedownloader.external.rss.RssExtReader
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.AlwaysLatestSource
+import io.github.shoaky.sourcedownloader.sdk.component.ComponentException
 import io.github.shoaky.sourcedownloader.sdk.util.http.httpClient
 import java.net.URI
 import java.time.LocalDateTime
@@ -44,10 +45,10 @@ class RssSource(
                 val enclosure = item.enclosure.getOrDefault(defaultEnclosure)
                 SourceItem(
                     item.title.orElseThrow {
-                        IllegalArgumentException("$url title is null")
+                        ComponentException.processing("$url title is null")
                     },
                     URI(item.link.orElseThrow {
-                        IllegalArgumentException("$url link is null")
+                        ComponentException.processing("$url link is null")
                     }),
                     item.pubDate.map {
                         LocalDateTime.parse(it, dateFormat)
@@ -89,7 +90,7 @@ fun parseTime(pubDateText: String): LocalDateTime {
                 return LocalDateTime.parse(pubDateText, pattern)
             }
         }
-        throw RuntimeException("解析日期$pubDateText 失败")
+        throw ComponentException.processing("解析日期$pubDateText 失败")
     }
 }
 

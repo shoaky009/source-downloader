@@ -4,14 +4,12 @@ import io.github.shoaky.sourcedownloader.component.downloader.MockDownloader
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
-import kotlin.io.path.Path
+import java.nio.file.Path
 
 object MockDownloaderSupplier : ComponentSupplier<MockDownloader> {
 
     override fun apply(props: Properties): MockDownloader {
-        val path = props.rawValues["download-path"]?.let {
-            Path(it.toString())
-        } ?: throw RuntimeException("download-path is null")
+        val path = props.get<Path>("download-path")
         return MockDownloader(path)
     }
 

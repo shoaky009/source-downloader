@@ -4,6 +4,7 @@ import io.github.shoaky.sourcedownloader.sdk.DownloadTask
 import io.github.shoaky.sourcedownloader.sdk.SourceFile
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.AlwaysLatestSource
+import io.github.shoaky.sourcedownloader.sdk.component.ComponentException
 import io.github.shoaky.sourcedownloader.sdk.component.Downloader
 import io.github.shoaky.sourcedownloader.util.creationTime
 import java.nio.file.Files
@@ -24,11 +25,17 @@ class SystemFileSource(
     // 用这个只是偷懒，如果要面对超大的文件数量需要用到pointer
 ) : AlwaysLatestSource(), Downloader {
 
+    init {
+        if (listOf(0, 1).contains(mode).not()) {
+            throw ComponentException.props("Unknown mode: $mode")
+        }
+    }
+
     override fun fetch(): Iterable<SourceItem> {
         return when (mode) {
             0 -> createRootFileSourceItems()
             1 -> createEachFileSourceItems()
-            else -> throw RuntimeException("Unknown mode: $mode")
+            else -> throw ComponentException.props("Unknown mode: $mode")
         }
     }
 

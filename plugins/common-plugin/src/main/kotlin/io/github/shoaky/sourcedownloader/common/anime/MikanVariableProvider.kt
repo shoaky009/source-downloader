@@ -8,6 +8,7 @@ import io.github.shoaky.sourcedownloader.external.bangumi.Subject
 import io.github.shoaky.sourcedownloader.external.season.*
 import io.github.shoaky.sourcedownloader.external.tmdb.TmdbClient
 import io.github.shoaky.sourcedownloader.sdk.*
+import io.github.shoaky.sourcedownloader.sdk.component.ComponentException
 import io.github.shoaky.sourcedownloader.sdk.component.VariableProvider
 import org.slf4j.LoggerFactory
 import java.net.URI
@@ -52,12 +53,12 @@ class MikanVariableProvider(
                 URI(mikanBangumiHref).toURL()
             )
             val subjectId = bangumiPageInfo.bgmTvSubjectId
-                ?: throw RuntimeException("从$mikanBangumiHref 获取 BgmTv Subject失败")
+                ?: throw ComponentException.processing("从$mikanBangumiHref 获取 BgmTv Subject失败")
             return bgmTvClient.execute(GetSubjectRequest(subjectId)).body()
         }.onFailure {
             log.error("获取Bangumi Subject失败 $mikanBangumiHref", it)
         }
-        throw RuntimeException("获取Bangumi Subject失败")
+        throw ComponentException.processing("获取Bangumi Subject失败")
     }
 
     override fun createSourceGroup(sourceItem: SourceItem): SourceItemGroup {

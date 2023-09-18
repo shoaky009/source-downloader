@@ -11,8 +11,8 @@ import io.github.shoaky.sourcedownloader.sdk.util.Jackson
 object RunCommandSupplier : ComponentSupplier<RunCommand> {
 
     override fun apply(props: Properties): RunCommand {
-        val command = props.rawValues["command"] ?: throw RuntimeException("command is null")
-        val enableSummary = props.rawValues["withSubjectSummary"] as Boolean? ?: false
+        val command = props.getRaw("command")
+        val enableSummary = props.getOrDefault("withSubjectSummary", false)
         if (command is List<*>) {
             return RunCommand(command.map { it.toString() }, enableSummary)
         }

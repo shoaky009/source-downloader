@@ -6,6 +6,7 @@ import io.github.shoaky.sourcedownloader.sdk.DownloadTask
 import io.github.shoaky.sourcedownloader.sdk.ItemContent
 import io.github.shoaky.sourcedownloader.sdk.SourceFile
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
+import io.github.shoaky.sourcedownloader.sdk.component.ComponentException
 import io.github.shoaky.sourcedownloader.sdk.component.TorrentDownloader
 import io.github.shoaky.sourcedownloader.sdk.component.TorrentDownloader.Companion.tryParseTorrentHash
 import org.slf4j.LoggerFactory
@@ -33,7 +34,7 @@ class QbittorrentDownloader(
         val response = client.execute(torrentsAddRequest)
         if (QbittorrentClient.successResponse != response.body()) {
             log.error("qbittorrent submit task failed,code:${response.statusCode()} body:${response.body()}")
-            throw RuntimeException("qbittorrent submit task failed,code:${response.statusCode()} body:${response.body()}")
+            throw ComponentException.processing("qbittorrent submit task failed,code:${response.statusCode()} body:${response.body()}")
         }
         if (alwaysDownloadAll) {
             return
@@ -71,7 +72,7 @@ class QbittorrentDownloader(
     override fun defaultDownloadPath(): Path {
         val response = client.execute(AppGetDefaultSavePathRequest())
         if (response.statusCode() != HttpStatus.OK.value()) {
-            throw RuntimeException("获取默认下载路径失败,code:${response.statusCode()} body:${response.body()}")
+            throw ComponentException.processing("获取默认下载路径失败,code:${response.statusCode()} body:${response.body()}")
         }
         return Path.of(response.body())
     }
@@ -143,7 +144,7 @@ class QbittorrentDownloader(
                     }
                 }
             }
-            throw RuntimeException("max retry times")
+            throw ComponentException.processing("max retry times")
         }
     }
 

@@ -3,6 +3,7 @@ package io.github.shoaky.sourcedownloader.common.rss
 import com.apptasticsoftware.rssreader.RssReader
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.AlwaysLatestSource
+import io.github.shoaky.sourcedownloader.sdk.component.ComponentException
 import java.net.URI
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -41,7 +42,7 @@ class JackettSource(
             return try {
                 LocalDateTime.parse(pubDateText, formatter)
             } catch (e: Exception) {
-                throw RuntimeException("解析日期$pubDateText 失败")
+                throw ComponentException.processing("解析日期$pubDateText 失败")
             }
         }
     }
