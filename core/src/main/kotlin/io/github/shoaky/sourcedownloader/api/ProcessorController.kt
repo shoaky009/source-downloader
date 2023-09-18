@@ -7,6 +7,7 @@ import io.github.shoaky.sourcedownloader.core.file.FileContentStatus
 import io.github.shoaky.sourcedownloader.core.processor.ProcessorManager
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentException
+import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import kotlin.concurrent.thread
 
@@ -48,12 +49,14 @@ private class ProcessorController(
     fun update(
         @PathVariable processorName: String,
         @RequestBody processorConfig: ProcessorConfig
-    ) {
+    ): ProcessorInfo {
         processorManager.getProcessor(processorName)
 
         configOperator.save(processorName, processorConfig)
         processorManager.destroyProcessor(processorName)
         processorManager.createProcessor(processorConfig)
+        val info = processorManager.getProcessor(processorName).get().info()
+        return ProcessorInfo(processorName, info)
     }
 
     @DeleteMapping("/{processorName}")
@@ -109,6 +112,7 @@ private class ProcessorController(
     }
 
     @PostMapping("/items/{processorName}")
+    @ResponseStatus(HttpStatus.ACCEPTED)
     suspend fun postItems(@PathVariable processorName: String, @RequestBody items: List<SourceItem>) {
         val processor = processorManager.getProcessor(processorName).get()
         processor.run(items)

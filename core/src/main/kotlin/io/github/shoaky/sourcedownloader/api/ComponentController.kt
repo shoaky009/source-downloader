@@ -28,15 +28,15 @@ private class ComponentController(
             .filter { name == null || it.name == name }
             .filter { type == null || it.type.topType == type }
             .filter { typeName == null || it.type.typeName == typeName }
-            .map { wp ->
+            .map { wrapper ->
                 ComponentInfo(
-                    wp.type.topType,
-                    wp.type.typeName,
-                    wp.name,
-                    wp.props.rawValues,
+                    wrapper.type.topType,
+                    wrapper.type.typeName,
+                    wrapper.name,
+                    wrapper.props.rawValues,
                     ComponentDetail(),
-                    if (wp.primary) wp.component.let { it as? ComponentStateful }?.stateDetail() else null,
-                    wp.primary
+                    if (wrapper.primary) wrapper.component.let { it as? ComponentStateful }?.stateDetail() else null,
+                    wrapper.primary
                 )
             }
     }
@@ -58,19 +58,19 @@ private class ComponentController(
         )
     }
 
-    @DeleteMapping("/{topType}/{typeName}/{name}")
+    @DeleteMapping("/{type}/{typeName}/{name}")
     fun deleteComponent(
-        @PathVariable topType: ComponentTopType,
+        @PathVariable type: ComponentTopType,
         @PathVariable typeName: String,
         @PathVariable name: String,
     ): ResponseEntity<Any> {
-        val componentType = ComponentType.of(topType, typeName)
+        val componentType = ComponentType.of(type, typeName)
         val component = componentManager.getComponent(componentType, name)
         if (component?.getRefs()?.isNotEmpty() == true) {
             throw ComponentException.other("Component is referenced by ${component.getRefs()} processors")
         }
 
-        configOperator.deleteComponent(topType, typeName, name)
+        configOperator.deleteComponent(type, typeName, name)
         componentManager.destroy(componentType, name)
         return ResponseEntity.ok().build()
     }
@@ -78,8 +78,8 @@ private class ComponentController(
     @GetMapping("/descriptions")
     fun getComponentDescriptions(): List<ComponentDescription> {
         return componentManager.getComponentDescriptions()
-            .sortedBy { cd ->
-                cd.types.maxOfOrNull { it.topType }
+            .sortedBy { description ->
+                description.types.maxOfOrNull { it.topType }
             }
     }
 }
