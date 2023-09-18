@@ -29,6 +29,7 @@ components:
             files:
               - path: "test3.jpg"
               - path: "test4.jpg"
+      enabled: true
     - name: "error-item"
       type: "fixed"
       props:
@@ -41,6 +42,7 @@ components:
               downloadUri: "file://test1"
             files:
               - path: "test1.jpg"
+      enabled: true
     - name: "replace-case"
       type: "fixed"
       props:
@@ -61,57 +63,66 @@ components:
               downloadUri: "https://baidu.com"
             files:
               - path: "test-replace2.jpg"
+      enabled: true
   file-resolver:
     - name: "normal-case"
       type: "fixed"
+      enabled: true
     - name: "error-item"
       type: "fixed"
+      enabled: true
     - name: "replace-case"
       type: "fixed"
+      enabled: true
   downloader:
     - name: "mock"
       type: "mock"
       props:
         download-path: "src/test/resources/downloads"
+      enabled: true
     - name: "url"
       type: "url"
       props:
         download-path: "src/test/resources/downloads"
+      enabled: true
   file-tagger:
     - name: "mapping-test1file"
       type: "mapped"
       props:
         mapping:
-          test1.jpg: test1
+          test1.jpg: "test1"
+      enabled: true
     - name: "mapping-test3file"
       type: "mapped"
       props:
         mapping:
-          test3.jpg: test3
-
+          test3.jpg: "test3"
+      enabled: true
 processors:
   - name: "NormalCase"
     source: "fixed:normal-case"
+    variable-providers:
+      - "sequence"
     item-file-resolver: "fixed:normal-case"
     downloader: "mock"
     file-mover: "general"
     save-path: "src/test/resources/target/NormalCase"
-    variable-providers:
-      - "sequence"
     options:
       save-path-pattern: "{itemTitle}/{itemDate}/"
       filename-pattern: "{filename} - {sequence}"
+    enabled: true
   - name: "NormalCaseCopy"
     source: "fixed:normal-case"
+    variable-providers:
+      - "sequence"
     item-file-resolver: "fixed:normal-case"
     downloader: "mock"
     file-mover: "general"
     save-path: "src/test/resources/target/NormalCaseCopy"
-    variable-providers:
-      - "sequence"
     options:
       save-path-pattern: "{itemTitle}/{itemDate}/"
       filename-pattern: "{filename} - {sequence}"
+    enabled: true
   - name: "FileStatusCase"
     source: "fixed:normal-case"
     item-file-resolver: "fixed:normal-case"
@@ -120,6 +131,7 @@ processors:
     save-path: "src/test/resources/target/FileStatusCase"
     options:
       save-path-pattern: "{itemTitle}"
+    enabled: true
   - name: "FileStatusCase2"
     source: "fixed:normal-case"
     item-file-resolver: "fixed:normal-case"
@@ -129,6 +141,7 @@ processors:
     options:
       save-path-pattern: "1"
       filename-pattern: "1"
+    enabled: true
   - name: "PointerStorageCase"
     source: "fixed:normal-case"
     item-file-resolver: "fixed:normal-case"
@@ -137,80 +150,98 @@ processors:
     save-path: "src/test/resources/target/PointerStorageCase"
     options:
       save-path-pattern: "{itemTitle}"
+    enabled: true
   - name: "ErrorContinueCase"
     source: "fixed:error-item"
     item-file-resolver: "fixed:error-item"
     downloader: "mock"
     file-mover: "general"
     save-path: "src/test/resources/target/ErrorContinueCase"
-    options:
-      item-error-continue: false
+    options: { }
+    enabled: true
   - name: "Tagged"
     source: "fixed:normal-case"
+    variable-providers:
+      - "sequence"
     item-file-resolver: "fixed:normal-case"
     downloader: "mock"
     file-mover: "general"
     save-path: "src/test/resources/target/Tagged"
-    variable-providers:
-      - "sequence"
     options:
       save-path-pattern: "{itemTitle}/{itemDate}/"
       filename-pattern: "{filename} - {sequence}"
       file-taggers:
         - "mapped:mapping-test1file"
       file-grouping:
-        - tags: [ "test1" ]
-          save-path-pattern: "{itemTitle}"
+        - tags:
+            - "test1"
+          matched-expression: null
           filename-pattern: "{filename}"
+          save-path-pattern: "{itemTitle}"
+          file-content-filters: [ ]
+          file-expression-exclusions: [ ]
+          file-expression-inclusions: [ ]
+          file-replacement-decider: null
+    enabled: true
   - name: "FileGroupingSeqVariableCase"
     source: "fixed:normal-case"
+    variable-providers:
+      - "sequence"
     item-file-resolver: "fixed:normal-case"
     downloader: "mock"
     file-mover: "general"
     save-path: "src/test/resources/target/FileGroupingSeqVariableCase"
-    variable-providers:
-      - "sequence"
     options:
       save-path-pattern: "{itemTitle}"
       filename-pattern: "{sequence}"
       file-taggers:
         - "mapped:mapping-test3file"
       file-grouping:
-        - tags: [ "test3" ]
-          save-path-pattern: "{itemTitle}"
+        - tags:
+            - "test3"
+          matched-expression: null
           filename-pattern: "{sequence}"
+          save-path-pattern: "{itemTitle}"
+          file-content-filters: [ ]
+          file-expression-exclusions: [ ]
+          file-expression-inclusions: [ ]
+          file-replacement-decider: null
+    enabled: true
   - name: "DryRunCase"
     source: "fixed:normal-case"
+    variable-providers:
+      - "sequence"
     item-file-resolver: "fixed:normal-case"
     downloader: "url"
     file-mover: "general"
     save-path: "src/test/resources/target/NormalCase"
-    variable-providers:
-      - "sequence"
     options:
       save-path-pattern: "{itemTitle}/{itemDate}/"
       filename-pattern: "{filename} - {sequence}"
+    enabled: true
   - name: "AsyncReplaceFileCase"
     source: "fixed:replace-case"
+    variable-providers:
+      - "sequence"
     item-file-resolver: "fixed:replace-case"
     downloader: "mock"
     file-mover: "general"
     save-path: "src/test/resources/target/AsyncReplaceFileCase"
-    variable-providers:
-      - "sequence"
     options:
       save-path-pattern: "{itemTitle}"
       filename-pattern: "{sequence}"
-      file-replacement-decider: always
+      file-replacement-decider: "always"
+    enabled: true
   - name: "SyncReplaceFileCase"
     source: "fixed:replace-case"
+    variable-providers:
+      - "sequence"
     item-file-resolver: "fixed:replace-case"
     downloader: "url"
     file-mover: "general"
     save-path: "src/test/resources/target/SyncReplaceFileCase"
-    variable-providers:
-      - "sequence"
     options:
       save-path-pattern: "{itemTitle}"
       filename-pattern: "{sequence}"
-      file-replacement-decider: always
+      file-replacement-decider: "always"
+    enabled: true

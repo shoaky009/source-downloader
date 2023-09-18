@@ -6,6 +6,7 @@ import io.github.shoaky.sourcedownloader.core.ProcessingContent
 import io.github.shoaky.sourcedownloader.core.ProcessingContent.Status.*
 import io.github.shoaky.sourcedownloader.core.ProcessingStorage
 import io.github.shoaky.sourcedownloader.core.ProcessorSourceState
+import io.github.shoaky.sourcedownloader.core.component.SourceHashingItemFilter
 import io.github.shoaky.sourcedownloader.core.file.*
 import io.github.shoaky.sourcedownloader.sdk.*
 import io.github.shoaky.sourcedownloader.sdk.component.*
@@ -95,8 +96,12 @@ class SourceProcessor(
         NormalProcess().run()
     }
 
-    fun dryRun(): List<ProcessingContent> {
-        val process = DryRunProcess()
+    fun dryRun(options: DryRunOptions = DryRunOptions()): List<ProcessingContent> {
+        val currentSourceState = currentSourceState()
+        val values = options.pointer ?: currentSourceState.lastPointer.values
+        val pointer = ProcessorSourceState.resolvePointer(source::class, values)
+
+        val process = DryRunProcess(currentSourceState, pointer, options.filterProcessed)
         process.run()
         return process.getResult()
     }
@@ -473,6 +478,15 @@ class SourceProcessor(
         itemChannel.close()
     }
 
+    fun currentSourceState(): ProcessorSourceState {
+        return processingStorage.findProcessorSourceState(name, sourceId)
+            ?: ProcessorSourceState(
+                processorName = name,
+                sourceId = sourceId,
+                lastPointer = Jackson.convert(source.defaultPointer(), PersistentPointer::class)
+            )
+    }
+
     companion object {
 
         private val retry = RetryTemplateBuilder()
@@ -485,15 +499,10 @@ class SourceProcessor(
     }
 
     private abstract inner class Process(
-        protected val lastState: ProcessorSourceState = processingStorage.findProcessorSourceState(name, sourceId)
-            ?: ProcessorSourceState(
-                processorName = name,
-                sourceId = sourceId,
-                lastPointer = Jackson.convert(source.defaultPointer(), PersistentPointer::class)
-            ),
-        protected val sourcePointer: SourcePointer = lastState.resolvePointer(source::class),
+        protected val sourceState: ProcessorSourceState = currentSourceState(),
+        protected val sourcePointer: SourcePointer = ProcessorSourceState.resolvePointer(source::class, sourceState.lastPointer.values),
         private val itemIterable: Iterable<PointedItem<ItemPointer>> = retry.execute<Iterable<PointedItem<ItemPointer>>, IOException> {
-            it.setAttribute("stage", ProcessStage("FetchSourceItems", lastState))
+            it.setAttribute("stage", ProcessStage("FetchSourceItems", sourceState))
             source.fetch(sourcePointer, options.fetchLimit)
         }
     ) {
@@ -504,17 +513,18 @@ class SourceProcessor(
             val context = CoreProcessContext(name, processingStorage)
 
             retry.execute<Iterator<PointedItem<ItemPointer>>, IOException> {
-                it.setAttribute("stage", ProcessStage("FetchSourceItems", lastState))
+                it.setAttribute("stage", ProcessStage("FetchSourceItems", sourceState))
                 val iterator = source.fetch(sourcePointer, options.fetchLimit).iterator()
                 iterator
             }
             stat.stopWatch.stop()
 
             stat.stopWatch.start("processItems")
+            val filters = selectItemFilters()
             for (item in itemIterable) {
                 log.trace("Processor:'{}' start process item:{}", name, item)
 
-                val filterBy = sourceItemFilters.firstOrNull { it.test(item.sourceItem).not() }
+                val filterBy = filters.firstOrNull { it.test(item.sourceItem).not() }
                 if (filterBy != null) {
                     log.info("{} filtered item:{}", filterBy::class.simpleName, item.sourceItem)
                     onItemFiltered(item)
@@ -558,6 +568,10 @@ class SourceProcessor(
             if (stat.hasChange()) {
                 log.info("Processor:{}", stat)
             }
+        }
+
+        protected open fun selectItemFilters(): List<SourceItemFilter> {
+            return sourceItemFilters
         }
 
         private fun processItem(sourceItem: SourceItem): ProcessingContent {
@@ -709,23 +723,35 @@ class SourceProcessor(
         }
 
         private fun saveSourceState() {
-            val currentSourceState = lastState.copy(
+            val currentSourceState = sourceState.copy(
                 lastPointer = Jackson.convert(sourcePointer, PersistentPointer::class),
                 lastActiveTime = LocalDateTime.now()
             )
-            val lastP = lastState.resolvePointer(source::class)
-            val currP = currentSourceState.resolvePointer(source::class)
+
+            val lastP = ProcessorSourceState.resolvePointer(source::class, sourceState.lastPointer.values)
+            val currP = ProcessorSourceState.resolvePointer(source::class, currentSourceState.lastPointer.values)
             if (currP != lastP) {
                 log.info("Processor:'$name' update pointer:${currentSourceState.lastPointer}")
             }
             val save = processingStorage.save(currentSourceState)
-            lastState.id = save.id
+            sourceState.id = save.id
         }
     }
 
-    private inner class DryRunProcess : Process() {
+    private inner class DryRunProcess(
+        sourceState: ProcessorSourceState,
+        sourcePointer: SourcePointer,
+        private val filterProcessed: Boolean
+    ) : Process(sourceState, sourcePointer) {
 
         private val result: MutableList<ProcessingContent> = mutableListOf()
+
+        override fun selectItemFilters(): List<SourceItemFilter> {
+            if (filterProcessed) {
+                return super.selectItemFilters()
+            }
+            return super.selectItemFilters().filter { it !is SourceHashingItemFilter }
+        }
 
         override fun onItemCompleted(processingContent: ProcessingContent) {
             result.add(processingContent)

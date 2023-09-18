@@ -18,9 +18,12 @@ data class ProcessorSourceState(
     val lastActiveTime: LocalDateTime = LocalDateTime.now()
 ) {
 
-    fun <T : SourcePointer> resolvePointer(klass: KClass<out Source<T>>): T {
-        val first = klass.memberFunctions.first { m -> m.name == "fetch" && m.valueParameters.size == 2 }
-            .valueParameters.map { it.type.jvmErasure }.filterIsInstance<KClass<T>>().first()
-        return Jackson.convert(lastPointer, first)
+    companion object {
+
+        fun <T : SourcePointer> resolvePointer(klass: KClass<out Source<T>>, values: Map<String, Any>): T {
+            val first = klass.memberFunctions.first { m -> m.name == "fetch" && m.valueParameters.size == 2 }
+                .valueParameters.map { it.type.jvmErasure }.filterIsInstance<KClass<T>>().first()
+            return Jackson.convert(values, first)
+        }
     }
 }

@@ -23,7 +23,7 @@ class ProcessorSourceStateTest {
             ),
         )
 
-        val pointer = state.resolvePointer(TestSource1::class)
+        val pointer = ProcessorSourceState.resolvePointer(TestSource1::class, state.lastPointer.values)
         assertEquals(TestPointer1::class, pointer::class)
         assertEquals(LocalDate.of(2022, 1, 1), pointer.date)
         assertEquals("1", pointer.id)

@@ -39,7 +39,7 @@ class ComponentControllerTest {
         mockMvc.perform(
             post("/api/component/source/system-file/api-create")
                 .content(
-                    """{"path": "src/test/resources/sources"}"""
+                    """{"name":"api-create","type":"system-file","props":{"path":"src/test/resources/sources"}}"""
                 ).contentType(MediaType.APPLICATION_JSON)
         ).andExpect(status().is2xxSuccessful)
             .andExpect {

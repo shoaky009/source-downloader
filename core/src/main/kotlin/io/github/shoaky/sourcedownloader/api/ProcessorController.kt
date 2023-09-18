@@ -4,6 +4,7 @@ import io.github.shoaky.sourcedownloader.core.ProcessorConfig
 import io.github.shoaky.sourcedownloader.core.ProcessorConfigStorage
 import io.github.shoaky.sourcedownloader.core.component.ConfigOperator
 import io.github.shoaky.sourcedownloader.core.file.FileContentStatus
+import io.github.shoaky.sourcedownloader.core.processor.DryRunOptions
 import io.github.shoaky.sourcedownloader.core.processor.ProcessorManager
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentException
@@ -79,10 +80,16 @@ private class ProcessorController(
         processorManager.createProcessor(config)
     }
 
-    @GetMapping("/dry-run/{processorName}")
-    fun dryRun(@PathVariable processorName: String): List<DryRunResult> {
+    @RequestMapping(
+        "/dry-run/{processorName}",
+        method = [RequestMethod.GET, RequestMethod.POST],
+    )
+    fun dryRun(
+        @PathVariable processorName: String,
+        @RequestBody(required = false) options: DryRunOptions?
+    ): List<DryRunResult> {
         val sourceProcessor = processorManager.getProcessor(processorName)
-        return sourceProcessor.get().dryRun()
+        return sourceProcessor.get().dryRun(options ?: DryRunOptions())
             .map { pc ->
                 val fileResult = pc.itemContent.sourceFiles.map { file ->
                     FileResult(
