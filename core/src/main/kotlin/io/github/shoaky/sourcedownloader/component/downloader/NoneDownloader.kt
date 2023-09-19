@@ -11,7 +11,8 @@ class NoneDownloader(
     val downloadPath: Path = Path("").toAbsolutePath()
 ) : Downloader {
 
-    override fun submit(task: DownloadTask) {
+    override fun submit(task: DownloadTask): Boolean {
+        return true
     }
 
     override fun defaultDownloadPath(): Path {

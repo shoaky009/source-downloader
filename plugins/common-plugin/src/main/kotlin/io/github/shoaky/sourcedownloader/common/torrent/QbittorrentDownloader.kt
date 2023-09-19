@@ -21,7 +21,7 @@ class QbittorrentDownloader(
     private val alwaysDownloadAll: Boolean = false
 ) : TorrentDownloader {
 
-    override fun submit(task: DownloadTask) {
+    override fun submit(task: DownloadTask): Boolean {
         val tags = task.options.tags
             .joinToString(",")
             .takeIf { it.isNotBlank() }
@@ -37,7 +37,7 @@ class QbittorrentDownloader(
             throw ComponentException.processing("qbittorrent submit task failed,code:${response.statusCode()} body:${response.body()}")
         }
         if (alwaysDownloadAll) {
-            return
+            return true
         }
 
         val torrentHash = getTorrentHash(task.sourceItem)
@@ -57,7 +57,7 @@ class QbittorrentDownloader(
         }
         log.debug("torrent:{} set prio 0 files: {}", torrentHash, stopDownloadFiles)
         if (stopDownloadFiles.isEmpty()) {
-            return
+            return true
         }
 
         client.execute(
@@ -67,6 +67,7 @@ class QbittorrentDownloader(
                 0
             )
         )
+        return true
     }
 
     override fun defaultDownloadPath(): Path {

@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonAlias
 import io.github.shoaky.sourcedownloader.sdk.PointedItem
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.Source
+import io.github.shoaky.sourcedownloader.sdk.util.ExpandIterator
+import io.github.shoaky.sourcedownloader.sdk.util.RequestResult
 import telegram4j.tl.*
 import telegram4j.tl.messages.BaseMessages
 import telegram4j.tl.messages.ChannelMessages
@@ -29,23 +31,20 @@ class TelegramSource(
             ChatPointer(chatId, messageId)
         }
 
-        val result: MutableList<PointedItem<ChatPointer>> = mutableListOf()
-        for (chatPointer in chatPointers) {
-            while (result.size < limit) {
-                val beginDate = chatMapping[chatPointer.chatId]?.beginDate
-                val messages = messageFetcher.fetchMessages(chatPointer, limit, timeout)
-                if (messages.isEmpty()) {
-                    break
-                }
-                val items = messages.mapNotNull { message ->
-                    val sourceItem = mediaMessageToSourceItem(message, chatPointer) ?: return@mapNotNull null
-                    PointedItem(sourceItem, chatPointer.copy(fromMessageId = message.id()))
-                }.filter { beginDate == null || beginDate <= it.sourceItem.date.toLocalDate() }
-                result.addAll(items)
-                chatPointer.fromMessageId = messages.last().id()
+        return ExpandIterator(chatPointers, limit) { chatPointer ->
+            val beginDate = chatMapping[chatPointer.chatId]?.beginDate
+            val messages = messageFetcher.fetchMessages(chatPointer, limit, timeout)
+            if (messages.isEmpty()) {
+                return@ExpandIterator RequestResult(emptyList(), true)
             }
-        }
-        return result
+
+            val items = messages.mapNotNull { message ->
+                val sourceItem = mediaMessageToSourceItem(message, chatPointer) ?: return@mapNotNull null
+                PointedItem(sourceItem, chatPointer.copy(fromMessageId = message.id()))
+            }.filter { beginDate == null || beginDate <= it.sourceItem.date.toLocalDate() }
+            chatPointer.fromMessageId = messages.last().id()
+            RequestResult(items)
+        }.asIterable()
     }
 
     private fun mediaMessageToSourceItem(message: BaseMessage, chatPointer: ChatPointer): SourceItem? {

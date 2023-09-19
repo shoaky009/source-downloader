@@ -10,7 +10,7 @@ class DirectDownloader(
     private val downloader: Downloader
 ) : Downloader by downloader {
 
-    override fun submit(task: DownloadTask) {
+    override fun submit(task: DownloadTask): Boolean {
         // 没有考虑网盘的情况，如果需要支持需要重新设计
         val (normalFiles, directDownloadFiles) = task.downloadFiles.partition { it.data == null }
         directDownloadFiles
@@ -28,6 +28,6 @@ class DirectDownloader(
                 }
             }
 
-        downloader.submit(task.copy(downloadFiles = normalFiles))
+        return downloader.submit(task.copy(downloadFiles = normalFiles))
     }
 }

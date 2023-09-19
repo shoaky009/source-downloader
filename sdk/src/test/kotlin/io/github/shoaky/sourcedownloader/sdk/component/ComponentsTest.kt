@@ -28,7 +28,7 @@ class ComponentsTest {
 
 private class DownloaderCp : Downloader {
 
-    override fun submit(task: DownloadTask) {
+    override fun submit(task: DownloadTask): Boolean {
         throw NotImplementedError()
     }
 
@@ -43,11 +43,12 @@ private class DownloaderCp : Downloader {
 }
 
 private class MultiCp : TorrentDownloader, FileTagger {
+
     override fun isFinished(sourceItem: SourceItem): Boolean? {
         throw NotImplementedError()
     }
 
-    override fun submit(task: DownloadTask) {
+    override fun submit(task: DownloadTask): Boolean {
         throw NotImplementedError()
     }
 

@@ -5,10 +5,10 @@ import io.github.shoaky.sourcedownloader.sdk.ItemPointer
 import io.github.shoaky.sourcedownloader.sdk.PointedItem
 import io.github.shoaky.sourcedownloader.sdk.SourceFile
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
+import io.github.shoaky.sourcedownloader.sdk.component.ExpandSource
 import io.github.shoaky.sourcedownloader.sdk.component.FetchContext
 import io.github.shoaky.sourcedownloader.sdk.component.ItemFileResolver
-import io.github.shoaky.sourcedownloader.sdk.component.OldestToLatestSource
-import io.github.shoaky.sourcedownloader.sdk.component.RequestResult
+import io.github.shoaky.sourcedownloader.sdk.util.RequestResult
 import org.slf4j.LoggerFactory
 import java.time.YearMonth
 import java.time.temporal.ChronoUnit
@@ -16,7 +16,7 @@ import kotlin.io.path.Path
 
 class PatreonIntegration(
     private val client: PatreonClient
-) : OldestToLatestSource<Long, PatreonPointer>(), ItemFileResolver {
+) : ExpandSource<Long, PatreonPointer>(), ItemFileResolver {
 
     override fun targets(pointer: PatreonPointer): List<Long> {
         return client.execute(PledgeRequest()).body().campaignIds()

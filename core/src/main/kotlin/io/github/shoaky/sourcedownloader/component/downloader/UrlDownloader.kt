@@ -18,7 +18,7 @@ class UrlDownloader(
     private val downloadPath: Path
 ) : Downloader {
 
-    override fun submit(task: DownloadTask) {
+    override fun submit(task: DownloadTask): Boolean {
         val uriResource = UrlResource(task.downloadUri())
 
         val readableByteChannel = Channels.newChannel(uriResource.inputStream)
@@ -35,6 +35,7 @@ class UrlDownloader(
                 it.transferFrom(readableByteChannel, 0, Long.MAX_VALUE)
             }
         }
+        return true
     }
 
     override fun defaultDownloadPath(): Path {

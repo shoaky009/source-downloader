@@ -74,13 +74,13 @@ class TelegramIntegration(
         return listOf(sourceFile)
     }
 
-    override fun submit(task: DownloadTask) {
+    override fun submit(task: DownloadTask): Boolean {
         val queryMap = task.downloadUri().queryMap()
         val chatId = queryMap["chatId"]?.toLong()
         val messageId = queryMap["messageId"]?.toInt()
         if (chatId == null || messageId == null) {
             log.error("Invalid download uri: ${task.downloadUri()}")
-            return
+            return false
         }
 
         val chatPointer = ChatPointer(chatId)
@@ -94,7 +94,7 @@ class TelegramIntegration(
 
         if (!documentOp.isPresent) {
             log.warn("SourceItem document not found: ${task.sourceItem}")
-            return
+            return false
         }
         val fileDownloadPath = task.downloadFiles.map { it.path }.first()
         fileDownloadPath.parent.createDirectories()
@@ -145,6 +145,7 @@ class TelegramIntegration(
                 log.error("Error downloading file", it)
             }
             .block()
+        return true
     }
 
     private fun getSize(document: Document): Long {

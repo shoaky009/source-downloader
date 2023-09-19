@@ -6,7 +6,8 @@ import io.github.shoaky.sourcedownloader.common.rss.defaultRssReader
 import io.github.shoaky.sourcedownloader.common.rss.parseTime
 import io.github.shoaky.sourcedownloader.sdk.*
 import io.github.shoaky.sourcedownloader.sdk.component.Source
-import io.github.shoaky.sourcedownloader.sdk.util.LimitedExpander
+import io.github.shoaky.sourcedownloader.sdk.util.ExpandIterator
+import io.github.shoaky.sourcedownloader.sdk.util.RequestResult
 import io.github.shoaky.sourcedownloader.sdk.util.queryMap
 import org.slf4j.LoggerFactory
 import java.net.URI
@@ -46,11 +47,13 @@ class MikanSource(
             .filter { it.date.isAfter(pointer.latest) }
             .sortedBy { it.date }
 
-        val expander = LimitedExpander(items, limit) { item ->
+        return ExpandIterator<SourceItem, PointedItem<ItemPointer>>(
+            items, limit,
+        ) { item ->
             val fansubRss = mikanSupport.getEpisodePageInfo(item.link.toURL()).fansubRss
             if (fansubRss == null) {
                 log.debug("FansubRss is null:{}", item)
-                return@LimitedExpander emptyList()
+                return@ExpandIterator RequestResult(emptyList(), true)
             }
 
             val fansubQuery = URI(fansubRss).queryMap()
@@ -68,7 +71,7 @@ class MikanSource(
                 pointedItems.add(item)
             }
 
-            pointedItems
+            val result = pointedItems
                 .map {
                     PointedItem(
                         it,
@@ -80,10 +83,8 @@ class MikanSource(
                     val date = pointer.shows[key]
                     date == null || it.sourceItem.date.isAfter(date)
                 }
-        }
-
-        log.debug("Fetching mikan source pointer is:{}", pointer)
-        return expander.asSequence().flatten().asIterable()
+            RequestResult(result, true)
+        }.asIterable()
     }
 
     private companion object {

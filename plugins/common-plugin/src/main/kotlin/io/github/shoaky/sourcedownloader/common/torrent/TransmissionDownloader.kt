@@ -27,7 +27,7 @@ class TransmissionDownloader(
         return torrent.percentComplete == 1.0
     }
 
-    override fun submit(task: DownloadTask) {
+    override fun submit(task: DownloadTask): Boolean {
         val response = client.execute(
             TorrentAdd(
                 task.downloadUri().toString(),
@@ -43,7 +43,7 @@ class TransmissionDownloader(
 
         if (torrent == null) {
             log.warn("torrent:{} not found", torrentHash)
-            return
+            return true
         }
 
         val relativePaths = task.relativePaths()
@@ -54,12 +54,13 @@ class TransmissionDownloader(
             }
 
         if (stopDownloadFiles.isEmpty()) {
-            return
+            return true
         }
         client.execute(TorrentSet(
             listOf(torrentHash),
             stopDownloadFiles.map { it.first }
         ))
+        return true
     }
 
     override fun defaultDownloadPath(): Path {

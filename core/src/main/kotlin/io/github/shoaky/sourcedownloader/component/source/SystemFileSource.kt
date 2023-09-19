@@ -67,8 +67,8 @@ class SystemFileSource(
         )
     }
 
-    override fun submit(task: DownloadTask) {
-        // Do nothing
+    override fun submit(task: DownloadTask): Boolean {
+        return true
     }
 
     override fun defaultDownloadPath(): Path {

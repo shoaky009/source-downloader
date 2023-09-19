@@ -54,8 +54,8 @@ object Mover : FileMover {
 
 object TestDownloader : Downloader {
 
-    override fun submit(task: DownloadTask) {
-
+    override fun submit(task: DownloadTask): Boolean {
+        return true
     }
 
     override fun defaultDownloadPath(): Path {
@@ -69,11 +69,13 @@ object TestDownloader : Downloader {
 }
 
 object TestTorrentDownloader : TorrentDownloader {
+
     override fun isFinished(sourceItem: SourceItem): Boolean {
         return true
     }
 
-    override fun submit(task: DownloadTask) {
+    override fun submit(task: DownloadTask): Boolean {
+        return true
     }
 
     override fun defaultDownloadPath(): Path {

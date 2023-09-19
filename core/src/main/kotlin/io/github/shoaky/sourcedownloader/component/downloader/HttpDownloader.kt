@@ -31,7 +31,7 @@ class HttpDownloader(
     @OptIn(ExperimentalCoroutinesApi::class)
     private val dispatchers = Dispatchers.IO.limitedParallelism(parallelism)
 
-    override fun submit(task: DownloadTask) {
+    override fun submit(task: DownloadTask): Boolean {
         runBlocking(dispatchers) {
             task.downloadFiles.forEach {
                 launch {
@@ -39,6 +39,7 @@ class HttpDownloader(
                 }
             }
         }
+        return true
     }
 
     private suspend fun downloadSourceFile(file: SourceFile, headers: Map<String, String>) {
@@ -85,7 +86,6 @@ class HttpDownloader(
             progresses.remove(it.path)
         }
     }
-
 
     override fun stateDetail(): Any {
         return progresses.map {

@@ -22,7 +22,7 @@ class MockDownloader(
         return true
     }
 
-    override fun submit(task: DownloadTask) {
+    override fun submit(task: DownloadTask): Boolean {
         val dp = task.downloadPath
         task.downloadFiles.filter { it.path.notExists() }
             .forEach {
@@ -32,6 +32,7 @@ class MockDownloader(
                 }
                 Files.createFile(resolve)
             }
+        return true
     }
 
     override fun defaultDownloadPath(): Path {

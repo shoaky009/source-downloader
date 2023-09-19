@@ -83,8 +83,9 @@ interface Downloader : SdComponent {
 
     /**
      * @param task the task to be submitted
+     * @return true if the task is submitted successfully
      */
-    fun submit(task: DownloadTask)
+    fun submit(task: DownloadTask): Boolean
 
     /**
      * @return the default download path
