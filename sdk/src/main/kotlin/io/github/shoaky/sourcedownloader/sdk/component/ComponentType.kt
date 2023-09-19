@@ -17,7 +17,7 @@ data class ComponentType(
     val topType: ComponentTopType
         get() = topType()
 
-    constructor(typeName: String, type: ComponentTopType) : this(typeName, type.klass)
+    constructor(type: ComponentTopType, typeName: String) : this(typeName, type.klass)
 
     fun topType(): ComponentTopType {
         return ComponentTopType.fromClass(topTypeClass).first()

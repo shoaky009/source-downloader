@@ -3,11 +3,9 @@ package io.github.shoaky.sourcedownloader.core.component
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import io.github.shoaky.sourcedownloader.core.ObjectWrapperContainer
 import io.github.shoaky.sourcedownloader.core.processor.SourceProcessor
+import io.github.shoaky.sourcedownloader.core.processor.log
 import io.github.shoaky.sourcedownloader.sdk.Properties
-import io.github.shoaky.sourcedownloader.sdk.component.ComponentException
-import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
-import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
-import io.github.shoaky.sourcedownloader.sdk.component.SdComponent
+import io.github.shoaky.sourcedownloader.sdk.component.*
 import io.github.shoaky.sourcedownloader.util.Events
 import org.springframework.beans.factory.DisposableBean
 import java.util.concurrent.ConcurrentHashMap
@@ -19,8 +17,16 @@ class DefaultComponentManager(
     private val componentSuppliers: MutableMap<ComponentType, ComponentSupplier<*>> = ConcurrentHashMap()
 
     @Synchronized
-    override fun createComponent(componentType: ComponentType, name: String, props: Properties) {
+    override fun createComponent(type: ComponentTopType, config: ComponentConfig) {
+        val name = config.name
+        val componentType = ComponentType.of(type, config.type)
         val beanName = componentType.instanceName(name)
+        if (config.enabled.not()) {
+            log.info("Component:'$beanName' is disabled")
+            return
+        }
+
+        val props = Properties.fromMap(config.props)
         val exists = objectWrapperContainer.contains(beanName)
         if (exists) {
             throw ComponentException.instanceExists("component $beanName already exists, check your config.yaml and remove duplicate component")
@@ -109,6 +115,7 @@ class DefaultComponentManager(
                 obj.close()
             }
             objectWrapperContainer.remove(instanceName)
+            log.info("Destroy component $instanceName")
             Events.unregister(wrapper)
         }
     }

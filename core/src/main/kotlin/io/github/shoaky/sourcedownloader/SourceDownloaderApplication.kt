@@ -9,7 +9,6 @@ import io.github.shoaky.sourcedownloader.core.component.ComponentManager
 import io.github.shoaky.sourcedownloader.core.component.DefaultInstanceManager
 import io.github.shoaky.sourcedownloader.core.processor.ProcessorManager
 import io.github.shoaky.sourcedownloader.sdk.InstanceManager
-import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentException
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentTopType
@@ -108,7 +107,10 @@ class SourceDownloaderApplication(
         }.forEach {
             for (type in it.supplyTypes()) {
                 val typeName = type.typeName
-                componentManager.createComponent(type, typeName, Properties.EMPTY)
+                componentManager.createComponent(type.topType, ComponentConfig(
+                    typeName,
+                    typeName,
+                ))
                 log.info("Successfully created component ${type.topTypeClass.simpleName}:${typeName}:${typeName}")
             }
         }
@@ -121,20 +123,18 @@ class SourceDownloaderApplication(
     }
 
     private fun createFromConfigs(key: String, configs: List<ComponentConfig>) {
-        val componentKClass = ComponentTopType.fromName(key)?.klass
+        val type = ComponentTopType.fromName(key)
             ?: throw ComponentException.unsupported("未知组件类型:$key")
 
         configs
-            .filter { it.enabled }
             .forEach {
-                val type = ComponentType(it.type, componentKClass)
                 try {
-                    componentManager.createComponent(type, it.name, Properties.fromMap(it.props))
+                    componentManager.createComponent(type, it)
                 } catch (e: ComponentException) {
-                    log.error("Failed to create component ${type.topTypeClass.simpleName}:${it.type}:${it.name}, reason:${e.message}")
+                    log.error("Failed to create component ${type.klass.simpleName}:${it.type}:${it.name}, reason:${e.message}")
                     throw e
                 }
-                log.info("Successfully created component ${type.topTypeClass.simpleName}:${it.type}:${it.name}")
+                log.info("Successfully created component ${type.klass.simpleName}:${it.type}:${it.name}")
             }
     }
 

@@ -2,7 +2,6 @@ package io.github.shoaky.sourcedownloader.core.component
 
 import com.fasterxml.jackson.module.kotlin.convertValue
 import io.github.shoaky.sourcedownloader.core.processor.SourceProcessor
-import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.SourcePointer
 import io.github.shoaky.sourcedownloader.sdk.component.*
 import io.github.shoaky.sourcedownloader.util.jackson.yamlMapper
@@ -10,7 +9,7 @@ import kotlin.jvm.optionals.getOrElse
 
 interface ComponentManager {
 
-    fun createComponent(componentType: ComponentType, name: String, props: Properties)
+    fun createComponent(type: ComponentTopType, config: ComponentConfig)
 
     fun getAllProcessor(): List<SourceProcessor>
 

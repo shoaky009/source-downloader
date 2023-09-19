@@ -7,6 +7,7 @@ import io.github.shoaky.sourcedownloader.core.component.ComponentManager
 import io.github.shoaky.sourcedownloader.core.component.DefaultComponentManager
 import io.github.shoaky.sourcedownloader.core.processor.DefaultProcessorManager
 import io.github.shoaky.sourcedownloader.core.processor.ProcessorManager
+import io.github.shoaky.sourcedownloader.util.converter.ComponentsConverter
 import org.springframework.beans.factory.support.DefaultListableBeanFactory
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -33,5 +34,9 @@ class ApplicationConfiguration {
         return DefaultProcessorManager(processingStorage, componentManager, objectWrapperContainer)
     }
 
+    @Bean
+    fun componentsConverter(): ComponentsConverter {
+        return ComponentsConverter()
+    }
 
 }

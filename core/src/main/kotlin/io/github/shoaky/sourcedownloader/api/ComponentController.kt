@@ -4,7 +4,6 @@ import io.github.shoaky.sourcedownloader.core.component.ComponentConfig
 import io.github.shoaky.sourcedownloader.core.component.ComponentDescription
 import io.github.shoaky.sourcedownloader.core.component.ComponentManager
 import io.github.shoaky.sourcedownloader.core.component.ConfigOperator
-import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentException
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentStateful
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentTopType
@@ -47,14 +46,12 @@ private class ComponentController(
         @PathVariable type: ComponentTopType,
         @PathVariable typeName: String,
         @PathVariable name: String,
-        @RequestBody body: Map<String, Any>
+        @RequestBody config: ComponentConfig
     ) {
-        val props = Properties.fromMap(body)
-        val componentType = ComponentType(typeName, type.klass)
-        componentManager.createComponent(componentType, name, props)
+        componentManager.createComponent(type, config)
         configOperator.save(
             type.lowerHyphenName(),
-            ComponentConfig(name, typeName, body)
+            config
         )
     }
 
@@ -81,6 +78,18 @@ private class ComponentController(
             .sortedBy { description ->
                 description.types.maxOfOrNull { it.topType }
             }
+    }
+
+    @GetMapping("/reload/{type}/{typeName}/{name}")
+    fun reload(
+        @PathVariable type: ComponentTopType,
+        @PathVariable typeName: String,
+        @PathVariable name: String,
+    ) {
+        val config = configOperator.getComponentConfig(type, typeName, name)
+        val componentType = ComponentType.of(type, typeName)
+        componentManager.destroy(componentType, name)
+        componentManager.createComponent(type, config)
     }
 }
 
