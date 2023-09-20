@@ -74,7 +74,8 @@ class SourceProcessor(
         ProcessorSafeRunner(this)
     }
     private val renameScheduledExecutor by lazy {
-        Executors.newSingleThreadScheduledExecutor()
+        val factory = Thread.ofVirtual().name("rename-task", 1).factory()
+        Executors.newScheduledThreadPool(1, factory)
     }
     private val itemChannel = Channel<Process>(options.channelBufferSize)
     private val coroutineScope = CoroutineScope(Dispatchers.Default)

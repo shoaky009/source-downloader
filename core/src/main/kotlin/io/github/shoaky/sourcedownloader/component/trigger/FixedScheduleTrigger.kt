@@ -3,7 +3,6 @@ package io.github.shoaky.sourcedownloader.component.trigger
 import org.slf4j.LoggerFactory
 import java.time.Duration
 import java.util.*
-import kotlin.concurrent.thread
 import kotlin.concurrent.timerTask
 
 /**
@@ -25,9 +24,10 @@ class FixedScheduleTrigger(
         timer.scheduleAtFixedRate(timerTask(), interval.toMillis(), interval.toMillis())
         if (onStartRunTasks) {
             tasks.forEach {
-                thread {
-                    it.run()
-                }.name = "OnStartUp-$interval"
+                Thread.ofVirtual().name("onstart-up-$interval")
+                    .start {
+                        it.run()
+                    }
             }
         }
     }
@@ -43,6 +43,7 @@ class FixedScheduleTrigger(
     }
 
     companion object {
+
         private val log = LoggerFactory.getLogger(FixedScheduleTrigger::class.java)
     }
 

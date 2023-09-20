@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping
 import org.springframework.web.util.pattern.PathPatternParser
-import kotlin.concurrent.thread
+import java.util.concurrent.Executors
 
 /**
  * Webhook触发器
@@ -16,6 +16,7 @@ class WebhookTrigger(
     private val method: String = "GET",
     private val requestMapping: RequestMappingHandlerMapping
 ) : HoldingTaskTrigger() {
+
     override fun start() {
         val info = requestMappingInfo()
         requestMapping.registerMapping(info, this,
@@ -25,9 +26,7 @@ class WebhookTrigger(
     @Suppress("UNUSED")
     fun endpoint(): ResponseEntity<Any> {
         for (task in tasks) {
-            thread {
-                task.run()
-            }
+            executor.submit(task)
         }
         return ResponseEntity.noContent().build()
     }
@@ -44,6 +43,13 @@ class WebhookTrigger(
 
     override fun stop() {
         requestMapping.unregisterMapping(requestMappingInfo())
+    }
+
+    companion object {
+
+        private val executor = Executors.newThreadPerTaskExecutor(
+            Thread.ofVirtual().name("webhook-trigger", 0).factory()
+        )
     }
 
 }

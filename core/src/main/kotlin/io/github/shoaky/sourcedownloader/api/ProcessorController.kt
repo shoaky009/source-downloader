@@ -10,7 +10,7 @@ import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentException
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
-import kotlin.concurrent.thread
+import java.util.concurrent.Executors
 
 @RestController
 @RequestMapping("/api/processor")
@@ -19,6 +19,10 @@ private class ProcessorController(
     private val configStorages: List<ProcessorConfigStorage>,
     private val configOperator: ConfigOperator
 ) {
+
+    private val manualTriggerExecutor = Executors.newThreadPerTaskExecutor(
+        Thread.ofVirtual().name("manual-trigger", 0).factory()
+    )
 
     @GetMapping
     fun getProcessors(): List<ProcessorInfo> {
@@ -113,9 +117,7 @@ private class ProcessorController(
     @GetMapping("/trigger/{processorName}")
     fun trigger(@PathVariable processorName: String) {
         val sourceProcessor = processorManager.getProcessor(processorName)
-        thread {
-            sourceProcessor.get().safeTask().run()
-        }
+        manualTriggerExecutor.submit(sourceProcessor.get().safeTask())
     }
 
     @PostMapping("/items/{processorName}")
