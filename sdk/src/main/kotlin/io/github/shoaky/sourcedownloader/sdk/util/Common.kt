@@ -2,9 +2,19 @@ package io.github.shoaky.sourcedownloader.sdk.util
 
 import com.google.common.reflect.ClassPath
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
+import io.github.shoaky.sourcedownloader.sdk.util.Common.Companion.log
+import org.slf4j.LoggerFactory
 import java.net.URI
 import java.util.*
 import kotlin.reflect.KClass
+
+class Common {
+    companion object {
+
+        internal val log = LoggerFactory.getLogger(Common::class.java)
+    }
+
+}
 
 fun String.find(vararg regexes: Regex): String? {
     for (regex in regexes) {
@@ -89,9 +99,8 @@ fun getObjectSuppliers(
     vararg packages: String,
     classLoader: ClassLoader = Thread.currentThread().contextClassLoader
 ): Array<ComponentSupplier<*>> {
-    return packages.map {
-        ClassPath.from(classLoader)
-            .getTopLevelClasses(it)
+    val instances = packages.map {
+        ClassPath.from(classLoader).getTopLevelClasses(it)
     }
         .flatten()
         .filter { it.simpleName.contains("supplier", true) }
@@ -100,4 +109,6 @@ fun getObjectSuppliers(
         .mapNotNull {
             it.objectInstance
         }.toTypedArray()
+    log.info("ClassLoader:$classLoader loaded object suppliers:${instances.map { it::class.simpleName }}")
+    return instances
 }

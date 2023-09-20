@@ -131,7 +131,7 @@ class SourceProcessor(
             if (modified) {
                 log.info("Processor:'$name' 重命名任务完成 took:${measureTime.inWholeMilliseconds}ms")
             }
-            val renameCostTimeThreshold = 100L
+            val renameCostTimeThreshold = 150L
             if (modified.not() && measureTime.inWholeMilliseconds > renameCostTimeThreshold) {
                 log.warn("Processor:'$name' 重命名任务没有修改 took:${measureTime.inWholeMilliseconds}ms")
             }

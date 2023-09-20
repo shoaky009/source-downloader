@@ -6,6 +6,7 @@ import io.github.shoaky.sourcedownloader.sdk.plugin.PluginDescription
 import telegram4j.core.MTProtoTelegramClient
 
 class Telegram4jPlugin : Plugin {
+
     override fun init(pluginContext: PluginContext) {
         pluginContext.registerInstanceFactory(TelegramClientInstanceFactory)
         pluginContext.registerSupplier(
@@ -23,6 +24,6 @@ class Telegram4jPlugin : Plugin {
     }
 
     override fun description(): PluginDescription {
-        return PluginDescription("telegram4j", "0.0.1")
+        return PluginDescription("telegram", "0.0.1")
     }
 }

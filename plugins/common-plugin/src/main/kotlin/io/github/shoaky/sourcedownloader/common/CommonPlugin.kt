@@ -1,10 +1,10 @@
 package io.github.shoaky.sourcedownloader.common
 
 import io.github.shoaky.sourcedownloader.common.anime.BgmTvClientInstanceFactory
-import io.github.shoaky.sourcedownloader.common.supplier.AnimeVariableProviderSupplier
-import io.github.shoaky.sourcedownloader.common.supplier.MikanVariableProviderSupplier
+import io.github.shoaky.sourcedownloader.common.supplier.*
 import io.github.shoaky.sourcedownloader.common.torrent.QbittorrentClientInstanceFactory
 import io.github.shoaky.sourcedownloader.common.torrent.QbittorrentDownloaderSupplier
+import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
 import io.github.shoaky.sourcedownloader.sdk.plugin.Plugin
 import io.github.shoaky.sourcedownloader.sdk.plugin.PluginContext
 import io.github.shoaky.sourcedownloader.sdk.plugin.PluginDescription
@@ -19,6 +19,7 @@ internal class CommonPlugin : Plugin {
         )
         pluginContext.registerSupplier(
             *getObjectSuppliers("io.github.shoaky.sourcedownloader.common.supplier"),
+            // *getObjectSupplier(),
             QbittorrentDownloaderSupplier(pluginContext.getInstanceManager()),
             AnimeVariableProviderSupplier(pluginContext),
             MikanVariableProviderSupplier(pluginContext),
@@ -31,5 +32,30 @@ internal class CommonPlugin : Plugin {
 
     override fun description(): PluginDescription {
         return PluginDescription("common", "0.0.1")
+    }
+
+    private fun getObjectSupplier(): Array<ComponentSupplier<*>> {
+        return arrayOf(
+            AnimeFileFilterSupplier,
+            AnimeReplacementDeciderSupplier,
+            AnimeTaggerSupplier,
+            AnitomVariableProviderSupplier,
+            CommonManualSourceSupplier,
+            DlsiteVariableProviderSupplier,
+            EpisodeVariableProviderSupplier,
+            FanboxIntegrationSupplier,
+            JackettSourceSupplier,
+            LanguageVariableProviderSupplier,
+            MediaTypeExistsDetectorSupplier,
+            MikanSourceSupplier,
+            OpenAiVariableProviderSupplier,
+            PatreonIntegrationSupplier,
+            RssSourceSupplier,
+            SeasonProviderSupplier,
+            SimpleFileTaggerSupplier,
+            TorrentFileResolverSupplier,
+            TransmissionDownloaderSupplier,
+            WebdavMoverSupplier
+        )
     }
 }

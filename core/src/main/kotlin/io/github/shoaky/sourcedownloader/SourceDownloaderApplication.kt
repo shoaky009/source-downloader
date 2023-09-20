@@ -1,5 +1,7 @@
 package io.github.shoaky.sourcedownloader
 
+import io.github.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
+import io.github.shoaky.sourcedownloader.component.supplier.*
 import io.github.shoaky.sourcedownloader.config.SourceDownloaderProperties
 import io.github.shoaky.sourcedownloader.core.PluginManager
 import io.github.shoaky.sourcedownloader.core.ProcessorConfigStorage
@@ -78,12 +80,6 @@ class SourceDownloaderApplication(
     private fun loadAndInitPlugins() {
         pluginManager.loadPlugins()
         pluginManager.initPlugins()
-        val plugins = pluginManager.getPlugins()
-        plugins.forEach {
-            val description = it.description()
-            val fullName = description.fullName()
-            log.info("Successfully loaded plugin $fullName")
-        }
     }
 
     private fun registerComponentSuppliers() {
@@ -91,14 +87,17 @@ class SourceDownloaderApplication(
             *componentSupplier.toTypedArray()
         )
         componentManager.registerSupplier(
-            *getObjectSuppliers("io.github.shoaky.sourcedownloader.component.supplier")
+            *getObjectSuppliers(
+                "io.github.shoaky.sourcedownloader.component.supplier",
+            )
+            // *getObjectSuppliers()
         )
         val types = componentManager.getSuppliers()
             .map { it.supplyTypes() }
             .flatten()
             .distinct()
             .groupBy({ it.topTypeClass.simpleName }, { it.typeName })
-        log.info("Component registration completed:$types")
+        log.info("Component supplier registration completed:$types")
     }
 
     private fun createComponents() {
@@ -186,25 +185,52 @@ class SourceDownloaderApplication(
 
         internal val log = LoggerFactory.getLogger(SourceDownloaderApplication::class.java)
 
-        @JvmStatic
-        fun main(args: Array<String>) {
-            setupProxy()
-
-            val springApplication = SpringApplication(SourceDownloaderApplication::class.java)
-            springApplication.mainApplicationClass = SourceDownloaderApplication::class.java
-            springApplication.run(*args)
+        private fun getObjectSuppliers0(): Array<ComponentSupplier<*>> {
+            return arrayOf(
+                AlwaysReplaceSupplier,
+                DeleteEmptyDirectorySupplier,
+                ExpressionFileFilterSupplier,
+                ExpressionItemContentFilterSupplier,
+                ExpressionItemFilterSupplier,
+                FileSizeReplacementDeciderSupplier,
+                FixedScheduleTriggerSupplier,
+                FixedSourceSupplier,
+                GeneralFileMoverSupplier,
+                HardlinkFileMoverSupplier,
+                ItemDirectoryExistsDetectorSupplier,
+                MappedFileTaggerSupplier,
+                MockDownloaderSupplier,
+                NeverReplaceSupplier,
+                NoneDownloaderSupplier,
+                RunCommandSupplier,
+                SendHttpRequestSupplier,
+                SequenceVariableProviderSupplier,
+                SystemFileResolverSupplier,
+                SystemFileSourceSupplier,
+                TouchItemDirectorySupplier,
+                UriSourceSupplier,
+                UrlDownloaderSupplier,
+                UrlFileResolverSupplier,
+                HttpDownloaderSupplier
+            )
         }
+    }
+}
 
-        private fun setupProxy() {
-            val env = System.getenv()
-            val urlStr = env["http_proxy"] ?: env["HTTP_PROXY"] ?: env["https_proxy"] ?: env["HTTPS_PROXY"]
-            urlStr?.also {
-                val url = URI(it)
-                System.setProperty("http.proxyHost", url.host)
-                System.setProperty("http.proxyPort", url.port.toString())
-                System.setProperty("https.proxyHost", url.host)
-                System.setProperty("https.proxyPort", url.port.toString())
-            }
-        }
+fun main(args: Array<String>) {
+    setupProxy()
+    SpringApplication.run(SourceDownloaderApplication::class.java, *args)
+}
+
+private fun setupProxy() {
+    val env = System.getenv()
+    val urlStr = env["http_proxy"] ?: env["HTTP_PROXY"] ?: env["https_proxy"] ?: env["HTTPS_PROXY"]
+    urlStr?.also {
+        val uri = URI(it)
+        log.info("Proxy using:$uri")
+        System.setProperty("http.proxyHost", uri.host)
+        System.setProperty("http.proxyPort", uri.port.toString())
+        System.setProperty("https.proxyHost", uri.host)
+        System.setProperty("https.proxyPort", uri.port.toString())
     }
 }

@@ -2,7 +2,7 @@ plugins {
     alias(libs.plugins.springboot)
     alias(libs.plugins.kotlin.spring)
     id("jacoco-report-aggregation")
-    // alias(libs.plugins.graalvm)
+    alias(libs.plugins.graalvm)
 }
 
 dependencies {
@@ -62,7 +62,7 @@ fun DependencyHandlerScope.resolveBuildInPlugins() {
 
 tasks.bootBuildImage {
     imageName.set("source-downloader")
-    runImage.set("azul/zulu-openjdk-alpine:20-jre")
+    runImage.set("azul/zulu-openjdk-alpine:21-jre")
     environment.put("TZ", "Asia/Shanghai")
     environment.put("SOURCE_DOWNLOADER_DATA_LOCATION", "/app/data/")
     environment.put("SOURCE_DOWNLOADER_PLUGIN_LOCATION", "/app/plugin/")
@@ -97,6 +97,10 @@ tasks.bootJar {
     }
 }
 
+tasks.processAot {
+    enabled = project.hasProperty("native")
+}
+
 tasks.testCodeCoverageReport {
     this.reports {
         html.required.set(false)
@@ -112,10 +116,20 @@ springBoot {
     buildInfo()
 }
 
-// graalvmNative {
-//     binaries.all {
-//         resources.includedPatterns.add(".*.yaml")
-//         resources.includedPatterns.add(".*.yml")
-//         resources.autodetect()
-//     }
-// }
+graalvmNative {
+    agent {
+        metadataCopy {
+            inputTaskNames.add("test")
+            outputDirectories.add("src/main/resources/META-INF/native-image")
+            mergeWithExisting.set(true)
+        }
+    }
+
+    binaries.all {
+        resources.includedPatterns.add(".*.yaml")
+        resources.includedPatterns.add(".*.yml")
+        resources.autodetect()
+        quickBuild.set(true)
+    }
+
+}

@@ -2,9 +2,9 @@ package io.github.shoaky.sourcedownloader.core
 
 import io.github.shoaky.sourcedownloader.config.SourceDownloaderProperties
 import io.github.shoaky.sourcedownloader.core.component.ComponentManager
+import io.github.shoaky.sourcedownloader.core.processor.log
 import io.github.shoaky.sourcedownloader.sdk.InstanceManager
 import io.github.shoaky.sourcedownloader.sdk.plugin.Plugin
-import org.springframework.core.io.support.SpringFactoriesLoader
 import org.springframework.stereotype.Component
 import java.util.*
 
@@ -26,6 +26,7 @@ class PluginManager(
     private val pluginLoader = ServiceLoaderPluginLoader
     fun loadPlugins() {
         val loadedPlugins = pluginLoader.loadPlugins()
+        log.info("Loaded plugins: ${loadedPlugins.map { it.description().fullName() }}")
         plugins.addAll(loadedPlugins)
     }
 
@@ -41,21 +42,15 @@ class PluginManager(
         plugins.forEach { it.destroy(pluginContext) }
     }
 
-    // NOTE native image下有点问题，暂时不用
-    private object SpringPluginLoader : PluginLoader {
-        override fun loadPlugins(classLoader: ClassLoader?): List<Plugin> {
-            val loader = SpringFactoriesLoader.forResourceLocation("META-INF/plugin", classLoader)
-            return loader.load(Plugin::class.java)
-        }
-    }
-
     private object ServiceLoaderPluginLoader : PluginLoader {
+
         override fun loadPlugins(classLoader: ClassLoader?): List<Plugin> {
-            return ServiceLoader.load(Plugin::class.java, classLoader).map { it }
+            return ServiceLoader.load(Plugin::class.java, Thread.currentThread().contextClassLoader).map { it }
         }
     }
 }
 
 interface PluginLoader {
+
     fun loadPlugins(classLoader: ClassLoader? = null): List<Plugin>
 }
