@@ -12,7 +12,7 @@ allprojects {
         maven { url = uri("https://repo.huaweicloud.com/repository/maven/") }
         mavenCentral()
         maven { url = uri("https://maven.pkg.jetbrains.space/public/p/exposed/release") }
-        gradlePluginPortal()
+        maven { url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/bootstrap") }
         maven { url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots") }
     }
 }
@@ -23,7 +23,7 @@ scmVersion {
 
 version = scmVersion.version
 val isSnapshot = version.toString().endsWith("-SNAPSHOT", true)
-val javaVersion = 17
+val javaVersion = 21
 
 subprojects {
     version = rootProject.version

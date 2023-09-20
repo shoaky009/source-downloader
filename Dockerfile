@@ -1,10 +1,10 @@
-FROM azul/zulu-openjdk-alpine:20-jre as builder
+FROM azul/zulu-openjdk-alpine:21-jre as builder
 
 ARG version
 COPY core/build/libs/source-downloader-core-$version.jar application.jar
 RUN java -Djarmode=layertools -jar application.jar extract
 
-FROM azul/zulu-openjdk-alpine:20-jre
+FROM azul/zulu-openjdk-alpine:21-jre
 VOLUME /tmp
 
 ENV JAVA_OPTS="-Xmx512m -Xms64m"

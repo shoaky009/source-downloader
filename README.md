@@ -1,7 +1,7 @@
 # 注意项目文档和代码功能当前阶段没有完全同步, 遇到使用问题请留言
 
-![Kotlin](https://img.shields.io/badge/Kotlin-1.9.0-blueviolet)
-![JRE](https://img.shields.io/badge/JRE-17+-orange)
+![Kotlin](https://img.shields.io/badge/Kotlin-1.9.10-blueviolet)
+![JRE](https://img.shields.io/badge/JRE-21+-orange)
 [![GPLv3 license](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://github.com/shoaky009/source-downloader/blob/main/LICENSE)
 ![Test](https://github.com/shoaky009/source-downloader/actions/workflows/test.yml/badge.svg?branch=main)
 [![Codecov](https://codecov.io/gh/shoaky009/source-downloader/branch/main/graph/badge.svg)](https://codecov.io/gh/shoaky009/source-downloader)

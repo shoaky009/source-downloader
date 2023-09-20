@@ -1,24 +1,26 @@
 [versions]
-springboot = "3.1.1"
-guava = "32.1.1-jre"
+springboot = "3.1.3"
+guava = "32.1.2-jre"
 commons-lang3 = "3.12.0"
-cel = "0.3.18"
+cel = "0.3.21"
 kotlinx-coroutines = "1.7.3"
-kotlin = "1.9.10"
+kotlin = "1.9.20-dev-9102"
 graalvm = "0.9.21"
+# https://github.com/JetBrains/Exposed/pull/1456
+# 42以上需要改成RETURNING才支持INSERT返回ID，等该PR合并之后升级
 sqlite = "3.42.0.0"
 hibernate = "6.2.6.Final"
 commons-collections4 = "4.4"
 hibernate-types = "2.21.1"
 axion-release = "1.15.3"
-zxing = "3.5.1"
+zxing = "3.5.2"
 telegram4j = "0.1.0-SNAPSHOT"
-rssreader = "3.4.5"
+rssreader = "3.5.0"
 anitomyJ = "0.0.7"
 atomashpolskiy-bt = "1.10"
 tika = "2.7.0"
 jsoup = "1.16.1"
-exposed = "0.42.0"
+exposed = "0.43.0"
 
 [libraries]
 springboot-dependencies = { module = "org.springframework.boot:spring-boot-dependencies", version.ref = "springboot" }
