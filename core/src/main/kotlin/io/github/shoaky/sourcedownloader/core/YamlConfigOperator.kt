@@ -7,6 +7,7 @@ import io.github.shoaky.sourcedownloader.core.component.ConfigOperator
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentTopType
 import io.github.shoaky.sourcedownloader.util.jackson.yamlMapper
+import org.slf4j.LoggerFactory
 import java.nio.file.Path
 import kotlin.io.path.Path
 import kotlin.io.path.inputStream
@@ -14,6 +15,10 @@ import kotlin.io.path.inputStream
 class YamlConfigOperator(
     private val configPath: Path = Path("config.yaml")
 ) : ConfigOperator {
+
+    init {
+        log.info("Config path: {}", configPath.toAbsolutePath())
+    }
 
     override fun getAllProcessorConfig(): List<ProcessorConfig> {
         val config = yamlMapper.readTree(configPath.inputStream()).get("processors") ?: return emptyList()
@@ -82,6 +87,11 @@ class YamlConfigOperator(
                 Properties.fromMap(it.props)
             }.firstOrNull() ?: throw IllegalArgumentException("instance $name not found")
         return props
+    }
+
+    companion object {
+
+        private val log = LoggerFactory.getLogger(YamlConfigOperator::class.java)
     }
 }
 

@@ -101,6 +101,10 @@ tasks.processAot {
     enabled = project.hasProperty("native")
 }
 
+tasks.processTestAot {
+    enabled = project.hasProperty("native")
+}
+
 tasks.testCodeCoverageReport {
     this.reports {
         html.required.set(false)

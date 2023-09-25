@@ -157,6 +157,14 @@ class SourceProcessorTest : InitializingBean {
             .itemContent.sourceFiles.first().status)
     }
 
+    @Test
+    fun pointer_storage() {
+        val processorName = "SyncReplaceFileCase"
+        val processor = processorManager.getProcessor(processorName).get()
+        val state = processingStorage.findProcessorSourceState(processorName, processor.sourceId)
+        assert(state != null)
+    }
+
     // 待测试场景
     // processing_record中的status
     // pointer存储

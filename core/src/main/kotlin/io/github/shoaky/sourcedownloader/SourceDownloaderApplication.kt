@@ -28,7 +28,6 @@ import org.springframework.core.env.Environment
 import java.net.URI
 
 @SpringBootApplication
-// @ImportRuntimeHints(SourceDownloaderApplication.ApplicationRuntimeHints::class)
 @EnableConfigurationProperties(SourceDownloaderProperties::class)
 class SourceDownloaderApplication(
     private val environment: Environment,
@@ -90,7 +89,7 @@ class SourceDownloaderApplication(
             *getObjectSuppliers(
                 "io.github.shoaky.sourcedownloader.component.supplier",
             )
-            // *getObjectSuppliers()
+            // *getObjectSuppliers0()
         )
         val types = componentManager.getSuppliers()
             .map { it.supplyTypes() }
@@ -214,9 +213,22 @@ class SourceDownloaderApplication(
                 HttpDownloaderSupplier
             )
         }
+
+        @JvmStatic
+        fun main(args: Array<String>) {
+            setupProxy()
+
+            val springApplication = SpringApplication(SourceDownloaderApplication::class.java)
+            springApplication.mainApplicationClass = SourceDownloaderApplication::class.java
+            springApplication.run(*args)
+        }
+
     }
 }
 
+/**
+ * TODO 后面去掉兼容，AOT时用
+ */
 fun main(args: Array<String>) {
     setupProxy()
     SpringApplication.run(SourceDownloaderApplication::class.java, *args)

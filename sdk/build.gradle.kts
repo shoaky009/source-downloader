@@ -21,6 +21,7 @@ dependencies {
 
     api(libs.guava)
     api(libs.commons.lang3)
+    compileOnlyApi(libs.graalvm.sdk)
 }
 
 java {

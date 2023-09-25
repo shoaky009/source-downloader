@@ -37,7 +37,7 @@ import kotlin.time.measureTime
 class SourceProcessor(
     val name: String,
     // 先这样传入 后面要改
-    private val sourceId: String,
+    val sourceId: String,
     private val source: Source<SourcePointer>,
     private val itemFileResolver: ItemFileResolver,
     private val downloader: Downloader,

@@ -245,3 +245,13 @@ processors:
       filename-pattern: "{sequence}"
       file-replacement-decider: "always"
     enabled: true
+  - name: "PointerWriteReadCase"
+    source: "fixed:replace-case"
+    variable-providers: [ ]
+    item-file-resolver: "fixed:replace-case"
+    downloader: "url"
+    file-mover: "general"
+    save-path: "src/test/resources/target/PointerWriteReadCase"
+    options:
+      fetch-limit: 1
+    enabled: true

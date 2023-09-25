@@ -29,7 +29,7 @@ object RssSourceSupplier : ComponentSupplier<RssSource> {
         )
     }
 
-    private data class Config(
+    data class Config(
         val url: String,
         val tags: List<String> = emptyList(),
         val attributes: Map<String, String> = emptyMap(),
