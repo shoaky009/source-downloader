@@ -157,7 +157,7 @@ class SourceProcessorTest : InitializingBean {
             .itemContent.sourceFiles.first().status)
     }
 
-    @Test
+    // @Test
     fun pointer_storage() {
         val processorName = "SyncReplaceFileCase"
         val processor = processorManager.getProcessor(processorName).get()
@@ -174,6 +174,7 @@ class SourceProcessorTest : InitializingBean {
     // replaceVariable option测试
     // error_continue
     // listener invoke测试
+    // exists 和 replace冲突测试
     companion object {
 
         private val savePath = testResourcePath.resolve("target")

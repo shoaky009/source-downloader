@@ -162,23 +162,40 @@ class SourceProcessor(
             return emptyList()
         }
 
-        val existsFiles = itemContent.sourceFiles.filter { it.status == FileContentStatus.TARGET_EXISTS }
+        val existsContentFiles = itemContent.sourceFiles
+            .filter { it.status == FileContentStatus.TARGET_EXISTS && it.existTargetPath != null }
         val support = TargetPathRelationSupport(
             itemContent.sourceItem,
-            existsFiles,
+            existsContentFiles,
             processingStorage
         )
-        val discardedItems = mutableMapOf<String, Boolean>()
-        val replaceFiles = existsFiles
-            .map { fileContent ->
-                val before = support.getBeforeContent(fileContent.targetPath())
-                cancelBeforeProcessing(before, fileContent, discardedItems)
-                val copy = itemContent.copy(
-                    sourceFiles = listOf(fileContent)
-                )
 
-                val existingFile = fileMover.pathMetadata(fileContent.targetPath())
-                val replace = fileReplacementDecider.isReplace(copy, before?.itemContent, existingFile)
+        val existTargets = existsContentFiles.mapNotNull { it.existTargetPath }
+        val filesToCheck = fileMover.exists(existTargets).zip(existsContentFiles)
+        val discardedItems = mutableMapOf<String, Boolean>()
+        val replaceFiles = filesToCheck
+            .map { (physicalExists, fileContent) ->
+                val existTargetPath = fileContent.existTargetPath!!
+                // 预防真实路径还不存在的情况，在(target_path_record)中提前占用的文件
+                val existingFile = if (physicalExists) {
+                    existTargetPath.let {
+                        fileMover.pathMetadata(it)
+                    }
+                } else {
+                    SourceFile(existTargetPath)
+                }
+
+                val before = support.getBeforeContent(fileContent.targetPath())
+                val replace = fileReplacementDecider.isReplace(
+                    itemContent.copy(
+                        sourceFiles = listOf(fileContent)
+                    ),
+                    before?.itemContent,
+                    existingFile
+                )
+                if (replace) {
+                    cancelBeforeProcessing(before, fileContent, discardedItems)
+                }
                 fileContent to replace
             }.filter { it.second }
             .map { it.first }

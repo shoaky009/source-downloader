@@ -30,7 +30,7 @@ class MediaTypeExistsDetectorTest {
             fileMover, content
         ).values
 
-        assertContentEquals(listOf(true), exists)
+        assertContentEquals(listOf(Path("test/test1.mkv")), exists)
     }
 
     @Test
@@ -54,6 +54,6 @@ class MediaTypeExistsDetectorTest {
             fileMover, content
         ).values
 
-        assertContentEquals(listOf(false), exists)
+        assertContentEquals(listOf(null), exists)
     }
 }

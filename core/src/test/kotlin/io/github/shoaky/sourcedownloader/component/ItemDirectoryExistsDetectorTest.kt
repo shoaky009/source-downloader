@@ -42,7 +42,7 @@ class ItemDirectoryExistsDetectorTest {
             )
         )
         val exists = detector.exists(fileMover, content).values
-        assertContentEquals(listOf(true), exists)
+        assertContentEquals(listOf(Path("save/test").toAbsolutePath()), exists)
     }
 
     @Test
@@ -69,6 +69,6 @@ class ItemDirectoryExistsDetectorTest {
             )
         )
         val exists = detector.exists(fileMover, content).values
-        assertContentEquals(listOf(false), exists)
+        assertContentEquals(listOf(null), exists)
     }
 }

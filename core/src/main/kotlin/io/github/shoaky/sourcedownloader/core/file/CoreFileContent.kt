@@ -28,6 +28,11 @@ data class CoreFileContent(
 
     private val targetPath: Path = targetSavePath.resolve(targetFilename)
 
+    /**
+     * 只有在process中当[status] == [FileContentStatus.TARGET_EXISTS]时此值不为null，在asyncTask中此值为null
+     */
+    var existTargetPath: Path? = null
+
     override fun targetPath(): Path {
         return targetPath
     }

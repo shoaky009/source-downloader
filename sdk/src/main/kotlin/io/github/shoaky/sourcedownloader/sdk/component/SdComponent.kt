@@ -248,9 +248,9 @@ interface FileReplacementDecider : SdComponent {
 interface FileExistsDetector : SdComponent {
 
     /**
-     * @return true if exists, item will not be downloaded
+     * @return Key is the path to be detected, Value is the path that is considered to exist
      */
-    fun exists(fileMover: FileMover, content: ItemContent): Map<Path, Boolean>
+    fun exists(fileMover: FileMover, content: ItemContent): Map<Path, Path?>
 
 }
 

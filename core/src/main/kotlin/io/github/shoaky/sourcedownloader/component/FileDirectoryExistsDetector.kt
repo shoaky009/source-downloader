@@ -12,11 +12,12 @@ import java.nio.file.Path
  */
 object FileDirectoryExistsDetector : FileExistsDetector {
 
-    override fun exists(fileMover: FileMover, content: ItemContent): Map<Path, Boolean> {
+    override fun exists(fileMover: FileMover, content: ItemContent): Map<Path, Path?> {
         val dirs = content.sourceFiles.mapNotNull { it.fileSaveRootDirectory() }.distinct()
         val exists = dirs.zip(fileMover.exists(dirs)).toMap()
         return content.sourceFiles.associate {
-            it.targetPath() to (exists[it.fileSaveRootDirectory()] == true)
+            val dir = it.fileSaveRootDirectory()
+            it.targetPath() to if (exists[dir] == true) dir else null
         }
     }
 }

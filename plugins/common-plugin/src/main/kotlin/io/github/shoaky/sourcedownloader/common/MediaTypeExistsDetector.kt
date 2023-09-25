@@ -20,23 +20,23 @@ object MediaTypeExistsDetector : FileExistsDetector {
      */
     private val tika = Tika()
 
-    override fun exists(fileMover: FileMover, content: ItemContent): Map<Path, Boolean> {
+    override fun exists(fileMover: FileMover, content: ItemContent): Map<Path, Path?> {
         val savePaths = content.sourceFiles.groupBy { it.saveDirectoryPath() }
 
-        val result = mutableMapOf<Path, Boolean>()
+        val result = mutableMapOf<Path, Path?>()
         for (entry in savePaths) {
             val path = entry.key
             val currentPathsMediaMapping = fileMover.listPath(path)
                 .groupBy({
                     MediaType.parse(tika.detect(it.name)).type
                 }, {
-                    it.nameWithoutExtension
+                    it.nameWithoutExtension to it
                 })
-                .mapValues { it.value.toSet() }
+                .mapValues { it.value.distinct() }
             entry.value.map { it.targetPath() }.forEach { target ->
                 val mediaType = MediaType.parse(tika.detect(target.name)).type
-                val currentPath = currentPathsMediaMapping[mediaType] ?: emptySet()
-                result[target] = currentPath.contains(target.nameWithoutExtension)
+                val currentPath = currentPathsMediaMapping[mediaType] ?: emptyList()
+                result[target] = currentPath.firstOrNull { it.first == target.nameWithoutExtension }?.second
             }
         }
         return result

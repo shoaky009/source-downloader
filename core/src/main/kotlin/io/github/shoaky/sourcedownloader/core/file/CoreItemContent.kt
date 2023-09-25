@@ -25,13 +25,17 @@ data class CoreItemContent(
 
         val undetectedFiles = sourceFiles.filter { it.status == FileContentStatus.UNDETECTED }
 
-        val existsMapping: MutableMap<Path, Boolean> by lazy {
+        // Key 是当前处理的路径, Value是认为存在的路径
+        val existsMapping: MutableMap<Path, Path?> by lazy {
             val exists = fileMover.exists(undetectedFiles.map { it.targetPath() })
-            val mapping = mutableMapOf<Path, Boolean>()
-            undetectedFiles.map { it.targetPath() }.zip(exists).toMap(mapping)
+            val mapping = mutableMapOf<Path, Path?>()
+            undetectedFiles.map { it.targetPath() }.zip(exists).forEach { (path, exist) ->
+                mapping[path] = if (exist) path else null
+            }
 
-            fileExistsDetector.exists(fileMover, this).forEach { (path, exists) ->
-                mapping[path] = exists
+            // TODO 文件夹的情况没有处理
+            fileExistsDetector.exists(fileMover, this).forEach { (path, existsPath) ->
+                mapping[path] = existsPath
             }
             mapping
         }
@@ -48,8 +52,10 @@ data class CoreItemContent(
                 continue
             }
 
-            if (existsMapping[sourceFile.targetPath()] == true) {
+            val existsPath = existsMapping[sourceFile.targetPath()]
+            if (existsPath != null) {
                 sourceFile.status = FileContentStatus.TARGET_EXISTS
+                sourceFile.existTargetPath = existsPath
                 continue
             }
             sourceFile.status = FileContentStatus.NORMAL
