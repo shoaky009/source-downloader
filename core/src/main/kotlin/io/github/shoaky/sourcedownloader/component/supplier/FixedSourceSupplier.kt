@@ -8,7 +8,7 @@ import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
 object FixedSourceSupplier : ComponentSupplier<FixedSource> {
 
     override fun apply(props: Properties): FixedSource {
-        return FixedSource(props.get("content"))
+        return FixedSource(props.get("content"), props.getOrDefault("offset-mode", false))
     }
 
     override fun supplyTypes(): List<ComponentType> {

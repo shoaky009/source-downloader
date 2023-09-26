@@ -3,6 +3,7 @@ components:
     - name: "normal-case"
       type: "fixed"
       props:
+        offset-mode: true
         content:
           - item:
               title: "test1"
@@ -246,10 +247,10 @@ processors:
       file-replacement-decider: "always"
     enabled: true
   - name: "PointerWriteReadCase"
-    source: "fixed:replace-case"
+    source: "fixed:normal-case"
     variable-providers: [ ]
-    item-file-resolver: "fixed:replace-case"
-    downloader: "url"
+    item-file-resolver: "fixed:normal-case"
+    downloader: "none"
     file-mover: "general"
     save-path: "src/test/resources/target/PointerWriteReadCase"
     options:

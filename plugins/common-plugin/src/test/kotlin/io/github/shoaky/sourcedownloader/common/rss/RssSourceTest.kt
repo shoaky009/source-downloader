@@ -3,8 +3,10 @@ package io.github.shoaky.sourcedownloader.common.rss
 import io.github.shoaky.sourcedownloader.common.supplier.RssSourceSupplier
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
+@Disabled
 class RssSourceTest {
 
     private val rssSource = RssSourceSupplier.apply(

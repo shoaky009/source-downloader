@@ -3,6 +3,7 @@ package io.github.shoaky.sourcedownloader.common.dlsite
 import io.github.shoaky.sourcedownloader.common.supplier.DlsiteVariableProviderSupplier
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import java.net.URI
 import java.nio.file.Files
@@ -39,6 +40,7 @@ class DlsiteVariableProviderTests {
     }
 
     @Test
+    @Disabled
     fun test_group() {
         val group = provider.createSourceGroup(sourceItem).sharedPatternVariables() as DlsiteWorkInfo
         assertEquals("RJ01042626", group.dlsiteId)

@@ -1,6 +1,7 @@
 package io.github.shoaky.sourcedownloader.core.processor
 
 import io.github.shoaky.sourcedownloader.component.NeverReplace
+import io.github.shoaky.sourcedownloader.component.downloader.NoneDownloader
 import io.github.shoaky.sourcedownloader.core.PersistentPointer
 import io.github.shoaky.sourcedownloader.core.ProcessingContent
 import io.github.shoaky.sourcedownloader.core.ProcessingContent.Status.*
@@ -442,6 +443,10 @@ class SourceProcessor(
     }
 
     private fun moveFiles(content: CoreItemContent): Boolean {
+        if (downloader is NoneDownloader) {
+            return true
+        }
+
         val movableFiles = content.movableFiles()
         if (movableFiles.isEmpty()) {
             log.info("Processor:'$name' item:'${content.sourceItem}' no available files to rename")
@@ -464,6 +469,10 @@ class SourceProcessor(
     }
 
     private fun replaceFiles(itemContent: CoreItemContent): Boolean {
+        if (downloader is NoneDownloader) {
+            return true
+        }
+
         val replaceableFiles =
             itemContent.sourceFiles.filter { it.status == FileContentStatus.READY_REPLACE }
 

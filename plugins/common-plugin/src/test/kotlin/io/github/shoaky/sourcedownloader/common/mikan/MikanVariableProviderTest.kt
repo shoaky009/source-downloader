@@ -19,6 +19,7 @@ import java.time.LocalDateTime
 import kotlin.io.path.Path
 import kotlin.test.assertEquals
 
+@Disabled("需要代理")
 class MikanVariableProviderTest {
 
     @Test
@@ -61,7 +62,6 @@ class MikanVariableProviderTest {
     }
 
     @Test
-    @Disabled
     fun test() {
         val mikanVariableProvider = MikanVariableProvider()
         val sourceItem = SourceItem(

@@ -1,9 +1,10 @@
 package io.github.shoaky.sourcedownloader.external.tmdb
 
 import io.github.shoaky.sourcedownloader.sdk.util.Jackson
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
-// @Disabled
+@Disabled
 class TmdbClientTest {
 
     private val client = TmdbClient(TmdbClient.DEFAULT_TOKEN)

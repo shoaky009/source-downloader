@@ -1,6 +1,8 @@
 package io.github.shoaky.sourcedownloader.integration
 
+import io.github.shoaky.sourcedownloader.component.source.FixedSource
 import io.github.shoaky.sourcedownloader.core.ProcessingStorage
+import io.github.shoaky.sourcedownloader.core.ProcessorSourceState
 import io.github.shoaky.sourcedownloader.core.file.FileContentStatus
 import io.github.shoaky.sourcedownloader.core.processor.ProcessorManager
 import io.github.shoaky.sourcedownloader.createIfNotExists
@@ -157,12 +159,25 @@ class SourceProcessorTest : InitializingBean {
             .itemContent.sourceFiles.first().status)
     }
 
-    // @Test
+    @Test
     fun pointer_storage() {
-        val processorName = "SyncReplaceFileCase"
+        val processorName = "PointerWriteReadCase"
         val processor = processorManager.getProcessor(processorName).get()
-        val state = processingStorage.findProcessorSourceState(processorName, processor.sourceId)
-        assert(state != null)
+        processor.run()
+        var state = processingStorage.findProcessorSourceState(processorName, processor.sourceId)
+        assert(state?.lastPointer != null)
+        val p1 = state?.lastPointer?.values ?: mutableMapOf()
+
+        val op1 = ProcessorSourceState.resolvePointer(FixedSource::class, p1)
+        assertEquals(processor.sourceId, state?.sourceId)
+        assertEquals(1, op1.offset)
+
+        processor.run()
+        state = processingStorage.findProcessorSourceState(processorName, processor.sourceId)
+
+        val p2 = state?.lastPointer?.values ?: mutableMapOf()
+        val op2 = ProcessorSourceState.resolvePointer(FixedSource::class, p2)
+        assertEquals(2, op2.offset)
     }
 
     // 待测试场景

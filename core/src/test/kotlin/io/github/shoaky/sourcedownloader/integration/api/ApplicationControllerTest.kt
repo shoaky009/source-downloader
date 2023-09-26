@@ -22,4 +22,10 @@ class ApplicationControllerTest {
         mockMvc.perform(get("/api/application/reload"))
             .andExpect(status().isOk)
     }
+
+    @Test
+    fun info() {
+        mockMvc.perform(get("/api/application/info"))
+            .andExpect(status().isOk)
+    }
 }
