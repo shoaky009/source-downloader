@@ -1,20 +1,22 @@
 package io.github.shoaky.sourcedownloader.nativeimage
 
-import io.github.shoaky.sourcedownloader.common.anime.MikanPointer
+import io.github.shoaky.sourcedownloader.sdk.ItemPointer
 import io.github.shoaky.sourcedownloader.sdk.SourcePointer
 import org.graalvm.nativeimage.hosted.Feature
 import org.graalvm.nativeimage.hosted.RuntimeReflection
 
 @Suppress("UNUSED")
-class CommonPluginFeature : Feature {
+class CoreFeature : Feature {
 
     override fun beforeAnalysis(access: Feature.BeforeAnalysisAccess) {
         // 预留
-        RuntimeReflection.registerAllDeclaredConstructors(MikanPointer::class.java)
-        println("==========Common beforeAnalysis===========")
+        println("==========Core BeforeAnalysis===========")
 
-        access.registerSubtypeReachabilityHandler({ a, v ->
+        access.registerSubtypeReachabilityHandler({ _, v ->
             RuntimeReflection.registerAllDeclaredConstructors(v)
         }, SourcePointer::class.java)
+        access.registerSubtypeReachabilityHandler({ _, v ->
+            RuntimeReflection.registerAllDeclaredConstructors(v)
+        }, ItemPointer::class.java)
     }
 }
