@@ -7,7 +7,6 @@ import io.github.shoaky.sourcedownloader.sdk.component.VariableProvider
 /**
  * 从文件名或title中提取季度
  */
-// TODO 改成title, filename, parent有不同的规则
 object SeasonVariableProvider : VariableProvider {
 
     private val seasonSupport = SeasonSupport(

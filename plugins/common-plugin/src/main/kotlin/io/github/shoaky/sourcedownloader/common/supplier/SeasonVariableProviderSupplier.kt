@@ -5,7 +5,7 @@ import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
 
-object SeasonProviderSupplier : ComponentSupplier<SeasonVariableProvider> {
+object SeasonVariableProviderSupplier : ComponentSupplier<SeasonVariableProvider> {
 
     override fun apply(props: Properties): SeasonVariableProvider {
         return SeasonVariableProvider

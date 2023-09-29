@@ -51,7 +51,7 @@ internal class CommonPlugin : Plugin {
             OpenAiVariableProviderSupplier,
             PatreonIntegrationSupplier,
             RssSourceSupplier,
-            SeasonProviderSupplier,
+            SeasonVariableProviderSupplier,
             SimpleFileTaggerSupplier,
             TorrentFileResolverSupplier,
             TransmissionDownloaderSupplier,
