@@ -2,6 +2,7 @@ package io.github.shoaky.sourcedownloader.core.processor
 
 import io.github.shoaky.sourcedownloader.component.NeverReplace
 import io.github.shoaky.sourcedownloader.component.downloader.NoneDownloader
+import io.github.shoaky.sourcedownloader.component.source.SystemFileSource
 import io.github.shoaky.sourcedownloader.core.PersistentPointer
 import io.github.shoaky.sourcedownloader.core.ProcessingContent
 import io.github.shoaky.sourcedownloader.core.ProcessingContent.Status.*
@@ -293,6 +294,8 @@ class SourceProcessor(
         if (files.isEmpty()) {
             return false to NO_FILES
         }
+        // SystemFileSource下载不需要做任何事情，因为本身就已经存在了
+        // 返回true是因为需要做后续的处理
         if (replaceFiles.isNotEmpty()) {
             return true to WAITING_TO_RENAME
         }
@@ -301,6 +304,10 @@ class SourceProcessor(
         if (files.all { it.status == FileContentStatus.TARGET_EXISTS }) {
             log.info("Item:{} already exists, files:{}", sc.sourceItem, sc.sourceFiles)
             return false to TARGET_ALREADY_EXISTS
+        }
+
+        if (downloader is SystemFileSource) {
+            return true to WAITING_TO_RENAME
         }
         val allExists = fileMover.exists(files.map { it.fileDownloadPath }).all { it }
         return if (allExists) {
