@@ -3,8 +3,8 @@ package io.github.shoaky.sourcedownloader.external.season
 object SpSeasonParser : SeasonParser {
 
     private val spRegexes = listOf(
-        "OVA|OAD|SPs|S00".toRegex(),
-        "Special".toRegex(RegexOption.IGNORE_CASE),
+        "OVA|OAD|SPs|S00|SP(\\d+)|SP (\\d+)".toRegex(),
+        "Special|extra(\\d+)".toRegex(RegexOption.IGNORE_CASE),
         "特别篇|\\[SP]|映像特典".toRegex(),
     )
 

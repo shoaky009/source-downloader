@@ -4,6 +4,7 @@ import io.github.shoaky.sourcedownloader.sdk.*
 import io.github.shoaky.sourcedownloader.sdk.component.VariableProvider
 import io.github.shoaky.sourcedownloader.sdk.util.TextClear
 import org.apache.commons.lang3.math.NumberUtils
+import org.slf4j.LoggerFactory
 import kotlin.io.path.nameWithoutExtension
 
 /**
@@ -11,12 +12,14 @@ import kotlin.io.path.nameWithoutExtension
  */
 object EpisodeVariableProvider : VariableProvider {
 
+    private val log = LoggerFactory.getLogger(EpisodeVariableProvider::class.java)
+
     private val parserChain: List<ValueParser> = listOf(
-        RegexValueParser(Regex("第(\\d+)话")),
-        RegexValueParser(Regex("第(\\d+)集")),
-        RegexValueParser(Regex("第(\\d+)話")),
-        RegexValueParser(Regex("(\\d+)話")),
-        RegexValueParser(Regex("(\\d+)话")),
+        RegexValueParser(Regex("第(\\d+(?:\\.\\d)?)话")),
+        RegexValueParser(Regex("第(\\d+(?:\\.\\d)?)集")),
+        RegexValueParser(Regex("第(\\d+(?:\\.\\d)?)話")),
+        RegexValueParser(Regex("(\\d+(?:\\.\\d)?)話")),
+        RegexValueParser(Regex("(\\d+(?:\\.\\d)?)话")),
         RegexValueParser("EP(\\d+)".toRegex(RegexOption.IGNORE_CASE)),
         RegexValueParser("S(\\d+)E(\\d+)".toRegex(RegexOption.IGNORE_CASE)),
         RegexValueParser("E(\\d+)".toRegex()),
@@ -32,7 +35,7 @@ object EpisodeVariableProvider : VariableProvider {
             Regex("(?:480|720|1080|2160)P", RegexOption.IGNORE_CASE) to "",
             Regex("(1920x1080|3840x2160)", RegexOption.IGNORE_CASE) to "",
             Regex("x(?:264|265)", RegexOption.IGNORE_CASE) to "",
-            Regex("ma10p|hi10p|yuv420p10|10bit|hevc10|aacx2|_", RegexOption.IGNORE_CASE) to "",
+            Regex("flacx2|ma10p|hi10p|yuv420p10|10bit|hevc10|aacx2|flac|_", RegexOption.IGNORE_CASE) to "",
             Regex("4k", RegexOption.IGNORE_CASE) to "",
             Regex("\\b[A-Fa-f0-9]{8}\\b", RegexOption.IGNORE_CASE) to "",
         )
@@ -41,7 +44,10 @@ object EpisodeVariableProvider : VariableProvider {
     override fun createSourceGroup(sourceItem: SourceItem): SourceItemGroup {
         return FunctionalItemGroup { file ->
             val string = textClear.input(file.path.nameWithoutExtension)
-            val episode = parserChain.firstNotNullOfOrNull { it.parse(string) }
+            val episode = parserChain.firstNotNullOfOrNull {
+                log.debug("Parser {}", it)
+                it.parse(string)
+            }
 
             val vars = MapPatternVariables()
             padNumber(episode)?.run {
@@ -77,7 +83,15 @@ private class RegexValueParser(
 ) : ValueParser {
 
     override fun parse(value: String): Number? {
-        return regex.find(value)?.groupValues?.lastOrNull()?.toInt()
+        val string = regex.find(value)?.groupValues?.lastOrNull() ?: return null
+        if (string.contains(".")) {
+            return string.toFloat()
+        }
+        return string.toInt()
+    }
+
+    override fun toString(): String {
+        return "RegexValueParser(regex=$regex)"
     }
 }
 
