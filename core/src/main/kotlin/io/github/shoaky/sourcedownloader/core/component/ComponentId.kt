@@ -10,6 +10,7 @@ data class ComponentId(
     @get:JsonValue
     val id: String,
 ) {
+
     fun <T : SdComponent> getInstanceName(klass: KClass<T>): String {
         return getComponentType(klass).instanceName(name())
     }
@@ -19,14 +20,10 @@ data class ComponentId(
     }
 
     fun name(): String {
-        return id.split(":").last()
+        return id.split(":").lastOrNull() ?: throw ComponentException.props("组件ID配置错误:${id}")
     }
 
-    private fun typeName(): String {
-        val split = id.split(":")
-        if (split.isEmpty()) {
-            throw ComponentException.props("组件ID配置错误:${id}")
-        }
-        return split.first()
+    fun typeName(): String {
+        return id.split(":").firstOrNull() ?: throw ComponentException.props("组件ID配置错误:${id}")
     }
 }

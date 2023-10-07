@@ -27,11 +27,29 @@ class DefaultProcessorManager(
             throw ComponentException.processorExists("Processor $processorName already exists")
         }
 
-        val source = container.get(config.sourceInstanceName(), sourceTypeRef).getAndMarkRef(processorName)
-        val downloader = container.get(config.downloaderInstanceName(), downloaderTypeRef).getAndMarkRef(processorName)
+        val source = componentManager.getComponent(
+            ComponentTopType.SOURCE,
+            config.source,
+            sourceTypeRef,
+        ).getAndMarkRef(processorName)
 
-        val mover = container.get(config.moverInstanceName(), fileMoverTypeRef).getAndMarkRef(processorName)
-        val resolver = container.get(config.fileResolverInstanceName(), fileResolverTypeRef).getAndMarkRef(processorName)
+        val downloader = componentManager.getComponent(
+            ComponentTopType.DOWNLOADER,
+            config.downloader,
+            downloaderTypeRef,
+        ).getAndMarkRef(processorName)
+
+        val mover = componentManager.getComponent(
+            ComponentTopType.FILE_MOVER,
+            config.fileMover,
+            fileMoverTypeRef,
+        ).getAndMarkRef(processorName)
+
+        val resolver = componentManager.getComponent(
+            ComponentTopType.ITEM_FILE_RESOLVER,
+            config.itemFileResolver,
+            fileResolverTypeRef,
+        ).getAndMarkRef(processorName)
 
         val checkTypes = mutableListOf(
             config.source.getComponentType(Source::class),
@@ -64,8 +82,12 @@ class DefaultProcessorManager(
         container.put(processorBeanName, processorWrapper)
         log.info("Processor:'${processor.name}' initialization completed")
 
-        config.triggerInstanceNames().map {
-            container.get(it, triggerTypeRef).getAndMarkRef(processorName)
+        config.triggers.map {
+            componentManager.getComponent(
+                ComponentTopType.TRIGGER,
+                it,
+                triggerTypeRef,
+            ).getAndMarkRef(processorName)
         }.forEach {
             it.addTask(processor.safeTask())
         }
@@ -170,8 +192,11 @@ class DefaultProcessorManager(
         }
         sourceItemFilter.addAll(
             config.options.sourceItemFilters.map {
-                val instanceName = it.getInstanceName(SourceItemFilter::class)
-                container.get(instanceName, sourceItemFilterTypeRef).getAndMarkRef(config.name)
+                componentManager.getComponent(
+                    ComponentTopType.SOURCE_ITEM_FILTER,
+                    it,
+                    sourceItemFilterTypeRef,
+                ).getAndMarkRef(config.name)
             }
         )
 
@@ -184,8 +209,11 @@ class DefaultProcessorManager(
         }
         itemContentFilters.addAll(
             config.options.itemContentFilters.map {
-                val instanceName = it.getInstanceName(ItemContentFilter::class)
-                container.get(instanceName, itemContentFilterTypeRef).getAndMarkRef(config.name)
+                componentManager.getComponent(
+                    ComponentTopType.ITEM_CONTENT_FILTER,
+                    it,
+                    itemContentFilterTypeRef,
+                ).getAndMarkRef(config.name)
             }
         )
 
@@ -198,14 +226,20 @@ class DefaultProcessorManager(
         }
         fileContentFilters.addAll(
             config.options.fileContentFilters.map {
-                val instanceName = it.getInstanceName(FileContentFilter::class)
-                container.get(instanceName, fileContentFilterTypeRef).getAndMarkRef(config.name)
+                componentManager.getComponent(
+                    ComponentTopType.FILE_CONTENT_FILTER,
+                    it,
+                    fileContentFilterTypeRef,
+                ).getAndMarkRef(config.name)
             }
         )
 
         val listeners = options.processListeners.map {
-            val instanceName = it.getInstanceName(ProcessListener::class)
-            container.get(instanceName, processListenerTypeRef).getAndMarkRef(config.name)
+            componentManager.getComponent(
+                ComponentTopType.PROCESS_LISTENER,
+                it,
+                processListenerTypeRef,
+            ).getAndMarkRef(config.name)
         }.toMutableList()
         if (options.deleteEmptyDirectory) {
             listeners.add(DeleteEmptyDirectory)
@@ -215,22 +249,33 @@ class DefaultProcessorManager(
         }
 
         val taggers = options.fileTaggers.map {
-            val instanceName = it.getInstanceName(FileTagger::class)
-            container.get(instanceName, fileTaggerTypeRef).getAndMarkRef(config.name)
+            componentManager.getComponent(
+                ComponentTopType.TAGGER,
+                it,
+                fileTaggerTypeRef,
+            ).getAndMarkRef(config.name)
         }
 
-        val providers = config.providerInstanceNames().map {
-            container.get(it, variableProviderTypeRef).getAndMarkRef(config.name)
+        val providers = config.variableProviders.map {
+            componentManager.getComponent(
+                ComponentTopType.VARIABLE_PROVIDER,
+                it,
+                variableProviderTypeRef,
+            ).getAndMarkRef(config.name)
         }.toMutableList()
 
-        val fileReplacementDeciderName = options.fileReplacementDecider.getInstanceName(FileReplacementDecider::class)
-        val fileReplacementDecider = container.get(
-            fileReplacementDeciderName, fileReplacementDeciderRef
-        ).component
+        val fileReplacementDecider = componentManager.getComponent(
+            ComponentTopType.FILE_REPLACEMENT_DECIDER,
+            options.fileReplacementDecider,
+            fileReplacementDeciderRef,
+        ).getAndMarkRef(config.name)
 
         val fileExistsDetector = options.fileExistsDetector?.let {
-            val instanceName = it.getInstanceName(FileExistsDetector::class)
-            container.get(instanceName, fileExistsDetectorRef).component
+            componentManager.getComponent(
+                ComponentTopType.FILE_EXISTS_DETECTOR,
+                it,
+                fileExistsDetectorRef,
+            ).getAndMarkRef(config.name)
         } ?: SimpleFileExistsDetector
 
         val variableReplacers: MutableList<VariableReplacer> = mutableListOf(
@@ -248,8 +293,11 @@ class DefaultProcessorManager(
             }
             taggedFileContentFilters.addAll(
                 fileOption.fileContentFilters.map {
-                    val instanceName = it.getInstanceName(FileContentFilter::class)
-                    container.get(instanceName, fileContentFilterTypeRef).getAndMarkRef(config.name)
+                    componentManager.getComponent(
+                        ComponentTopType.FILE_CONTENT_FILTER,
+                        it,
+                        fileContentFilterTypeRef,
+                    ).getAndMarkRef(config.name)
                 }
             )
 
@@ -269,11 +317,6 @@ class DefaultProcessorManager(
                 },
                 taggedFileContentFilters
             )
-        }
-
-        options.manualSources.forEach {
-            val instanceName = it.getInstanceName(ManualSource::class)
-            container.get(instanceName, manualSourceRef).getAndMarkRef(config.name)
         }
 
         return ProcessorOptions(

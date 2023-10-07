@@ -7,5 +7,4 @@ data class ComponentConfig(
     val name: String,
     val type: String,
     val props: Map<String, Any> = emptyMap(),
-    val enabled: Boolean = true
 )

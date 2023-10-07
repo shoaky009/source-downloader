@@ -3,6 +3,7 @@ package io.github.shoaky.sourcedownloader.config
 import io.github.shoaky.sourcedownloader.core.ObjectWrapperContainer
 import io.github.shoaky.sourcedownloader.core.ProcessingStorage
 import io.github.shoaky.sourcedownloader.core.SpringObjectWrapperContainer
+import io.github.shoaky.sourcedownloader.core.component.ComponentConfigStorage
 import io.github.shoaky.sourcedownloader.core.component.ComponentManager
 import io.github.shoaky.sourcedownloader.core.component.DefaultComponentManager
 import io.github.shoaky.sourcedownloader.core.processor.DefaultProcessorManager
@@ -24,8 +25,8 @@ class ApplicationConfiguration {
     }
 
     @Bean
-    fun componentManager(objectWrapperContainer: ObjectWrapperContainer): ComponentManager {
-        return DefaultComponentManager(objectWrapperContainer)
+    fun componentManager(objectWrapperContainer: ObjectWrapperContainer, configStorages: List<ComponentConfigStorage>): ComponentManager {
+        return DefaultComponentManager(objectWrapperContainer, configStorages)
     }
 
     @Bean

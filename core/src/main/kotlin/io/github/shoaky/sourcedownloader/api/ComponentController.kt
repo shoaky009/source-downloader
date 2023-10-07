@@ -1,9 +1,7 @@
 package io.github.shoaky.sourcedownloader.api
 
-import io.github.shoaky.sourcedownloader.core.component.ComponentConfig
-import io.github.shoaky.sourcedownloader.core.component.ComponentDescription
-import io.github.shoaky.sourcedownloader.core.component.ComponentManager
-import io.github.shoaky.sourcedownloader.core.component.ConfigOperator
+import io.github.shoaky.sourcedownloader.core.component.*
+import io.github.shoaky.sourcedownloader.core.componentTypeRef
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentException
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentStateful
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentTopType
@@ -48,7 +46,6 @@ private class ComponentController(
         @PathVariable name: String,
         @RequestBody config: ComponentConfig
     ) {
-        componentManager.createComponent(type, config)
         configOperator.save(
             type.lowerHyphenName(),
             config
@@ -68,6 +65,7 @@ private class ComponentController(
         }
 
         configOperator.deleteComponent(type, typeName, name)
+        // 待定是否要删除
         componentManager.destroy(componentType, name)
         return ResponseEntity.ok().build()
     }
@@ -86,10 +84,9 @@ private class ComponentController(
         @PathVariable typeName: String,
         @PathVariable name: String,
     ) {
-        val config = configOperator.getComponentConfig(type, typeName, name)
         val componentType = ComponentType.of(type, typeName)
         componentManager.destroy(componentType, name)
-        componentManager.createComponent(type, config)
+        componentManager.getComponent(type, ComponentId("$typeName:$name"), componentTypeRef())
     }
 }
 

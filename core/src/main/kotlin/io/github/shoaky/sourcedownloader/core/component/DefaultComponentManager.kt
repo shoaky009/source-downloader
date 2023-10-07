@@ -1,5 +1,6 @@
 package io.github.shoaky.sourcedownloader.core.component
 
+import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import io.github.shoaky.sourcedownloader.core.ObjectWrapperContainer
 import io.github.shoaky.sourcedownloader.core.processor.SourceProcessor
@@ -11,35 +12,48 @@ import org.springframework.beans.factory.DisposableBean
 import java.util.concurrent.ConcurrentHashMap
 
 class DefaultComponentManager(
-    private val objectWrapperContainer: ObjectWrapperContainer,
+    private val objectContainer: ObjectWrapperContainer,
+    private val configStorages: List<ComponentConfigStorage>
 ) : ComponentManager, DisposableBean {
 
     private val componentSuppliers: MutableMap<ComponentType, ComponentSupplier<*>> = ConcurrentHashMap()
 
     @Synchronized
-    override fun createComponent(type: ComponentTopType, config: ComponentConfig) {
-        val name = config.name
-        val componentType = ComponentType.of(type, config.type)
-        val beanName = componentType.instanceName(name)
-        if (config.enabled.not()) {
-            log.info("Component:'$beanName' is disabled")
-            return
+    override fun <T : SdComponent> getComponent(
+        type: ComponentTopType,
+        id: ComponentId,
+        typeReference: TypeReference<ComponentWrapper<T>>,
+    ): ComponentWrapper<T> {
+
+        val instanceName = id.getInstanceName(type.klass)
+        if (objectContainer.contains(instanceName)) {
+            return objectContainer.get(instanceName, typeReference)
         }
 
-        val props = Properties.fromMap(config.props)
-        val exists = objectWrapperContainer.contains(beanName)
-        if (exists) {
-            throw ComponentException.instanceExists("component $beanName already exists, check your config.yaml and remove duplicate component")
+        val typeName = id.typeName()
+        val name = id.name()
+        val componentType = ComponentType.of(type, typeName)
+        val props = if (name == typeName) {
+            val supplier = getSupplier(componentType)
+            if (supplier.autoCreateDefault()) {
+                Properties.EMPTY
+            } else {
+                val values = findConfig(type, typeName, name).props
+                Properties.fromMap(values)
+            }
+        } else {
+            val values = findConfig(type, typeName, name).props
+            Properties.fromMap(values)
         }
 
         val supplier = getSupplier(componentType)
         // FIXME 创建顺序问题
         val otherTypes = supplier.supplyTypes().filter { it != componentType }
-        val singletonNames = objectWrapperContainer.getAllObjectNames()
+        val singletonNames = objectContainer.getAllObjectNames()
         for (otherType in otherTypes) {
             val typeBeanName = otherType.instanceName(name)
             if (singletonNames.contains(typeBeanName)) {
-                val component = objectWrapperContainer.get(typeBeanName, componentWrapperTypeRef)
+                val component = objectContainer.get(typeBeanName, typeReference)
                 val componentWrapper = ComponentWrapper(
                     componentType,
                     name,
@@ -47,43 +61,46 @@ class DefaultComponentManager(
                     component.get(),
                     false
                 )
-                objectWrapperContainer.put(beanName, componentWrapper)
-                return
+                objectContainer.put(instanceName, componentWrapper)
+                return componentWrapper
             }
         }
 
         val component = try {
             supplier.apply(props)
         } catch (e: ComponentException) {
-            throw ComponentException.other("Create component $beanName failed cause by ${e.message}")
+            throw ComponentException.other("Create component $instanceName failed cause by ${e.message}")
         }
-        if (objectWrapperContainer.contains(beanName).not()) {
-            val componentWrapper = ComponentWrapper(
-                componentType,
-                name,
-                props,
-                component
-            )
 
-            objectWrapperContainer.put(beanName, componentWrapper)
-            Events.register(componentWrapper)
-        }
+        val componentWrapper = ComponentWrapper(
+            componentType,
+            name,
+            props,
+            component
+        )
+
+        objectContainer.put(instanceName, componentWrapper)
+        Events.register(componentWrapper)
+
+        log.info("Successfully created component ${type}:${typeName}:${name}")
+        @Suppress("UNCHECKED_CAST")
+        return componentWrapper as ComponentWrapper<T>
     }
 
     override fun getAllProcessor(): List<SourceProcessor> {
-        return objectWrapperContainer.getObjectsOfType(jacksonTypeRef<ProcessorWrapper>())
+        return objectContainer.getObjectsOfType(jacksonTypeRef<ProcessorWrapper>())
             .values.map { it.get() }.toList()
     }
 
     override fun getComponent(type: ComponentType, name: String): ComponentWrapper<SdComponent>? {
         val instanceName = type.instanceName(name)
         return kotlin.runCatching {
-            objectWrapperContainer.get(instanceName, jacksonTypeRef<ComponentWrapper<SdComponent>>())
+            objectContainer.get(instanceName, jacksonTypeRef<ComponentWrapper<SdComponent>>())
         }.getOrNull()
     }
 
     override fun getAllComponent(): List<ComponentWrapper<SdComponent>> {
-        return objectWrapperContainer.getObjectsOfType(componentWrapperTypeRef).values.toList()
+        return objectContainer.getObjectsOfType(componentWrapperTypeRef).values.toList()
     }
 
     override fun getSupplier(type: ComponentType): ComponentSupplier<*> {
@@ -108,21 +125,28 @@ class DefaultComponentManager(
     }
 
     override fun destroy(instanceName: String) {
-        if (objectWrapperContainer.contains(instanceName)) {
-            val wrapper = objectWrapperContainer.get(instanceName)
+        if (objectContainer.contains(instanceName)) {
+            val wrapper = objectContainer.get(instanceName)
             val obj = wrapper.get()
             if (obj is AutoCloseable) {
                 obj.close()
             }
-            objectWrapperContainer.remove(instanceName)
+            objectContainer.remove(instanceName)
             log.info("Destroy component $instanceName")
             Events.unregister(wrapper)
         }
     }
 
     override fun getAllComponentNames(): Set<String> {
-        val type = objectWrapperContainer.getObjectsOfType(componentWrapperTypeRef)
+        val type = objectContainer.getObjectsOfType(componentWrapperTypeRef)
         return type.keys
+    }
+
+    private fun findConfig(type: ComponentTopType, typeName: String, name: String): ComponentConfig {
+        val config = configStorages.firstNotNullOfOrNull {
+            runCatching { it.getComponentConfig(type, typeName, name) }.getOrDefault(null)
+        }
+        return config ?: throw ComponentException.missing("No component config found for $type:$typeName:$name")
     }
 
     private val _componentDescriptions by lazy {

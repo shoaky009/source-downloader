@@ -1,6 +1,7 @@
 package io.github.shoaky.sourcedownloader.integration.api
 
 import io.github.shoaky.sourcedownloader.core.component.ComponentManager
+import io.github.shoaky.sourcedownloader.core.component.ConfigOperator
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentTopType
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
 import org.junit.jupiter.api.Test
@@ -25,6 +26,9 @@ class ComponentControllerTest {
     @Autowired
     private lateinit var componentManager: ComponentManager
 
+    @Autowired
+    private lateinit var configOperator: ConfigOperator
+
     @Test
     fun get_components() {
         mockMvc.perform(get("/api/component"))
@@ -43,11 +47,7 @@ class ComponentControllerTest {
                 ).contentType(MediaType.APPLICATION_JSON)
         ).andExpect(status().is2xxSuccessful)
             .andExpect {
-                val component = componentManager.getComponent(
-                    ComponentType(ComponentTopType.SOURCE, "system-file"),
-                    "api-create"
-                )
-                component != null
+                configOperator.getComponentConfig(ComponentTopType.SOURCE, "system-file", "api-create")
             }
     }
 

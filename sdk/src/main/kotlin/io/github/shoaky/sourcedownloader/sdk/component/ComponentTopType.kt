@@ -24,7 +24,7 @@ enum class ComponentTopType(
         SourceItemFilter::class,
         listOf("source-item-filter", "item-filter", "sourceItemFilter", "itemFilter")
     ),
-    SOURCE_CONTENT_FILTER(
+    ITEM_CONTENT_FILTER(
         ItemContentFilter::class,
         listOf("item-content-filter", "content-filter", "itemContentFilter", "contentFilter")
     ),
@@ -37,9 +37,9 @@ enum class ComponentTopType(
         FileReplacementDecider::class,
         listOf("file-replacement-decider", "replacement-decider", "fileReplacementDecider", "replacementDecider")
     ),
-    ITEM_EXISTS_DETECTOR(
+    FILE_EXISTS_DETECTOR(
         FileExistsDetector::class,
-        listOf("item-exists-detector", "exists-detector", "itemExistsDetector", "existsDetector")
+        listOf("file-exists-detector", "exists-detector", "fileExistsDetector", "existsDetector")
     ),
     MANUAL_SOURCE(
         ManualSource::class,

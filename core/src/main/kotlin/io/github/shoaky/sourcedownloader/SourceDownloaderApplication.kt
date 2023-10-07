@@ -5,15 +5,11 @@ import io.github.shoaky.sourcedownloader.component.supplier.*
 import io.github.shoaky.sourcedownloader.config.SourceDownloaderProperties
 import io.github.shoaky.sourcedownloader.core.PluginManager
 import io.github.shoaky.sourcedownloader.core.ProcessorConfigStorage
-import io.github.shoaky.sourcedownloader.core.component.ComponentConfig
-import io.github.shoaky.sourcedownloader.core.component.ComponentConfigStorage
 import io.github.shoaky.sourcedownloader.core.component.ComponentManager
 import io.github.shoaky.sourcedownloader.core.component.DefaultInstanceManager
 import io.github.shoaky.sourcedownloader.core.processor.ProcessorManager
 import io.github.shoaky.sourcedownloader.sdk.InstanceManager
-import io.github.shoaky.sourcedownloader.sdk.component.ComponentException
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
-import io.github.shoaky.sourcedownloader.sdk.component.ComponentTopType
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
 import io.github.shoaky.sourcedownloader.sdk.util.getObjectSuppliers
 import jakarta.annotation.PreDestroy
@@ -36,7 +32,6 @@ class SourceDownloaderApplication(
     private val processorManager: ProcessorManager,
     private val pluginManager: PluginManager,
     private val processorStorages: List<ProcessorConfigStorage>,
-    private val componentStorages: List<ComponentConfigStorage>,
     private val componentSupplier: List<ComponentSupplier<*>>
 ) : InitializingBean {
 
@@ -99,50 +94,12 @@ class SourceDownloaderApplication(
         log.info("Component supplier registration completed:$types")
     }
 
-    private fun createComponents() {
-        componentManager.getSuppliers().filter {
-            it.autoCreateDefault()
-        }.forEach {
-            for (type in it.supplyTypes()) {
-                val typeName = type.typeName
-                componentManager.createComponent(type.topType, ComponentConfig(
-                    typeName,
-                    typeName,
-                ))
-                log.info("Successfully created component ${type.topTypeClass.simpleName}:${typeName}:${typeName}")
-            }
-        }
-
-        for (componentStorage in componentStorages) {
-            componentStorage
-                .getAllComponentConfig()
-                .forEach(this::createFromConfigs)
-        }
-    }
-
-    private fun createFromConfigs(key: String, configs: List<ComponentConfig>) {
-        val type = ComponentTopType.fromName(key)
-            ?: throw ComponentException.unsupported("未知组件类型:$key")
-
-        configs
-            .forEach {
-                try {
-                    componentManager.createComponent(type, it)
-                } catch (e: ComponentException) {
-                    log.error("Failed to create component ${type.klass.simpleName}:${it.type}:${it.name}, reason:${e.message}")
-                    throw e
-                }
-                log.info("Successfully created component ${type.klass.simpleName}:${it.type}:${it.name}")
-            }
-    }
-
     override fun afterPropertiesSet() {
         // 加载出现异常不让应用完成启动
         loadAndInitPlugins()
         registerInstanceFactories()
         log.info("Supported component types:${ComponentType.types()}")
         registerComponentSuppliers()
-        createComponents()
     }
 
     private fun registerInstanceFactories() {
@@ -153,7 +110,6 @@ class SourceDownloaderApplication(
         destroyAllProcessor()
         destroyAllComponent()
         destroyAllInstance()
-        createComponents()
         createProcessors()
     }
 

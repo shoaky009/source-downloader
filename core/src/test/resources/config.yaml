@@ -30,7 +30,6 @@ components:
             files:
               - path: "test3.jpg"
               - path: "test4.jpg"
-      enabled: true
     - name: "error-item"
       type: "fixed"
       props:
@@ -43,7 +42,6 @@ components:
               downloadUri: "file://test1"
             files:
               - path: "test1.jpg"
-      enabled: true
     - name: "replace-case"
       type: "fixed"
       props:
@@ -64,41 +62,37 @@ components:
               downloadUri: "https://baidu.com"
             files:
               - path: "test-replace2.jpg"
-      enabled: true
+    - name: "api-create"
+      type: "system-file"
+      props:
+        path: "src/test/resources/sources"
   file-resolver:
     - name: "normal-case"
       type: "fixed"
-      enabled: true
     - name: "error-item"
       type: "fixed"
-      enabled: true
     - name: "replace-case"
       type: "fixed"
-      enabled: true
   downloader:
     - name: "mock"
       type: "mock"
       props:
         download-path: "src/test/resources/downloads"
-      enabled: true
     - name: "url"
       type: "url"
       props:
         download-path: "src/test/resources/downloads"
-      enabled: true
   file-tagger:
     - name: "mapping-test1file"
       type: "mapped"
       props:
         mapping:
           test1.jpg: "test1"
-      enabled: true
     - name: "mapping-test3file"
       type: "mapped"
       props:
         mapping:
           test3.jpg: "test3"
-      enabled: true
 processors:
   - name: "NormalCase"
     source: "fixed:normal-case"
@@ -248,7 +242,6 @@ processors:
     enabled: true
   - name: "PointerWriteReadCase"
     source: "fixed:normal-case"
-    variable-providers: [ ]
     item-file-resolver: "fixed:normal-case"
     downloader: "none"
     file-mover: "general"
