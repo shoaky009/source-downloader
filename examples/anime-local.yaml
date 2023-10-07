@@ -1,3 +1,4 @@
+# 该场景还在实践中，不一定完全能达到预期效果
 components:
   source:
     - name: anime-temp-path

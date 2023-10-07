@@ -7,6 +7,14 @@ trigger:
     type: fixed
     props:
       interval: PT1H
+  - name: 6hour
+    type: fixed
+    props:
+      interval: PT6H
+  - name: 12hour
+    type: fixed
+    props:
+      interval: PT12H
   - name: 1day
     type: fixed
     props:

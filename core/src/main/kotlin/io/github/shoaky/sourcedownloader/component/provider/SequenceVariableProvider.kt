@@ -11,14 +11,12 @@ object SequenceVariableProvider : VariableProvider {
     override fun createSourceGroup(sourceItem: SourceItem): SourceItemGroup {
         return object : SourceItemGroup {
             override fun filePatternVariables(paths: List<SourceFile>): List<FileVariable> {
+                val length = paths.size.toString().length
                 return List(paths.size) { index ->
-                    UniversalFileVariable(
-                        MapPatternVariables(
-                            mapOf(
-                                "sequence" to "${index + 1}"
-                            )
-                        )
+                    val variables = MapPatternVariables(
+                        mapOf("sequence" to "${index + 1}".padStart(length, '0'))
                     )
+                    UniversalFileVariable(variables)
                 }
             }
         }

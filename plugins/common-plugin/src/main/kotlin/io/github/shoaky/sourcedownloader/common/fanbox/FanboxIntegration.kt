@@ -128,7 +128,7 @@ private class CreatorPostsIterator(
         if (finished) {
             return false
         }
-        if (creatorPointer.touchBottom.not()) {
+        if (touchBottom.not()) {
             return true
         }
         val lastMaxId = creatorPointer.topId

@@ -30,4 +30,12 @@ data class SourceItem(
             .hashString("$title-$link-$contentType-$downloadUri", Charsets.UTF_8)
             .toString()
     }
+
+    inline fun <reified T> getAttr(key: String): T? {
+        return attrs[key] as? T
+    }
+
+    inline fun <reified T> requireAttr(key: String): T {
+        return getAttr(key) ?: throw IllegalArgumentException("Attr $key not found")
+    }
 }

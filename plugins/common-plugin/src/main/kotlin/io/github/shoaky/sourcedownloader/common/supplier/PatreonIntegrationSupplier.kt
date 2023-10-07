@@ -3,6 +3,7 @@ package io.github.shoaky.sourcedownloader.common.supplier
 import io.github.shoaky.sourcedownloader.common.patreon.PatreonIntegration
 import io.github.shoaky.sourcedownloader.external.patreon.PatreonClient
 import io.github.shoaky.sourcedownloader.sdk.Properties
+import io.github.shoaky.sourcedownloader.sdk.component.ComponentRule
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
 
@@ -21,6 +22,12 @@ object PatreonIntegrationSupplier : ComponentSupplier<PatreonIntegration> {
         return listOf(
             ComponentType.source("patreon"),
             ComponentType.fileResolver("patreon"),
+        )
+    }
+
+    override fun rules(): List<ComponentRule> {
+        return listOf(
+            ComponentRule.allowSource(PatreonIntegration::class)
         )
     }
 }

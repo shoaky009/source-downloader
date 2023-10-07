@@ -1,0 +1,34 @@
+components:
+  source:
+    - name: pixiv
+      type: pixiv
+      props:
+        # Cookie中的PHPSESSID
+        session-id: "xxx"
+        user-id: 11111
+        # 默认bookmark:获取收藏的作品,following:关注的用户的作品
+        # mode: "bookmark"
+  downloader:
+    - name: http
+      type: http
+      props:
+        download-path: /downloads
+  item-file-resolver:
+    - name: pixiv
+      type: pixiv
+
+processors:
+  - name: pixiv
+    triggers:
+      - fixed:6hour
+    source: pixiv
+    downloader: http
+    item-file-resolver: pixiv
+    variable-providers:
+      - "sequence"
+    mover: general
+    save-path: /mnt/doujin/pixiv
+    options:
+      save-path-pattern: "{item.attrs['username']}"
+      filename-pattern: "{itemDate}_{itemTitle}_{sequence}"
+      pointer-batch-mode: false

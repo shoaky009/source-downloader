@@ -718,8 +718,9 @@ class SourceProcessor(
             invokeListeners(ListenerMode.BATCH) {
                 this.onProcessCompleted(processContext)
             }
-
             if (options.pointerBatchMode) {
+                saveSourceState()
+            } else if (processContext.processedItems().isEmpty()) {
                 saveSourceState()
             }
         }
