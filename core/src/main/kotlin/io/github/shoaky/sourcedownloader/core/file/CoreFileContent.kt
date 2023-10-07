@@ -23,15 +23,14 @@ data class CoreFileContent(
     val errors: List<String> = emptyList(),
     var status: FileContentStatus = FileContentStatus.UNDETECTED,
     @JsonIgnore
-    val data: InputStream? = null
+    val data: InputStream? = null,
+    /**
+     * 只有在process中当[status] == [FileContentStatus.TARGET_EXISTS]时此值不为null
+     */
+    override var existTargetPath: Path? = null
 ) : FileContent {
 
     private val targetPath: Path = targetSavePath.resolve(targetFilename)
-
-    /**
-     * 只有在process中当[status] == [FileContentStatus.TARGET_EXISTS]时此值不为null，在asyncTask中此值为null
-     */
-    var existTargetPath: Path? = null
 
     override fun targetPath(): Path {
         return targetPath

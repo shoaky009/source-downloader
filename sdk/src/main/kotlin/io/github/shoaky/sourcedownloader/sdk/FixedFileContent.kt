@@ -17,6 +17,7 @@ data class FixedFileContent(
     val itemDownloadRootDirectory: Path = fileDownloadPath,
     override val attrs: Map<String, Any> = emptyMap(),
     override val fileUri: URI? = null,
+    override val existTargetPath: Path? = null
 ) : FileContent {
 
     override fun targetPath(): Path = targetPath

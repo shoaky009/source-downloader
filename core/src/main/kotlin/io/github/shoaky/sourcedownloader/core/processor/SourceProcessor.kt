@@ -187,7 +187,7 @@ class SourceProcessor(
                     SourceFile(existTargetPath)
                 }
 
-                val before = support.getBeforeContent(fileContent.targetPath())
+                val before = support.getBeforeContent(existingFile.path)
                 val replace = fileReplacementDecider.isReplace(
                     itemContent.copy(
                         sourceFiles = listOf(fileContent)
@@ -384,7 +384,7 @@ class SourceProcessor(
         }
 
         itemContent.updateFileStatus(fileMover, fileExistsDetector)
-        runCatching {
+        val success = runCatching {
             val moved = moveFiles(itemContent)
             val replaced = replaceFiles(itemContent)
             moved || replaced
@@ -407,7 +407,7 @@ class SourceProcessor(
         }
         val toUpdate = pc.copy(
             renameTimes = pc.renameTimes.inc(),
-            status = RENAMED,
+            status = if (success) RENAMED else WAITING_TO_RENAME,
             modifyTime = LocalDateTime.now()
         )
         processingStorage.save(toUpdate)

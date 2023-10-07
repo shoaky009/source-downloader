@@ -15,7 +15,7 @@ class TargetPathRelationSupport(
     private val currentItemHashing: String = sourceItem.hashing()
 
     private val targetPaths = processingStorage.findTargetPaths(
-        files.map { it.targetPath() }
+        files.mapNotNull { it.existTargetPath }
     ).filter { it.itemHashing != currentItemHashing }
 
     private val contents = processingStorage.findByItemHashing(

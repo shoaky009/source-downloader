@@ -1,5 +1,6 @@
 package io.github.shoaky.sourcedownloader.sdk
 
+import io.github.shoaky.sourcedownloader.sdk.component.FileReplacementDecider
 import java.net.URI
 import java.nio.file.Path
 
@@ -31,6 +32,11 @@ interface FileContent {
      * The URI of the file.
      */
     val fileUri: URI?
+
+    /**
+     * Exist target path of the file, is not the same as target path, depend on the [FileReplacementDecider].
+     */
+    val existTargetPath: Path?
 
     /**
      * @return The target path of the file. e.g. /mnt/save/2023-01-01/test.txt

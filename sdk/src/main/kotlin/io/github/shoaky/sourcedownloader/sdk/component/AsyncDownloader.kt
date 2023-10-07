@@ -4,9 +4,9 @@ import io.github.shoaky.sourcedownloader.sdk.ItemContent
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import org.slf4j.LoggerFactory
 import kotlin.io.path.deleteIfExists
-import kotlin.io.path.exists
 import kotlin.io.path.moveTo
 import kotlin.io.path.name
+import kotlin.io.path.notExists
 
 /**
  * Async downloader, submit method will not wait for the download to complete before returning
@@ -26,21 +26,29 @@ interface TorrentDownloader : AsyncDownloader, FileMover {
      * 容器化时需要和下载器的路径对齐，否则会出现文件找不到的问题
      */
     override fun replace(itemContent: ItemContent): Boolean {
-        val fileContent = itemContent.sourceFiles.first()
-        val targetPath = fileContent.targetPath()
-        val backupPath = targetPath.resolveSibling("${targetPath.name}.bak")
-        targetPath.moveTo(backupPath)
-        try {
-            val move = move(itemContent)
-            backupPath.deleteIfExists()
-            return move
-        } catch (e: Exception) {
-            if (targetPath.exists().not()) {
-                log.error("Move file failed $targetPath, restore from backup file $backupPath")
-                backupPath.moveTo(targetPath)
+        for (sourceFile in itemContent.sourceFiles) {
+            val existTargetPath = sourceFile.existTargetPath ?: sourceFile.targetPath()
+            if (existTargetPath.notExists()) {
+                log.warn("Replace file not exists $existTargetPath")
+                continue
             }
-            throw e
+
+            val backupPath = existTargetPath.resolveSibling("${existTargetPath.name}.bak")
+            existTargetPath.moveTo(backupPath)
+            val targetPath = sourceFile.targetPath()
+
+            try {
+                move(itemContent)
+                backupPath.deleteIfExists()
+            } catch (e: Exception) {
+                if (existTargetPath.notExists()) {
+                    log.error("Move file failed $targetPath, restore from backup file $backupPath")
+                    backupPath.moveTo(existTargetPath)
+                }
+                throw e
+            }
         }
+        return true
     }
 
     companion object {
