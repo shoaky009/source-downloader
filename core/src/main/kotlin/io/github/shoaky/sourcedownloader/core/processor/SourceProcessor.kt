@@ -543,15 +543,9 @@ class SourceProcessor(
 
         protected fun processItems() {
             val stat = ProcessStat(name)
-            stat.stopWatch.start("fetchItems")
+            // stat.stopWatch.start("fetchItems")
             val context = CoreProcessContext(name, processingStorage)
-
-            retry.execute<Iterator<PointedItem<ItemPointer>>, IOException> {
-                it.setAttribute("stage", ProcessStage("FetchSourceItems", sourceState))
-                val iterator = source.fetch(sourcePointer, options.fetchLimit).iterator()
-                iterator
-            }
-            stat.stopWatch.stop()
+            // stat.stopWatch.stop()
 
             stat.stopWatch.start("processItems")
             val filters = selectItemFilters()
@@ -560,7 +554,9 @@ class SourceProcessor(
 
                 val filterBy = filters.firstOrNull { it.test(item.sourceItem).not() }
                 if (filterBy != null) {
-                    log.info("{} filtered item:{}", filterBy::class.simpleName, item.sourceItem)
+                    if (filterBy !is SourceHashingItemFilter) {
+                        log.info("{} filtered item:{}", filterBy::class.simpleName, item.sourceItem)
+                    }
                     onItemFiltered(item)
                     stat.incFilterCounting()
                     continue
