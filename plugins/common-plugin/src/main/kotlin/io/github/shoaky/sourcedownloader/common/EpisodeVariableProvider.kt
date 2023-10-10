@@ -35,9 +35,9 @@ object EpisodeVariableProvider : VariableProvider {
             Regex("(?:480|720|1080|2160)P", RegexOption.IGNORE_CASE) to "",
             Regex("(1920x1080|3840x2160)", RegexOption.IGNORE_CASE) to "",
             Regex("x(?:264|265)", RegexOption.IGNORE_CASE) to "",
-            Regex("flacx2|ma10p|hi10p|yuv420p10|10bit|hevc10|aacx2|flac|_", RegexOption.IGNORE_CASE) to "",
-            Regex("4k", RegexOption.IGNORE_CASE) to "",
+            Regex("flacx2|ma10p|hi10p|yuv420p10|10bit|hevc10|aacx2|flac|4k|_", RegexOption.IGNORE_CASE) to "",
             Regex("\\b[A-Fa-f0-9]{8}\\b", RegexOption.IGNORE_CASE) to "",
+            Regex("v\\d") to ""
         )
     )
 

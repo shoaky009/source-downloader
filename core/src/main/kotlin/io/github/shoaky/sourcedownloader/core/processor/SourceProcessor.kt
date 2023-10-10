@@ -676,7 +676,9 @@ class SourceProcessor(
                 downloadTask.sourceItem, downloadTask.downloadFiles)
             val targetPaths = itemContent.downloadableFiles().map { it.targetPath() }
             // TODO 应该先ProcessingContent后再保存targetPaths
-            saveTargetPaths(itemContent.sourceItem, targetPaths)
+            if (options.saveProcessingContent) {
+                saveTargetPaths(itemContent.sourceItem, targetPaths)
+            }
             // Events.post(ProcessorSubmitDownloadEvent(name, itemContent))
             return true
         }
