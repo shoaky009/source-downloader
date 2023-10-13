@@ -64,7 +64,7 @@ abstract class HookedApiClient(
                 requestBody:{}
                 responseCode:{}
                 responseBody:{}
-                """, httpRequest.uri(), Jackson.toJsonString(bodyPublisher.toString()),
+                """, httpRequest.uri(), Jackson.toJsonString(request),
                 httpResponse.statusCode(), httpResponse.body())
         }
         afterRequest(httpResponse, request)

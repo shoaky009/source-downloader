@@ -4,7 +4,7 @@ import com.google.common.hash.Hashing
 import java.net.URI
 import java.time.LocalDateTime
 
-data class SourceItem(
+data class SourceItem @JvmOverloads constructor(
     val title: String,
     val link: URI,
     val date: LocalDateTime,

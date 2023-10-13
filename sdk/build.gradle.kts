@@ -29,6 +29,17 @@ java {
     withJavadocJar()
 }
 
+val javaVersion = 17
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(javaVersion))
+    }
+}
+
+kotlin {
+    jvmToolchain(javaVersion)
+}
+
 val isSnapshot = version.toString().endsWith("-SNAPSHOT", true)
 
 publishing {

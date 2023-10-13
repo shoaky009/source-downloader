@@ -16,6 +16,7 @@ import java.nio.ByteBuffer
 import java.nio.file.Path
 import java.time.Instant
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.io.path.deleteIfExists
 
 /**
  * HTTP下载器，URI取自[SourceFile.fileUri]
@@ -67,6 +68,7 @@ class HttpDownloader(
                 progresses.remove(path)
                 if (it != null) {
                     log.error("Download failed: $path", it)
+                    path.deleteIfExists()
                 } else {
                     log.info("Download completed: $path")
                 }

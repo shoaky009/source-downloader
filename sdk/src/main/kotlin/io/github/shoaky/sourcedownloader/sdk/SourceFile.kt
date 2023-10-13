@@ -5,7 +5,7 @@ import java.io.InputStream
 import java.net.URI
 import java.nio.file.Path
 
-data class SourceFile(
+data class SourceFile @JvmOverloads constructor(
     /**
      * The path of the file.
      * From [ItemFileResolver], it's a relative path.
