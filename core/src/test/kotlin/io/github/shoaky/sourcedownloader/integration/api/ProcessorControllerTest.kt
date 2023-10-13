@@ -55,7 +55,7 @@ class ProcessorControllerTest {
      */
     @Test
     fun dry_run() {
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/processor/dry-run/DryRunCase"))
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/processor/DryRunCase/dry-run"))
             .andExpect(MockMvcResultMatchers.status().isOk)
             .andExpect { mockRes ->
                 MockMvcResultMatchers.jsonPath("$.*").isNotEmpty

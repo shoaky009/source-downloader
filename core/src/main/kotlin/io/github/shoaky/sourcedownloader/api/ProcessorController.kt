@@ -75,7 +75,7 @@ private class ProcessorController(
      * 并且有可能会有组件或实例泄漏的问题，但一般数量并不会特别多后续继续优化。
      *
      */
-    @GetMapping("/reload/{processorName}")
+    @GetMapping("/{processorName}/reload")
     fun reload(@PathVariable processorName: String) {
         val config = configOperator.getProcessorConfig(processorName)
         if (processorManager.exists(processorName)) {
@@ -85,7 +85,7 @@ private class ProcessorController(
     }
 
     @RequestMapping(
-        "/dry-run/{processorName}",
+        "/{processorName}/dry-run",
         method = [RequestMethod.GET, RequestMethod.POST],
     )
     fun dryRun(
@@ -114,13 +114,13 @@ private class ProcessorController(
             }
     }
 
-    @GetMapping("/trigger/{processorName}")
+    @GetMapping("/{processorName}/trigger")
     fun trigger(@PathVariable processorName: String) {
         val sourceProcessor = processorManager.getProcessor(processorName)
         manualTriggerExecutor.submit(sourceProcessor.get().safeTask())
     }
 
-    @PostMapping("/items/{processorName}")
+    @PostMapping("/{processorName}/items")
     @ResponseStatus(HttpStatus.ACCEPTED)
     suspend fun postItems(@PathVariable processorName: String, @RequestBody items: List<SourceItem>) {
         val processor = processorManager.getProcessor(processorName).get()

@@ -78,7 +78,7 @@ private class ComponentController(
             }
     }
 
-    @GetMapping("/reload/{type}/{typeName}/{name}")
+    @GetMapping("/{type}/{typeName}/{name}/reload")
     fun reload(
         @PathVariable type: ComponentTopType,
         @PathVariable typeName: String,
