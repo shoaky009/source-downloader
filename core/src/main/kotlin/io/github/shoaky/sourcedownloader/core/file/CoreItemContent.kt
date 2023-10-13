@@ -1,5 +1,6 @@
 package io.github.shoaky.sourcedownloader.core.file
 
+import io.github.shoaky.sourcedownloader.component.SimpleFileExistsDetector
 import io.github.shoaky.sourcedownloader.sdk.ItemContent
 import io.github.shoaky.sourcedownloader.sdk.MapPatternVariables
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
@@ -26,16 +27,18 @@ data class CoreItemContent(
         val undetectedFiles = sourceFiles.filter { it.status == FileContentStatus.UNDETECTED }
 
         // Key 是当前处理的路径, Value是认为存在的路径
-        val existsMapping: MutableMap<Path, Path?> by lazy {
+        val existsMapping: Map<Path, Path?> by lazy {
             val exists = fileMover.exists(undetectedFiles.map { it.targetPath() })
             val mapping = mutableMapOf<Path, Path?>()
             undetectedFiles.map { it.targetPath() }.zip(exists).forEach { (path, exist) ->
                 mapping[path] = if (exist) path else null
             }
 
-            // TODO 文件夹的情况没有处理
-            fileExistsDetector.exists(fileMover, this).forEach { (path, existsPath) ->
-                mapping[path] = existsPath
+            if (fileExistsDetector !is SimpleFileExistsDetector) {
+                // TODO 文件夹的情况没有处理
+                fileExistsDetector.exists(fileMover, this).forEach { (path, existsPath) ->
+                    mapping[path] = existsPath
+                }
             }
             mapping
         }

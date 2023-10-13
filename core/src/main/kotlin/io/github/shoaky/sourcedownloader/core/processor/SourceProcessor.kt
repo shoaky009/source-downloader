@@ -622,15 +622,15 @@ class SourceProcessor(
 
             // 后面再调整状态的更新方式
             itemContent.updateFileStatus(auxiliaryFileMover, fileExistsDetector)
-            val processingTargetPaths = processingStorage.targetPathExists(
-                itemContent.sourceFiles.map { it.targetPath() },
-                itemContent.sourceItem.hashing()
-            )
-            itemContent.sourceFiles.onEachIndexed { index, fileContent ->
-                if (fileContent.status == FileContentStatus.NORMAL && processingTargetPaths[index]) {
-                    fileContent.status = FileContentStatus.TARGET_EXISTS
-                }
-            }
+            // val processingTargetPaths = processingStorage.targetPathExists(
+            //     itemContent.sourceFiles.map { it.targetPath() },
+            //     itemContent.sourceItem.hashing()
+            // )
+            // itemContent.sourceFiles.onEachIndexed { index, fileContent ->
+            //     if (fileContent.status == FileContentStatus.NORMAL && processingTargetPaths[index]) {
+            //         fileContent.status = FileContentStatus.TARGET_EXISTS
+            //     }
+            // }
 
             val replaceFiles = identifyFilesToReplace(itemContent)
             val (shouldDownload, contentStatus) = probeContentStatus(itemContent, replaceFiles)
