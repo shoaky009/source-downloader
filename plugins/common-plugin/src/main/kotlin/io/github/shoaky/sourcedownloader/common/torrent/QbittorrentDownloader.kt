@@ -1,6 +1,7 @@
 package io.github.shoaky.sourcedownloader.common.torrent
 
 import bt.metainfo.MetadataService
+import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import io.github.shoaky.sourcedownloader.external.qbittorrent.*
 import io.github.shoaky.sourcedownloader.sdk.DownloadTask
 import io.github.shoaky.sourcedownloader.sdk.ItemContent
@@ -11,6 +12,7 @@ import io.github.shoaky.sourcedownloader.sdk.component.TorrentDownloader
 import io.github.shoaky.sourcedownloader.sdk.component.TorrentDownloader.Companion.tryParseTorrentHash
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
+import java.io.IOException
 import java.nio.file.Path
 
 /**
@@ -43,14 +45,21 @@ class QbittorrentDownloader(
         val torrentHash = getTorrentHash(task.sourceItem)
         // NOTE 必须要等一下qbittorrent(不知道有没有同步添加的方法)
         Thread.sleep(400L)
-        val torrentFiles = retry({
+
+        val fileResponse = retryWhen({
             client.execute(
                 TorrentFilesRequest(
                     torrentHash
                 )
-            ).body()
-        })
+            )
+        }, condition = { it.statusCode() == HttpStatus.OK.value() })
 
+        if (fileResponse.statusCode() != HttpStatus.OK.value()) {
+            // log.warn("Qbittorrent get files failed most likely because getting torrent metadata is slow, code:${fileResponse.statusCode()} body:${fileResponse.body()}")
+            throw IOException("Qbittorrent get files failed most likely because getting torrent metadata is slow, code:${fileResponse.statusCode()} body:${fileResponse.body()}")
+        }
+
+        val torrentFiles = fileResponse.body().parseJson(jacksonTypeRef<List<TorrentFile>>())
         val relativePaths = task.relativePaths()
         val stopDownloadFiles = torrentFiles.filter {
             relativePaths.contains(it.name).not()
@@ -140,6 +149,32 @@ class QbittorrentDownloader(
                     count++
                     log.info("retry times: $count")
                     Thread.sleep(200L * count)
+                    if (count == times) {
+                        throw e
+                    }
+                }
+            }
+            throw ComponentException.processing("max retry times")
+        }
+
+        fun <T> retryWhen(block: () -> T, times: Int = 3, condition: (T) -> Boolean): T {
+            var count = 0
+            while (count < times) {
+                try {
+                    val result = block()
+                    if (condition(result)) {
+                        return result
+                    }
+                    count++
+                    log.info("retry times: $count")
+                    Thread.sleep(1000L * count)
+                    if (count == times) {
+                        throw ComponentException.processing("max retry times")
+                    }
+                } catch (e: Exception) {
+                    count++
+                    log.info("retry times: $count")
+                    Thread.sleep(1000L * count)
                     if (count == times) {
                         throw e
                     }

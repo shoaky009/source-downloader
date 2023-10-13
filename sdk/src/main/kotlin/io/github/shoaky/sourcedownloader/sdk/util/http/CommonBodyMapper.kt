@@ -1,8 +1,9 @@
 package io.github.shoaky.sourcedownloader.sdk.util.http
 
-class WarpBodyMapper<T : Any>(
+class CommonBodyMapper<T : Any>(
     private val bodyMapper: BodyMapper<T>
 ) : BodyMapper<T> {
+
     override fun mapping(info: MappingInfo<T>): T {
         try {
             return bodyMapper.mapping(info)

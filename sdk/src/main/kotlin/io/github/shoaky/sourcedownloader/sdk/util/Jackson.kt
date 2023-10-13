@@ -42,6 +42,10 @@ object Jackson {
         return objectMapper.readValue(json, type)
     }
 
+    fun <T : Any> fromJson(bytes: ByteArray, type: TypeReference<T>): T {
+        return objectMapper.readValue(bytes, type)
+    }
+
     fun <T : Any> fromJson(inputStream: InputStream, type: TypeReference<T>): T {
         return objectMapper.readValue(inputStream, type)
     }

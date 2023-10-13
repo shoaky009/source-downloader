@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.common.net.MediaType
 import io.github.shoaky.sourcedownloader.sdk.api.BaseRequest
 import io.github.shoaky.sourcedownloader.sdk.util.http.CommonBodyHandler
+import io.github.shoaky.sourcedownloader.sdk.util.http.CommonBodyMapper
 import io.github.shoaky.sourcedownloader.sdk.util.http.JsonBodyMapper
-import io.github.shoaky.sourcedownloader.sdk.util.http.WarpBodyMapper
 
 abstract class PatreonRequest<T : Any>(
     @JsonProperty("json-api-version")
@@ -17,7 +17,7 @@ abstract class PatreonRequest<T : Any>(
 
     override fun bodyHandler(): CommonBodyHandler<T> {
         return CommonBodyHandler(responseBodyType).apply {
-            addBodyMapper("vnd.api+json") { WarpBodyMapper(JsonBodyMapper()) }
+            addBodyMapper("vnd.api+json") { CommonBodyMapper(JsonBodyMapper()) }
         }
     }
 }

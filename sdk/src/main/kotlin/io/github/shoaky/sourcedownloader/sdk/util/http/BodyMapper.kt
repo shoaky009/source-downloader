@@ -21,8 +21,3 @@ fun httpGetRequest(
     headers.forEach(builder::header)
     return builder.build()
 }
-
-interface BodyMapper<T : Any> {
-
-    fun mapping(info: MappingInfo<T>): T
-}
