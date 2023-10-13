@@ -102,13 +102,27 @@ class AnimeVariableProvider(
         )
     }
 
+    // TODO 重构为chain
     fun extractTitle(sourceItem: SourceItem): String {
         val text = textClear.input(sourceItem.title)
         val removedBucket = text.replace(bracketsRegex, "").trim()
         if (removedBucket.length > 12) {
             val sp = listOf("/", "|").firstOrNull {
                 removedBucket.contains(it)
-            } ?: return removedBucket
+            }
+
+            if (sp == null) {
+                val blanksRegex = "\\s{2,}".toRegex()
+                val matchResult = blanksRegex.find(removedBucket)
+                if (matchResult != null) {
+                    return removedBucket.substring(0, matchResult.range.first)
+                }
+            }
+
+            if (sp == null) {
+                return removedBucket
+            }
+
             // 优先选择日语，最后是中文尽可能用anilist搜索
             val title = removedBucket.split(sp)
                 .map { TitleScore(it) }
