@@ -85,9 +85,9 @@ class SeasonSupport(
         private val log = LoggerFactory.getLogger(SeasonSupport::class.java)
         private val clear = TextClear(
             mapOf(
-                Regex("\\(") to "[",
-                Regex("\\)") to "]",
-                Regex("\\[.*?]") to "",
+                // Regex("\\(") to "[",
+                // Regex("\\)") to "]",
+                // Regex("\\[.*?]") to "",
             )
         )
 
