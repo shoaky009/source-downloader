@@ -1,6 +1,7 @@
 package io.github.shoaky.sourcedownloader.component.downloader
 
 import io.github.shoaky.sourcedownloader.sdk.DownloadTask
+import io.github.shoaky.sourcedownloader.sdk.ProcessingException
 import io.github.shoaky.sourcedownloader.sdk.SourceFile
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentStateful
@@ -9,6 +10,7 @@ import io.github.shoaky.sourcedownloader.sdk.util.http.httpClient
 import io.github.shoaky.sourcedownloader.sdk.util.readableRate
 import kotlinx.coroutines.*
 import org.slf4j.LoggerFactory
+import org.springframework.http.HttpStatus
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse.*
@@ -62,7 +64,16 @@ class HttpDownloader(
 
         withContext(dispatchers) {
             log.info("Start downloading: $path")
-            val job = launch { client.send(request, bodyHandler) }
+            val job = launch {
+                val response = client.send(request, bodyHandler)
+                val statusCode = HttpStatus.valueOf(response.statusCode())
+                if (statusCode.is4xxClientError) {
+                    ProcessingException.skipThrow("Download failed: $path, status code: ${response.statusCode()}")
+                }
+                if (statusCode.isError) {
+                    throw IllegalStateException("Download failed: $path, status code: ${response.statusCode()}")
+                }
+            }
             progresses[path] = Downloading(file, bodyHandler, job)
             job.invokeOnCompletion {
                 progresses.remove(path)

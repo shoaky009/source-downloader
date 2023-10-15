@@ -526,6 +526,7 @@ class SourceProcessor(
         private val retry = RetryTemplateBuilder()
             .maxAttempts(3)
             .fixedBackoff(Duration.ofSeconds(5L).toMillis())
+            .retryOn(IOException::class.java)
             .withListener(LoggingStageRetryListener())
             .build()
 
@@ -534,7 +535,10 @@ class SourceProcessor(
 
     private abstract inner class Process(
         protected val sourceState: ProcessorSourceState = currentSourceState(),
-        protected val sourcePointer: SourcePointer = ProcessorSourceState.resolvePointer(source::class, sourceState.lastPointer.values),
+        protected val sourcePointer: SourcePointer = ProcessorSourceState.resolvePointer(
+            source::class,
+            sourceState.lastPointer.values
+        ),
         private val itemIterable: Iterable<PointedItem<ItemPointer>> = retry.execute<Iterable<PointedItem<ItemPointer>>, IOException> {
             it.setAttribute("stage", ProcessStage("FetchSourceItems", sourceState))
             source.fetch(sourcePointer, options.fetchLimit)
@@ -570,6 +574,11 @@ class SourceProcessor(
                     log.error("Processor:'$name'处理失败, item:$item", it)
                     onItemError(item.sourceItem, it)
 
+                    if (it is ProcessingException && it.skip) {
+                        log.error("Processor:'$name'处理失败, item:$item, 视为不可处理的item将跳过")
+                        return@onFailure
+                    }
+
                     if (options.itemErrorContinue.not()) {
                         log.warn("Processor:'$name'处理失败, item:$item, 退出本次触发处理, 如果未能解决该处理器将无法继续处理后续Item")
                         return
@@ -579,8 +588,9 @@ class SourceProcessor(
                 }.getOrElse {
                     ProcessingContent(
                         name, CoreItemContent(
-                        item.sourceItem, emptyList(), MapPatternVariables()
-                    )).copy(status = FAILURE, failureReason = it.message)
+                            item.sourceItem, emptyList(), MapPatternVariables()
+                        )
+                    ).copy(status = FAILURE, failureReason = it.message)
                 }
 
                 context.touch(processingContent)
@@ -672,8 +682,10 @@ class SourceProcessor(
             val downloadTask = createDownloadTask(itemContent, replaceFiles)
             // NOTE 非异步下载器会阻塞
             directDownloader.submit(downloadTask)
-            log.info("Processor:'{}' submit download item:{}, files:{}", name,
-                downloadTask.sourceItem, downloadTask.downloadFiles)
+            log.info(
+                "Processor:'{}' submit download item:{}, files:{}", name,
+                downloadTask.sourceItem, downloadTask.downloadFiles
+            )
             val targetPaths = itemContent.downloadableFiles().map { it.targetPath() }
             // TODO 应该先ProcessingContent后再保存targetPaths
             if (options.saveProcessingContent) {
@@ -688,12 +700,13 @@ class SourceProcessor(
         }
     }
 
-    fun invokeListeners(mode: ListenerMode = ListenerMode.EACH,
-                        inProcess: Boolean = true,
-                        block: ProcessListener.() -> Unit
+    fun invokeListeners(
+        mode: ListenerMode = ListenerMode.EACH,
+        inProcess: Boolean = true,
+        block: ProcessListener.() -> Unit
     ) {
         if (inProcess && downloader is AsyncDownloader) {
-            log.trace("Processor:'{}' async downloader not invoke listeners", name)
+            log.trace("Processor:'{}' async downloader not invoke listeners in process", name)
             return
         }
         if (mode != options.listenerMode) {
