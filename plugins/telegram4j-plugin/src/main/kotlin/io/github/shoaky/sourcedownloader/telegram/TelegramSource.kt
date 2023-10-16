@@ -1,19 +1,14 @@
 package io.github.shoaky.sourcedownloader.telegram
 
-import com.fasterxml.jackson.annotation.JsonAlias
 import io.github.shoaky.sourcedownloader.sdk.PointedItem
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.Source
 import io.github.shoaky.sourcedownloader.sdk.util.ExpandIterator
 import io.github.shoaky.sourcedownloader.sdk.util.RequestResult
 import telegram4j.tl.*
-import telegram4j.tl.messages.BaseMessages
-import telegram4j.tl.messages.ChannelMessages
-import telegram4j.tl.request.messages.ImmutableGetHistory
 import java.net.URI
 import java.time.Duration
 import java.time.Instant
-import java.time.LocalDate
 import java.time.ZoneId
 
 /**
@@ -30,7 +25,7 @@ class TelegramSource(
         val chatPointers = pointer.chatLastMessageIds.map { (chatId, messageId) ->
             ChatPointer(chatId, messageId)
         }
-
+        val telegramClient = messageFetcher.client
         return ExpandIterator(chatPointers, limit) { chatPointer ->
             val beginDate = chatMapping[chatPointer.chatId]?.beginDate
             val messages = messageFetcher.fetchMessages(chatPointer, limit, timeout)
@@ -38,8 +33,10 @@ class TelegramSource(
                 return@ExpandIterator RequestResult(emptyList(), true)
             }
 
+            val chat = telegramClient.getChatMinById(ChatPointer(chatPointer.chatId).createId())
+                .blockOptional(timeout).get()
             val items = messages.mapNotNull { message ->
-                val sourceItem = mediaMessageToSourceItem(message, chatPointer) ?: return@mapNotNull null
+                val sourceItem = mediaMessageToSourceItem(message, chatPointer, chat.name) ?: return@mapNotNull null
                 PointedItem(sourceItem, chatPointer.copy(fromMessageId = message.id()))
             }.filter { beginDate == null || beginDate <= it.sourceItem.date.toLocalDate() }
             chatPointer.fromMessageId = messages.last().id()
@@ -47,16 +44,30 @@ class TelegramSource(
         }.asIterable()
     }
 
-    private fun mediaMessageToSourceItem(message: BaseMessage, chatPointer: ChatPointer): SourceItem? {
+    private fun mediaMessageToSourceItem(
+        message: BaseMessage,
+        chatPointer: ChatPointer,
+        chatName: String
+    ): SourceItem? {
         val media = message.media() ?: return null
         val chatId = chatPointer.parseChatId()
-        val uri = URI("telegram://?chatId=${chatPointer.chatId}&messageId=${message.id()}")
+        val messageId = message.id()
+        val uri = URI("telegram://?chatId=${chatPointer.chatId}&messageId=$messageId")
         val messageDateTime = Instant.ofEpochSecond(message.date().toLong()).atZone(zoneId).toLocalDateTime()
+
+        val attrs = mutableMapOf(
+            "messageId" to messageId,
+            "chatId" to chatId,
+            "chatName" to chatName
+        )
         when (media) {
             is MessageMediaPhoto -> {
-                return SourceItem("$chatId-${message.id()}.jpg", uri,
+                attrs[MEDIA_TYPE_ATTR] = "photo"
+                return SourceItem(
+                    "$chatId-$messageId.jpg", uri,
                     messageDateTime, "image/jpg", uri,
-                    attrs = mapOf(MEDIA_TYPE_ATTR to "photo"))
+                    attrs = attrs
+                )
             }
 
             is MessageMediaDocument -> {
@@ -65,7 +76,15 @@ class TelegramSource(
                 val filename = dc.attributes()
                     .filterIsInstance<DocumentAttributeFilename>()
                     .firstOrNull()?.fileName() ?: "$chatId-${message.id()}"
-                return SourceItem(filename, uri, messageDateTime, dc.mimeType(), uri, mapOf(MEDIA_TYPE_ATTR to "document"))
+                attrs[MEDIA_TYPE_ATTR] = "document"
+                return SourceItem(
+                    filename,
+                    uri,
+                    messageDateTime,
+                    dc.mimeType(),
+                    uri,
+                    attrs
+                )
             }
 
             else -> return null
@@ -82,64 +101,4 @@ class TelegramSource(
     override fun defaultPointer(): TelegramPointer {
         return TelegramPointer()
     }
-}
-
-data class ChatConfig(
-    @JsonAlias("chat-id")
-    val chatId: Long,
-    @JsonAlias("begin-date")
-    val beginDate: LocalDate? = null
-)
-
-interface TelegramMessageFetcher {
-
-    fun fetchMessages(chatPointer: ChatPointer, limit: Int, timeout: Duration): List<BaseMessage>
-}
-
-class DefaultMessageFetcher(
-    private val wrapper: TelegramClientWrapper,
-) : TelegramMessageFetcher {
-
-    private val client = wrapper.client
-
-    override fun fetchMessages(chatPointer: ChatPointer, limit: Int, timeout: Duration): List<BaseMessage> {
-        val isChannel = chatPointer.isChannel()
-        val getHistoryBuilder = ImmutableGetHistory.builder()
-            .offsetId(chatPointer.nextMessageId())
-            .addOffset(-limit)
-            .limit(limit)
-            .maxId(-1)
-            .minId(-1)
-            .hash(0)
-            .offsetDate(0)
-
-        val inputPeer: InputPeer = if (isChannel) {
-            val user = client.getUserMinById(client.selfId).blockOptional(timeout).get()
-            val inputChannel = ImmutableBaseInputChannel.builder()
-                .channelId(chatPointer.parseChatId())
-                .accessHash(user.id.accessHash.get())
-                .build()
-            val channel =
-                client.serviceHolder.chatService.getChannel(inputChannel).blockOptional(timeout).get() as Channel
-            InputPeerChannel.builder()
-                .channelId(channel.id())
-                .accessHash(channel.accessHash()!!)
-                .build()
-        } else {
-            InputPeerChat.builder()
-                .chatId(chatPointer.parseChatId())
-                .build()
-        }
-        val getHistory = getHistoryBuilder.peer(inputPeer).build()
-        val historyMessage = client.serviceHolder.chatService.getHistory(getHistory)
-            .blockOptional(timeout).get()
-        if (historyMessage is ChannelMessages) {
-            return historyMessage.messages().filterIsInstance<BaseMessage>().reversed()
-        }
-        if (historyMessage is BaseMessages) {
-            return historyMessage.messages().filterIsInstance<BaseMessage>().reversed()
-        }
-        return emptyList()
-    }
-
 }

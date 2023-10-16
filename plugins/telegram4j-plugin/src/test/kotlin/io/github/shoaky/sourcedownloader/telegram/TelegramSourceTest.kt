@@ -13,7 +13,7 @@ class TelegramSourceTest {
 
     @Test
     fun normal() {
-        val fetcher = Mockito.mock(DefaultMessageFetcher::class.java)
+        val fetcher = Mockito.mock(TelegramMessageFetcher::class.java)
 
         Mockito.`when`(
             fetcher.fetchMessages(

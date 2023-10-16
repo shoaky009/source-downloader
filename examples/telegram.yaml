@@ -7,6 +7,8 @@ instances:
       metadata-path: /app/data/telegram
       # 支持http和socks5代理
       proxy: http://192.168.1.219:17890
+      reconnection-interval: 1
+      ping-interval: 30
 components:
   source:
     - name: telegram
@@ -23,9 +25,6 @@ components:
       props:
         client: telegramClient
         download-path: /downloads
-  variable-provider:
-    - name: telegram
-      type: telegram
   item-file-resolver:
     - name: telegram
       type: telegram
@@ -38,26 +37,14 @@ processors:
     source: telegram
     downloader: telegram
     item-file-resolver: telegram
-    variable-providers:
-      - "telegram"
     mover: general
-    save-path: /mnt/demo
+    save-path: /mnt/telegram
     options:
-      save-path-pattern: "{chatName}-{chatId}"
-      filename-pattern: "{messageId}_{itemTitle}"
-      #     过滤photo类型的消息
-      #      item-expression-exclusions:
-      #        - "attrs['mediaType'] == 'photo'"
-      file-expression-inclusions: [ ]
-      file-expression-exclusions: [ ]
-      save-processing-content: false
+      save-path-pattern: "{item.attrs['chatName']}-{item.attrs['chatId']}"
+      filename-pattern: "{item.attrs['messageId']}_{itemTitle}"
       file-taggers:
-        - "simple"
         - "telegram"
-      file-grouping:
-        - tags: [ "photo" ]
-          filename-pattern: "{title} S{season}E{episode}:{' - ' + source}:{'.' + language}"
-      variable-replacers: [ ]
-      # 消息出现失败结束本次处理，下一次还会从失败的消息开始，如果一直失败将会永远停留在该条消息直到成功才会继续
-      item-error-continue: false
+      #过滤photo类型的消息
+      #item-expression-exclusions:
+      #  - "attrs['mediaType'] == 'photo'"
       pointer-batch-mode: false

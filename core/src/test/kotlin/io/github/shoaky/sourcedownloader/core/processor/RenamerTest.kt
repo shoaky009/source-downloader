@@ -396,7 +396,7 @@ class RenamerTest {
             ),
             savePathPattern = CorePathPattern("{item.attrs['creatorId']}/{date}"),
             filenamePattern = CorePathPattern("{file.attrs['seq']}"),
-            attrs = mapOf("seq" to "2")
+            attrs = mapOf("seq" to 2)
         )
         val content = defaultRenamer.createFileContent(sourceItem(
             attrs = mapOf("creatorId" to "Idk111")

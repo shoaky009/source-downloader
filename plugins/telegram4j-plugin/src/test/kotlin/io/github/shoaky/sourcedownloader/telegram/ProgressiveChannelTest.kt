@@ -1,5 +1,6 @@
 package io.github.shoaky.sourcedownloader.telegram
 
+import io.github.shoaky.sourcedownloader.telegram.util.ProgressiveChannel
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import java.nio.ByteBuffer

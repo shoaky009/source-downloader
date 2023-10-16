@@ -20,7 +20,6 @@ class TelegramIntegrationSupplier(
 
     override fun supplyTypes(): List<ComponentType> {
         return listOf(
-            ComponentType.provider("telegram"),
             ComponentType.fileResolver("telegram"),
             ComponentType.downloader("telegram"),
         )
