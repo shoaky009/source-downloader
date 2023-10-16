@@ -681,7 +681,7 @@ class SourceProcessor(
             val itemContent = pc.itemContent
             val downloadTask = createDownloadTask(itemContent, replaceFiles)
             // NOTE 非异步下载器会阻塞
-            directDownloader.submit(downloadTask)
+            val submit = directDownloader.submit(downloadTask)
             log.info(
                 "Processor:'{}' submit download item:{}, files:{}", name,
                 downloadTask.sourceItem, downloadTask.downloadFiles
@@ -692,7 +692,7 @@ class SourceProcessor(
                 saveTargetPaths(itemContent.sourceItem, targetPaths)
             }
             // Events.post(ProcessorSubmitDownloadEvent(name, itemContent))
-            return true
+            return submit
         }
 
         fun run() {

@@ -86,8 +86,9 @@ class TelegramIntegration(
         val chatPointer = ChatPointer(chatId)
         val documentOp = client.getMessages(
             chatPointer.createId(), listOf(
-            ImmutableInputMessageID.of(messageId)
-        ))
+                ImmutableInputMessageID.of(messageId)
+            )
+        )
             .mapNotNull { it.messages.firstOrNull()?.media?.getOrNull() as? MessageMedia.Document }
             .mapNotNull { it?.document?.get() }
             .blockOptional(Duration.ofSeconds(5L))
@@ -119,11 +120,16 @@ class TelegramIntegration(
         val hashing = task.sourceItem.hashing()
         hashingPathMapping[hashing] = fileDownloadPath
 
-        client.downloadFile(document.fileReferenceId)
+        val refreshedFileReferenceId = client.refresh(document.fileReferenceId)
+            .blockOptional(Duration.ofSeconds(5L)).get()
+        client.downloadFile(refreshedFileReferenceId)
             .doFirst {
                 log.info("Start downloading file: $fileDownloadPath")
             }
             .publishOn(Schedulers.boundedElastic())
+            // 该设置临时解决没有发射filePart的问题，只有在网络不好的情况下才会出现，暂时没排查出来Telegram4j这个库哪里的问题
+            // 缺点是会抛出异常，下一次再重新下载
+            .timeout(Duration.ofMinutes(2))
             .collect({ monitoredChannel }, { fc, filePart ->
                 fc.write(filePart.bytes.nioBuffer())
             })

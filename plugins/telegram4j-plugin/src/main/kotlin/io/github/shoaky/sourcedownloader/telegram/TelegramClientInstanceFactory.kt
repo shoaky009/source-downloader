@@ -42,7 +42,7 @@ object TelegramClientInstanceFactory : InstanceFactory<TelegramClientWrapper> {
             when (it.scheme) {
                 "http" -> ProxyResources.ofHttp().address(address).build()
                 "socks5" -> ProxyResources.ofSocks5().address(address).build()
-                else -> throw IllegalArgumentException("unsupported proxy type ${it.scheme}")
+                else -> throw IllegalArgumentException("Unsupported proxy type ${it.scheme}")
             }
         }
         proxyResource?.apply {
@@ -52,10 +52,17 @@ object TelegramClientInstanceFactory : InstanceFactory<TelegramClientWrapper> {
                     .proxyResources(this).build()
             )
         }
-        bootstrap
-            .setReconnectionStrategy(ReconnectionStrategy.fixedInterval(
+
+        val reconnectionStrategy = if (config.reconnectionInterval < 1L) {
+            ReconnectionStrategy.immediately()
+        } else {
+            ReconnectionStrategy.fixedInterval(
                 Duration.ofSeconds(config.reconnectionInterval)
-            ))
+            )
+        }
+
+        bootstrap
+            .setReconnectionStrategy(reconnectionStrategy)
             .setPingInterval(Duration.ofSeconds(config.pingInterval))
             .setEntityRetrieverStrategy(
                 EntityRetrievalStrategy.preferred(
