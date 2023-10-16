@@ -1,6 +1,7 @@
 package io.github.shoaky.sourcedownloader.telegram
 
 import io.github.shoaky.sourcedownloader.sdk.DownloadTask
+import io.github.shoaky.sourcedownloader.sdk.ProcessingException
 import io.github.shoaky.sourcedownloader.sdk.SourceFile
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentStateful
@@ -13,6 +14,7 @@ import telegram4j.core.`object`.Document
 import telegram4j.core.`object`.MessageMedia
 import telegram4j.core.`object`.Photo
 import telegram4j.core.`object`.media.PhotoThumbnail
+import telegram4j.mtproto.RpcException
 import telegram4j.tl.ImmutableInputMessageID
 import java.nio.channels.FileChannel
 import java.nio.file.Path
@@ -28,7 +30,7 @@ import kotlin.jvm.optionals.getOrNull
  * Telegram集成，提供下载、解析文件、变量提供
  */
 class TelegramIntegration(
-    private val wrapper: TelegramClientWrapper,
+    wrapper: TelegramClientWrapper,
     private val downloadPath: Path
 ) : ItemFileResolver, Downloader, ComponentStateful, AutoCloseable {
 
@@ -36,35 +38,6 @@ class TelegramIntegration(
     private val progresses: MutableMap<Path, ProgressiveChannel> = ConcurrentHashMap()
     private val downloadCounting = AtomicInteger(0)
     private val hashingPathMapping = ConcurrentHashMap<String, Path>()
-
-    // override fun createSourceGroup(sourceItem: SourceItem): SourceItemGroup {
-    //     val queryMap = sourceItem.link.queryMap()
-    //     val chatId = queryMap["chatId"]?.toLong()
-    //     val messageId = queryMap["messageId"]?.toInt()
-    //
-    //     val chat = chatId?.let {
-    //         client.getChatMinById(ChatPointer(it).createId())
-    //             .blockOptional().getOrNull()
-    //     }
-    //
-    //     val messageVariable = MessageVariable(
-    //         chat?.id?.asLong(),
-    //         messageId,
-    //         chat?.name
-    //     )
-    //     return object : SourceItemGroup {
-    //
-    //         override fun filePatternVariables(paths: List<SourceFile>): List<FileVariable> {
-    //             return paths.map { FileVariable.EMPTY }
-    //         }
-    //
-    //         override fun sharedPatternVariables(): PatternVariables {
-    //             return messageVariable
-    //         }
-    //     }
-    // }
-    //
-    // override fun support(item: SourceItem): Boolean = item.downloadUri.scheme == "telegram"
 
     override fun resolveFiles(sourceItem: SourceItem): List<SourceFile> {
         val sourceFile = SourceFile(Path(sourceItem.title), sourceItem.attrs)
@@ -130,6 +103,17 @@ class TelegramIntegration(
             .collect({ monitoredChannel }, { fc, filePart ->
                 fc.write(filePart.bytes.nioBuffer())
             })
+            .doOnSuccess {
+                downloadCounting.incrementAndGet()
+                tempDownloadPath.moveTo(fileDownloadPath)
+                log.info("Downloaded file: $fileDownloadPath")
+            }
+            .doOnError {
+                log.error("Error downloading file", it)
+            }
+            .onErrorMap {
+                wrapRetryableExceptionIfNeeded(it)
+            }
             .doFinally {
                 runCatching {
                     monitoredChannel.close()
@@ -138,14 +122,6 @@ class TelegramIntegration(
                 }
                 progresses.remove(fileDownloadPath)
                 hashingPathMapping[hashing] = fileDownloadPath
-            }
-            .doOnSuccess {
-                downloadCounting.incrementAndGet()
-                tempDownloadPath.moveTo(fileDownloadPath)
-                log.info("Downloaded file: $fileDownloadPath")
-            }
-            .doOnError {
-                log.error("Error downloading file", it)
             }
             .block()
         return true
@@ -200,4 +176,13 @@ class TelegramIntegration(
             }
         }
     }
+}
+
+fun wrapRetryableExceptionIfNeeded(e: Throwable): Throwable {
+    if (e is RpcException) {
+        if (e.error.errorMessage().contains("FLOOD_WAIT")) {
+            return ProcessingException.retryable(e.error.errorMessage(), e)
+        }
+    }
+    return e
 }

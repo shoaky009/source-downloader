@@ -527,6 +527,7 @@ class SourceProcessor(
             .maxAttempts(3)
             .fixedBackoff(Duration.ofSeconds(5L).toMillis())
             .retryOn(IOException::class.java)
+            .traversingCauses()
             .withListener(LoggingStageRetryListener())
             .build()
 

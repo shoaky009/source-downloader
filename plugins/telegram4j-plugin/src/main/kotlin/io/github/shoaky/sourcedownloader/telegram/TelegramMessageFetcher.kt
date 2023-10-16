@@ -24,13 +24,21 @@ class TelegramMessageFetcher(
             .offsetDate(0)
 
         val inputPeer: InputPeer = if (isChannel) {
-            val user = client.getUserMinById(client.selfId).blockOptional(timeout).get()
+            val user = client.getUserMinById(client.selfId)
+                .onErrorMap {
+                    wrapRetryableExceptionIfNeeded(it)
+                }
+                .blockOptional(timeout).get()
             val inputChannel = ImmutableBaseInputChannel.builder()
                 .channelId(chatPointer.parseChatId())
                 .accessHash(user.id.accessHash.get())
                 .build()
             val channel =
-                client.serviceHolder.chatService.getChannel(inputChannel).blockOptional(timeout).get() as Channel
+                client.serviceHolder.chatService.getChannel(inputChannel)
+                    .onErrorMap {
+                        wrapRetryableExceptionIfNeeded(it)
+                    }
+                    .blockOptional(timeout).get() as Channel
             InputPeerChannel.builder()
                 .channelId(channel.id())
                 .accessHash(channel.accessHash()!!)
@@ -42,6 +50,9 @@ class TelegramMessageFetcher(
         }
         val getHistory = getHistoryBuilder.peer(inputPeer).build()
         val historyMessage = client.serviceHolder.chatService.getHistory(getHistory)
+            .onErrorMap {
+                wrapRetryableExceptionIfNeeded(it)
+            }
             .blockOptional(timeout).get()
         if (historyMessage is ChannelMessages) {
             return historyMessage.messages().filterIsInstance<BaseMessage>().reversed()
