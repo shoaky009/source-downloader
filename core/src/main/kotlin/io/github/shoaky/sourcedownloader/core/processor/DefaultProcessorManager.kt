@@ -57,7 +57,9 @@ class DefaultProcessorManager(
             config.fileMover.getComponentType(FileMover::class),
         )
         checkTypes.addAll(
-            config.variableProviders.map { it.getComponentType(VariableProvider::class) }
+            config.options.variableProviders.map {
+                it.getComponentType(VariableProvider::class)
+            }
         )
 
         val cps = mutableListOf(source, downloader, mover, resolver)
@@ -262,7 +264,7 @@ class DefaultProcessorManager(
             ).getAndMarkRef(config.name)
         }
 
-        val providers = config.variableProviders.map {
+        val providers = config.options.variableProviders.map {
             componentManager.getComponent(
                 ComponentTopType.VARIABLE_PROVIDER,
                 it,

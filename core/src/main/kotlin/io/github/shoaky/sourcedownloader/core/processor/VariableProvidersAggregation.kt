@@ -81,7 +81,7 @@ private abstract class AggregationItemGroup(
             it.value.filePatternVariables(paths)
         }
         val providerFiles = List(paths.size) { index ->
-            map.getValuesAtIndex(index)
+            map.getValuesAtIndex(index, FileVariable.EMPTY)
         }
         return mergeFiles(providerFiles)
     }
@@ -93,7 +93,8 @@ private abstract class AggregationItemGroup(
     protected abstract fun aggrSharedPatternVariables(groups: Map<VariableProvider, SourceItemGroup>): PatternVariables
 
     protected abstract fun mergeFiles(
-        providerFiles: List<List<Pair<VariableProvider, FileVariable>>>): List<FileVariable>
+        providerFiles: List<List<Pair<VariableProvider, FileVariable>>>
+    ): List<FileVariable>
 
 }
 
@@ -288,7 +289,8 @@ private class SmartItemGroup(
 
     }
 
-    private class ValueAccuracyCount(val value: String, val accuracy: Int, val count: Int) : Comparable<ValueAccuracyCount> {
+    private class ValueAccuracyCount(val value: String, val accuracy: Int, val count: Int) :
+        Comparable<ValueAccuracyCount> {
 
         override fun compareTo(other: ValueAccuracyCount): Int {
             val accuracyCmp = accuracy.compareTo(other.accuracy)
@@ -322,8 +324,8 @@ private class SmartItemGroup(
     }
 }
 
-private fun <K, V> Map<K, List<V>>.getValuesAtIndex(index: Int): List<Pair<K, V>> {
+private fun <K, V> Map<K, List<V>>.getValuesAtIndex(index: Int, default: V): List<Pair<K, V>> {
     return this.map {
-        it.key to it.value[index]
+        it.key to it.value.getOrElse(index) { _ -> default }
     }
 }

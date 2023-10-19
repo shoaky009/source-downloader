@@ -51,15 +51,15 @@ processors:
     # 如果不需要番剧补全使用
     #source: rss:mikan
     source: mikan
-    variable-providers:
-      - "mikan"
-      - "episode"
-      - "season"
     item-file-resolver: torrent
     downloader: qbittorrent
     mover: qbittorrent
     save-path: /mnt/bangumi
     options:
+      variable-providers:
+        - "mikan"
+        - "episode"
+        - "season"
       process-listeners:
         - http:telegram-message-webhook
       save-path-pattern: "{name}/Season {season}/"

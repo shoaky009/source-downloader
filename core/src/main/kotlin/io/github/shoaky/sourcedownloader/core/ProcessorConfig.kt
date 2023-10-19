@@ -13,7 +13,6 @@ import io.github.shoaky.sourcedownloader.core.processor.ListenerMode
 import io.github.shoaky.sourcedownloader.core.processor.VariableConflictStrategy
 import io.github.shoaky.sourcedownloader.sdk.DownloadOptions
 import io.github.shoaky.sourcedownloader.sdk.PathPattern
-import io.github.shoaky.sourcedownloader.sdk.component.*
 import java.nio.file.Path
 import java.time.Duration
 
@@ -22,8 +21,6 @@ data class ProcessorConfig(
     val name: String,
     val triggers: List<ComponentId> = emptyList(),
     val source: ComponentId,
-    @JsonAlias("variable-providers")
-    val variableProviders: List<ComponentId> = emptyList(),
     @JsonAlias("file-resolver")
     val itemFileResolver: ComponentId,
     val downloader: ComponentId,
@@ -35,37 +32,10 @@ data class ProcessorConfig(
     val enabled: Boolean = true
 ) {
 
-    fun sourceInstanceName(): String {
-        return source.getInstanceName(Source::class)
-    }
-
-    fun providerInstanceNames(): List<String> {
-        return variableProviders.map {
-            it.getInstanceName(VariableProvider::class)
-        }
-    }
-
-    fun fileResolverInstanceName(): String {
-        return itemFileResolver.getInstanceName(ItemFileResolver::class)
-    }
-
-    fun downloaderInstanceName(): String {
-        return downloader.getInstanceName(Downloader::class)
-    }
-
-    fun moverInstanceName(): String {
-        return fileMover.getInstanceName(FileMover::class)
-    }
-
-    fun triggerInstanceNames(): List<String> {
-        return triggers.map {
-            it.getInstanceName(Trigger::class)
-        }
-    }
-
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     data class Options(
-        val variableProviders: List<VariableProvider> = emptyList(),
+        @JsonAlias("variable-providers")
+        val variableProviders: List<ComponentId> = emptyList(),
         @JsonAlias("item-filters")
         val sourceItemFilters: List<ComponentId> = emptyList(),
         @JsonAlias("file-filters")

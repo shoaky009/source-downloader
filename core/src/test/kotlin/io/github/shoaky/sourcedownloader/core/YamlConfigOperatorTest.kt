@@ -67,7 +67,6 @@ processors:
             "test-normal-case",
             listOf(ComponentId("test")),
             ComponentId("test"),
-            listOf(ComponentId("test")),
             ComponentId("test"),
             ComponentId("test"),
             ComponentId("test"),

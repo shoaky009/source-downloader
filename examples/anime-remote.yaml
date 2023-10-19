@@ -20,15 +20,15 @@ processors:
     source: rss:vcb-7acg
     downloader: qbittorrent
     item-file-resolver: torrent
-    variable-providers:
-      - "anime"
-      - "anitom"
-      - "episode"
-      - "language"
-      - "season"
     mover: qbittorrent
     save-path: /mnt/temp-media/anime
     options:
+      variable-providers:
+        - "anime"
+        - "anitom"
+        - "episode"
+        - "language"
+        - "season"
       save-path-pattern: "{nativeName}/Season {season}"
       filename-pattern: "{title} S{season}E{episode}:{' - ' + source}"
       variable-name-replace:

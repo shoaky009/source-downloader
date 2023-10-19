@@ -20,11 +20,11 @@ processors:
     source: fanbox
     downloader: http
     item-file-resolver: fanbox
-    variable-providers:
-      - "sequence"
     mover: general
     save-path: /mnt/doujin/fanbox
     options:
+      variable-providers:
+        - "sequence"
       save-path-pattern: "{item.attrs.username}/{itemDate} {itemTitle}-{item.attrs.postId}"
       filename-pattern: "{sequence}"
       item-error-continue: false

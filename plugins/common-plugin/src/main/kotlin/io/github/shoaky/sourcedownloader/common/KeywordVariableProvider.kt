@@ -19,17 +19,17 @@ class KeywordVariableProvider(
     private val suffixes: List<Char> = listOf(')', ']')
 ) : VariableProvider {
 
-    override fun createSourceGroup(sourceItem: SourceItem): SourceItemGroup {
-        val words = buildList {
-            addAll(keywords)
-            addAll(keywordsFile?.readLines() ?: emptyList())
-        }.map {
-            val split = it.split("|")
-            val word = split.first()
-            val mode = split.getOrElse(1) { "0" }
-            Word(word, mode.toInt())
-        }.toSet()
+    private val words = buildList {
+        addAll(keywords)
+        addAll(keywordsFile?.readLines() ?: emptyList())
+    }.map {
+        val split = it.split("|")
+        val word = split.first()
+        val mode = split.getOrElse(1) { "0" }
+        Word(word, mode.toInt())
+    }.toSet()
 
+    override fun createSourceGroup(sourceItem: SourceItem): SourceItemGroup {
         val title = sourceItem.title
         val result = words.match(title).firstOrNull {
             if (it.word.matchTitleMode == 1) {

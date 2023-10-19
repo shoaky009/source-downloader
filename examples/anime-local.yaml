@@ -16,15 +16,15 @@ processors:
     source: system-file:anime-temp-path
     downloader: system-file:anime-temp-path
     item-file-resolver: system-file
-    variable-providers:
-      - "anime"
-      - "season"
-      - "anitom"
-      - "episode"
-      - "language"
     mover: general
     save-path: /mnt/temp-media/anime
     options:
+      variable-providers:
+        - "anime"
+        - "season"
+        - "anitom"
+        - "episode"
+        - "language"
       save-path-pattern: "{nativeName}/Season {season}"
       filename-pattern: "{title} S{season}E{episode}:{' - ' + source}"
       variable-name-replace:
