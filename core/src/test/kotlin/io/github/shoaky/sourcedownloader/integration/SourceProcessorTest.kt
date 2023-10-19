@@ -72,7 +72,8 @@ class SourceProcessorTest : InitializingBean {
         targetFile.deleteIfExists()
         assertEquals(FileContentStatus.NORMAL, records.getValue("test1").itemContent.sourceFiles.first().status)
         assertEquals(FileContentStatus.NORMAL, records.getValue("test2").itemContent.sourceFiles.first().status)
-        val sourceFile = records.getValue("test-dir").itemContent.sourceFiles.first { it.fileDownloadPath.name == "test3.jpg" }
+        val sourceFile =
+            records.getValue("test-dir").itemContent.sourceFiles.first { it.fileDownloadPath.name == "test3.jpg" }
         assertEquals(FileContentStatus.TARGET_EXISTS, sourceFile.status)
     }
 
@@ -137,10 +138,14 @@ class SourceProcessorTest : InitializingBean {
             .associateBy { it.sourceHash }
         println(Jackson.toJsonString(contents))
         // 如果实现了对被替换文件的状态更新，这里需要断言REPLACED
-        assertEquals(FileContentStatus.NORMAL, contents.getValue("a8d643ef958afca3ac59d5193e085381")
-            .itemContent.sourceFiles.first().status)
-        assertEquals(FileContentStatus.REPLACE, contents.getValue("ca26c76c94a3b2d8886143317fcf7b26")
-            .itemContent.sourceFiles.first().status)
+        assertEquals(
+            FileContentStatus.NORMAL, contents.getValue("a8d643ef958afca3ac59d5193e085381")
+                .itemContent.sourceFiles.first().status
+        )
+        assertEquals(
+            FileContentStatus.REPLACE, contents.getValue("ca26c76c94a3b2d8886143317fcf7b26")
+                .itemContent.sourceFiles.first().status
+        )
     }
 
     @Test
@@ -153,10 +158,14 @@ class SourceProcessorTest : InitializingBean {
             .associateBy { it.sourceHash }
         println(Jackson.toJsonString(contents))
         // 如果实现了对被替换文件的状态更新，这里需要断言REPLACED
-        assertEquals(FileContentStatus.NORMAL, contents.getValue("a8d643ef958afca3ac59d5193e085381")
-            .itemContent.sourceFiles.first().status)
-        assertEquals(FileContentStatus.REPLACE, contents.getValue("ca26c76c94a3b2d8886143317fcf7b26")
-            .itemContent.sourceFiles.first().status)
+        assertEquals(
+            FileContentStatus.NORMAL, contents.getValue("a8d643ef958afca3ac59d5193e085381")
+                .itemContent.sourceFiles.first().status
+        )
+        assertEquals(
+            FileContentStatus.REPLACE, contents.getValue("ca26c76c94a3b2d8886143317fcf7b26")
+                .itemContent.sourceFiles.first().status
+        )
     }
 
     @Test
@@ -180,9 +189,18 @@ class SourceProcessorTest : InitializingBean {
         assertEquals(2, op2.offset)
     }
 
+    @Test
+    fun record_minimized() {
+        val processorName = "RecordMinimizedCase"
+        val processor = processorManager.getProcessor(processorName).get()
+        processor.run()
+
+        val contents = processingStorage.query(ProcessingQuery(processorName))
+        assert(contents.isEmpty())
+    }
+
     // 待测试场景
     // processing_record中的status
-    // pointer存储
     // saveContent option测试
     // variableConflictStrategy option测试
     // variableNameReplace option测试

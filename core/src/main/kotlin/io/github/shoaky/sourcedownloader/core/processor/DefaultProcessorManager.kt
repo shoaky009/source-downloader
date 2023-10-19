@@ -185,10 +185,12 @@ class DefaultProcessorManager(
             sourceItemFilter.add(SourceHashingItemFilter(config.name, processingStorage))
         }
         if (options.itemExpressionExclusions.isNotEmpty() || options.itemExpressionInclusions.isNotEmpty()) {
-            sourceItemFilter.add(ExpressionItemFilter(
-                options.itemExpressionExclusions,
-                options.itemExpressionInclusions
-            ))
+            sourceItemFilter.add(
+                ExpressionItemFilter(
+                    options.itemExpressionExclusions,
+                    options.itemExpressionInclusions
+                )
+            )
         }
         sourceItemFilter.addAll(
             config.options.sourceItemFilters.map {
@@ -202,10 +204,12 @@ class DefaultProcessorManager(
 
         val itemContentFilters = mutableListOf<ItemContentFilter>()
         if (options.contentExpressionExclusions.isNotEmpty() || options.contentExpressionInclusions.isNotEmpty()) {
-            itemContentFilters.add(ExpressionItemContentFilter(
-                options.contentExpressionExclusions,
-                options.contentExpressionInclusions
-            ))
+            itemContentFilters.add(
+                ExpressionItemContentFilter(
+                    options.contentExpressionExclusions,
+                    options.contentExpressionInclusions
+                )
+            )
         }
         itemContentFilters.addAll(
             config.options.itemContentFilters.map {
@@ -219,10 +223,12 @@ class DefaultProcessorManager(
 
         val fileContentFilters = mutableListOf<FileContentFilter>()
         if (options.fileExpressionExclusions.isNotEmpty() || options.fileExpressionInclusions.isNotEmpty()) {
-            fileContentFilters.add(ExpressionFileFilter(
-                options.fileExpressionExclusions,
-                options.fileExpressionInclusions
-            ))
+            fileContentFilters.add(
+                ExpressionFileFilter(
+                    options.fileExpressionExclusions,
+                    options.fileExpressionInclusions
+                )
+            )
         }
         fileContentFilters.addAll(
             config.options.fileContentFilters.map {
@@ -286,10 +292,12 @@ class DefaultProcessorManager(
         for (fileOption in options.fileGrouping) {
             val taggedFileContentFilters = mutableListOf<FileContentFilter>()
             if (fileOption.fileExpressionExclusions.isNotEmpty() || fileOption.fileExpressionInclusions.isNotEmpty()) {
-                taggedFileContentFilters.add(ExpressionFileFilter(
-                    fileOption.fileExpressionExclusions,
-                    fileOption.fileExpressionInclusions
-                ))
+                taggedFileContentFilters.add(
+                    ExpressionFileFilter(
+                        fileOption.fileExpressionExclusions,
+                        fileOption.fileExpressionInclusions
+                    )
+                )
             }
             taggedFileContentFilters.addAll(
                 fileOption.fileContentFilters.map {
@@ -345,7 +353,8 @@ class DefaultProcessorManager(
             options.itemErrorContinue,
             fileExistsDetector,
             options.channelBufferSize,
-            options.listenerMode
+            options.listenerMode,
+            options.recordMinimized
         )
     }
 }

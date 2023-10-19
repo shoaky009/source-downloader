@@ -4,11 +4,13 @@ import io.github.shoaky.sourcedownloader.core.ProcessingContent
 import io.github.shoaky.sourcedownloader.core.ProcessingStorage
 import io.github.shoaky.sourcedownloader.sdk.ItemContent
 import io.github.shoaky.sourcedownloader.sdk.ProcessContext
+import io.github.shoaky.sourcedownloader.sdk.ProcessorInfo
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 
 class CoreProcessContext(
     private val processName: String,
     private val processingStorage: ProcessingStorage,
+    override val processor: ProcessorInfo,
 ) : ProcessContext {
 
     private val sourceItems: MutableList<SourceItem> = mutableListOf()

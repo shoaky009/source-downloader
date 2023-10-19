@@ -2,6 +2,8 @@ package io.github.shoaky.sourcedownloader.sdk
 
 interface ProcessContext {
 
+    val processor: ProcessorInfo
+
     /**
      * Get the items that have been processed
      */

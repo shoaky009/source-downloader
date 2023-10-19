@@ -150,12 +150,23 @@ class SourceProcessor(
             "FileMover" to fileMover::class.java.simpleName,
             "SourceItemFilter" to sourceItemFilters.map { it::class.simpleName },
             "ItemContentFilter" to itemContentFilters.map { it::class.simpleName },
-            "Hook" to processListeners.map { it::class.simpleName },
+            "Listeners" to processListeners.map { it::class.simpleName },
             "DownloadPath" to downloadPath,
             "SourceSavePath" to sourceSavePath,
             "FileContentFilter" to fileContentFilters.map { it::class.simpleName },
             "Taggers" to taggers.map { it::class.simpleName },
             "Options" to options,
+        )
+    }
+
+    fun info0(): ProcessorInfo {
+        return ProcessorInfo(
+            name,
+            downloadPath,
+            sourceSavePath,
+            options.tags.toList(),
+            options.category,
+            // 有空加
         )
     }
 
@@ -351,7 +362,7 @@ class SourceProcessor(
                 log.error("Processing重命名任务出错, record:${Jackson.toJsonString(pc)}", it)
             }
         }
-        val context = CoreProcessContext(name, processingStorage)
+        val context = CoreProcessContext(name, processingStorage, info0())
         downloadedContents.forEach {
             context.touch(it)
         }
@@ -549,7 +560,7 @@ class SourceProcessor(
         protected fun processItems() {
             val stat = ProcessStat(name)
             // stat.stopWatch.start("fetchItems")
-            val context = CoreProcessContext(name, processingStorage)
+            val context = CoreProcessContext(name, processingStorage, info0())
             // stat.stopWatch.stop()
 
             stat.stopWatch.start("processItems")
@@ -559,9 +570,7 @@ class SourceProcessor(
 
                 val filterBy = filters.firstOrNull { it.test(item.sourceItem).not() }
                 if (filterBy != null) {
-                    if (filterBy !is SourceHashingItemFilter) {
-                        log.info("{} filtered item:{}", filterBy::class.simpleName, item.sourceItem)
-                    }
+                    log.debug("{} filtered item:{}", filterBy::class.simpleName, item.sourceItem)
                     onItemFiltered(item)
                     stat.incFilterCounting()
                     continue
@@ -739,6 +748,10 @@ class SourceProcessor(
 
         override fun onItemCompleted(processingContent: ProcessingContent) {
             if (options.saveProcessingContent) {
+                // 后面优化
+                if (options.recordMinimized && processingContent.status == FILTERED) {
+                    return
+                }
                 processingStorage.save(processingContent)
             }
         }

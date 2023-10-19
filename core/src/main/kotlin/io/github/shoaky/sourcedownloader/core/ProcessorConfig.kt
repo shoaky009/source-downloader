@@ -112,6 +112,7 @@ data class ProcessorConfig(
         val manualSources: List<ComponentId> = emptyList(),
         val channelBufferSize: Int = 20,
         val listenerMode: ListenerMode = ListenerMode.EACH,
+        val recordMinimized: Boolean = false
     )
 
     data class FileOptionConfig(

@@ -249,3 +249,13 @@ processors:
     options:
       fetch-limit: 1
     enabled: true
+  - name: "RecordMinimizedCase"
+    source: "fixed:normal-case"
+    item-file-resolver: "fixed:normal-case"
+    downloader: "none"
+    file-mover: "general"
+    save-path: "src/test/resources/target/RecordMinimizedCase"
+    options:
+      record-minimized: true
+      content-expression-exclusions:
+        - "1 == 1"
