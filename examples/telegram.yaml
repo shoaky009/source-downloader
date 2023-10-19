@@ -40,11 +40,11 @@ processors:
     mover: general
     save-path: /mnt/telegram
     options:
-      save-path-pattern: "{item.attrs['chatName']}-{item.attrs['chatId']}"
-      filename-pattern: "{item.attrs['messageId']}_{itemTitle}"
+      save-path-pattern: "{item.attrs.chatName}-{item.attrs.chatId}"
+      filename-pattern: "{item.attrs.messageId}_{itemTitle}"
       file-taggers:
         - "telegram"
       #过滤photo类型的消息
       #item-expression-exclusions:
-      #  - "attrs['mediaType'] == 'photo'"
+      #  - "attrs.mediaType == 'photo'"
       pointer-batch-mode: false

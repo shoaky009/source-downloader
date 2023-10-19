@@ -29,6 +29,6 @@ processors:
     mover: general
     save-path: /mnt/doujin/pixiv
     options:
-      save-path-pattern: "{item.attrs['username']}"
+      save-path-pattern: "{item.attrs.username}"
       filename-pattern: "{itemDate}_{itemTitle}_{sequence}"
       pointer-batch-mode: false

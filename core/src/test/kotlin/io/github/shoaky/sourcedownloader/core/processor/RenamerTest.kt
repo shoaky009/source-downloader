@@ -382,7 +382,7 @@ class RenamerTest {
 
         val result = renamer.parse(
             MapPatternVariables(mapOf("source" to "BDrip")),
-            CorePathPattern("{item.attrs['title']}-{source}"),
+            CorePathPattern("{item.attrs.title}-{source}"),
             mapOf("item.attrs" to mapOf("title" to "333"))
         )
         assertEquals("111-BD", result.path)
@@ -394,8 +394,8 @@ class RenamerTest {
             patternVariables = MapPatternVariables(
                 mapOf("date" to "2022-01-01", "work" to "test", "year" to "2022", "title" to "123")
             ),
-            savePathPattern = CorePathPattern("{item.attrs['creatorId']}/{date}"),
-            filenamePattern = CorePathPattern("{file.attrs['seq']}"),
+            savePathPattern = CorePathPattern("{item.attrs.creatorId}/{date}"),
+            filenamePattern = CorePathPattern("{file.attrs.seq}"),
             attrs = mapOf("seq" to 2)
         )
         val content = defaultRenamer.createFileContent(sourceItem(

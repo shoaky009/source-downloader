@@ -25,13 +25,13 @@ processors:
     mover: general
     save-path: /mnt/doujin/fanbox
     options:
-      save-path-pattern: "{item.attrs['username']}/{itemDate} {itemTitle}-{item.attrs['postId']}"
+      save-path-pattern: "{item.attrs.username}/{itemDate} {itemTitle}-{item.attrs.postId}"
       filename-pattern: "{sequence}"
       item-error-continue: false
       file-grouping:
-        - matched-expression: "attrs['type'] == 'file'"
+        - matched-expression: "attrs.type == 'file'"
           filename-pattern: ""
-        - matched-expression: "attrs['type'] == 'cover'"
+        - matched-expression: "attrs.type == 'cover'"
           filename-pattern: "cover"
-        - matched-expression: "attrs['type'] == 'text'"
+        - matched-expression: "attrs.type == 'text'"
           filename-pattern: "text"

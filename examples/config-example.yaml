@@ -110,7 +110,7 @@ processors:
       #CEL表达式过滤sourceFile,任意一个为true则过滤,支持filename,size,contentType
       file-expression-exclusions:
         #文件大小小于1MB的
-        - "attr['size'] > 1024 * 1024"
+        - "attrs.size > 1024 * 1024"
       #CEL表达式过滤sourceFile,任意一个为false则过滤
       file-expression-inclusions:
         #文件名包含test的
