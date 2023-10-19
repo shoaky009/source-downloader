@@ -28,14 +28,16 @@ class ExpressionItemContentFilter(
         }
     }
     private val inclusionScripts: List<Script> by lazy {
-        inclusions.map { buildScript(it) }
+        inclusions.map {
+            buildScript(it)
+        }
     }
 
     override fun test(content: ItemContent): Boolean {
         val item = content.sourceItem
         val itemVars = bindItemScriptVars(item)
         val sourceFiles = content.sourceFiles
-        val mutableMapOf = mutableMapOf<String, Any>(
+        val extraVars = mutableMapOf<String, Any>(
             "files" to sourceFiles.map {
                 mapOf(
                     "tags" to it.tags.toList(),
@@ -44,16 +46,17 @@ class ExpressionItemContentFilter(
                 )
             }
         )
-        mutableMapOf.putAll(itemVars)
+        extraVars["vars"] = content.sharedPatternVariables.variables()
+        extraVars.putAll(itemVars)
 
-        val all = exclusionScripts.map { it.execute(Boolean::class.java, mutableMapOf) == true }
+        val all = exclusionScripts.map { it.execute(Boolean::class.java, extraVars) == true }
         if (all.isNotEmpty() && all.any { it }) {
-            log.debug("Item {} is excluded by expressions", item)
+            log.debug("ItemContent {} is excluded by expressions", item)
             return false
         }
-        val any = inclusionScripts.map { it.execute(Boolean::class.java, mutableMapOf) == true }.all { it }
+        val any = inclusionScripts.map { it.execute(Boolean::class.java, extraVars) == true }.all { it }
         if (any) {
-            log.debug("Item {} is included by expressions", item)
+            log.debug("ItemContent {} is included by expressions", item)
             return true
         }
         return false
@@ -71,6 +74,7 @@ class ExpressionItemContentFilter(
                     Decls.newVar("date", Decls.Timestamp),
                     Decls.newVar("tags", Decls.newListType(Decls.String)),
                     Decls.newVar("attrs", Decls.newMapType(Decls.String, Decls.Dyn)),
+                    Decls.newVar("vars", Decls.newMapType(Decls.String, Decls.String)),
                     Decls.newVar("files", Decls.newListType(Decls.Any))
                 )
                 .build()

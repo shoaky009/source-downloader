@@ -13,7 +13,7 @@ object EpisodeVariableProviderSupplier : ComponentSupplier<EpisodeVariableProvid
 
     override fun supplyTypes(): List<ComponentType> {
         return listOf(
-            ComponentType.provider("episode")
+            ComponentType.variableProvider("episode")
         )
     }
 

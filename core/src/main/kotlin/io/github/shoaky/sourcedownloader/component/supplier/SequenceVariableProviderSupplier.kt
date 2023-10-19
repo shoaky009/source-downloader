@@ -13,7 +13,7 @@ object SequenceVariableProviderSupplier : ComponentSupplier<SequenceVariableProv
 
     override fun supplyTypes(): List<ComponentType> {
         return listOf(
-            ComponentType.provider("sequence")
+            ComponentType.variableProvider("sequence")
         )
     }
 

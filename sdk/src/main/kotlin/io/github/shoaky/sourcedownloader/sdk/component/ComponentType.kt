@@ -36,7 +36,7 @@ data class ComponentType(
         fun fileMover(type: String) = ComponentType(type, FileMover::class)
 
         @JvmStatic
-        fun provider(type: String) = ComponentType(type, VariableProvider::class)
+        fun variableProvider(type: String) = ComponentType(type, VariableProvider::class)
 
         @JvmStatic
         fun fileResolver(type: String) = ComponentType(type, ItemFileResolver::class)

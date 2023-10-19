@@ -116,7 +116,7 @@ data class ProcessorConfig(
 
     data class FileOptionConfig(
         val tags: Set<String> = emptySet(),
-        val matchedExpression: String? = null,
+        val expressionMatching: String? = null,
         val filenamePattern: CorePathPattern? = null,
         val savePathPattern: CorePathPattern? = null,
         val fileContentFilters: List<ComponentId> = emptyList(),

@@ -6,6 +6,7 @@ interface ItemContent {
 
     val sourceItem: SourceItem
     val sourceFiles: List<FileContent>
+    val sharedPatternVariables: PatternVariables
 
     fun summaryContent(): String {
         if (sourceFiles.size == 1) {

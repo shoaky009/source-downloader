@@ -107,10 +107,10 @@ class DefaultProcessorManager(
     }
 
     private fun processorBeanName(name: String): String {
-        if (name.startsWith("Processor-")) {
+        if (name.startsWith("Processor:")) {
             return name
         }
-        return "Processor-$name"
+        return "Processor:$name"
     }
 
     // TODO 重构这一校验，目标通过组件的描述对象
@@ -303,10 +303,10 @@ class DefaultProcessorManager(
 
             val matcher = if (fileOption.tags.isNotEmpty()) {
                 TagSourceFileMatcher(fileOption.tags)
-            } else if (fileOption.matchedExpression != null) {
-                ExpressionSourceFileMatcher(fileOption.matchedExpression)
+            } else if (fileOption.expressionMatching != null) {
+                ExpressionSourceFileMatcher(fileOption.expressionMatching)
             } else {
-                throw ComponentException.other("fileGrouping must have tags or matchedExpression")
+                throw ComponentException.other("fileGrouping must have tags or expressionMatching")
             }
             fileGrouping[matcher] = FileOption(
                 fileOption.savePathPattern?.let {

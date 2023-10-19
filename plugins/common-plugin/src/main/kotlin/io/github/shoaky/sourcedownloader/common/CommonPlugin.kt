@@ -56,7 +56,8 @@ internal class CommonPlugin : Plugin {
             TorrentFileResolverSupplier,
             TransmissionDownloaderSupplier,
             WebdavMoverSupplier,
-            PixivIntegrationSupplier
+            PixivIntegrationSupplier,
+            KeywordVariableProviderSupplier
         )
     }
 }

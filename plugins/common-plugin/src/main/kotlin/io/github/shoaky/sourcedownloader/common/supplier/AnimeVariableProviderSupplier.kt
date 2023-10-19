@@ -27,7 +27,7 @@ class AnimeVariableProviderSupplier(
 
     override fun supplyTypes(): List<ComponentType> {
         return listOf(
-            ComponentType.provider("anime")
+            ComponentType.variableProvider("anime")
         )
     }
 

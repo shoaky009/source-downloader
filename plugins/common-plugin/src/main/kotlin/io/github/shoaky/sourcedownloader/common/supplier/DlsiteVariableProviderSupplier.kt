@@ -13,7 +13,7 @@ internal object DlsiteVariableProviderSupplier : ComponentSupplier<DlsiteVariabl
 
     override fun supplyTypes(): List<ComponentType> {
         return listOf(
-            ComponentType.provider("dlsite")
+            ComponentType.variableProvider("dlsite")
         )
     }
 

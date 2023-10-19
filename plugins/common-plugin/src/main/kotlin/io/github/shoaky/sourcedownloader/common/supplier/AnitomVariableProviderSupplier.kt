@@ -13,7 +13,7 @@ object AnitomVariableProviderSupplier : ComponentSupplier<AnitomVariableProvider
 
     override fun supplyTypes(): List<ComponentType> {
         return listOf(
-            ComponentType.provider("anitom")
+            ComponentType.variableProvider("anitom")
         )
     }
 

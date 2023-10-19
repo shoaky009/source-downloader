@@ -11,7 +11,7 @@ import java.nio.file.Path
 data class CoreItemContent(
     override val sourceItem: SourceItem,
     override val sourceFiles: List<CoreFileContent>,
-    val sharedPatternVariables: MapPatternVariables
+    override val sharedPatternVariables: MapPatternVariables
 ) : ItemContent {
 
     private var updated: Boolean = false

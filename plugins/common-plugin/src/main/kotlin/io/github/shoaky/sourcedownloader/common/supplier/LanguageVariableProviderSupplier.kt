@@ -13,7 +13,7 @@ object LanguageVariableProviderSupplier : ComponentSupplier<LanguageVariableProv
 
     override fun supplyTypes(): List<ComponentType> {
         return listOf(
-            ComponentType.provider("language")
+            ComponentType.variableProvider("language")
         )
     }
 

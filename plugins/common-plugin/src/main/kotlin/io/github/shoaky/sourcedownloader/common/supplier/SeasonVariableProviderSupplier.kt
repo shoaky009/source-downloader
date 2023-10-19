@@ -13,7 +13,7 @@ object SeasonVariableProviderSupplier : ComponentSupplier<SeasonVariableProvider
 
     override fun supplyTypes(): List<ComponentType> {
         return listOf(
-            ComponentType.provider("season")
+            ComponentType.variableProvider("season")
         )
     }
 

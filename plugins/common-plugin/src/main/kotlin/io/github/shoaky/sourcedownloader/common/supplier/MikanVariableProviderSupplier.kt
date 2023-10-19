@@ -27,7 +27,7 @@ class MikanVariableProviderSupplier(
     }
 
     override fun supplyTypes(): List<ComponentType> {
-        return listOf(ComponentType.provider("mikan"))
+        return listOf(ComponentType.variableProvider("mikan"))
     }
 
     override fun rules(): List<ComponentRule> {

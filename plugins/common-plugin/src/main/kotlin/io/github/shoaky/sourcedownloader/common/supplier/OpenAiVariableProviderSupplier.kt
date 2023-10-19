@@ -19,7 +19,7 @@ object OpenAiVariableProviderSupplier : ComponentSupplier<OpenAiVariableProvider
 
     override fun supplyTypes(): List<ComponentType> {
         return listOf(
-            ComponentType.provider("openai")
+            ComponentType.variableProvider("openai")
         )
     }
 
