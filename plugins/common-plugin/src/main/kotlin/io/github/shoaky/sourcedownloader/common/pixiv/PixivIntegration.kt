@@ -1,18 +1,22 @@
 package io.github.shoaky.sourcedownloader.common.pixiv
 
+import com.google.common.net.HttpHeaders
+import io.github.shoaky.sourcedownloader.common.anime.pathSegments
 import io.github.shoaky.sourcedownloader.external.pixiv.*
-import io.github.shoaky.sourcedownloader.sdk.ItemPointer
-import io.github.shoaky.sourcedownloader.sdk.PointedItem
-import io.github.shoaky.sourcedownloader.sdk.SourceFile
-import io.github.shoaky.sourcedownloader.sdk.SourceItem
+import io.github.shoaky.sourcedownloader.sdk.*
 import io.github.shoaky.sourcedownloader.sdk.component.ItemFileResolver
 import io.github.shoaky.sourcedownloader.sdk.component.Source
 import io.github.shoaky.sourcedownloader.sdk.util.ExpandIterator
 import io.github.shoaky.sourcedownloader.sdk.util.RequestResult
 import io.github.shoaky.sourcedownloader.sdk.util.flatten
+import io.github.shoaky.sourcedownloader.sdk.util.http.httpClient
 import org.slf4j.LoggerFactory
+import org.springframework.http.HttpStatus
 import java.net.URI
+import java.net.http.HttpRequest
+import java.net.http.HttpResponse.BodyHandlers
 import kotlin.io.path.Path
+import kotlin.jvm.optionals.getOrNull
 
 class PixivIntegration(
     // 后面优化 不用填uid
@@ -96,38 +100,49 @@ class PixivIntegration(
     }
 
     override fun resolveFiles(sourceItem: SourceItem): List<SourceFile> {
-        val downloadUri = sourceItem.downloadUri
-        val path = imagePathRegex.find(downloadUri.path)?.value
-        if (path == null) {
-            log.error("Can't find path in $downloadUri")
-            return emptyList()
-        }
-
+        val illustrationType = sourceItem.requireAttr<Int>("illustrationType")
         val illustrationId = sourceItem.requireAttr<Long>("illustrationId")
-        val illustration = client.execute(GetIllustrationRequest(illustrationId)).body().body
-        val originalUri = illustration.urls["original"]
-        if (originalUri == null) {
-            log.error("Can't find original url in $illustration")
+        val animation = 2
+        if (illustrationType != animation) {
+            val pages = client.execute(IllustrationPagesRequest(illustrationId)).body().body
+            return pages.map {
+                val uri = it.urls.getValue("original")
+                SourceFile(Path(uri.pathSegments().last()), fileUri = uri)
+            }
+        }
+
+        val ugoira = client.execute(GetUgoiraMetaRequest(illustrationId)).body().body
+
+        val basicRequestBuilder = HttpRequest.newBuilder(ugoira.originalSrc)
+            .HEAD()
+        headers()
+            .forEach { (key, value) -> basicRequestBuilder.setHeader(key, value) }
+        val headResponse = httpClient.send(basicRequestBuilder.build(), BodyHandlers.discarding())
+        if (headResponse.statusCode() != HttpStatus.OK.value()) {
+            throw ProcessingException.retryable(
+                "Get ugoira meta failed, illustrationId: $illustrationId, statusCode: ${headResponse.statusCode()}"
+            )
+        }
+        val contentLength = headResponse.headers().firstValue(HttpHeaders.CONTENT_LENGTH).getOrNull()?.toLong()
+        if (contentLength == null) {
+            log.error("Get ugoira meta failed, illustrationId: $illustrationId")
             return emptyList()
         }
 
-        val ext = originalUri.path.substringAfterLast('.')
-        val pageCount = illustration.pageCount
-        return (0..<pageCount).map { seq ->
-            val uri = "${downloadUri.scheme}://${downloadUri.host}/img-original/$path$seq.$ext"
-            SourceFile(Path("${illustrationId}_$seq.$ext"), fileUri = URI(uri))
-        }
-        // 目前不能确定文件扩展名，暂时改用请求api的方式
-        // val ext = downloadUri.path.substringAfterLast('.')
-        // val uris = (0..<pageCount).map { seq ->
-        //     val uri = "${downloadUri.scheme}://${downloadUri.host}/img-original/$path$seq.$ext"
-        //     SourceFile(Path("${illustrationId}_$seq.$ext"), fileUri = URI(uri))
-        // }
+        val bodyRequest = basicRequestBuilder.GET()
+            .setHeader(HttpHeaders.CONTENT_RANGE, "bytes 0-${contentLength - 1}/$contentLength")
+            .build()
+        val response = httpClient.send(bodyRequest, BodyHandlers.ofInputStream())
+        return listOf(
+            SourceFile(
+                Path(ugoira.originalSrc.pathSegments().last),
+                data = response.body()
+            )
+        )
     }
 
     companion object {
 
-        private val imagePathRegex = Regex("img/\\d{4}/\\d{2}/\\d{2}/\\d{2}/\\d{2}/\\d{2}/\\d+_p")
         private val log = LoggerFactory.getLogger(PixivIntegration::class.java)
     }
 }
@@ -190,7 +205,8 @@ private fun createSourceItem(illustration: Illustration): SourceItem {
             "userId" to illustration.userId,
             "username" to illustration.userName,
             "illustrationId" to illustration.id,
-            "r18" to (illustration.xRestrict == 1)
+            "r18" to (illustration.xRestrict == 1),
+            "illustrationType" to illustration.illustType
         ),
         illustration.tags.toSet(),
     )

@@ -1,6 +1,8 @@
 package io.github.shoaky.sourcedownloader.sdk
 
+import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import com.google.common.hash.Hashing
+import io.github.shoaky.sourcedownloader.sdk.util.Jackson
 import java.net.URI
 import java.time.LocalDateTime
 
@@ -32,7 +34,9 @@ data class SourceItem @JvmOverloads constructor(
     }
 
     inline fun <reified T> getAttr(key: String): T? {
-        return attrs[key] as? T
+        return attrs[key]?.let {
+            Jackson.convert(it, jacksonTypeRef())
+        }
     }
 
     inline fun <reified T> requireAttr(key: String): T {

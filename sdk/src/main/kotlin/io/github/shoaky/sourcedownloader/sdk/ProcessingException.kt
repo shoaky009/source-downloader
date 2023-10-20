@@ -20,5 +20,9 @@ class ProcessingException(
         fun retryable(message: String, throwable: Throwable): Throwable {
             return IOException(message, throwable)
         }
+
+        fun retryable(message: String): Throwable {
+            return IOException(message)
+        }
     }
 }
