@@ -66,12 +66,34 @@ components:
       type: "system-file"
       props:
         path: "src/test/resources/sources"
+    - name: "media-type-case"
+      type: "fixed"
+      props:
+        content:
+          - item:
+              title: "test1"
+              link: "file://test.mp4"
+              date: "2022-01-01T00:00:00"
+              contentType: "file"
+              downloadUri: "file://test.mp4"
+            files:
+              - path: "test.mp4"
+          - item:
+              title: "test2"
+              link: "file://test.mkv"
+              date: "2022-01-01T00:00:00"
+              contentType: "file"
+              downloadUri: "file://test.mkv"
+            files:
+              - path: "test.mkv"
   file-resolver:
     - name: "normal-case"
       type: "fixed"
     - name: "error-item"
       type: "fixed"
     - name: "replace-case"
+      type: "fixed"
+    - name: "media-type-case"
       type: "fixed"
   downloader:
     - name: "mock"
@@ -259,3 +281,11 @@ processors:
       record-minimized: true
       content-expression-exclusions:
         - "1 == 1"
+  - name: "MediaTypeExistCase"
+    source: "fixed:media-type-case"
+    item-file-resolver: "fixed:media-type-case"
+    downloader: "mock"
+    file-mover: "general"
+    save-path: "src/test/resources/target/MediaTypeExistCase"
+    options:
+      file-exists-detector: "media-type"

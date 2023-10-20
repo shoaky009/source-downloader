@@ -24,12 +24,18 @@ import org.slf4j.LoggerFactory
 import org.springframework.retry.support.RetryTemplateBuilder
 import org.springframework.util.StopWatch
 import java.io.IOException
+import java.nio.ByteBuffer
+import java.nio.charset.CodingErrorAction
+import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Duration
 import java.time.LocalDateTime
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
+import kotlin.io.path.extension
+import kotlin.io.path.nameWithoutExtension
+import kotlin.io.path.notExists
 import kotlin.reflect.jvm.jvmName
 import kotlin.time.measureTime
 
@@ -85,6 +91,14 @@ class SourceProcessor(
     init {
         scheduleRenameTask(options.renameTaskInterval)
         listenChannel()
+    }
+
+    private val maxFilenameLength = run {
+        if (downloadPath.notExists()) {
+            -1
+        } else {
+            fsMaxFilenameLengthMapping[Files.getFileStore(downloadPath).type()] ?: -1
+        }
     }
 
     private fun listenChannel() {
@@ -249,6 +263,22 @@ class SourceProcessor(
             }
             tags.addAll(file.tags)
             file.copy(tags = tags)
+        }.map {
+            if (maxFilenameLength < 0) {
+                return@map it
+            }
+            val path = cuttingFilename(it.path, maxFilenameLength)
+            if (it.path == path) {
+                return@map it
+            }
+            log.info(
+                "Processor:'{}' item:'{}' filename:'{}' is too long, cutting to:'{}'",
+                name,
+                sourceItem.title,
+                it.path,
+                path
+            )
+            it.copy(path)
         }
         checkResolvedFiles(sourceItem, resolvedFiles)
 
@@ -543,6 +573,23 @@ class SourceProcessor(
             .build()
 
         private val filteredStatuses = setOf(FILTERED, TARGET_ALREADY_EXISTS)
+        private val fsMaxFilenameLengthMapping = mapOf(
+            "zfs" to 250
+        )
+
+        fun cuttingFilename(path: Path, limitSize: Int): Path {
+            val byteArray = path.nameWithoutExtension.toByteArray(Charsets.UTF_8)
+            if (byteArray.size <= limitSize) {
+                return path
+            }
+
+            val decoder = Charsets.UTF_8.newDecoder()
+            decoder.onMalformedInput(CodingErrorAction.IGNORE)
+            decoder.reset()
+            val buf = ByteBuffer.wrap(path.nameWithoutExtension.toByteArray(Charsets.UTF_8), 0, limitSize)
+            val decode = decoder.decode(buf)
+            return path.resolveSibling("$decode.${path.extension}")
+        }
     }
 
     private abstract inner class Process(

@@ -234,7 +234,7 @@ interface FileReplacementDecider : SdComponent {
     /**
      * @param current the current [ItemContent], the [ItemContent.sourceFiles] always has one [FileContent] element
      * @param before the [ItemContent] before the current one, the [ItemContent.sourceFiles] also may empty
-     * @param existingFile the existing file, [SourceFile.fileUri] and [SourceFile.data] are always null,
+     * @param existingFile the existing file, [SourceFile.downloadUri] and [SourceFile.data] are always null,
      * [SourceFile.attrs] contains the file metadata 'size' 'lastModifiedTime' 'creationTime'.
      * @return true if the current [ItemContent] should replace
      */

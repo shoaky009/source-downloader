@@ -105,7 +105,7 @@ class PatreonIntegration(
                     media.mediaType?.let { put("mediaType", it) }
                     media.size?.let { put("size", it) }
                 },
-                fileUri = media.downloadUri
+                downloadUri = media.downloadUri
             )
         }.toMutableList()
 

@@ -21,7 +21,7 @@ import java.util.concurrent.ConcurrentHashMap
 import kotlin.io.path.deleteIfExists
 
 /**
- * HTTP下载器，URI取自[SourceFile.fileUri]
+ * HTTP下载器，URI取自[SourceFile.downloadUri]
  */
 class HttpDownloader(
     private val downloadPath: Path,
@@ -50,13 +50,13 @@ class HttpDownloader(
         if (progresses.containsKey(path)) {
             throw IllegalStateException("File already downloading: $path")
         }
-        if (file.fileUri == null) {
+        if (file.downloadUri == null) {
             log.info("Skip download: $path case fileUri is null")
             return
         }
 
         val bodyHandler = MonitorableBodyHandler(BodyHandlers.ofFile(path))
-        val request = HttpRequest.newBuilder(file.fileUri).GET()
+        val request = HttpRequest.newBuilder(file.downloadUri).GET()
             .apply {
                 headers.forEach(this::setHeader)
             }
@@ -67,8 +67,8 @@ class HttpDownloader(
             val job = launch {
                 val response = client.send(request, bodyHandler)
                 val statusCode = HttpStatus.valueOf(response.statusCode())
-                if (statusCode.is4xxClientError) {
-                    throw ProcessingException.skippable("Download failed: $path, status code: ${response.statusCode()}")
+                if (statusCode == HttpStatus.NOT_FOUND) {
+                    throw ProcessingException.skippable("Download failed: $path, uri:${file.downloadUri} status code: ${response.statusCode()}")
                 }
                 if (statusCode.isError) {
                     throw IllegalStateException("Download failed: $path, status code: ${response.statusCode()}")

@@ -107,7 +107,7 @@ class PixivIntegration(
             val pages = client.execute(IllustrationPagesRequest(illustrationId)).body().body
             return pages.map {
                 val uri = it.urls.getValue("original")
-                SourceFile(Path(uri.pathSegments().last()), fileUri = uri)
+                SourceFile(Path(uri.pathSegments().last()), downloadUri = uri)
             }
         }
 

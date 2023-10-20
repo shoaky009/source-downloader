@@ -266,7 +266,7 @@ data class RawFileContent(
             filename,
             sourceFile.attrs,
             sourceFile.tags,
-            sourceFile.fileUri,
+            sourceFile.downloadUri,
             errors,
             data = sourceFile.data
         )

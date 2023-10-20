@@ -199,6 +199,14 @@ class SourceProcessorTest : InitializingBean {
         assert(contents.isEmpty())
     }
 
+    @Test
+    fun media_type() {
+        val processorName = "MediaTypeExistCase"
+        val processor = processorManager.getProcessor(processorName).get()
+        val dryRun = processor.dryRun()
+        println(Jackson.toJsonString(dryRun))
+    }
+
     // 待测试场景
     // processing_record中的status
     // saveContent option测试

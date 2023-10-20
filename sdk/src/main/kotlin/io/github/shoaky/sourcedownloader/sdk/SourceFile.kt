@@ -1,5 +1,6 @@
 package io.github.shoaky.sourcedownloader.sdk
 
+import com.fasterxml.jackson.annotation.JsonAlias
 import com.fasterxml.jackson.annotation.JsonIgnore
 import java.io.InputStream
 import java.net.URI
@@ -16,10 +17,11 @@ data class SourceFile @JvmOverloads constructor(
      * The attributes of the file.
      */
     val attrs: Map<String, Any> = emptyMap(),
+    @JsonAlias("fileUri")
     /**
      * The URI of the file, provided for use by a downloader, but the specifics depend on the implementation of the downloader.
      */
-    val fileUri: URI? = null,
+    val downloadUri: URI? = null,
     /**
      * The tags of the file.
      */
