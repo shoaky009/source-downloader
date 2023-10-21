@@ -121,9 +121,9 @@ class SourceDownloaderApplication(
     }
 
     private fun destroyAllComponent() {
-        val componentNames = componentManager.getAllComponentNames()
-        for (name in componentNames) {
-            componentManager.destroy(name)
+        val components = componentManager.getAllComponent()
+        for (component in components) {
+            componentManager.destroy(component.type, component.name)
         }
         log.info("All components destroyed")
     }

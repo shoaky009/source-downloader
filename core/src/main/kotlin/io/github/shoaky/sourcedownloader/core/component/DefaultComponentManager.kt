@@ -124,19 +124,6 @@ class DefaultComponentManager(
         }
     }
 
-    override fun destroy(instanceName: String) {
-        if (objectContainer.contains(instanceName)) {
-            val wrapper = objectContainer.get(instanceName)
-            val obj = wrapper.get()
-            if (obj is AutoCloseable) {
-                obj.close()
-            }
-            objectContainer.remove(instanceName)
-            log.info("Destroy component $instanceName")
-            Events.unregister(wrapper)
-        }
-    }
-
     override fun getAllComponentNames(): Set<String> {
         val type = objectContainer.getObjectsOfType(componentWrapperTypeRef)
         return type.keys
@@ -168,6 +155,25 @@ class DefaultComponentManager(
         return _componentDescriptions
     }
 
+    override fun destroy(type: ComponentType, name: String) {
+        val instanceName = type.instanceName(name)
+        if (objectContainer.contains(instanceName)) {
+            val wrapper = objectContainer.get(instanceName)
+            val obj = wrapper.get()
+            if (obj is AutoCloseable) {
+                obj.close()
+            }
+            objectContainer.remove(instanceName)
+            log.info("Destroy component $instanceName")
+            val supplier = componentSuppliers.getValue(type)
+            supplier.supplyTypes().filter { type != it }
+                .forEach {
+                    destroy(it, name)
+                }
+            Events.unregister(wrapper)
+        }
+    }
+
     private fun componentTypeDescriptors(supplier: ComponentSupplier<*>) =
         supplier.supplyTypes().map { type ->
             ComponentTypeDescriptor(
@@ -186,9 +192,9 @@ class DefaultComponentManager(
         }
 
     override fun destroy() {
-        val componentNames = getAllComponentNames()
-        for (name in componentNames) {
-            destroy(name)
+        val components = getAllComponent()
+        for (component in components) {
+            destroy(component.type, component.name)
         }
     }
 
