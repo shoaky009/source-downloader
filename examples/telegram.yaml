@@ -1,6 +1,6 @@
 # 启动后查看应用标准输出，用tg移动端扫码需要关闭2FA
 instances:
-  - name: telegramClient
+  - name: telegram-client
     props:
       api-id: 1
       api-hash: 1
@@ -10,6 +10,11 @@ instances:
       reconnection-interval: 1
       ping-interval: 30
 components:
+  trigger:
+    - name: free-time
+      type: cron
+      props:
+        expression: "0 0/20 0-9 * * *"
   source:
     - name: telegram
       type: telegram
@@ -23,7 +28,7 @@ components:
     - name: telegram
       type: telegram
       props:
-        client: telegramClient
+        client: telegram-client
         download-path: /downloads
   item-file-resolver:
     - name: telegram
@@ -32,8 +37,9 @@ components:
 processors:
   - name: telegram
     triggers:
-      - webhook:telegram
       - fixed:1day
+      # 如果代理有闲时流量可以用cron触发
+      #- cron:free-time
     source: telegram
     downloader: telegram
     item-file-resolver: telegram
