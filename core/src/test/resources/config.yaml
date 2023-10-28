@@ -176,12 +176,12 @@ processors:
     save-path: "src/test/resources/target/ErrorContinueCase"
     options: { }
     enabled: true
-  - name: "Tagged"
+  - name: "FileGroupingCase"
     source: "fixed:normal-case"
     item-file-resolver: "fixed:normal-case"
     downloader: "mock"
     file-mover: "general"
-    save-path: "src/test/resources/target/Tagged"
+    save-path: "src/test/resources/target/FileGroupingCase"
     options:
       variable-providers:
         - "sequence"
@@ -192,13 +192,28 @@ processors:
       file-grouping:
         - tags:
             - "test1"
-          matched-expression: null
           filename-pattern: "{filename}"
           save-path-pattern: "{itemTitle}"
-          file-content-filters: [ ]
-          file-expression-exclusions: [ ]
-          file-expression-inclusions: [ ]
-          file-replacement-decider: null
+    enabled: true
+  - name: "FileGroupingFilterCase"
+    source: "fixed:normal-case"
+    item-file-resolver: "fixed:normal-case"
+    downloader: "mock"
+    file-mover: "general"
+    save-path: "src/test/resources/target/FileGroupingFilterCase"
+    options:
+      variable-providers:
+        - "sequence"
+      save-path-pattern: "{itemTitle}"
+      file-expression-exclusions:
+        - "true"
+      file-grouping:
+        - expression-matching: "filename == 'test3.jpg'"
+          file-expression-exclusions:
+            - "false"
+        - expression-matching: "filename == 'test1.jpg'"
+          file-expression-inclusions:
+            - "true"
     enabled: true
   - name: "FileGroupingSeqVariableCase"
     source: "fixed:normal-case"

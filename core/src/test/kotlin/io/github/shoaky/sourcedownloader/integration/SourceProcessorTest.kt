@@ -89,14 +89,15 @@ class SourceProcessorTest : InitializingBean {
     }
 
     @Test
-    fun given_tagged_files() {
-        val selfPath = savePath.resolve("Tagged")
+    fun given_file_grouping_options() {
+        val name = "FileGroupingCase"
+        val selfPath = savePath.resolve(name)
 
-        val processor = processorManager.getProcessor("Tagged").get()
+        val processor = processorManager.getProcessor(name).get()
 
         processor.run()
         processor.runRename()
-        val contents = processingStorage.query(ProcessingQuery("Tagged"))
+        val contents = processingStorage.query(ProcessingQuery(name))
             .associateBy { it.itemContent.sourceItem.title }
         assertEquals(3, contents.size)
 
@@ -104,6 +105,26 @@ class SourceProcessorTest : InitializingBean {
         assert(selfPath.resolve(Path("test2", "2022-01-01", "test2 - 1.jpg")).exists())
         assert(selfPath.resolve(Path("test-dir", "2022-01-01", "test3 - 1.jpg")).exists())
         assert(selfPath.resolve(Path("test-dir", "2022-01-01", "test4 - 2.jpg")).exists())
+    }
+
+    @Test
+    fun given_file_grouping_filter_options() {
+        val name = "FileGroupingFilterCase"
+        val selfPath = savePath.resolve(name)
+
+        val processor = processorManager.getProcessor(name).get()
+
+        processor.run()
+        processor.runRename()
+
+        val contents = processingStorage.query(ProcessingQuery(name))
+            .associateBy { it.itemContent.sourceItem.title }
+        println(Jackson.toJsonString(contents))
+
+        assert(selfPath.resolve(Path("test1", "test1.jpg")).exists())
+        assert(selfPath.resolve(Path("test2", "test2.jpg")).notExists())
+        assert(selfPath.resolve(Path("test-dir", "test3.jpg")).exists())
+        assert(selfPath.resolve(Path("test-dir", "test4.jpg")).notExists())
     }
 
     @Test

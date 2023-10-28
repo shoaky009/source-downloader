@@ -90,9 +90,9 @@ data class ProcessorConfig(
         val expressionMatching: String? = null,
         val filenamePattern: CorePathPattern? = null,
         val savePathPattern: CorePathPattern? = null,
-        val fileContentFilters: List<ComponentId> = emptyList(),
-        val fileExpressionExclusions: List<String> = emptyList(),
-        val fileExpressionInclusions: List<String> = emptyList(),
+        val fileContentFilters: List<ComponentId>? = null,
+        val fileExpressionExclusions: List<String>? = null,
+        val fileExpressionInclusions: List<String>? = null,
         val fileReplacementDecider: ComponentId? = null,
     )
 }

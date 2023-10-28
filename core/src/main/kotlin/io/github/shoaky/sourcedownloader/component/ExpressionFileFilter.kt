@@ -58,6 +58,10 @@ class ExpressionFileFilter(
         return false
     }
 
+    override fun toString(): String {
+        return "ExpressionFileFilter(exclusionScripts=$exclusionScripts, inclusionScripts=$inclusionScripts)"
+    }
+
     companion object {
 
         private val log = LoggerFactory.getLogger(ExpressionFileFilter::class.java)

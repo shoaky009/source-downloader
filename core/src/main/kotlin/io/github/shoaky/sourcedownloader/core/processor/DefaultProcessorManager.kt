@@ -293,23 +293,23 @@ class DefaultProcessorManager(
         val fileGrouping = mutableMapOf<SourceFileMatcher, FileOption>()
         for (fileOption in options.fileGrouping) {
             val taggedFileContentFilters = mutableListOf<FileContentFilter>()
-            if (fileOption.fileExpressionExclusions.isNotEmpty() || fileOption.fileExpressionInclusions.isNotEmpty()) {
+            if (fileOption.fileExpressionExclusions != null || fileOption.fileExpressionInclusions != null) {
                 taggedFileContentFilters.add(
                     ExpressionFileFilter(
-                        fileOption.fileExpressionExclusions,
-                        fileOption.fileExpressionInclusions
+                        fileOption.fileExpressionExclusions ?: emptyList(),
+                        fileOption.fileExpressionInclusions ?: emptyList()
                     )
                 )
             }
-            taggedFileContentFilters.addAll(
-                fileOption.fileContentFilters.map {
-                    componentManager.getComponent(
-                        ComponentTopType.FILE_CONTENT_FILTER,
-                        it,
-                        fileContentFilterTypeRef,
-                    ).getAndMarkRef(config.name)
-                }
-            )
+
+            val filters = fileOption.fileContentFilters?.map {
+                componentManager.getComponent(
+                    ComponentTopType.FILE_CONTENT_FILTER,
+                    it,
+                    fileContentFilterTypeRef,
+                ).getAndMarkRef(config.name)
+            } ?: emptyList()
+            taggedFileContentFilters.addAll(filters)
 
             val matcher = if (fileOption.tags.isNotEmpty()) {
                 TagSourceFileMatcher(fileOption.tags)

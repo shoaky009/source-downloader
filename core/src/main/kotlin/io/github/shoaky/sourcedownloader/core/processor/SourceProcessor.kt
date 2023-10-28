@@ -264,9 +264,6 @@ class SourceProcessor(
             tags.addAll(file.tags)
             file.copy(tags = tags)
         }.map {
-            if (maxFilenameLength < 0) {
-                return@map it
-            }
             val path = cuttingFilename(it.path, maxFilenameLength)
             if (it.path == path) {
                 return@map it
@@ -577,16 +574,19 @@ class SourceProcessor(
             "zfs" to 250
         )
 
-        fun cuttingFilename(path: Path, limitSize: Int): Path {
+        fun cuttingFilename(path: Path, limitByteSize: Int): Path {
+            if (limitByteSize <= 0) {
+                return path
+            }
             val byteArray = path.nameWithoutExtension.toByteArray(Charsets.UTF_8)
-            if (byteArray.size <= limitSize) {
+            if (byteArray.size <= limitByteSize) {
                 return path
             }
 
             val decoder = Charsets.UTF_8.newDecoder()
             decoder.onMalformedInput(CodingErrorAction.IGNORE)
             decoder.reset()
-            val buf = ByteBuffer.wrap(path.nameWithoutExtension.toByteArray(Charsets.UTF_8), 0, limitSize)
+            val buf = ByteBuffer.wrap(path.nameWithoutExtension.toByteArray(Charsets.UTF_8), 0, limitByteSize)
             val decode = decoder.decode(buf)
             return path.resolveSibling("$decode.${path.extension}")
         }
