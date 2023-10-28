@@ -34,7 +34,7 @@ class QbittorrentDownloader(
             tags = tags
         )
         val response = client.execute(torrentsAddRequest)
-        if (QbittorrentClient.successResponse != response.body()) {
+        if (QbittorrentClient.SUCCESS_RESPONSE != response.body()) {
             log.error("qbittorrent submit task failed,code:${response.statusCode()} body:${response.body()}")
             throw ComponentException.processing("qbittorrent submit task failed,code:${response.statusCode()} body:${response.body()}")
         }

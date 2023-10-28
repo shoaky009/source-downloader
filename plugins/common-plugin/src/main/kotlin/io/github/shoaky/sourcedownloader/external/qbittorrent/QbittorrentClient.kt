@@ -10,7 +10,9 @@ import java.net.URL
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 
-class QbittorrentClient(private val qbittorrentConfig: QbittorrentConfig) : HookedApiClient() {
+class QbittorrentClient(
+    private val qbittorrentConfig: QbittorrentConfig
+) : HookedApiClient() {
 
     @Volatile
     private var authenticationLegal: Boolean = false
@@ -44,7 +46,7 @@ class QbittorrentClient(private val qbittorrentConfig: QbittorrentConfig) : Hook
         if (log.isDebugEnabled) {
             log.debug("qBittorrent cookies:${Jackson.toJsonString(cookies)}")
         }
-        return cookies.filter { it.hasExpired().not() }.firstOrNull { it.name == sidCookieName }
+        return cookies.filter { it.hasExpired().not() }.firstOrNull { it.name == SID_COOKIE_NAME }
     }
 
     override fun <R : BaseRequest<T>, T : Any> beforeRequest(requestBuilder: HttpRequest.Builder, request: R) {
@@ -65,21 +67,22 @@ class QbittorrentClient(private val qbittorrentConfig: QbittorrentConfig) : Hook
             }
         }
         if (response.statusCode() != 200) {
-            log.info(
+            log.warn(
                 """qBittorrent响应非200
                     request:{}
                 requestBody:{}
                 responseCode:{}
                 responseBody:{}
                 """, request.path, Jackson.toJsonString(request),
-                response.statusCode(), response.body())
+                response.statusCode(), response.body()
+            )
         }
     }
 
     companion object {
 
-        const val sidCookieName = "SID"
-        const val successResponse = "Ok."
+        const val SID_COOKIE_NAME = "SID"
+        const val SUCCESS_RESPONSE = "Ok."
         private val log = LoggerFactory.getLogger(QbittorrentClient::class.java)
     }
 
