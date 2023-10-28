@@ -145,6 +145,9 @@ class ExposedProcessingStorage : ProcessingStorage {
     }
 
     override fun findByItemHashing(itemHashing: List<String>): List<ProcessingContent> {
+        if (itemHashing.isEmpty()) {
+            return emptyList()
+        }
         return transaction {
             Processing.find {
                 Processings.sourceItemHashing inList itemHashing
@@ -223,6 +226,9 @@ class ExposedProcessingStorage : ProcessingStorage {
     }
 
     override fun findTargetPaths(paths: List<Path>): List<ProcessingTargetPath> {
+        if (paths.isEmpty()) {
+            return emptyList()
+        }
         return transaction {
             TargetPath.find {
                 TargetPaths.id inList paths.map { it.toString() }
