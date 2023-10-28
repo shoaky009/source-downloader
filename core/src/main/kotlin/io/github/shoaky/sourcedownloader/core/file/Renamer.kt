@@ -213,7 +213,7 @@ data class RenameContext(
      */
     val extraListVariables: Map<String, List<String>> = run {
         val map = mutableMapOf<String, List<String>>()
-        map["originLayout"] = file.getLayout()
+        map["originalLayout"] = file.getLayout()
         map
     }
 }

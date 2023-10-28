@@ -410,7 +410,7 @@ class RenamerTest {
     fun given_origin_layout_pattern() {
         val file1 = createRawFileContent(
             filePath = Path("wp", "mp3", "origin", "1.mp3"),
-            savePathPattern = CorePathPattern("wp-test/{originLayout}"),
+            savePathPattern = CorePathPattern("wp-test/{originalLayout}"),
         )
 
         val renamer = Renamer(
@@ -423,14 +423,14 @@ class RenamerTest {
 
         val file2 = createRawFileContent(
             filePath = Path("wp", "1.mp3"),
-            savePathPattern = CorePathPattern("wp-test/{originLayout}"),
+            savePathPattern = CorePathPattern("wp-test/{originalLayout}"),
         )
         val content2 = renamer.createFileContent(sourceItem(), file2, MapPatternVariables())
         assertEquals(sourceSavePath.resolve(Path("wp-test", "1.mp3")), content2.targetPath())
 
         val file3 = createRawFileContent(
             filePath = Path("1.mp3"),
-            savePathPattern = CorePathPattern("wp-test/{originLayout}"),
+            savePathPattern = CorePathPattern("wp-test/{originalLayout}"),
         )
         val content3 = renamer.createFileContent(sourceItem(), file3, MapPatternVariables())
         assertEquals(sourceSavePath.resolve(Path("wp-test", "1.mp3")), content3.targetPath())
