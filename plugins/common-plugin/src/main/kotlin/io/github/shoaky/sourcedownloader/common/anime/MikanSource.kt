@@ -20,7 +20,7 @@ class MikanSource(
     private val url: String,
     private val allEpisode: Boolean = false,
     private val rssReader: RssReader = defaultRssReader,
-    private val mikanSupport: MikanSupport = MikanSupport(null),
+    private val mikanClient: MikanClient = MikanClient(null),
     /**
      * 该字段只是用于单元测试时候的控制，不要在正常使用时候设置为false
      */
@@ -50,7 +50,7 @@ class MikanSource(
         return ExpandIterator<SourceItem, PointedItem<ItemPointer>>(
             items, limit,
         ) { item ->
-            val fansubRss = mikanSupport.getEpisodePageInfo(item.link.toURL()).fansubRss
+            val fansubRss = mikanClient.getEpisodePageInfo(item.link.toURL()).fansubRss
             if (fansubRss == null) {
                 log.debug("FansubRss is null:{}", item)
                 return@ExpandIterator RequestResult(emptyList(), true)

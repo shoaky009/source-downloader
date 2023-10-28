@@ -1,7 +1,7 @@
 package io.github.shoaky.sourcedownloader.common.mikan
 
 import io.github.shoaky.sourcedownloader.common.anime.BangumiInfo
-import io.github.shoaky.sourcedownloader.common.anime.MikanSupport
+import io.github.shoaky.sourcedownloader.common.anime.MikanClient
 import io.github.shoaky.sourcedownloader.common.anime.MikanVariableProvider
 import io.github.shoaky.sourcedownloader.common.torrent.R
 import io.github.shoaky.sourcedownloader.external.bangumi.BangumiRequest
@@ -24,19 +24,23 @@ class MikanVariableProviderTest {
 
     @Test
     fun normal() {
-        val mikanSupport = Mockito.mock(MikanSupport::class.java)
-        Mockito.`when`(mikanSupport.getEpisodePageInfo(
+        val mikanClient = Mockito.mock(MikanClient::class.java)
+        Mockito.`when`(
+            mikanClient.getEpisodePageInfo(
             URL("https://mikanani.me/Home/Episode/324b70bd8a170bcf13d7f5bdf9d3e8df4065f682")
         ))
-            .thenReturn(MikanSupport.EpisodePageInfo(
+            .thenReturn(
+                MikanClient.EpisodePageInfo(
                 "向山进发 Next Summit",
                 "https://mikanani.me/Home/Bangumi/2852#583",
                 "https://mikanani.me/RSS/Bangumi?bangumiId=2852&subgroupid=583"
             ))
 
-        Mockito.`when`(mikanSupport.getBangumiPageInfo(
+        Mockito.`when`(
+            mikanClient.getBangumiPageInfo(
             URL("https://mikanani.me/Home/Bangumi/2852#583")
-        )).thenReturn(MikanSupport.BangumiPageInfo("290980"))
+            )
+        ).thenReturn(MikanClient.BangumiPageInfo("290980"))
 
         val bgmTvApiClient = Mockito.mock(BgmTvApiClient::class.java)
         Mockito.`when`(bgmTvApiClient.execute(Mockito.any<BangumiRequest<Subject>>()))
@@ -45,7 +49,7 @@ class MikanVariableProviderTest {
                     LocalDate.of(2022, 10, 4), 12))
             )
 
-        val mikanVariableProvider = MikanVariableProvider(mikanSupport = mikanSupport, bgmTvClient = bgmTvApiClient)
+        val mikanVariableProvider = MikanVariableProvider(mikanClient = mikanClient, bgmTvClient = bgmTvApiClient)
         val sourceItem = SourceItem(
             "[ANi] 前進吧！登山少女  Next Summit（僅限港澳台地區） - 11 [1080P][Bilibili][WEB-DL][AAC AVC][CHT CHS]",
             URI("https://mikanani.me/Home/Episode/324b70bd8a170bcf13d7f5bdf9d3e8df4065f682"),

@@ -63,7 +63,6 @@ class HttpDownloader(
             .build()
 
         withContext(dispatchers) {
-            log.info("Start downloading: $path")
             val job = launch {
                 val response = client.send(request, bodyHandler)
                 val statusCode = HttpStatus.valueOf(response.statusCode())

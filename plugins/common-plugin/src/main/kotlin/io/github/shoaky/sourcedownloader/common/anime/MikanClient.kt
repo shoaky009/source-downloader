@@ -7,7 +7,7 @@ import org.jsoup.Jsoup
 import java.net.URI
 import java.net.URL
 
-class MikanSupport(
+class MikanClient(
     private val token: String?
 ) {
 

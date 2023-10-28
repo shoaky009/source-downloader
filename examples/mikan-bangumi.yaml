@@ -1,3 +1,13 @@
+#该项非必要，某些番会有登录才能访问页面的情况遇到请添加上，并在对应组件配置中使用
+instances:
+  - name: mikan-client
+    props:
+      #登录mikan，开发者工具Cookie中的.AspNetCore.Identity.Application
+      token: xxxxx
+  - name: bgmtv-client
+    props:
+      token: xxxx
+
 components:
   source:
     - name: mikan
@@ -11,8 +21,8 @@ components:
         url: https://mikanani.me/RSS/MyBangumi?token=
         # 历史番剧
         all-episode: true
-        # 推荐填上token，有些番剧要登陆才能番剧信息页面，否则有些番会无法正确重命名
-        token: ""
+        # 推荐填上有些番剧要登陆才能番剧信息页面，否则有些番会无法正确重命名
+        client: mikan-client
   downloader:
     - name: qbittorrent
       type: qbittorrent
@@ -24,9 +34,9 @@ components:
     - name: mikan
       type: mikan
       props:
-      # 推荐填上token，有些番剧要登陆才能番剧信息页面，否则有些番会无法正确重命名
-      # 登陆https://mikanani.me/后，F12打开开发者工具，找到cookie中的token
-        token: ""
+        # 推荐填上有些番剧要登陆才能番剧信息页面，否则有些番会无法正确重命名
+        bgmtv-client: bgmtv-client
+        mikan-client: mikan-client
   file-mover:
     - name: qbittorrent
       type: qbittorrent

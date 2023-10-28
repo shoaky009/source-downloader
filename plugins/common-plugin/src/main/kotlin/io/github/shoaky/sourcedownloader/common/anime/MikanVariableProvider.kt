@@ -18,8 +18,7 @@ import java.net.URI
  * 从[SourceItem.link]中爬取获取bgm.tv的subjectId
  */
 class MikanVariableProvider(
-    mikanToken: String? = null,
-    private val mikanSupport: MikanSupport = MikanSupport(mikanToken),
+    private val mikanClient: MikanClient = MikanClient(null),
     private val bgmTvClient: BgmTvApiClient = BgmTvApiClient(),
     tmdbClient: TmdbClient = TmdbClient(TmdbClient.DEFAULT_TOKEN)
 ) : VariableProvider {
@@ -49,7 +48,7 @@ class MikanVariableProvider(
 
     private fun getBangumiSubject(mikanBangumiHref: String): Subject {
         kotlin.runCatching {
-            val bangumiPageInfo = mikanSupport.getBangumiPageInfo(
+            val bangumiPageInfo = mikanClient.getBangumiPageInfo(
                 URI(mikanBangumiHref).toURL()
             )
             val subjectId = bangumiPageInfo.bgmTvSubjectId
@@ -62,7 +61,7 @@ class MikanVariableProvider(
     }
 
     override fun createSourceGroup(sourceItem: SourceItem): SourceItemGroup {
-        val pageInfo = mikanSupport.getEpisodePageInfo(sourceItem.link.toURL())
+        val pageInfo = mikanClient.getEpisodePageInfo(sourceItem.link.toURL())
         if (pageInfo.mikanHref == null) {
             log.warn("mikanHref is null, link:{}", sourceItem.link)
             return SourceItemGroup.EMPTY

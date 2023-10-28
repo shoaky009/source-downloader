@@ -343,7 +343,7 @@ class SourceProcessor(
 
         // 预防这一批次的Item有相同的目标，并且是AsyncDownloader的情况下会重复下载
         if (files.all { it.status == FileContentStatus.TARGET_EXISTS }) {
-            log.info("Item:{} already exists, files:{}", sc.sourceItem, sc.sourceFiles)
+            log.info("Item already exists:{}, files:{}", sc.sourceItem, sc.sourceFiles)
             return false to TARGET_ALREADY_EXISTS
         }
 

@@ -1,18 +1,24 @@
 package io.github.shoaky.sourcedownloader.common.supplier
 
+import io.github.shoaky.sourcedownloader.common.anime.MikanClient
 import io.github.shoaky.sourcedownloader.common.anime.MikanSource
-import io.github.shoaky.sourcedownloader.common.anime.MikanSupport
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
+import io.github.shoaky.sourcedownloader.sdk.plugin.PluginContext
 
-internal object MikanSourceSupplier : ComponentSupplier<MikanSource> {
+class MikanSourceSupplier(
+    private val pluginContext: PluginContext
+) : ComponentSupplier<MikanSource> {
 
     override fun apply(props: Properties): MikanSource {
+        val client = props.getOrNull<String>("client")?.let {
+            pluginContext.loadInstance(it, MikanClient::class.java)
+        } ?: MikanClient(null)
+
         val url = props.get<String>("url")
         val allEpisode = props.getOrNull<Boolean>("all-episode") ?: false
-        val token = props.getOrNull<String>("token")
-        return MikanSource(url, allEpisode, mikanSupport = MikanSupport(token))
+        return MikanSource(url, allEpisode, mikanClient = client)
     }
 
     override fun supplyTypes(): List<ComponentType> {
