@@ -598,17 +598,19 @@ class SourceProcessor(
             source::class,
             sourceState.lastPointer.values
         ),
-        private val itemIterable: Iterable<PointedItem<ItemPointer>> = retry.execute<Iterable<PointedItem<ItemPointer>>, IOException> {
-            it.setAttribute("stage", ProcessStage("FetchSourceItems", sourceState))
-            source.fetch(sourcePointer, options.fetchLimit)
-        }
+        private val customIterable: Iterable<PointedItem<ItemPointer>>? = null
     ) {
 
         protected fun processItems() {
             val stat = ProcessStat(name)
-            // stat.stopWatch.start("fetchItems")
             val context = CoreProcessContext(name, processingStorage, info0())
-            // stat.stopWatch.stop()
+
+            stat.stopWatch.start("fetchItems")
+            val itemIterable = customIterable ?: retry.execute<Iterable<PointedItem<ItemPointer>>, IOException> {
+                it.setAttribute("stage", ProcessStage("FetchSourceItems", sourceState))
+                source.fetch(sourcePointer, options.fetchLimit)
+            }
+            stat.stopWatch.stop()
 
             stat.stopWatch.start("processItems")
             val filters = selectItemFilters()
@@ -872,7 +874,7 @@ class SourceProcessor(
     }
 
     private inner class ManualItemProcess(items: List<SourceItem>) : Process(
-        itemIterable = items.map {
+        customIterable = items.map {
             PointedItem(it, NullPointer)
         }) {
 
