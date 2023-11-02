@@ -23,12 +23,10 @@ dependencies {
 
     // others
     implementation(libs.commons.collections4)
-    implementation(libs.hibernate.types)
     implementation("org.springframework.retry:spring-retry")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml")
     implementation(enforcedPlatform(libs.cel.bom))
     implementation(libs.bundles.cel)
-    // implementation("org.openjdk.nashorn:nashorn-core:15.4")
     implementation(libs.bundles.exposed)
 //    implementation("org.springdoc:springdoc-openapi-starter-webmvc-api:2.2.0")
 //    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0")

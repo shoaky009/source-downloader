@@ -1,27 +1,23 @@
 [versions]
 springboot = "3.1.3"
-guava = "32.1.2-jre"
+guava = "32.1.3-jre"
 commons-lang3 = "3.12.0"
 cel = "0.3.21"
 kotlinx-coroutines = "1.7.3"
-kotlin = "1.9.20-dev-9102"
+kotlin = "1.9.20"
 graalvm-plugin = "0.9.27"
 graalvm = "23.1.0"
-# https://github.com/JetBrains/Exposed/pull/1456
-# 42以上需要改成RETURNING才支持INSERT返回ID，等该PR合并之后升级
-sqlite = "3.42.0.0"
-hibernate = "6.2.6.Final"
+sqlite = "3.43.2.2"
 commons-collections4 = "4.4"
-hibernate-types = "2.21.1"
-axion-release = "1.15.3"
+axion-release = "1.15.5"
 zxing = "3.5.2"
 telegram4j = "0.1.0-SNAPSHOT"
 rssreader = "3.5.0"
 anitomyJ = "0.0.7"
 atomashpolskiy-bt = "1.10"
 tika = "2.7.0"
-jsoup = "1.16.1"
-exposed = "0.43.0"
+jsoup = "1.16.2"
+exposed = "0.44.1"
 
 [libraries]
 springboot-dependencies = { module = "org.springframework.boot:spring-boot-dependencies", version.ref = "springboot" }
@@ -31,9 +27,6 @@ commons-collections4 = { module = "org.apache.commons:commons-collections4", ver
 cel-bom = { module = "org.projectnessie.cel:cel-bom", version.ref = "cel" }
 cel-tools = { module = "org.projectnessie.cel:cel-tools", version.ref = "cel" }
 sqlite-jdbc = { module = "org.xerial:sqlite-jdbc", version.ref = "sqlite" }
-hibernate-community-dialects = { module = "org.hibernate.orm:hibernate-community-dialects", version.ref = "hibernate" }
-hibernate-core = { module = "org.hibernate.orm:hibernate-core", version.ref = "hibernate" }
-hibernate-types = { module = "com.vladmihalcea:hibernate-types-60", version.ref = "hibernate-types" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-core-jvm = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-reactor = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-reactor", version.ref = "kotlinx-coroutines" }

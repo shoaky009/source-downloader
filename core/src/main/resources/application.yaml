@@ -41,15 +41,6 @@ spring:
       on-profile:
         - debug
         - development
-  h2:
-    console:
-      enabled: true
-      settings:
-        web-allow-others: true
-  jpa:
-    show-sql: true
-    properties:
-      hibernate.format_sql: true
   exposed:
     show-sql: true
 logging:
@@ -57,7 +48,6 @@ logging:
     telegram4j: debug
     reactor: debug
     io.github.shoaky: trace
-    org.hibernate.orm.jdbc.bind: trace
     org.springframework.web: debug
 
 ---

@@ -6,9 +6,11 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
 class SimpleFileTaggerTest {
+
+    private val tagger = SimpleFileTaggerSupplier.apply(Properties.EMPTY)
+
     @Test
     fun common_extension() {
-        val tagger = SimpleFileTaggerSupplier.apply(Properties.EMPTY)
         assertEquals("image", tagger.tag("test.jpg"))
         assertEquals("audio", tagger.tag("test.mp3"))
         assertEquals("video", tagger.tag("test.mp4"))
@@ -18,7 +20,6 @@ class SimpleFileTaggerTest {
 
     @Test
     fun expansion() {
-        val tagger = SimpleFileTaggerSupplier.apply(Properties.EMPTY)
         assertEquals("subtitle", tagger.tag("test.ass"))
         assertEquals("subtitle", tagger.tag("test.srt"))
         assertEquals("subtitle", tagger.tag("test.ssa"))
