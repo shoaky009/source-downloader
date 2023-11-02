@@ -661,6 +661,11 @@ class SourceProcessor(
                 } else {
                     stat.incProcessingCounting()
                 }
+
+                val warningFiles = processingContent.itemContent.sourceFiles.filter { it.status.isWarning() }
+                if (warningFiles.isNotEmpty()) {
+                    log.warn("Processor:'{}' item:{} has warning files:{}", name, item.sourceItem, warningFiles)
+                }
             }
             stat.stopWatch.stop()
             onProcessCompleted(context)
@@ -740,11 +745,11 @@ class SourceProcessor(
             val itemContent = pc.itemContent
             val downloadTask = createDownloadTask(itemContent, replaceFiles)
             // NOTE 非异步下载器会阻塞
-            val submit = directDownloader.submit(downloadTask)
             log.info(
                 "Processor:'{}' submit download item:{}, files:{}", name,
                 downloadTask.sourceItem, downloadTask.downloadFiles
             )
+            val submit = directDownloader.submit(downloadTask)
             val targetPaths = itemContent.downloadableFiles().map { it.targetPath() }
             // TODO 应该先ProcessingContent后再保存targetPaths
             if (options.saveProcessingContent) {

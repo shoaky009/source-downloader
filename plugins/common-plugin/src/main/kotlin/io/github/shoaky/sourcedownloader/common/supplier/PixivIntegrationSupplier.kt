@@ -11,9 +11,15 @@ object PixivIntegrationSupplier : ComponentSupplier<PixivIntegration> {
 
     override fun apply(props: Properties): PixivIntegration {
         val sessionId = props.get<String>("session-id")
-        val userId = props.get<Long>("user-id")
         val mode = props.getOrDefault<String>("mode", "bookmark")
         val client = PixivClient(sessionId)
+        val userId = props.getOrNull<Long>("user-id") ?: run {
+            if (client.sessionId == null) {
+                throw IllegalStateException("Client sessionId is null")
+            }
+            Regex("\\d+_").find(client.sessionId)?.value?.dropLast(1)?.toLongOrNull()
+                ?: throw IllegalStateException("sessionId is null")
+        }
         return PixivIntegration(userId, client, mode)
     }
 

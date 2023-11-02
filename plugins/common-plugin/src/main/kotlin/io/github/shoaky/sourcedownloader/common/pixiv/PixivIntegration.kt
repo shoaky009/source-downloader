@@ -19,9 +19,12 @@ import kotlin.io.path.Path
 import kotlin.jvm.optionals.getOrNull
 
 class PixivIntegration(
-    // 后面优化 不用填uid
     private val userId: Long,
     private val client: PixivClient,
+    /**
+     * bookmark:获取收藏的
+     * following:获取关注的作品
+     */
     private val mode: String,
 ) : Source<PixivPointer>, ItemFileResolver {
 

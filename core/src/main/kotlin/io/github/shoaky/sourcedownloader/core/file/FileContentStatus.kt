@@ -1,5 +1,7 @@
 package io.github.shoaky.sourcedownloader.core.file
 
+import java.util.*
+
 enum class FileContentStatus {
 
     UNDETECTED,
@@ -37,6 +39,14 @@ enum class FileContentStatus {
     /**
      * 该文件是替换的
      */
-    REPLACE
+    REPLACE;
 
+    fun isWarning(): Boolean {
+        return this in (warningStatuses)
+    }
+
+    companion object {
+
+        private val warningStatuses = EnumSet.of(VARIABLE_ERROR, TARGET_EXISTS, FILE_CONFLICT)
+    }
 }

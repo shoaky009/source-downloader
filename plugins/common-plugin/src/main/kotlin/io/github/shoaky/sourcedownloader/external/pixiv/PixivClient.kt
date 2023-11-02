@@ -8,7 +8,7 @@ import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 
 class PixivClient(
-    private val sessionId: String? = null
+    val sessionId: String? = null
 ) : HookedApiClient() {
 
     private val server: URI = URI("https://www.pixiv.net")
@@ -18,7 +18,8 @@ class PixivClient(
                 this[HttpHeaders.COOKIE] = "PHPSESSID=$sessionId; "
             }
             this[HttpHeaders.REFERER] = "https://www.pixiv.net/"
-            this[HttpHeaders.USER_AGENT] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36"
+            this[HttpHeaders.USER_AGENT] =
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36"
             this["sec-ch-ua"] = """"Google Chrome";v="117", "Not;A=Brand";v="8", "Chromium";v="117""""
             this["sec-ch-ua-mobile"] = "?0"
             this["sec-ch-ua-platform"] = "\"Windows\""

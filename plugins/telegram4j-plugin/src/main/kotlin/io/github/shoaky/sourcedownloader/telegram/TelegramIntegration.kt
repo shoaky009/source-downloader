@@ -109,7 +109,7 @@ class TelegramIntegration(
                 log.info("Downloaded file: $fileDownloadPath")
             }
             .doOnError {
-                log.error("Error downloading file", it)
+                log.error("Error downloading file:$fileDownloadPath", it)
             }
             .onErrorMap {
                 wrapRetryableExceptionIfNeeded(it)
