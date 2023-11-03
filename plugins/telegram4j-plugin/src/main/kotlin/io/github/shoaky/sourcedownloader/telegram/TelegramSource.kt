@@ -63,6 +63,9 @@ class TelegramSource(
         when (media) {
             is MessageMediaPhoto -> {
                 attrs[MEDIA_TYPE_ATTR] = "photo"
+                convertMedia(media)?.size()?.also {
+                    attrs["size"] = it
+                }
                 return SourceItem(
                     "$chatId-$messageId.jpg", uri,
                     messageDateTime, "image/jpg", uri,
@@ -71,17 +74,17 @@ class TelegramSource(
             }
 
             is MessageMediaDocument -> {
-                val document = media as? MessageMediaDocument ?: return null
-                val dc = document.document() as? ImmutableBaseDocument ?: return null
-                val filename = dc.attributes()
+                val document = convertMedia(media) ?: return null
+                val filename = document.attributes()
                     .filterIsInstance<DocumentAttributeFilename>()
                     .firstOrNull()?.fileName() ?: "$chatId-${message.id()}"
                 attrs[MEDIA_TYPE_ATTR] = "document"
+                attrs["size"] = document.size()
                 return SourceItem(
                     filename,
                     uri,
                     messageDateTime,
-                    dc.mimeType(),
+                    document.mimeType(),
                     uri,
                     attrs
                 )
@@ -89,6 +92,11 @@ class TelegramSource(
 
             else -> return null
         }
+    }
+
+    private fun convertMedia(media: MessageMedia): ImmutableBaseDocument? {
+        val document = media as? MessageMediaDocument ?: return null
+        return document.document() as? ImmutableBaseDocument ?: return null
     }
 
     companion object {

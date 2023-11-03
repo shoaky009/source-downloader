@@ -139,7 +139,8 @@ class PixivIntegration(
         return listOf(
             SourceFile(
                 Path(ugoira.originalSrc.pathSegments().last),
-                data = response.body()
+                mapOf("size" to contentLength),
+                data = response.body(),
             )
         )
     }

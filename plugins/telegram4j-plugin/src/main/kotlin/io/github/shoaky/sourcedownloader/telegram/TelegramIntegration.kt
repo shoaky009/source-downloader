@@ -35,6 +35,10 @@ class TelegramIntegration(
 ) : ItemFileResolver, Downloader, ComponentStateful, AutoCloseable {
 
     private val client = wrapper.client
+
+    /**
+     * Key is the path of the file downloading.
+     */
     private val progresses: MutableMap<Path, ProgressiveChannel> = ConcurrentHashMap()
     private val downloadCounting = AtomicInteger(0)
     private val hashingPathMapping = ConcurrentHashMap<String, Path>()
@@ -116,12 +120,12 @@ class TelegramIntegration(
             }
             .doFinally {
                 runCatching {
-                    monitoredChannel.close()
+                    closePath(fileDownloadPath)
                 }.onFailure {
                     log.error("Error closing file channel", it)
                 }
                 progresses.remove(fileDownloadPath)
-                hashingPathMapping[hashing] = fileDownloadPath
+                hashingPathMapping.remove(hashing)
             }
             .block()
         return true
@@ -167,14 +171,19 @@ class TelegramIntegration(
     }
 
     override fun close() {
-        progresses.forEach { (t, u) ->
+        progresses.forEach { (path, _) ->
             runCatching {
-                u.close()
-                t.resolveSibling("${t.name}.tmp").deleteIfExists()
+                closePath(path)
             }.onFailure {
                 log.error("Error closing downloader", it)
             }
         }
+    }
+
+    private fun closePath(path: Path) {
+        progresses[path]?.close()
+        progresses.remove(path)
+        path.resolveSibling("${path.name}.tmp").deleteIfExists()
     }
 }
 
