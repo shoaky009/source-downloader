@@ -18,6 +18,15 @@ data class ProcessorSourceState(
     val lastActiveTime: LocalDateTime = LocalDateTime.now()
 ) {
 
+    fun formatPointerString(maxLength: Int = 1000): String {
+        val pointerStr = lastPointer.toString()
+        var printStr = pointerStr.take(maxLength)
+        if (pointerStr.length > maxLength) {
+            printStr += " ...more"
+        }
+        return printStr
+    }
+
     companion object {
 
         fun <T : SourcePointer> resolvePointer(klass: KClass<out Source<T>>, values: Map<String, Any>): T {

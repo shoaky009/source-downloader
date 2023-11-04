@@ -816,7 +816,9 @@ class SourceProcessor(
             }
 
             sourcePointer.update(item.pointer)
-            log.trace("Processor:'{}' on success update pointer:{}", name, item.pointer)
+            if (log.isTraceEnabled) {
+                log.trace("Processor:'{}' on success update pointer:{}", name, item.pointer)
+            }
             if (options.pointerBatchMode.not()) {
                 saveSourceState()
             }
@@ -830,7 +832,9 @@ class SourceProcessor(
 
         override fun onItemFiltered(item: PointedItem<ItemPointer>) {
             sourcePointer.update(item.pointer)
-            log.trace("Processor:'{}' on filtered update pointer:{}", name, item.pointer)
+            if (log.isTraceEnabled) {
+                log.trace("Processor:'{}' on filtered update pointer:{}", name, item.pointer)
+            }
             if (options.pointerBatchMode.not()) {
                 saveSourceState()
             }
@@ -845,7 +849,9 @@ class SourceProcessor(
             val lastP = ProcessorSourceState.resolvePointer(source::class, sourceState.lastPointer.values)
             val currP = ProcessorSourceState.resolvePointer(source::class, currentSourceState.lastPointer.values)
             if (currP != lastP) {
-                log.info("Processor:'$name' update pointer:${currentSourceState.lastPointer}")
+                log.info(
+                    "Processor:'$name' update pointer:${currentSourceState.formatPointerString()}"
+                )
             }
             val save = processingStorage.save(currentSourceState)
             sourceState.id = save.id
