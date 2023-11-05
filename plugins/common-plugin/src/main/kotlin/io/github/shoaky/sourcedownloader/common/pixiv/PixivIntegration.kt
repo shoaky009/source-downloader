@@ -57,7 +57,12 @@ class PixivIntegration(
         }
 
         return client.execute(GetUserAllRequest(following.userId)).body().body
-            .illusts.map { it.key }.sorted()
+            .let { resp ->
+                val mangeIds =
+                    resp.manga.fieldNames().asSequence().mapNotNull { it.toLongOrNull() }.toList()
+                resp.illusts.keys + mangeIds
+            }
+            .sorted()
             .takeWhile { it > lastIllustrationId }
             .chunked(50)
             .flatMap {
