@@ -255,7 +255,6 @@ class SourceProcessor(
     }
 
     private fun createItemContent(sourceItemGroup: SourceItemGroup, sourceItem: SourceItem): CoreItemContent {
-        val sharedPatternVariables = sourceItemGroup.sharedPatternVariables()
         val resolvedFiles = itemFileResolver.resolveFiles(sourceItem).map { file ->
             val tags = taggers.mapNotNull { it.tag(file) }.toMutableSet()
             if (tags.isEmpty() && file.tags.isEmpty()) {
@@ -278,7 +277,7 @@ class SourceProcessor(
             it.copy(path)
         }
         checkResolvedFiles(sourceItem, resolvedFiles)
-
+        val sharedPatternVariables = sourceItemGroup.sharedPatternVariables()
         val fileContents = resolvedFiles.groupBy {
             options.matchFileOption(it)
         }.flatMap { entry ->
@@ -592,6 +591,12 @@ class SourceProcessor(
         }
     }
 
+    private data class ItemContext(
+        val item: PointedItem<ItemPointer>,
+        val filters: List<SourceItemFilter>,
+        val variableProviders: List<VariableProvider>
+    )
+
     private abstract inner class Process(
         protected val sourceState: ProcessorSourceState = currentSourceState(),
         protected val sourcePointer: SourcePointer = ProcessorSourceState.resolvePointer(
@@ -617,6 +622,7 @@ class SourceProcessor(
             for (item in itemIterable) {
                 log.trace("Processor:'{}' start process item:{}", name, item)
 
+                val itemContext = createItemContext(item)
                 val filterBy = filters.firstOrNull { it.test(item.sourceItem).not() }
                 if (filterBy != null) {
                     log.debug("{} filtered item:{}", filterBy::class.simpleName, item.sourceItem)
@@ -672,6 +678,10 @@ class SourceProcessor(
             if (stat.hasChange()) {
                 log.info("Processor:{}", stat)
             }
+        }
+
+        private fun createItemContext(item: PointedItem<ItemPointer>): Any {
+            return ItemContext(item, this.selectItemFilters(), options.variableProviders)
         }
 
         protected open fun selectItemFilters(): List<SourceItemFilter> {

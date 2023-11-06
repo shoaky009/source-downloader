@@ -78,14 +78,15 @@ data class ProcessorConfig(
         val category: String? = null,
         val tags: Set<String> = emptySet(),
         val itemErrorContinue: Boolean = false,
-        val fileGrouping: List<FileOptionConfig> = emptyList(),
+        val fileGrouping: List<FileGroupingConfig> = emptyList(),
+        val itemGrouping: List<ItemGroupingConfig> = emptyList(),
         val manualSources: List<ComponentId> = emptyList(),
         val channelBufferSize: Int = 20,
         val listenerMode: ListenerMode = ListenerMode.EACH,
         val recordMinimized: Boolean = false
     )
 
-    data class FileOptionConfig(
+    data class FileGroupingConfig(
         val tags: Set<String> = emptySet(),
         val expressionMatching: String? = null,
         val filenamePattern: CorePathPattern? = null,
@@ -94,5 +95,14 @@ data class ProcessorConfig(
         val fileExpressionExclusions: List<String>? = null,
         val fileExpressionInclusions: List<String>? = null,
         val fileReplacementDecider: ComponentId? = null,
+    )
+
+    data class ItemGroupingConfig(
+        val tags: Set<String> = emptySet(),
+        val expressionMatching: String? = null,
+        val variableProviders: List<ComponentId>? = null,
+        val sourceItemFilters: List<ComponentId>? = null,
+        val itemExpressionExclusions: List<String>? = null,
+        val itemExpressionInclusions: List<String>? = null,
     )
 }

@@ -290,45 +290,8 @@ class DefaultProcessorManager(
             *options.variableReplacers.toTypedArray(), WindowsPathReplacer
         )
 
-        val fileGrouping = mutableMapOf<SourceFileMatcher, FileOption>()
-        for (fileOption in options.fileGrouping) {
-            val taggedFileContentFilters = mutableListOf<FileContentFilter>()
-            if (fileOption.fileExpressionExclusions != null || fileOption.fileExpressionInclusions != null) {
-                taggedFileContentFilters.add(
-                    ExpressionFileFilter(
-                        fileOption.fileExpressionExclusions ?: emptyList(),
-                        fileOption.fileExpressionInclusions ?: emptyList()
-                    )
-                )
-            }
-
-            val filters = fileOption.fileContentFilters?.map {
-                componentManager.getComponent(
-                    ComponentTopType.FILE_CONTENT_FILTER,
-                    it,
-                    fileContentFilterTypeRef,
-                ).getAndMarkRef(config.name)
-            } ?: emptyList()
-            taggedFileContentFilters.addAll(filters)
-
-            val matcher = if (fileOption.tags.isNotEmpty()) {
-                TagSourceFileMatcher(fileOption.tags)
-            } else if (fileOption.expressionMatching != null) {
-                ExpressionSourceFileMatcher(fileOption.expressionMatching)
-            } else {
-                throw ComponentException.other("fileGrouping must have tags or expressionMatching")
-            }
-            fileGrouping[matcher] = FileOption(
-                fileOption.savePathPattern?.let {
-                    CorePathPattern(it.pattern)
-                },
-                fileOption.filenamePattern?.let {
-                    CorePathPattern(it.pattern)
-                },
-                taggedFileContentFilters
-            )
-        }
-
+        val fileGrouping = applyFileGrouping(options, config)
+        val itemGrouping = applyItemGrouping(options, config)
         return ProcessorOptions(
             CorePathPattern(options.savePathPattern.pattern),
             CorePathPattern(options.filenamePattern.pattern),
@@ -340,6 +303,7 @@ class DefaultProcessorManager(
             taggers,
             variableReplacers,
             fileReplacementDecider,
+            itemGrouping,
             fileGrouping,
             options.saveProcessingContent,
             options.renameTaskInterval,
@@ -358,5 +322,102 @@ class DefaultProcessorManager(
             options.listenerMode,
             options.recordMinimized
         )
+    }
+
+    private fun applyFileGrouping(
+        options: ProcessorConfig.Options,
+        config: ProcessorConfig
+    ): Map<SourceFilePartition, FileOption> {
+        val fileGrouping = mutableMapOf<SourceFilePartition, FileOption>()
+        for (fileOption in options.fileGrouping) {
+            val fileContentFilters = mutableListOf<FileContentFilter>()
+            if (fileOption.fileExpressionExclusions != null || fileOption.fileExpressionInclusions != null) {
+                fileContentFilters.add(
+                    ExpressionFileFilter(
+                        fileOption.fileExpressionExclusions ?: emptyList(),
+                        fileOption.fileExpressionInclusions ?: emptyList()
+                    )
+                )
+            }
+
+            val filters = fileOption.fileContentFilters?.map {
+                componentManager.getComponent(
+                    ComponentTopType.FILE_CONTENT_FILTER,
+                    it,
+                    fileContentFilterTypeRef,
+                ).getAndMarkRef(config.name)
+            } ?: emptyList()
+            fileContentFilters.addAll(filters)
+
+            val matcher = if (fileOption.tags.isNotEmpty()) {
+                TagSourceFilePartition(fileOption.tags)
+            } else if (fileOption.expressionMatching != null) {
+                ExpressionSourceFilePartition(fileOption.expressionMatching)
+            } else {
+                throw ComponentException.other("fileGrouping must have tags or expressionMatching")
+            }
+            fileGrouping[matcher] = FileOption(
+                fileOption.savePathPattern?.let {
+                    CorePathPattern(it.pattern)
+                },
+                fileOption.filenamePattern?.let {
+                    CorePathPattern(it.pattern)
+                },
+                fileContentFilters
+            )
+        }
+        return fileGrouping
+    }
+
+    private fun applyItemGrouping(
+        options: ProcessorConfig.Options,
+        config: ProcessorConfig
+    ): Map<SourceItemPartition, ItemOption> {
+        val fileGrouping = mutableMapOf<SourceItemPartition, ItemOption>()
+        for (itemOption in options.itemGrouping) {
+            val sourceItemFilters = mutableListOf<SourceItemFilter>()
+            if (itemOption.itemExpressionExclusions != null || itemOption.itemExpressionInclusions != null) {
+                sourceItemFilters.add(
+                    ExpressionItemFilter(
+                        itemOption.itemExpressionExclusions ?: emptyList(),
+                        itemOption.itemExpressionInclusions ?: emptyList()
+                    )
+                )
+            }
+
+            val filters = itemOption.sourceItemFilters?.map {
+                componentManager.getComponent(
+                    ComponentTopType.SOURCE_ITEM_FILTER,
+                    it,
+                    sourceItemFilterTypeRef,
+                ).getAndMarkRef(config.name)
+            } ?: emptyList()
+            if (filters.isNotEmpty()) {
+                sourceItemFilters.add(SourceHashingItemFilter(config.name, processingStorage))
+            }
+            sourceItemFilters.addAll(filters)
+
+            val matcher = if (itemOption.tags.isNotEmpty()) {
+                TagSourceItemPartition(itemOption.tags)
+            } else if (itemOption.expressionMatching != null) {
+                ExpressionSourceItemPartition(itemOption.expressionMatching)
+            } else {
+                throw ComponentException.other("itemGrouping must have tags or expressionMatching")
+            }
+
+            val providers = itemOption.variableProviders?.map {
+                componentManager.getComponent(
+                    ComponentTopType.VARIABLE_PROVIDER,
+                    it,
+                    variableProviderTypeRef,
+                ).getAndMarkRef(config.name)
+            }
+
+            fileGrouping[matcher] = ItemOption(
+                sourceItemFilters,
+                providers
+            )
+        }
+        return fileGrouping
     }
 }
