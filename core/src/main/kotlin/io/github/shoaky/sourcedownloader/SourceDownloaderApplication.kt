@@ -140,6 +140,9 @@ class SourceDownloaderApplication(
 
         internal val log = LoggerFactory.getLogger(SourceDownloaderApplication::class.java)
 
+        /**
+         * TODO 后面去掉兼容，AOT时用
+         */
         private fun getObjectSuppliers0(): Array<ComponentSupplier<*>> {
             return arrayOf(
                 AlwaysReplaceSupplier,
@@ -182,9 +185,6 @@ class SourceDownloaderApplication(
     }
 }
 
-/**
- * TODO 后面去掉兼容，AOT时用
- */
 fun main(args: Array<String>) {
     setupProxy()
     SpringApplication.run(SourceDownloaderApplication::class.java, *args)

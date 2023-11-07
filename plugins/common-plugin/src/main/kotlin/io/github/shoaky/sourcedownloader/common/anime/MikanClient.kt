@@ -47,7 +47,6 @@ class MikanClient(
             })
 
         private fun getBangumiPageInfo(url: URL, token: String?): BangumiPageInfo {
-            // TODO 校验url如果不是bangumi的页面则直接返回
             val page = Jsoup.newSession().cookie(TOKEN_COOKIE, token ?: "")
                 .url(url).get().body()
             val subjectId = page.select(".bangumi-info a")

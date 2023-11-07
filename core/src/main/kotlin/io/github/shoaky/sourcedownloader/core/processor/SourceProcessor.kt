@@ -331,7 +331,7 @@ class SourceProcessor(
         if (files.isEmpty()) {
             return false to NO_FILES
         }
-        // SystemFileSource下载不需要做任何事情，因为本身就已经存在了
+
         // 返回true是因为需要做后续的处理
         if (replaceFiles.isNotEmpty()) {
             return true to WAITING_TO_RENAME
@@ -343,6 +343,7 @@ class SourceProcessor(
             return false to TARGET_ALREADY_EXISTS
         }
 
+        // SystemFileSource下载不需要做任何事情，因为本身就已经存在了
         if (downloader is SystemFileSource) {
             return true to WAITING_TO_RENAME
         }
@@ -558,6 +559,13 @@ class SourceProcessor(
             )
     }
 
+    suspend fun reprocess(content: ProcessingContent) {
+        if (content.processorName != name) {
+            throw IllegalArgumentException("content:${content.id} not belong to processor:$name")
+        }
+        itemChannel.send(Reprocess(content))
+    }
+
     companion object {
 
         private val retry = RetryTemplateBuilder()
@@ -688,7 +696,7 @@ class SourceProcessor(
             return sourceItemFilters
         }
 
-        private fun processItem(sourceItem: SourceItem): ProcessingContent {
+        fun processItem(sourceItem: SourceItem): ProcessingContent {
             val variablesAggregation = VariableProvidersAggregation(
                 sourceItem,
                 variableProviders.filter { it.support(sourceItem) }.toList(),
@@ -722,7 +730,9 @@ class SourceProcessor(
                 "Processor:'{}' item:{} ,should download: {}, content status:{}",
                 name, sourceItem, shouldDownload, contentStatus
             )
-            val processingContent = ProcessingContent(name, itemContent).copy(status = contentStatus)
+            val processingContent = postProcessingContent(
+                ProcessingContent(name, itemContent).copy(status = contentStatus)
+            )
 
             if (shouldDownload) {
                 log.trace("Processor:'{}' start download item:{}", name, sourceItem)
@@ -732,12 +742,16 @@ class SourceProcessor(
                     val moveSuccess = moveFiles(itemContent)
                     val replaceSuccess = replaceFiles(itemContent)
                     if (moveSuccess || replaceSuccess) {
-                        return ProcessingContent(name, itemContent).copy(status = RENAMED, renameTimes = 1)
+                        return processingContent.copy(status = RENAMED, renameTimes = 1)
                     }
-                    return ProcessingContent(name, itemContent).copy(status = FAILURE)
+                    return processingContent.copy(status = FAILURE)
                 }
             }
 
+            return processingContent
+        }
+
+        open fun postProcessingContent(processingContent: ProcessingContent): ProcessingContent {
             return processingContent
         }
 
@@ -905,6 +919,28 @@ class SourceProcessor(
             }
         }
     }
+
+    private inner class Reprocess(
+        private val content: ProcessingContent
+    ) : Process(
+        customIterable = listOf(PointedItem(content.itemContent.sourceItem, NullPointer))
+    ) {
+
+        override fun postProcessingContent(processingContent: ProcessingContent): ProcessingContent {
+            return processingContent.copy(id = content.id, processorName = name)
+        }
+
+        override fun onItemCompleted(processingContent: ProcessingContent) {
+            if (options.saveProcessingContent) {
+                processingStorage.save(processingContent)
+            }
+        }
+
+        override fun selectItemFilters(): List<SourceItemFilter> {
+            return super.selectItemFilters().filter { it !is SourceHashingItemFilter }
+        }
+    }
+
 }
 
 val log: Logger = LoggerFactory.getLogger(SourceProcessor::class.java)
