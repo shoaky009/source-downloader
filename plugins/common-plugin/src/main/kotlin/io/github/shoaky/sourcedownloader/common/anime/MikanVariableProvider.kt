@@ -11,6 +11,7 @@ import io.github.shoaky.sourcedownloader.sdk.*
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentException
 import io.github.shoaky.sourcedownloader.sdk.component.VariableProvider
 import org.slf4j.LoggerFactory
+import java.io.IOException
 import java.net.URI
 
 /**
@@ -69,8 +70,11 @@ class MikanVariableProvider(
 
         val subject = try {
             bangumiCache.get(pageInfo.mikanHref)
+        } catch (e: IOException) {
+            log.warn("因网络异常获取Bangumi Subject失败, item:{}", sourceItem, e)
+            throw ProcessingException.retryable("因网络异常获取Bangumi Subject失败")
         } catch (e: Exception) {
-            log.warn("获取Bangumi Subject失败, item:{}", sourceItem, e)
+            log.error("获取Bangumi Subject失败, 如果404请更新对应Client的token item:{}", sourceItem, e)
             return SourceItemGroup.EMPTY
         }
 
