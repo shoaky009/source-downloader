@@ -13,7 +13,7 @@ abstract class HoldingTaskTrigger : Trigger {
         tasks.add(task)
     }
 
-    override fun removeTask(task: Runnable) {
-        tasks.remove(task)
+    override fun removeTask(task: Runnable): Boolean {
+        return tasks.remove(task)
     }
 }

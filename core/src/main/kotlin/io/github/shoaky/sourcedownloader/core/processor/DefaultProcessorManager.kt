@@ -167,7 +167,10 @@ class DefaultProcessorManager(
         val processor = container.get(processorBeanName, processorTypeRef).get()
         val safeTask = processor.safeTask()
         componentManager.getAllTrigger().forEach {
-            it.removeTask(safeTask)
+            val removed = it.removeTask(safeTask)
+            if (removed) {
+                log.info("Processor:'$processorName' removed from trigger:'${it::class.simpleName}'")
+            }
         }
         processor.close()
         container.remove(processorBeanName)

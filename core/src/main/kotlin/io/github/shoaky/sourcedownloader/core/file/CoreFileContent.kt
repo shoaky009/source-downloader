@@ -1,6 +1,8 @@
 package io.github.shoaky.sourcedownloader.core.file
 
 import com.fasterxml.jackson.annotation.JsonIgnore
+import com.fasterxml.jackson.databind.annotation.JsonSerialize
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer
 import io.github.shoaky.sourcedownloader.sdk.FileContent
 import io.github.shoaky.sourcedownloader.sdk.MapPatternVariables
 import java.io.InputStream
@@ -9,12 +11,16 @@ import java.nio.file.Path
 import kotlin.io.path.Path
 
 data class CoreFileContent(
+    @JsonSerialize(using = ToStringSerializer::class)
     override val fileDownloadPath: Path,
+    @JsonSerialize(using = ToStringSerializer::class)
     val sourceSavePath: Path,
+    @JsonSerialize(using = ToStringSerializer::class)
     override val downloadPath: Path,
     override val patternVariables: MapPatternVariables,
     val fileSavePathPattern: CorePathPattern,
     val filenamePattern: CorePathPattern,
+    @JsonSerialize(using = ToStringSerializer::class)
     val targetSavePath: Path,
     val targetFilename: String,
     override val attrs: Map<String, Any> = emptyMap(),

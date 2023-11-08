@@ -60,7 +60,7 @@ interface Trigger : SdComponent, AutoCloseable {
     /**
      * Remove the task from the trigger
      */
-    fun removeTask(task: Runnable)
+    fun removeTask(task: Runnable): Boolean
 }
 
 /**
