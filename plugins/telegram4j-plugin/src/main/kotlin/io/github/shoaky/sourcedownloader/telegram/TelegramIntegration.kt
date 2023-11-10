@@ -85,6 +85,10 @@ class TelegramIntegration(
             )
         )
 
+        // 先刷新再占用，防止网络请求失败
+        val refreshedFileReferenceId = client.refresh(document.fileReferenceId)
+            .blockOptional(Duration.ofSeconds(5L)).get()
+
         progresses.compute(fileDownloadPath) { _, oldValue ->
             oldValue?.run {
                 throw IllegalStateException("File already downloading: $fileDownloadPath")
@@ -94,10 +98,7 @@ class TelegramIntegration(
         val hashing = task.sourceItem.hashing()
         hashingPathMapping[hashing] = fileDownloadPath
 
-        val refreshedFileReferenceId = client.refresh(document.fileReferenceId)
-            .blockOptional(Duration.ofSeconds(5L)).get()
-        client.downloadFile(refreshedFileReferenceId)
-            .doFirst {
+        client.downloadFile(refreshedFileReferenceId).doFirst {
                 log.info("Start downloading file: $fileDownloadPath")
             }
             .publishOn(Schedulers.boundedElastic())
