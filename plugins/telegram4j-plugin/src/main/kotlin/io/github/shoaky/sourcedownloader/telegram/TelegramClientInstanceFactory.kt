@@ -84,6 +84,7 @@ object TelegramClientInstanceFactory : InstanceFactory<TelegramClientWrapper> {
         }
 
         val client = bootstrap.connect()
+            .timeout(Duration.ofSeconds(30))
             .doOnError {
                 log.error("Error while connecting to Telegram", it)
             }

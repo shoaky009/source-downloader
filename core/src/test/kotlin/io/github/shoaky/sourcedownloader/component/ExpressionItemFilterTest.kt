@@ -48,9 +48,9 @@ class ExpressionItemFilterTest {
         assertEquals(true, filter.test(sourceItem))
         assertEquals(false, filter.test(sourceItem.copy("1wsaqazfff")))
     }
-//
+
     @Test
-    fun test_720p() {
+    fun test_regex() {
         val sourceItem = sourceItem("[Nekomoe kissaten][The iDOLM@STER CINDERELLA GIRLS U149][02][720p][JPSC]")
         val filter = ExpressionItemFilterSupplier.expressions(
             exclusions = listOf(

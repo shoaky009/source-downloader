@@ -30,4 +30,17 @@ object NullPointer : SourcePointer, ItemPointer {
     }
 }
 
-interface ItemPointer
+interface ItemPointer {
+
+    companion object {
+
+        fun of(id: String, value: Any): ItemPointer {
+            return SimpleItemPointer(id, value)
+        }
+    }
+}
+
+data class SimpleItemPointer<T>(
+    val id: String,
+    val value: T
+) : ItemPointer

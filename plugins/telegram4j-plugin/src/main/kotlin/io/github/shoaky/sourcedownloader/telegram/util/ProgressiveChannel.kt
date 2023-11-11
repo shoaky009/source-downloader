@@ -12,25 +12,23 @@ class ProgressiveChannel(
     private val ch: SeekableByteChannel
 ) : ByteChannel by ch {
 
-    private var downloadedBytes = 0L
     private val startTime = Instant.now()
 
     override fun write(src: ByteBuffer): Int {
-        val write = ch.write(src)
-        downloadedBytes += write
-        return write
+        return ch.write(src)
     }
 
     fun formatProgress(): String {
-        return NumberFormat.getPercentInstance().format(downloadedBytes.toDouble() / totalSize.toDouble())
+
+        return NumberFormat.getPercentInstance().format(getDownloadedBytes().toDouble() / totalSize.toDouble())
     }
 
     fun formatRate(): String {
         val curr = Instant.now().epochSecond
         val rate = if (curr == startTime.epochSecond) {
-            downloadedBytes
+            getDownloadedBytes()
         } else {
-            downloadedBytes / (curr - startTime.epochSecond)
+            getDownloadedBytes() / (curr - startTime.epochSecond)
         }
 
         return when {
@@ -70,6 +68,14 @@ class ProgressiveChannel(
                 "$totalSize B"
             }
         }
+    }
+
+    fun getDownloadedBytes(): Long {
+        return ch.position()
+    }
+
+    fun isDone(): Boolean {
+        return getDownloadedBytes() == totalSize
     }
 
     fun getDuration(): Long {

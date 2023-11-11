@@ -55,7 +55,7 @@ class ExpressionItemFilter(
             return scriptHost.buildScript(expression)
                 .withDeclarations(
                     Decls.newVar("title", Decls.String),
-                    Decls.newVar("contentType", Decls.newListType(Decls.String)),
+                    Decls.newVar("contentType", Decls.String),
                     Decls.newVar("link", Decls.String),
                     Decls.newVar("date", Decls.Timestamp),
                     Decls.newVar("tags", Decls.newListType(Decls.String)),

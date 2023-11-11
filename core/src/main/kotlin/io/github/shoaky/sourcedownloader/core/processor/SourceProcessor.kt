@@ -173,7 +173,7 @@ class SourceProcessor(
         )
     }
 
-    fun info0(): ProcessorInfo {
+    private fun info0(): ProcessorInfo {
         return ProcessorInfo(
             name,
             downloadPath,
@@ -494,7 +494,7 @@ class SourceProcessor(
 
         val movableFiles = content.movableFiles()
         if (movableFiles.isEmpty()) {
-            log.info("Processor:'$name' item:'${content.sourceItem}' no available files to rename")
+            log.info("Processor:'$name' no available files to rename, item:'${content.sourceItem}'")
             return false
         }
         movableFiles.map { it.saveDirectoryPath() }
@@ -505,7 +505,9 @@ class SourceProcessor(
 
         if (log.isDebugEnabled) {
             content.sourceFiles.forEach {
-                log.debug("Move file:'${it.fileDownloadPath}' to '${it.targetPath()}'")
+                if (log.isDebugEnabled) {
+                    log.debug("Move file:'${it.fileDownloadPath}' to '${it.targetPath()}'")
+                }
             }
         }
         return fileMover.move(
@@ -678,7 +680,7 @@ class SourceProcessor(
 
                 val warningFiles = processingContent.itemContent.sourceFiles.filter { it.status.isWarning() }
                 if (warningFiles.isNotEmpty()) {
-                    log.warn("Processor:'{}' item:{} has warning files:{}", name, item.sourceItem, warningFiles)
+                    log.warn("Processor:'{}' has warning status, item:{} files:{}", name, item.sourceItem, warningFiles)
                 }
             }
             stat.stopWatch.stop()
@@ -704,7 +706,9 @@ class SourceProcessor(
                 options.variableNameReplace
             )
             val itemContent = createItemContent(variablesAggregation, sourceItem)
-            log.trace("Processor:'{}' created content item:{}", name, sourceItem)
+            if (log.isTraceEnabled) {
+                log.trace("Processor:'{}' created content item:{}", name, sourceItem)
+            }
 
             val filterBy = itemContentFilters.firstOrNull { it.test(itemContent).not() }
             if (filterBy != null) {

@@ -213,7 +213,7 @@ data class RenameContext(
      */
     val extraListVariables: Map<String, List<String>> = run {
         val map = mutableMapOf<String, List<String>>()
-        map["originalLayout"] = file.getLayout()
+        map["originalLayout"] = file.getPathOriginalLayout()
         map
     }
 }
@@ -242,7 +242,7 @@ data class RawFileContent(
 
     val fileDownloadPath: Path = downloadPath.resolve(sourceFile.path)
 
-    fun getLayout(): List<String> {
+    fun getPathOriginalLayout(): List<String> {
         val path = if (sourceFile.path.isAbsolute) {
             downloadPath.relativize(sourceFile.path)
         } else {

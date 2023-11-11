@@ -57,7 +57,6 @@ processors:
   - name: mikan-bangumi
     triggers:
       - fixed:20min
-      - webhook:mikan
     # 如果不需要番剧补全使用
     #source: rss:mikan
     source: mikan

@@ -5,7 +5,7 @@ import io.github.shoaky.sourcedownloader.sdk.component.ComponentException
 import io.github.shoaky.sourcedownloader.sdk.util.Jackson
 
 class Properties private constructor(
-    val rawValues: MutableMap<String, Any>
+    val rawValues: Map<String, Any>
 ) {
 
     inline fun <reified T> parse(): T {

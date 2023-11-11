@@ -2,9 +2,10 @@ package io.github.shoaky.sourcedownloader.telegram
 
 import io.github.shoaky.sourcedownloader.telegram.util.ProgressiveChannel
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito
 import java.nio.ByteBuffer
-import java.nio.channels.SeekableByteChannel
+import java.nio.channels.FileChannel
+import java.nio.file.StandardOpenOption
+import kotlin.io.path.Path
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -12,13 +13,20 @@ class ProgressiveChannelTest {
 
     @Test
     fun test() {
-        val mock = Mockito.mock(SeekableByteChannel::class.java)
-        Mockito.`when`(mock.write(Mockito.any())).thenReturn(1024 * 1024 * 100)
-        val ch = ProgressiveChannel(3L * (1024 * 1024 * 1024), mock)
-        ch.write(ByteBuffer.wrap(ByteArray(0)))
+        val ch = ProgressiveChannel(
+            3L * (1024 * 1024), FileChannel.open(
+                Path("/dev/null"),
+                StandardOpenOption.WRITE,
+                StandardOpenOption.CREATE,
+            )
+        )
+
+        for (i in 0 until 100) {
+            ch.write(ByteBuffer.allocate(1024))
+        }
 
         println(ch.formatRate())
-        assertTrue(ch.formatRate().contains("MiB"))
+        assertTrue(ch.formatRate().contains("KiB"))
         assertEquals("3%", ch.formatProgress())
     }
 }

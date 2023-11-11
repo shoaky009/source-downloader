@@ -119,7 +119,7 @@ class QbittorrentDownloader(
             )
             val success = renameFile.statusCode() == HttpStatus.OK.value()
             if (success.not()) {
-                log.error("rename file failed,hash:$torrentHash code:${renameFile.statusCode()} body:${renameFile.body()}")
+                log.error("Rename file failed, hash:$torrentHash code:${renameFile.statusCode()} body:${renameFile.body()}")
             }
             success
         }.all { it }

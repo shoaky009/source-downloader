@@ -9,18 +9,23 @@ import io.github.shoaky.sourcedownloader.sdk.component.Downloader
 import io.github.shoaky.sourcedownloader.sdk.component.ItemFileResolver
 import io.github.shoaky.sourcedownloader.sdk.util.queryMap
 import io.github.shoaky.sourcedownloader.telegram.util.ProgressiveChannel
+import reactor.core.publisher.Flux
 import reactor.core.scheduler.Schedulers
 import telegram4j.core.`object`.Document
 import telegram4j.core.`object`.MessageMedia
 import telegram4j.core.`object`.Photo
+import telegram4j.core.`object`.Video
 import telegram4j.core.`object`.media.PhotoThumbnail
 import telegram4j.mtproto.RpcException
+import telegram4j.mtproto.file.FilePart
+import telegram4j.mtproto.file.FileReferenceId
 import telegram4j.tl.ImmutableInputMessageID
 import java.nio.channels.FileChannel
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
 import java.time.Duration
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.io.path.*
 import kotlin.jvm.optionals.getOrDefault
@@ -40,7 +45,7 @@ class TelegramIntegration(
      * Key is the path of the file downloading.
      */
     private val progresses: MutableMap<Path, ProgressiveChannel> = ConcurrentHashMap()
-    private val downloadCounting = AtomicInteger(0)
+    private val downloadedCounting = AtomicInteger(0)
     private val hashingPathMapping = ConcurrentHashMap<String, Path>()
 
     override fun resolveFiles(sourceItem: SourceItem): List<SourceFile> {
@@ -86,9 +91,7 @@ class TelegramIntegration(
         )
 
         // 先刷新再占用，防止网络请求失败
-        val refreshedFileReferenceId = client.refresh(document.fileReferenceId)
-            .blockOptional(Duration.ofSeconds(5L)).get()
-
+        val fileReferenceId = determineFileRefId(document)
         progresses.compute(fileDownloadPath) { _, oldValue ->
             oldValue?.run {
                 throw IllegalStateException("File already downloading: $fileDownloadPath")
@@ -98,19 +101,14 @@ class TelegramIntegration(
         val hashing = task.sourceItem.hashing()
         hashingPathMapping[hashing] = fileDownloadPath
 
-        client.downloadFile(refreshedFileReferenceId).doFirst {
-                log.info("Start downloading file: $fileDownloadPath")
-            }
-            .publishOn(Schedulers.boundedElastic())
-            // 该设置临时解决没有发射filePart的问题，只有在网络不好的情况下才会出现，暂时没排查出来Telegram4j这个库哪里的问题
-            // 缺点是会抛出异常，下一次再重新下载
-            .timeout(Duration.ofMinutes(2))
+        log.info("Start downloading file: $fileDownloadPath")
+        createFilePartStream(fileReferenceId, monitoredChannel, fileDownloadPath)
             .collect({ monitoredChannel }, { fc, filePart ->
                 fc.write(filePart.bytes.nioBuffer())
             })
             .doOnSuccess {
-                downloadCounting.incrementAndGet()
                 tempDownloadPath.moveTo(fileDownloadPath)
+                downloadedCounting.incrementAndGet()
                 log.info("Downloaded file: $fileDownloadPath")
             }
             .doOnError {
@@ -125,11 +123,39 @@ class TelegramIntegration(
                 }.onFailure {
                     log.error("Error closing file channel", it)
                 }
-                progresses.remove(fileDownloadPath)
                 hashingPathMapping.remove(hashing)
             }
             .block()
         return true
+    }
+
+    private fun createFilePartStream(
+        fileReferenceId: FileReferenceId,
+        monitoredChannel: ProgressiveChannel,
+        fileDownloadPath: Path
+    ): Flux<FilePart> =
+        client.downloadFile(fileReferenceId, monitoredChannel.getDownloadedBytes(), MAX_FILE_PART_SIZE, true)
+            .publishOn(Schedulers.fromExecutor(Executors.newVirtualThreadPerTaskExecutor()))
+            .timeout(Duration.ofMinutes(3))
+            .onErrorResume(RpcException::class.java) {
+                if (it.error.errorCode() == TIMEOUT_CODE && monitoredChannel.isDone().not()) {
+                    log.warn("Download timeout, resuming: $fileDownloadPath")
+                    return@onErrorResume createFilePartStream(fileReferenceId, monitoredChannel, fileDownloadPath)
+                }
+                Flux.error(it)
+            }
+
+    private fun determineFileRefId(document: Document): FileReferenceId {
+        return when (document) {
+            // 最清晰的
+            is Video -> document.fileReferenceId.withThumbSizeType(' ')
+            is Photo -> {
+                client.refresh(document.fileReferenceId)
+                    .blockOptional(Duration.ofSeconds(5L)).get()
+            }
+
+            else -> document.fileReferenceId
+        }
     }
 
     private fun getSize(document: Document): Long {
@@ -157,7 +183,7 @@ class TelegramIntegration(
 
     override fun stateDetail(): Any {
         return mapOf(
-            "downloaded" to downloadCounting.get(),
+            "downloaded" to downloadedCounting.get(),
             "downloading" to progresses.map {
                 val channel = it.value
                 mapOf(
@@ -186,6 +212,13 @@ class TelegramIntegration(
         progresses.remove(path)
         path.resolveSibling("${path.name}.tmp").deleteIfExists()
     }
+
+    companion object {
+
+        private const val TIMEOUT_CODE = -503
+        private const val MAX_FILE_PART_SIZE = 1024 * 1024
+    }
+
 }
 
 fun wrapRetryableExceptionIfNeeded(e: Throwable): Throwable {

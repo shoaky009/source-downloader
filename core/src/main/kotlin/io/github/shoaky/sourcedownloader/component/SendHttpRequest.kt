@@ -41,7 +41,7 @@ class SendHttpRequest(
         headers.forEach(request::setHeader)
         val response = httpClient.send(request.build(), BodyHandlers.discarding())
         if (response.statusCode() != HttpStatus.OK.value()) {
-            log.warn("send http request to $uri, response code is ${response.statusCode()}")
+            log.warn("Send http request to $uri, response code is ${response.statusCode()}")
         }
     }
 
