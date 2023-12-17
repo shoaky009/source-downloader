@@ -133,17 +133,19 @@ class TelegramIntegration(
         fileReferenceId: FileReferenceId,
         monitoredChannel: ProgressiveChannel,
         fileDownloadPath: Path
-    ): Flux<FilePart> =
-        client.downloadFile(fileReferenceId, monitoredChannel.getDownloadedBytes(), MAX_FILE_PART_SIZE, true)
+    ): Flux<FilePart> {
+        return client.downloadFile(fileReferenceId, monitoredChannel.getDownloadedBytes(), MAX_FILE_PART_SIZE, true)
             .publishOn(Schedulers.fromExecutor(Executors.newVirtualThreadPerTaskExecutor()))
             .timeout(Duration.ofMinutes(3))
             .onErrorResume(RpcException::class.java) {
-                if (it.error.errorCode() == TIMEOUT_CODE && monitoredChannel.isDone().not()) {
-                    log.warn("Download timeout, resuming: $fileDownloadPath")
+                val error = it.error
+                if (monitoredChannel.isDone().not() && retryErrorCodes.contains(error.errorCode())) {
+                    log.warn("Error downloading file: $fileDownloadPath, error:{}, retrying", error)
                     return@onErrorResume createFilePartStream(fileReferenceId, monitoredChannel, fileDownloadPath)
                 }
                 Flux.error(it)
             }
+    }
 
     private fun determineFileRefId(document: Document): FileReferenceId {
         return when (document) {
@@ -216,7 +218,12 @@ class TelegramIntegration(
     companion object {
 
         private const val TIMEOUT_CODE = -503
+        private const val FLOOD_WAIT_CODE = 420
         private const val MAX_FILE_PART_SIZE = 1024 * 1024
+        private val retryErrorCodes = setOf(
+            TIMEOUT_CODE,
+            FLOOD_WAIT_CODE
+        )
     }
 
 }
