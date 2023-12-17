@@ -74,22 +74,8 @@ class MikanClient(
         }
     }
 
-    private class UrlKey(
+    private data class UrlKey(
         val url: URL,
         val token: String? = null
-    ) {
-
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (javaClass != other?.javaClass) return false
-
-            other as UrlKey
-
-            return url == other.url
-        }
-
-        override fun hashCode(): Int {
-            return url.hashCode()
-        }
-    }
+    )
 }

@@ -2,6 +2,7 @@ package io.github.shoaky.sourcedownloader.sdk
 
 import com.fasterxml.jackson.annotation.JsonAlias
 import com.fasterxml.jackson.annotation.JsonIgnore
+import io.github.shoaky.sourcedownloader.sdk.component.ItemFileResolver
 import java.io.InputStream
 import java.net.URI
 import java.nio.file.Path

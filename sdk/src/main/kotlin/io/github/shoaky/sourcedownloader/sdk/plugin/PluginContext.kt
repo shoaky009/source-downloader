@@ -29,9 +29,9 @@ interface PluginContext {
      * 2.如果不传props，那么就需要用户配置instances对应的属性
      * 两者各有优缺点，第一种方式用户配置简单，但是配置多的情况下，会导致配置文件很长
      * 第二种方式增加了用户配置的复杂性，但是配置文件相对简洁
-     * 具体的可以看[TelegramSource]的实际情况，因为它单个实例只支持一个chatId，但是client实际是同一个
+     * 具体的可以看[io.github.shoaky.sourcedownloader.telegram.TelegramSource]的实际情况，因为它单个实例只支持一个chatId，但是client实际是同一个
      * 用第一种配置会长，适合第二种配置方式
-     * 相反[QbittorrentDownloader]就适合第一种配置方式
+     * 相反[io.github.shoaky.sourcedownloader.common.torrent.QbittorrentDownloader]就适合第一种配置方式
      */
     fun <T> loadInstance(name: String, klass: Class<T>, props: Properties? = null): T
 
