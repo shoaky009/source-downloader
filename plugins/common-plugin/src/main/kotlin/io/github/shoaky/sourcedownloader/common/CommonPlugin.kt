@@ -59,7 +59,8 @@ internal class CommonPlugin : Plugin {
             TransmissionDownloaderSupplier,
             WebdavMoverSupplier,
             PixivIntegrationSupplier,
-            KeywordVariableProviderSupplier
+            KeywordVariableProviderSupplier,
+            BilibiliSourceSupplier
         )
     }
 }
