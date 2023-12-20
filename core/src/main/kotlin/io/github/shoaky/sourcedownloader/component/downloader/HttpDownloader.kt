@@ -125,7 +125,7 @@ class MonitorableBodyHandler<T>(
     private val bodyHandler: BodyHandler<T>
 ) : BodyHandler<T> by bodyHandler {
 
-    private lateinit var monitor: MonitorableBodySubscriber<T>
+    private var monitor: MonitorableBodySubscriber<T>? = null
 
     override fun apply(responseInfo: ResponseInfo): BodySubscriber<T> {
         val bodySubscriber = MonitorableBodySubscriber(bodyHandler.apply(responseInfo))
@@ -134,7 +134,7 @@ class MonitorableBodyHandler<T>(
     }
 
     fun speedOfRate(): String {
-        return monitor.speedOfRate()
+        return monitor?.speedOfRate() ?: "0B/s"
     }
 }
 
@@ -148,7 +148,7 @@ class MonitorableBodySubscriber<T>(
     private var downloadedSize: Long = 0
 
     override fun onNext(item: List<ByteBuffer>) {
-        downloadedSize += item.size.toLong()
+        downloadedSize += item.sumOf { it.remaining() }
         delegate.onNext(item)
     }
 
