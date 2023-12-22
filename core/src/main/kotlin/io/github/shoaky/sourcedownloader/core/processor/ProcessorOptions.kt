@@ -40,7 +40,8 @@ data class ProcessorOptions(
     val fileExistsDetector: FileExistsDetector = SimpleFileExistsDetector,
     val channelBufferSize: Int = 20,
     val listenerMode: ListenerMode = ListenerMode.EACH,
-    val recordMinimized: Boolean = false
+    val recordMinimized: Boolean = false,
+    val parallelism: Int = 1
 ) {
 
     fun matchFileOption(sourceFile: SourceFile): FileOption? {

@@ -14,11 +14,10 @@ import io.github.shoaky.sourcedownloader.sdk.*
 import io.github.shoaky.sourcedownloader.sdk.component.*
 import io.github.shoaky.sourcedownloader.sdk.util.Jackson
 import io.github.shoaky.sourcedownloader.util.LoggingStageRetryListener
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
+import io.github.shoaky.sourcedownloader.util.NoLock
+import io.github.shoaky.sourcedownloader.util.lock
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.launch
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.retry.support.RetryTemplateBuilder
@@ -33,6 +32,8 @@ import java.time.LocalDateTime
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.locks.Lock
+import java.util.concurrent.locks.ReentrantLock
 import kotlin.io.path.extension
 import kotlin.io.path.nameWithoutExtension
 import kotlin.io.path.notExists
@@ -69,7 +70,7 @@ class SourceProcessor(
     private val taggers: List<FileTagger> = options.fileTaggers
     private val fileReplacementDecider: FileReplacementDecider = options.fileReplacementDecider
     private val fileExistsDetector: FileExistsDetector = options.fileExistsDetector
-    private val auxiliaryFileMover = IncludingTargetPathsFileMover(
+    private val secondaryFileMover = IncludingTargetPathsFileMover(
         ReadonlyFileMover(fileMover),
         processingStorage,
     )
@@ -86,10 +87,17 @@ class SourceProcessor(
         Executors.newScheduledThreadPool(1, factory)
     }
     private val itemChannel = Channel<Process>(options.channelBufferSize)
-    private val coroutineScope = CoroutineScope(Dispatchers.Default)
+    private val processorCoroutineScope = CoroutineScope(Dispatchers.Default)
 
     init {
         scheduleRenameTask(options.renameTaskInterval)
+        if (options.parallelism != 1 && source !is AlwaysLatestSource) {
+            /**
+             * 因为是基于迭代器模式迭代，增加并行后Source组件的Pointer变得难以维护并且处理器State的存储存在并发问题暂时没有经过严格测试
+             * AlwaysLatestSource因为是NullPointer，所以在并行处理上没有问题
+             */
+            log.warn("Processor:'$name' parallelism:${options.parallelism} > 1, but source is not AlwaysLatestSource, recommend to set parallelism to 1")
+        }
         listenChannel()
     }
 
@@ -102,7 +110,7 @@ class SourceProcessor(
     }
 
     private fun listenChannel() {
-        coroutineScope.launch {
+        processorCoroutineScope.launch {
             for (process in itemChannel) {
                 process.run()
             }
@@ -548,7 +556,7 @@ class SourceProcessor(
     override fun close() {
         renameTaskFuture?.cancel(false)
         renameScheduledExecutor.shutdown()
-        coroutineScope.cancel("Processor:$name closed")
+        processorCoroutineScope.cancel("Processor:$name closed")
         itemChannel.close()
     }
 
@@ -616,6 +624,8 @@ class SourceProcessor(
         private val customIterable: Iterable<PointedItem<ItemPointer>>? = null
     ) {
 
+        protected val processLock: Lock = if (options.parallelism > 1) ReentrantLock(true) else NoLock
+
         protected fun processItems() {
             val stat = ProcessStat(name)
             val context = CoreProcessContext(name, processingStorage, info0())
@@ -629,61 +639,90 @@ class SourceProcessor(
 
             stat.stopWatch.start("processItems")
             val filters = selectItemFilters()
-            for (item in itemIterable) {
-                log.trace("Processor:'{}' start process item:{}", name, item)
 
-                // TODO item级别的组件分组未完成
-                val itemContext = createItemContext(item)
-                val filterBy = filters.firstOrNull { it.test(item.sourceItem).not() }
-                if (filterBy != null) {
-                    log.debug("{} filtered item:{}", filterBy::class.simpleName, item.sourceItem)
-                    onItemFiltered(item)
-                    stat.incFilterCounting()
-                    continue
-                }
-                val processingContent = runCatching {
-                    retry.execute<ProcessingContent, IOException> {
-                        it.setAttribute("stage", ProcessStage("ProcessItem", item))
-                        processItem(item.sourceItem)
+            val processChannel = Channel<PointedItem<ItemPointer>>(options.parallelism)
+            val processJob = processorCoroutineScope.launch process@{
+                for (item in itemIterable) {
+                    processChannel.send(item)
+                    log.trace("Processor:'{}' send item to channel:{}", name, item)
+                    launch {
+                        log.trace("Processor:'{}' start process item:{}", name, item)
+                        // TODO item级别的组件分组未完成
+                        // val itemContext = createItemContext(item)
+                        val filterBy = filters.firstOrNull { it.test(item.sourceItem).not() }
+                        if (filterBy != null) {
+                            log.debug("{} filtered item:{}", filterBy::class.simpleName, item.sourceItem)
+                            onItemFiltered(item)
+                            stat.incFilterCounting()
+                            processChannel.receive()
+                            return@launch
+                            // continue
+                        }
+                        val processingContent = runCatching {
+                            retry.execute<ProcessingContent, IOException> {
+                                it.setAttribute("stage", ProcessStage("ProcessItem", item))
+                                processItem(item.sourceItem)
+                            }
+                        }.onFailure {
+                            log.error("Processor:'$name'处理失败, item:$item", it)
+                            onItemError(item.sourceItem, it)
+
+                            if (it is ProcessingException && it.skip) {
+                                log.error("Processor:'$name'处理失败, item:$item, 被组件定义为可跳过的异常")
+                                return@onFailure
+                            }
+
+                            if (options.itemErrorContinue.not()) {
+                                log.warn("Processor:'$name'处理失败, item:$item, 退出本次触发处理, 如果未能解决该处理器将无法继续处理后续Item")
+                                processChannel.cancel()
+                                return@launch
+                                // return
+                            }
+                        }.onSuccess {
+                            onItemSuccess(item, it)
+                        }.getOrElse {
+                            ProcessingContent(
+                                name, CoreItemContent(
+                                    item.sourceItem, emptyList(), MapPatternVariables()
+                                )
+                            ).copy(status = FAILURE, failureReason = it.message)
+                        }
+
+                        try {
+                            context.touch(processingContent)
+                            onItemCompleted(processingContent)
+                            log.trace("Processor:'{}' finished process item:{}", name, item)
+
+                            if (filteredStatuses.contains(processingContent.status)) {
+                                stat.incFilterCounting()
+                            } else {
+                                stat.incProcessingCounting()
+                            }
+
+                            val warningFiles =
+                                processingContent.itemContent.sourceFiles.filter { it.status.isWarning() }
+                            if (warningFiles.isNotEmpty()) {
+                                log.warn(
+                                    "Processor:'{}' has warning status, item:{} files:{}",
+                                    name,
+                                    item.sourceItem,
+                                    warningFiles
+                                )
+                            }
+                        } finally {
+                            processChannel.receive()
+                        }
                     }
-                }.onFailure {
-                    log.error("Processor:'$name'处理失败, item:$item", it)
-                    onItemError(item.sourceItem, it)
-
-                    if (it is ProcessingException && it.skip) {
-                        log.error("Processor:'$name'处理失败, item:$item, 视为不可处理的item将跳过")
-                        return@onFailure
-                    }
-
-                    if (options.itemErrorContinue.not()) {
-                        log.warn("Processor:'$name'处理失败, item:$item, 退出本次触发处理, 如果未能解决该处理器将无法继续处理后续Item")
-                        return
-                    }
-                }.onSuccess {
-                    onItemSuccess(item, it)
-                }.getOrElse {
-                    ProcessingContent(
-                        name, CoreItemContent(
-                            item.sourceItem, emptyList(), MapPatternVariables()
-                        )
-                    ).copy(status = FAILURE, failureReason = it.message)
-                }
-
-                context.touch(processingContent)
-                onItemCompleted(processingContent)
-                log.trace("Processor:'{}' finished process item:{}", name, item)
-
-                if (filteredStatuses.contains(processingContent.status)) {
-                    stat.incFilterCounting()
-                } else {
-                    stat.incProcessingCounting()
-                }
-
-                val warningFiles = processingContent.itemContent.sourceFiles.filter { it.status.isWarning() }
-                if (warningFiles.isNotEmpty()) {
-                    log.warn("Processor:'{}' has warning status, item:{} files:{}", name, item.sourceItem, warningFiles)
                 }
             }
+
+            runBlocking {
+                processJob.join()
+            }
+            if (processJob.isCancelled) {
+                log.info("Processor:'{}' process job cancelled", name)
+            }
+
             stat.stopWatch.stop()
             onProcessCompleted(context)
             if (stat.hasChange()) {
@@ -718,7 +757,7 @@ class SourceProcessor(
             }
 
             // 后面再调整状态的更新方式
-            itemContent.updateFileStatus(auxiliaryFileMover, fileExistsDetector)
+            itemContent.updateFileStatus(secondaryFileMover, fileExistsDetector)
             // val processingTargetPaths = processingStorage.targetPathExists(
             //     itemContent.sourceFiles.map { it.targetPath() },
             //     itemContent.sourceItem.hashing()
@@ -844,7 +883,10 @@ class SourceProcessor(
                 this.onItemSuccess(processingContent.itemContent)
             }
 
-            sourcePointer.update(item.pointer)
+            processLock.lock {
+                sourcePointer.update(item.pointer)
+            }
+
             if (log.isTraceEnabled) {
                 log.trace("Processor:'{}' on success update pointer:{}", name, item.pointer)
             }
@@ -860,7 +902,9 @@ class SourceProcessor(
         }
 
         override fun onItemFiltered(item: PointedItem<ItemPointer>) {
-            sourcePointer.update(item.pointer)
+            processLock.lock {
+                sourcePointer.update(item.pointer)
+            }
             if (log.isTraceEnabled) {
                 log.trace("Processor:'{}' on filtered update pointer:{}", name, item.pointer)
             }
@@ -869,21 +913,26 @@ class SourceProcessor(
             }
         }
 
+        /**
+         * 并行执行还未实现按照迭代器的顺序保存
+         */
         private fun saveSourceState() {
-            val currentSourceState = sourceState.copy(
-                lastPointer = Jackson.convert(sourcePointer, PersistentPointer::class),
-                lastActiveTime = LocalDateTime.now()
-            )
-
-            val lastP = ProcessorSourceState.resolvePointer(source::class, sourceState.lastPointer.values)
-            val currP = ProcessorSourceState.resolvePointer(source::class, currentSourceState.lastPointer.values)
-            if (currP != lastP) {
-                log.info(
-                    "Processor:'$name' update pointer:${currentSourceState.formatPointerString()}"
+            processLock.lock {
+                val currentSourceState = sourceState.copy(
+                    lastPointer = Jackson.convert(sourcePointer, PersistentPointer::class),
+                    lastActiveTime = LocalDateTime.now()
                 )
+
+                val lastP = ProcessorSourceState.resolvePointer(source::class, sourceState.lastPointer.values)
+                val currP = ProcessorSourceState.resolvePointer(source::class, currentSourceState.lastPointer.values)
+                if (currP != lastP) {
+                    log.info(
+                        "Processor:'$name' update pointer:${currentSourceState.formatPointerString()}"
+                    )
+                }
+                val save = processingStorage.save(currentSourceState)
+                sourceState.id = save.id
             }
-            val save = processingStorage.save(currentSourceState)
-            sourceState.id = save.id
         }
     }
 

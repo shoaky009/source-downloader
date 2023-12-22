@@ -323,7 +323,8 @@ class DefaultProcessorManager(
             fileExistsDetector,
             options.channelBufferSize,
             options.listenerMode,
-            options.recordMinimized
+            options.recordMinimized,
+            options.parallelism
         )
     }
 

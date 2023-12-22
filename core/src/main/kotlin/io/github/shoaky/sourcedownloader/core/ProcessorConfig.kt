@@ -83,7 +83,11 @@ data class ProcessorConfig(
         val manualSources: List<ComponentId> = emptyList(),
         val channelBufferSize: Int = 20,
         val listenerMode: ListenerMode = ListenerMode.EACH,
-        val recordMinimized: Boolean = false
+        /**
+         * 未实现
+         */
+        val recordMinimized: Boolean = false,
+        val parallelism: Int = 1
     )
 
     data class FileGroupingConfig(
