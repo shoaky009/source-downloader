@@ -587,15 +587,15 @@ class SourceProcessor(
             if (limitByteSize <= 0) {
                 return path
             }
-            val byteArray = path.nameWithoutExtension.toByteArray(Charsets.UTF_8)
-            if (byteArray.size <= limitByteSize) {
+            val filenameBytes = path.nameWithoutExtension.toByteArray(Charsets.UTF_8)
+            if (filenameBytes.size <= limitByteSize) {
                 return path
             }
 
             val decoder = Charsets.UTF_8.newDecoder()
             decoder.onMalformedInput(CodingErrorAction.IGNORE)
             decoder.reset()
-            val buf = ByteBuffer.wrap(path.nameWithoutExtension.toByteArray(Charsets.UTF_8), 0, limitByteSize)
+            val buf = ByteBuffer.wrap(filenameBytes, 0, limitByteSize)
             val decode = decoder.decode(buf)
             return path.resolveSibling("$decode.${path.extension}")
         }
@@ -632,6 +632,7 @@ class SourceProcessor(
             for (item in itemIterable) {
                 log.trace("Processor:'{}' start process item:{}", name, item)
 
+                // TODO item级别的组件分组未完成
                 val itemContext = createItemContext(item)
                 val filterBy = filters.firstOrNull { it.test(item.sourceItem).not() }
                 if (filterBy != null) {
