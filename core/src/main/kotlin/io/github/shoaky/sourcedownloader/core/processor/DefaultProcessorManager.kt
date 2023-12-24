@@ -379,27 +379,27 @@ class DefaultProcessorManager(
     ): Map<SourceItemPartition, ItemOption> {
         val fileGrouping = mutableMapOf<SourceItemPartition, ItemOption>()
         for (itemOption in options.itemGrouping) {
-            val sourceItemFilters = mutableListOf<SourceItemFilter>()
-            if (itemOption.itemExpressionExclusions != null || itemOption.itemExpressionInclusions != null) {
-                sourceItemFilters.add(
-                    ExpressionItemFilter(
-                        itemOption.itemExpressionExclusions ?: emptyList(),
-                        itemOption.itemExpressionInclusions ?: emptyList()
+            val expressionFilters =
+                if (itemOption.itemExpressionInclusions != null || itemOption.itemExpressionExclusions != null) {
+                    val filters = mutableListOf<SourceItemFilter>()
+                    filters.add(
+                        ExpressionItemFilter(
+                            itemOption.itemExpressionExclusions ?: emptyList(),
+                            itemOption.itemExpressionInclusions ?: emptyList()
+                        )
                     )
-                )
-            }
+                    filters
+                } else {
+                    null
+                }
 
-            val filters = itemOption.sourceItemFilters?.map {
+            val sourceItemFilters = itemOption.sourceItemFilters?.map {
                 componentManager.getComponent(
                     ComponentTopType.SOURCE_ITEM_FILTER,
                     it,
                     sourceItemFilterTypeRef,
                 ).getAndMarkRef(config.name)
-            } ?: emptyList()
-            if (filters.isNotEmpty()) {
-                sourceItemFilters.add(SourceHashingItemFilter(config.name, processingStorage))
             }
-            sourceItemFilters.addAll(filters)
 
             val matcher = if (itemOption.tags.isNotEmpty()) {
                 TagSourceItemPartition(itemOption.tags)
@@ -417,10 +417,22 @@ class DefaultProcessorManager(
                 ).getAndMarkRef(config.name)
             }
 
-            fileGrouping[matcher] = ItemOption(
-                sourceItemFilters,
-                providers
-            )
+            if (expressionFilters != null || sourceItemFilters != null) {
+                fileGrouping[matcher] = ItemOption(
+                    buildList {
+                        // 内置
+                        add(SourceHashingItemFilter(config.name, processingStorage))
+                        addAll(expressionFilters ?: emptyList());
+                        addAll(sourceItemFilters ?: emptyList())
+                    },
+                    providers
+                )
+            } else {
+                fileGrouping[matcher] = ItemOption(
+                    null,
+                    providers
+                )
+            }
         }
         return fileGrouping
     }

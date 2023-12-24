@@ -609,7 +609,7 @@ class SourceProcessor(
         }
     }
 
-    private data class ItemContext(
+    private data class ItemSelectedOptions(
         val item: PointedItem<ItemPointer>,
         val filters: List<SourceItemFilter>,
         val variableProviders: List<VariableProvider>
@@ -638,7 +638,7 @@ class SourceProcessor(
             stat.stopWatch.stop()
 
             stat.stopWatch.start("processItems")
-            val filters = selectItemFilters()
+            // val filters = selectItemFilters()
 
             val processChannel = Channel<PointedItem<ItemPointer>>(options.parallelism)
             val processJob = processorCoroutineScope.launch process@{
@@ -647,9 +647,8 @@ class SourceProcessor(
                     log.trace("Processor:'{}' send item to channel:{}", name, item)
                     launch {
                         log.trace("Processor:'{}' start process item:{}", name, item)
-                        // TODO item级别的组件分组未完成
-                        // val itemContext = createItemContext(item)
-                        val filterBy = filters.firstOrNull { it.test(item.sourceItem).not() }
+                        val selected = selectItemOptions(item)
+                        val filterBy = selected.filters.firstOrNull { it.test(item.sourceItem).not() }
                         if (filterBy != null) {
                             log.debug("{} filtered item:{}", filterBy::class.simpleName, item.sourceItem)
                             onItemFiltered(item)
@@ -730,8 +729,11 @@ class SourceProcessor(
             }
         }
 
-        private fun createItemContext(item: PointedItem<ItemPointer>): Any {
-            return ItemContext(item, this.selectItemFilters(), options.variableProviders)
+        private fun selectItemOptions(item: PointedItem<ItemPointer>): ItemSelectedOptions {
+            val itemOption = options.matchItemOption(item.sourceItem)
+            val itemFilters = itemOption?.sourceItemFilters ?: this.selectItemFilters()
+            val itemVariableProviders = itemOption?.variableProviders ?: options.variableProviders
+            return ItemSelectedOptions(item, itemFilters, itemVariableProviders)
         }
 
         protected open fun selectItemFilters(): List<SourceItemFilter> {
