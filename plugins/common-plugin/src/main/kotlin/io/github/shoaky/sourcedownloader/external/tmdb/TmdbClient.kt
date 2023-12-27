@@ -1,7 +1,7 @@
 package io.github.shoaky.sourcedownloader.external.tmdb
 
-import io.github.shoaky.sourcedownloader.sdk.api.BaseRequest
-import io.github.shoaky.sourcedownloader.sdk.api.HookedApiClient
+import io.github.shoaky.sourcedownloader.sdk.http.BaseRequest
+import io.github.shoaky.sourcedownloader.sdk.http.HookedApiClient
 import java.net.URI
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse

@@ -1,4 +1,4 @@
-package io.github.shoaky.sourcedownloader.sdk.api
+package io.github.shoaky.sourcedownloader.sdk.http
 
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import com.google.common.net.MediaType

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.core.type.TypeReference
 import com.google.common.net.MediaType
-import io.github.shoaky.sourcedownloader.sdk.api.HttpMethod
+import io.github.shoaky.sourcedownloader.sdk.http.HttpMethod
 import java.net.URL
 
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)

@@ -1,8 +1,8 @@
 package io.github.shoaky.sourcedownloader.external.anilist
 
 import com.google.common.util.concurrent.RateLimiter
-import io.github.shoaky.sourcedownloader.sdk.api.BaseRequest
-import io.github.shoaky.sourcedownloader.sdk.api.HookedApiClient
+import io.github.shoaky.sourcedownloader.sdk.http.BaseRequest
+import io.github.shoaky.sourcedownloader.sdk.http.HookedApiClient
 import org.slf4j.LoggerFactory
 import java.net.URI
 import java.net.http.HttpRequest

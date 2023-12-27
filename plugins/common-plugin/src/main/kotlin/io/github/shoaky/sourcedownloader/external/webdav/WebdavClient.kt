@@ -1,7 +1,7 @@
 package io.github.shoaky.sourcedownloader.external.webdav
 
-import io.github.shoaky.sourcedownloader.sdk.api.BaseRequest
-import io.github.shoaky.sourcedownloader.sdk.api.HookedApiClient
+import io.github.shoaky.sourcedownloader.sdk.http.BaseRequest
+import io.github.shoaky.sourcedownloader.sdk.http.HookedApiClient
 import io.github.shoaky.sourcedownloader.sdk.util.encodeBase64
 import org.springframework.http.HttpHeaders
 import java.net.URI

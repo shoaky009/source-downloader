@@ -5,8 +5,8 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import com.google.common.net.MediaType
-import io.github.shoaky.sourcedownloader.sdk.api.BaseRequest
-import io.github.shoaky.sourcedownloader.sdk.api.HttpMethod
+import io.github.shoaky.sourcedownloader.sdk.http.BaseRequest
+import io.github.shoaky.sourcedownloader.sdk.http.HttpMethod
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class ChatCompletion(

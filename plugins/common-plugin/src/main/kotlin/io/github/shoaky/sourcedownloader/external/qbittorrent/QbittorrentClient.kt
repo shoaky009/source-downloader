@@ -1,7 +1,7 @@
 package io.github.shoaky.sourcedownloader.external.qbittorrent
 
-import io.github.shoaky.sourcedownloader.sdk.api.BaseRequest
-import io.github.shoaky.sourcedownloader.sdk.api.HookedApiClient
+import io.github.shoaky.sourcedownloader.sdk.http.BaseRequest
+import io.github.shoaky.sourcedownloader.sdk.http.HookedApiClient
 import io.github.shoaky.sourcedownloader.sdk.util.Jackson
 import io.github.shoaky.sourcedownloader.sdk.util.http.defaultCookieManager
 import org.slf4j.LoggerFactory

@@ -2,7 +2,7 @@ package io.github.shoaky.sourcedownloader.external.qbittorrent
 
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
-import io.github.shoaky.sourcedownloader.sdk.api.HttpMethod
+import io.github.shoaky.sourcedownloader.sdk.http.HttpMethod
 
 /**
  * https://github.com/qbittorrent/qBittorrent/wiki/WebUI-API-(qBittorrent-4.1)#torrent-management

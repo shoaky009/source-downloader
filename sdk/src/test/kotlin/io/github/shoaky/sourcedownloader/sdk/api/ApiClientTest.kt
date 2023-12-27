@@ -4,6 +4,9 @@ import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import com.google.common.net.MediaType
 import com.sun.net.httpserver.HttpServer
+import io.github.shoaky.sourcedownloader.sdk.http.BaseRequest
+import io.github.shoaky.sourcedownloader.sdk.http.HookedApiClient
+import io.github.shoaky.sourcedownloader.sdk.http.HttpMethod
 import io.github.shoaky.sourcedownloader.sdk.util.Jackson
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Test

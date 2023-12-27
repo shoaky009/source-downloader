@@ -2,7 +2,7 @@ package io.github.shoaky.sourcedownloader.external.bangumi
 
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
-import io.github.shoaky.sourcedownloader.sdk.api.HttpMethod
+import io.github.shoaky.sourcedownloader.sdk.http.HttpMethod
 
 /**
  * [document link](https://bangumi.github.io/api/#/%E6%90%9C%E7%B4%A2/searchSubjectByKeywords)

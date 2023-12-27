@@ -3,7 +3,7 @@ package io.github.shoaky.sourcedownloader.external.pixiv
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import com.google.common.net.MediaType
-import io.github.shoaky.sourcedownloader.sdk.api.BaseRequest
+import io.github.shoaky.sourcedownloader.sdk.http.BaseRequest
 
 class GetIllustrationRequest(
     val id: Long

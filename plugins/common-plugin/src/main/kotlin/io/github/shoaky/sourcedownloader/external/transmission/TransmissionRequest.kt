@@ -1,8 +1,8 @@
 package io.github.shoaky.sourcedownloader.external.transmission
 
 import com.google.common.net.MediaType
-import io.github.shoaky.sourcedownloader.sdk.api.BaseRequest
-import io.github.shoaky.sourcedownloader.sdk.api.HttpMethod
+import io.github.shoaky.sourcedownloader.sdk.http.BaseRequest
+import io.github.shoaky.sourcedownloader.sdk.http.HttpMethod
 import io.github.shoaky.sourcedownloader.sdk.util.Jackson
 import io.github.shoaky.sourcedownloader.sdk.util.http.BodyMapper
 import io.github.shoaky.sourcedownloader.sdk.util.http.CommonBodyHandler

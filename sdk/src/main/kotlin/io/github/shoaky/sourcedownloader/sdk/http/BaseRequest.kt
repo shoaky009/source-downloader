@@ -1,4 +1,4 @@
-package io.github.shoaky.sourcedownloader.sdk.api
+package io.github.shoaky.sourcedownloader.sdk.http
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.core.type.TypeReference

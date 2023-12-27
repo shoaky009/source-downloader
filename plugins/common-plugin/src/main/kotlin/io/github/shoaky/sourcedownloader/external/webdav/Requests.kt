@@ -2,7 +2,7 @@ package io.github.shoaky.sourcedownloader.external.webdav
 
 import com.fasterxml.jackson.core.type.TypeReference
 import com.google.common.net.MediaType
-import io.github.shoaky.sourcedownloader.sdk.api.BaseRequest
+import io.github.shoaky.sourcedownloader.sdk.http.BaseRequest
 import java.net.http.HttpRequest
 import java.nio.file.Path
 

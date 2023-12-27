@@ -2,7 +2,7 @@ package io.github.shoaky.sourcedownloader.external.patreon
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.google.common.net.MediaType
-import io.github.shoaky.sourcedownloader.sdk.api.BaseRequest
+import io.github.shoaky.sourcedownloader.sdk.http.BaseRequest
 import io.github.shoaky.sourcedownloader.sdk.util.http.CommonBodyHandler
 import io.github.shoaky.sourcedownloader.sdk.util.http.CommonBodyMapper
 import io.github.shoaky.sourcedownloader.sdk.util.http.JsonBodyMapper

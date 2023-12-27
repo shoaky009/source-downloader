@@ -3,8 +3,8 @@ package io.github.shoaky.sourcedownloader.external.anilist
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import com.google.common.net.HttpHeaders
 import com.google.common.net.MediaType
-import io.github.shoaky.sourcedownloader.sdk.api.BaseRequest
-import io.github.shoaky.sourcedownloader.sdk.api.HttpMethod
+import io.github.shoaky.sourcedownloader.sdk.http.BaseRequest
+import io.github.shoaky.sourcedownloader.sdk.http.HttpMethod
 
 abstract class AnilistRequest<T : Any> : BaseRequest<T>() {
 

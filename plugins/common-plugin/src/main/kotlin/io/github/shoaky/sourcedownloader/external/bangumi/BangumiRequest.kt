@@ -2,7 +2,7 @@ package io.github.shoaky.sourcedownloader.external.bangumi
 
 import com.google.common.net.HttpHeaders
 import com.google.common.net.MediaType
-import io.github.shoaky.sourcedownloader.sdk.api.BaseRequest
+import io.github.shoaky.sourcedownloader.sdk.http.BaseRequest
 
 abstract class BangumiRequest<T : Any> : BaseRequest<T>() {
 
