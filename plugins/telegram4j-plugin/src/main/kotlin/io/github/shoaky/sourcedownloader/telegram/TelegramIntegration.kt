@@ -49,6 +49,10 @@ class TelegramIntegration(
     private val hashingPathMapping = ConcurrentHashMap<String, Path>()
 
     override fun resolveFiles(sourceItem: SourceItem): List<SourceFile> {
+        if (sourceItem.getAttr<String>("site") == "Telegraph") {
+            return emptyList()
+        }
+
         val sourceFile = SourceFile(Path(sourceItem.title), sourceItem.attrs)
         return listOf(sourceFile)
     }

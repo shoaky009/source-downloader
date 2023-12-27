@@ -90,6 +90,22 @@ class TelegramSource(
                 )
             }
 
+            is MessageMediaWebPage -> {
+                attrs[MEDIA_TYPE_ATTR] = "webpage"
+                val webpage = media.webpage() as BaseWebPage
+                webpage.siteName()?.also {
+                    attrs["site"] = it
+                }
+                return SourceItem(
+                    webpage.title() ?: message.message(),
+                    uri,
+                    messageDateTime,
+                    webpage.type() ?: "webpage",
+                    URI(webpage.url()),
+                    attrs
+                )
+            }
+
             else -> return null
         }
     }
