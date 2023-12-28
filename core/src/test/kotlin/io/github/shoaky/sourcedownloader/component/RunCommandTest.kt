@@ -4,6 +4,7 @@ import io.github.shoaky.sourcedownloader.component.supplier.RunCommandSupplier
 import io.github.shoaky.sourcedownloader.core.file.CoreFileContent
 import io.github.shoaky.sourcedownloader.core.file.CoreItemContent
 import io.github.shoaky.sourcedownloader.core.file.CorePathPattern
+import io.github.shoaky.sourcedownloader.sdk.CoreContext
 import io.github.shoaky.sourcedownloader.sdk.MapPatternVariables
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sourceItem
@@ -26,6 +27,7 @@ class RunCommandTest {
     else
         listOf(Path("src", "test", "resources", "script", "test.sh").toAbsolutePath().toString(), "test1")
     private val runCommand = RunCommandSupplier.apply(
+        CoreContext.empty,
         Properties.fromMap(mapOf("command" to command))
     )
     private val content = CoreFileContent(
@@ -50,6 +52,7 @@ class RunCommandTest {
     @Test
     fun run_command_with_summary() {
         val apply = RunCommandSupplier.apply(
+            CoreContext.empty,
             Properties.fromMap(
                 mapOf(
                     "command" to command,

@@ -2,6 +2,7 @@ package io.github.shoaky.sourcedownloader.common.supplier
 
 import io.github.shoaky.sourcedownloader.common.patreon.PatreonIntegration
 import io.github.shoaky.sourcedownloader.external.patreon.PatreonClient
+import io.github.shoaky.sourcedownloader.sdk.CoreContext
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentRule
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
@@ -9,7 +10,7 @@ import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
 
 object PatreonIntegrationSupplier : ComponentSupplier<PatreonIntegration> {
 
-    override fun apply(props: Properties): PatreonIntegration {
+    override fun apply(context: CoreContext, props: Properties): PatreonIntegration {
         val sid = props.get<String>("session-id")
         val headers = props.getOrNull<Map<String, String>>("headers")
         headers?.let {

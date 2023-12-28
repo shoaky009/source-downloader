@@ -2,6 +2,7 @@ package io.github.shoaky.sourcedownloader.common.supplier
 
 import io.github.shoaky.sourcedownloader.common.anime.MikanClient
 import io.github.shoaky.sourcedownloader.common.anime.MikanSource
+import io.github.shoaky.sourcedownloader.sdk.CoreContext
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
@@ -11,7 +12,7 @@ class MikanSourceSupplier(
     private val pluginContext: PluginContext
 ) : ComponentSupplier<MikanSource> {
 
-    override fun apply(props: Properties): MikanSource {
+    override fun apply(context: CoreContext, props: Properties): MikanSource {
         val client = props.getOrNull<String>("client")?.let {
             pluginContext.loadInstance(it, MikanClient::class.java)
         } ?: MikanClient(null)

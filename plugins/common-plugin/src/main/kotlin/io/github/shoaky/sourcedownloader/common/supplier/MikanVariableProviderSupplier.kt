@@ -4,6 +4,7 @@ import io.github.shoaky.sourcedownloader.common.anime.MikanClient
 import io.github.shoaky.sourcedownloader.common.anime.MikanVariableProvider
 import io.github.shoaky.sourcedownloader.external.bangumi.BgmTvApiClient
 import io.github.shoaky.sourcedownloader.external.tmdb.TmdbClient
+import io.github.shoaky.sourcedownloader.sdk.CoreContext
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentRule
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
@@ -15,7 +16,7 @@ class MikanVariableProviderSupplier(
     private val pluginContext: PluginContext
 ) : ComponentSupplier<MikanVariableProvider> {
 
-    override fun apply(props: Properties): MikanVariableProvider {
+    override fun apply(context: CoreContext, props: Properties): MikanVariableProvider {
         val bgmtvClient = props.getOrNull<String>("bgmtv-client")
             ?.let {
                 pluginContext.loadInstance(it, BgmTvApiClient::class.java)

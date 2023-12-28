@@ -1,6 +1,7 @@
 package io.github.shoaky.sourcedownloader.common
 
 import io.github.shoaky.sourcedownloader.common.supplier.EpisodeVariableProviderSupplier
+import io.github.shoaky.sourcedownloader.sdk.CoreContext
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.SourceFile
 import io.github.shoaky.sourcedownloader.sourceItem
@@ -14,7 +15,8 @@ class EpisodeVariableProviderTest {
     @Test
     fun should_all_expected() {
         val provider = EpisodeVariableProviderSupplier.apply(
-            Properties.EMPTY
+            CoreContext.empty,
+            Properties.empty
         )
 
         Files.readAllLines(Path("src", "test", "resources", "episode-test-data.csv"))

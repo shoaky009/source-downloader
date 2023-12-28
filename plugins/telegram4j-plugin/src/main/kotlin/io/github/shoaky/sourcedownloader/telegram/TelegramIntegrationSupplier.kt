@@ -1,5 +1,6 @@
 package io.github.shoaky.sourcedownloader.telegram
 
+import io.github.shoaky.sourcedownloader.sdk.CoreContext
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentRule
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
@@ -11,7 +12,7 @@ class TelegramIntegrationSupplier(
     private val pluginContext: PluginContext
 ) : ComponentSupplier<TelegramIntegration> {
 
-    override fun apply(props: Properties): TelegramIntegration {
+    override fun apply(context: CoreContext, props: Properties): TelegramIntegration {
         val clientName = props.get<String>("client")
         val downloadPath = props.get<Path>("download-path")
         val client = pluginContext.getInstanceManager().loadInstance(clientName, TelegramClientWrapper::class.java)

@@ -1,13 +1,14 @@
 package io.github.shoaky.sourcedownloader.common.supplier
 
 import io.github.shoaky.sourcedownloader.common.dlsite.DlsiteVariableProvider
+import io.github.shoaky.sourcedownloader.sdk.CoreContext
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
 
 internal object DlsiteVariableProviderSupplier : ComponentSupplier<DlsiteVariableProvider> {
 
-    override fun apply(props: Properties): DlsiteVariableProvider {
+    override fun apply(context: CoreContext, props: Properties): DlsiteVariableProvider {
         return DlsiteVariableProvider(props.getOrDefault("locale", "zh-cn"))
     }
 

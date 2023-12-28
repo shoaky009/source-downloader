@@ -1,5 +1,6 @@
 package io.github.shoaky.sourcedownloader.sdk.component
 
+import io.github.shoaky.sourcedownloader.sdk.CoreContext
 import io.github.shoaky.sourcedownloader.sdk.Properties
 
 interface ComponentSupplier<R : SdComponent> {
@@ -8,7 +9,7 @@ interface ComponentSupplier<R : SdComponent> {
      * @param props component properties from storage
      * @throws ComponentException if props is invalid
      */
-    fun apply(props: Properties): R
+    fun apply(context: CoreContext, props: Properties): R
 
     /**
      * @return component types that this supplier can supply

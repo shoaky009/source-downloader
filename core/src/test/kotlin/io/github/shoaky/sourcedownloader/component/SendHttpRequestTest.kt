@@ -5,6 +5,7 @@ import com.jayway.jsonpath.JsonPath
 import com.sun.net.httpserver.HttpServer
 import io.github.shoaky.sourcedownloader.component.supplier.SendHttpRequestSupplier
 import io.github.shoaky.sourcedownloader.core.file.CoreItemContent
+import io.github.shoaky.sourcedownloader.sdk.CoreContext
 import io.github.shoaky.sourcedownloader.sdk.MapPatternVariables
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sourceItem
@@ -28,6 +29,7 @@ class SendHttpRequestTest {
         }
 
         val apply = SendHttpRequestSupplier.apply(
+            CoreContext.empty,
             Properties.fromMap(
                 mapOf(
                     "url" to "http://localhost:8080?message=下载 {summary}",
@@ -60,6 +62,7 @@ class SendHttpRequestTest {
         }
 
         val apply = SendHttpRequestSupplier.apply(
+            CoreContext.empty,
             Properties.fromMap(
                 mapOf(
                     "url" to "http://localhost:8080/body?message=下载 {summary}",
@@ -90,6 +93,7 @@ class SendHttpRequestTest {
         }
 
         val apply = SendHttpRequestSupplier.apply(
+            CoreContext.empty,
             Properties.fromMap(
                 mapOf(
                     "url" to "http://localhost:8080/custom-body?message=下载 {summary}",

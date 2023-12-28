@@ -1,6 +1,7 @@
 package io.github.shoaky.sourcedownloader.common.dlsite
 
 import io.github.shoaky.sourcedownloader.common.supplier.DlsiteVariableProviderSupplier
+import io.github.shoaky.sourcedownloader.sdk.CoreContext
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import org.junit.jupiter.api.Disabled
@@ -21,7 +22,7 @@ class DlsiteVariableProviderTests {
         URI("http://localhost")
     )
 
-    private val provider = DlsiteVariableProviderSupplier.apply(Properties.EMPTY)
+    private val provider = DlsiteVariableProviderSupplier.apply(CoreContext.empty, Properties.empty)
 
     @Test
     fun test_support() {

@@ -4,6 +4,7 @@ import com.apptasticsoftware.rssreader.Item
 import com.apptasticsoftware.rssreader.RssReader
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import io.github.shoaky.sourcedownloader.common.supplier.JackettSourceSupplier
+import io.github.shoaky.sourcedownloader.sdk.CoreContext
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.util.Jackson
 import org.junit.jupiter.api.Test
@@ -38,6 +39,7 @@ class JackettSourceTest {
     fun test_creation() {
         assertDoesNotThrow {
             JackettSourceSupplier.apply(
+                CoreContext.empty,
                 Properties.fromMap(mapOf("url" to "http://localhost"))
             )
         }

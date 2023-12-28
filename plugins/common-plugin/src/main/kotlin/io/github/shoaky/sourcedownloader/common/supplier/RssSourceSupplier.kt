@@ -2,6 +2,7 @@ package io.github.shoaky.sourcedownloader.common.supplier
 
 import com.fasterxml.jackson.annotation.JsonAlias
 import io.github.shoaky.sourcedownloader.common.rss.RssSource
+import io.github.shoaky.sourcedownloader.sdk.CoreContext
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
@@ -11,7 +12,7 @@ import java.util.*
 
 object RssSourceSupplier : ComponentSupplier<RssSource> {
 
-    override fun apply(props: Properties): RssSource {
+    override fun apply(context: CoreContext, props: Properties): RssSource {
         val config = props.parse<Config>()
         return RssSource(
             config.url,

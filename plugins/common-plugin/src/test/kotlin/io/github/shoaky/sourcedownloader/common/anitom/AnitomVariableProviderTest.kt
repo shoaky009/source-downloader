@@ -1,6 +1,7 @@
 package io.github.shoaky.sourcedownloader.common.anitom
 
 import io.github.shoaky.sourcedownloader.common.supplier.AnitomVariableProviderSupplier
+import io.github.shoaky.sourcedownloader.sdk.CoreContext
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.SourceFile
 import io.github.shoaky.sourcedownloader.sourceItem
@@ -12,7 +13,7 @@ class AnitomVariableProviderTest {
 
     @Test
     fun test() {
-        val provider = AnitomVariableProviderSupplier.apply(Properties.EMPTY)
+        val provider = AnitomVariableProviderSupplier.apply(CoreContext.empty, Properties.empty)
         val sourceItem =
             sourceItem()
         val group = provider.createSourceGroup(sourceItem)

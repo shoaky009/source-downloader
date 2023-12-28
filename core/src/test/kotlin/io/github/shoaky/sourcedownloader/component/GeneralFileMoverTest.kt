@@ -6,6 +6,7 @@ import io.github.shoaky.sourcedownloader.core.file.CorePathPattern
 import io.github.shoaky.sourcedownloader.core.file.Renamer
 import io.github.shoaky.sourcedownloader.core.processor.createRawFileContent
 import io.github.shoaky.sourcedownloader.createIfNotExists
+import io.github.shoaky.sourcedownloader.sdk.CoreContext
 import io.github.shoaky.sourcedownloader.sdk.MapPatternVariables
 import io.github.shoaky.sourcedownloader.sdk.PatternVariables
 import io.github.shoaky.sourcedownloader.sdk.Properties
@@ -19,7 +20,9 @@ import kotlin.io.path.*
 @OptIn(ExperimentalPathApi::class)
 class GeneralFileMoverTest {
 
-    private val mover = GeneralFileMoverSupplier.apply(Properties.fromMap(emptyMap()))
+    private val mover = GeneralFileMoverSupplier.apply(
+        CoreContext.empty, Properties.fromMap(emptyMap())
+    )
     private val testFilePaths = listOf(
         downloadPath.resolve("1.txt"),
         downloadPath.resolve("2.txt"),

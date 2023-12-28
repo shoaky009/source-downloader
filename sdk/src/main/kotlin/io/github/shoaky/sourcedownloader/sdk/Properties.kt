@@ -46,7 +46,7 @@ class Properties private constructor(
     companion object {
 
         @JvmStatic
-        val EMPTY = Properties(mutableMapOf())
+        val empty = Properties(mutableMapOf())
 
         @JvmStatic
         fun fromMap(map: Map<String, Any>): Properties {

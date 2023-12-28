@@ -4,6 +4,7 @@ import io.github.shoaky.sourcedownloader.component.supplier.ItemDirectoryExistsD
 import io.github.shoaky.sourcedownloader.core.file.CoreFileContent
 import io.github.shoaky.sourcedownloader.core.file.CorePathPattern
 import io.github.shoaky.sourcedownloader.core.processor.RenamerTest.Companion.downloadPath
+import io.github.shoaky.sourcedownloader.sdk.CoreContext
 import io.github.shoaky.sourcedownloader.sdk.FixedItemContent
 import io.github.shoaky.sourcedownloader.sdk.MapPatternVariables
 import io.github.shoaky.sourcedownloader.sdk.Properties
@@ -16,7 +17,7 @@ import kotlin.test.assertContentEquals
 
 class ItemDirectoryExistsDetectorTest {
 
-    private val detector = ItemDirectoryExistsDetectorSupplier.apply(Properties.EMPTY)
+    private val detector = ItemDirectoryExistsDetectorSupplier.apply(CoreContext.empty, Properties.empty)
 
     @Test
     fun exists() {

@@ -26,4 +26,8 @@ data class ComponentId(
     fun typeName(): String {
         return id.split(":").firstOrNull() ?: throw ComponentException.props("组件ID配置错误:${id}")
     }
+
+    override fun toString(): String {
+        return id
+    }
 }

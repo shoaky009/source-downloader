@@ -5,6 +5,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import io.github.shoaky.sourcedownloader.core.ObjectWrapperContainer
 import io.github.shoaky.sourcedownloader.core.processor.SourceProcessor
 import io.github.shoaky.sourcedownloader.core.processor.log
+import io.github.shoaky.sourcedownloader.sdk.CoreContext
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.component.*
 import io.github.shoaky.sourcedownloader.util.Events
@@ -36,7 +37,7 @@ class DefaultComponentManager(
         val props = if (name == typeName) {
             val supplier = getSupplier(componentType)
             if (supplier.autoCreateDefault()) {
-                Properties.EMPTY
+                Properties.empty
             } else {
                 val values = findConfig(type, typeName, name).props
                 Properties.fromMap(values)
@@ -66,8 +67,9 @@ class DefaultComponentManager(
             }
         }
 
+        val context = DefaultCoreContext(objectContainer)
         val component = try {
-            supplier.apply(props)
+            supplier.apply(context, props)
         } catch (e: ComponentException) {
             throw ComponentException.other("Create component $instanceName failed cause by ${e.message}")
         }
@@ -82,7 +84,7 @@ class DefaultComponentManager(
         objectContainer.put(instanceName, componentWrapper)
         Events.register(componentWrapper)
 
-        log.info("Successfully created component ${type}:${typeName}:${name}")
+        log.info("Successfully created component ${type}:${id}")
         @Suppress("UNCHECKED_CAST")
         return componentWrapper as ComponentWrapper<T>
     }
@@ -201,5 +203,18 @@ class DefaultComponentManager(
     companion object {
 
         private val componentWrapperTypeRef = jacksonTypeRef<ComponentWrapper<SdComponent>>()
+    }
+}
+
+class DefaultCoreContext(
+    private val objectContainer: ObjectWrapperContainer,
+) : CoreContext {
+
+    override fun <T : SdComponent> getComponent(
+        type: ComponentTopType,
+        componentId: String,
+        typeReference: TypeReference<T>
+    ): T {
+        return objectContainer.get(componentId, object : TypeReference<ComponentWrapper<T>>() {}).get()
     }
 }

@@ -1,13 +1,14 @@
 package io.github.shoaky.sourcedownloader.common.tagger
 
 import io.github.shoaky.sourcedownloader.common.supplier.SimpleFileTaggerSupplier
+import io.github.shoaky.sourcedownloader.sdk.CoreContext
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
 class SimpleFileTaggerTest {
 
-    private val tagger = SimpleFileTaggerSupplier.apply(Properties.EMPTY)
+    private val tagger = SimpleFileTaggerSupplier.apply(CoreContext.empty, Properties.empty)
 
     @Test
     fun common_extension() {

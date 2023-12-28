@@ -1,6 +1,7 @@
 package io.github.shoaky.sourcedownloader.component
 
 import io.github.shoaky.sourcedownloader.component.supplier.FixedScheduleTriggerSupplier
+import io.github.shoaky.sourcedownloader.sdk.CoreContext
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import org.junit.jupiter.api.Test
 
@@ -8,6 +9,7 @@ class FixedScheduleTriggerTest {
     @Test
     fun should_run_after_started() {
         val trigger = FixedScheduleTriggerSupplier.apply(
+            CoreContext.empty,
             Properties.fromMap(
                 mapOf("interval" to "PT1M", "on-start-run-tasks" to true)
             )
@@ -28,6 +30,7 @@ class FixedScheduleTriggerTest {
     @Test
     fun should_run() {
         val trigger = FixedScheduleTriggerSupplier.apply(
+            CoreContext.empty,
             Properties.fromMap(
                 mapOf("interval" to "PT1S")
             )

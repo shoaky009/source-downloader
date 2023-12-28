@@ -1,6 +1,7 @@
 package io.github.shoaky.sourcedownloader.component
 
 import io.github.shoaky.sourcedownloader.component.supplier.UrlDownloaderSupplier
+import io.github.shoaky.sourcedownloader.sdk.CoreContext
 import io.github.shoaky.sourcedownloader.sdk.DownloadTask
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.SourceFile
@@ -17,6 +18,7 @@ class UrlDownloaderTest {
     private val savePath = Path("src", "test", "resources", "downloads")
 
     private val downloader = UrlDownloaderSupplier.apply(
+        CoreContext.empty,
         Properties.fromMap(
             mapOf(
                 "download-path" to savePath

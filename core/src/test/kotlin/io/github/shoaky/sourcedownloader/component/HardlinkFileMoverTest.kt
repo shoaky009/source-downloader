@@ -1,6 +1,7 @@
 package io.github.shoaky.sourcedownloader.component
 
 import io.github.shoaky.sourcedownloader.component.supplier.HardlinkFileMoverSupplier
+import io.github.shoaky.sourcedownloader.sdk.CoreContext
 import io.github.shoaky.sourcedownloader.sdk.FixedItemContent
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sourceItem
@@ -13,7 +14,7 @@ class HardlinkFileMoverTest {
 
     @Test
     fun test() {
-        val fileMover = HardlinkFileMoverSupplier.apply(Properties.EMPTY)
+        val fileMover = HardlinkFileMoverSupplier.apply(CoreContext.empty, Properties.empty)
         val fileContent = createFileContent(
             testResourcePath.resolve("config.yaml").toAbsolutePath(),
             targetFilename = "config2.yaml"
