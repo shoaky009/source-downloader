@@ -26,67 +26,91 @@ class DefaultComponentManager(
         typeReference: TypeReference<ComponentWrapper<T>>,
     ): ComponentWrapper<T> {
 
-        val instanceName = id.getInstanceName(type.klass)
-        if (objectContainer.contains(instanceName)) {
-            return objectContainer.get(instanceName, typeReference)
+        val targetInstanceName = id.getInstanceName(type.klass)
+        if (objectContainer.contains(targetInstanceName)) {
+            return objectContainer.get(targetInstanceName, typeReference)
         }
 
-        val typeName = id.typeName()
-        val name = id.name()
-        val componentType = ComponentType.of(type, typeName)
-        val props = if (name == typeName) {
-            val supplier = getSupplier(componentType)
+        val targetTypeName = id.typeName()
+        val targetName = id.name()
+        val targetComponentType = ComponentType.of(type, targetTypeName)
+
+        val supplier = getSupplier(targetComponentType)
+        val supplyTypes = supplier.supplyTypes()
+        val typesWithProp = supplyTypes.associateBy({ it }) {
             if (supplier.autoCreateDefault()) {
                 Properties.empty
             } else {
-                val values = findConfig(type, typeName, name).props
+                val values = findConfig(it.topType, it.typeName, targetName).props
                 Properties.fromMap(values)
             }
-        } else {
-            val values = findConfig(type, typeName, name).props
-            Properties.fromMap(values)
         }
 
-        val supplier = getSupplier(componentType)
-        // FIXME 创建顺序问题
-        val otherTypes = supplier.supplyTypes().filter { it != componentType }
+        val (primaryType, props) = selectPrimaryType(supplier, typesWithProp)
+        val primaryTypeBeanName = primaryType.instanceName(targetName)
+        val primaryComponentWrapper = if (objectContainer.contains(primaryTypeBeanName)) {
+            objectContainer.get(primaryTypeBeanName, typeReference)
+        } else {
+            // Create primary component
+            val context = DefaultCoreContext(
+                this,
+                type,
+                id.toString()
+            )
+            val component = try {
+                supplier.apply(context, props)
+            } catch (e: ComponentException) {
+                throw ComponentException.other("Create component $primaryTypeBeanName failed cause by ${e.message}")
+            }
+            val wrapper = ComponentWrapper(
+                primaryType,
+                targetName,
+                props,
+                component
+            )
+            objectContainer.put(primaryTypeBeanName, wrapper)
+            Events.register(wrapper)
+            wrapper
+        }
+        if (targetComponentType == primaryType) {
+            @Suppress("UNCHECKED_CAST")
+            return primaryComponentWrapper as ComponentWrapper<T>
+        }
+
+        // Create sub components
         val singletonNames = objectContainer.getAllObjectNames()
-        for (otherType in otherTypes) {
-            val typeBeanName = otherType.instanceName(name)
-            if (singletonNames.contains(typeBeanName)) {
-                val component = objectContainer.get(typeBeanName, typeReference)
+        val componentWrapper = typesWithProp.filter { it.key != primaryType }
+            .mapNotNull { (type, props) ->
+                val typeBeanName = type.instanceName(targetName)
+                if (singletonNames.contains(typeBeanName)) {
+                    return@mapNotNull null
+                }
                 val componentWrapper = ComponentWrapper(
-                    componentType,
-                    name,
+                    type,
+                    targetName,
                     props,
-                    component.get(),
+                    primaryComponentWrapper.get(),
                     false
                 )
-                objectContainer.put(instanceName, componentWrapper)
-                return componentWrapper
-            }
-        }
-
-        val context = DefaultCoreContext(objectContainer)
-        val component = try {
-            supplier.apply(context, props)
-        } catch (e: ComponentException) {
-            throw ComponentException.other("Create component $instanceName failed cause by ${e.message}")
-        }
-
-        val componentWrapper = ComponentWrapper(
-            componentType,
-            name,
-            props,
-            component
-        )
-
-        objectContainer.put(instanceName, componentWrapper)
-        Events.register(componentWrapper)
+                objectContainer.put(typeBeanName, componentWrapper)
+                Events.register(componentWrapper)
+                componentWrapper
+            }.first { it.type == targetComponentType }
 
         log.info("Successfully created component ${type}:${id}")
         @Suppress("UNCHECKED_CAST")
         return componentWrapper as ComponentWrapper<T>
+    }
+
+    private fun selectPrimaryType(
+        supplier: ComponentSupplier<*>,
+        typesWithProp: Map<ComponentType, Properties>
+    ): Pair<ComponentType, Properties> {
+        val entries = typesWithProp.entries
+        if (supplier.autoCreateDefault()) {
+            return entries.first().toPair()
+        }
+        return entries.firstOrNull { it.value.rawValues.isNotEmpty() }?.toPair() ?: entries.first().toPair()
     }
 
     override fun getAllProcessor(): List<SourceProcessor> {
@@ -207,7 +231,9 @@ class DefaultComponentManager(
 }
 
 class DefaultCoreContext(
-    private val objectContainer: ObjectWrapperContainer,
+    private val componentManager: ComponentManager,
+    private val type: ComponentTopType,
+    private val self: String
 ) : CoreContext {
 
     override fun <T : SdComponent> getComponent(
@@ -215,6 +241,12 @@ class DefaultCoreContext(
         componentId: String,
         typeReference: TypeReference<T>
     ): T {
-        return objectContainer.get(componentId, object : TypeReference<ComponentWrapper<T>>() {}).get()
+        if (type == this.type && componentId == self) {
+            throw ComponentException.other("Can't get self component")
+        }
+        return componentManager.getComponent(
+            type,
+            ComponentId(componentId),
+            object : TypeReference<ComponentWrapper<T>>() {}).get()
     }
 }
