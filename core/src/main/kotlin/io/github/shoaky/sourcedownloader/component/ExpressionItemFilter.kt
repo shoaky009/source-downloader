@@ -51,7 +51,7 @@ class ExpressionItemFilter(
     companion object {
 
         private val log = LoggerFactory.getLogger(ExpressionItemFilter::class.java)
-        private fun buildScript(expression: String): Script {
+        fun buildScript(expression: String): Script {
             return scriptHost.buildScript(expression)
                 .withDeclarations(
                     Decls.newVar("title", Decls.String),
