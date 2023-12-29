@@ -687,6 +687,9 @@ class SourceProcessor(
                             ).copy(status = FAILURE, failureReason = it.message)
                         }
 
+                        val targetPaths = processingContent.itemContent.downloadableFiles().map { it.targetPath() }
+                        secondaryFileMover.releasePreoccupiedTargetPath(targetPaths)
+
                         try {
                             context.touch(processingContent)
                             onItemCompleted(processingContent)
@@ -758,17 +761,13 @@ class SourceProcessor(
                 return ProcessingContent(name, itemContent).copy(status = FILTERED)
             }
 
-            // 后面再调整状态的更新方式
-            itemContent.updateFileStatus(secondaryFileMover, fileExistsDetector)
-            // val processingTargetPaths = processingStorage.targetPathExists(
-            //     itemContent.sourceFiles.map { it.targetPath() },
-            //     itemContent.sourceItem.hashing()
-            // )
-            // itemContent.sourceFiles.onEachIndexed { index, fileContent ->
-            //     if (fileContent.status == FileContentStatus.NORMAL && processingTargetPaths[index]) {
-            //         fileContent.status = FileContentStatus.TARGET_EXISTS
-            //     }
-            // }
+
+            processLock.lock {
+                itemContent.updateFileStatus(secondaryFileMover, fileExistsDetector)
+                val downloadableTargetPaths = itemContent.downloadableFiles().map { it.targetPath() }
+                // 在处理完后释放
+                secondaryFileMover.preoccupiedTargetPath(downloadableTargetPaths)
+            }
 
             val replaceFiles = identifyFilesToReplace(itemContent)
             val (shouldDownload, contentStatus) = probeContentStatus(itemContent, replaceFiles)
