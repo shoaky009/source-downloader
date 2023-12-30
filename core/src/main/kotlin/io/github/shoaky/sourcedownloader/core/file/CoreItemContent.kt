@@ -6,6 +6,7 @@ import io.github.shoaky.sourcedownloader.sdk.MapPatternVariables
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.FileExistsDetector
 import io.github.shoaky.sourcedownloader.sdk.component.FileMover
+import org.slf4j.LoggerFactory
 import java.nio.file.Path
 
 data class CoreItemContent(
@@ -37,12 +38,16 @@ data class CoreItemContent(
             if (fileExistsDetector !is SimpleFileExistsDetector) {
                 // TODO 文件夹的情况没有处理
                 fileExistsDetector.exists(fileMover, this).forEach { (path, existsPath) ->
-                    mapping[path] = existsPath
+                    // 如果fileMover认为已经存在Detector不能覆盖
+                    mapping.computeIfAbsent(path) { existsPath }
                 }
             }
             mapping
         }
 
+        if (log.isDebugEnabled) {
+            log.debug("item:{}, existsMapping: {}", sourceItem.title, existsMapping)
+        }
         for (sourceFile in undetectedFiles) {
             // 校验顺序不可换
             if (sourceFile.errors.isNotEmpty()) {
@@ -78,5 +83,10 @@ data class CoreItemContent(
             throw IllegalStateException("Please update file status first")
         }
         return sourceFiles.filter { it.status != FileContentStatus.TARGET_EXISTS }
+    }
+
+    companion object {
+
+        private val log = LoggerFactory.getLogger(CoreItemContent::class.java)
     }
 }
