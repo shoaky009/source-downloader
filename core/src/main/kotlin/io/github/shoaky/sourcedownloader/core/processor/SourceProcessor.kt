@@ -376,7 +376,7 @@ class SourceProcessor(
 
         downloadStatusGrouping[DownloadStatus.NOT_FOUND]?.forEach { pc ->
             kotlin.runCatching {
-                log.info("Processing下载任务不存在, record:${Jackson.toJsonString(pc)}")
+                log.info("Processor:'{}' item:{} not found, id:{}", name, pc.itemContent.sourceItem, pc.id)
                 processingStorage.save(
                     pc.copy(
                         status = DOWNLOAD_FAILED,
@@ -473,13 +473,17 @@ class SourceProcessor(
     }
 
     private fun createDownloadTask(content: CoreItemContent, replaceFiles: List<CoreFileContent>): DownloadTask {
-        val downloadFiles = content.sourceFiles
-            .filter { it.status != FileContentStatus.TARGET_EXISTS }
+        val downloadFiles = content.downloadableFiles()
             .toMutableList()
             .apply { this.addAll(replaceFiles) }
             .distinct()
         if (log.isDebugEnabled) {
-            log.debug("{} 创建下载任务文件, files:{}", content.sourceItem.title, downloadFiles)
+            log.debug(
+                "Processor:'{}' item:{} create download task, files:{}",
+                name,
+                content.sourceItem.title,
+                downloadFiles
+            )
         }
 
         val headers = HashMap(source.headers())
@@ -512,7 +516,7 @@ class SourceProcessor(
             }
 
         if (log.isDebugEnabled) {
-            content.sourceFiles.forEach {
+            movableFiles.forEach {
                 if (log.isDebugEnabled) {
                     log.debug("Move file:'${it.fileDownloadPath}' to '${it.targetPath()}'")
                 }
@@ -700,17 +704,6 @@ class SourceProcessor(
                             } else {
                                 stat.incProcessingCounting()
                             }
-
-                            val warningFiles =
-                                processingContent.itemContent.sourceFiles.filter { it.status.isWarning() }
-                            if (warningFiles.isNotEmpty()) {
-                                log.warn(
-                                    "Processor:'{}' has warning status, item:{} files:{}",
-                                    name,
-                                    item.sourceItem,
-                                    warningFiles
-                                )
-                            }
                         } finally {
                             processChannel.receive()
                         }
@@ -723,6 +716,7 @@ class SourceProcessor(
             }
             if (processJob.isCancelled) {
                 log.info("Processor:'{}' process job cancelled", name)
+                // processorCoroutineScope.ensureActive()
             }
 
             stat.stopWatch.stop()
@@ -751,20 +745,21 @@ class SourceProcessor(
                 options.variableNameReplace
             )
             val itemContent = createItemContent(variablesAggregation, sourceItem)
-            if (log.isTraceEnabled) {
-                log.trace("Processor:'{}' created content item:{}", name, sourceItem)
-            }
-
             val filterBy = itemContentFilters.firstOrNull { it.test(itemContent).not() }
             if (filterBy != null) {
-                log.info("{} filtered item:{}", filterBy::class.simpleName, sourceItem)
+                log.info("Processor:'{}' {} filtered item:{}", name, filterBy::class.simpleName, sourceItem)
                 return ProcessingContent(name, itemContent).copy(status = FILTERED)
             }
-
 
             processLock.lock {
                 itemContent.updateFileStatus(secondaryFileMover, fileExistsDetector)
                 val downloadableTargetPaths = itemContent.downloadableFiles().map { it.targetPath() }
+                if (log.isDebugEnabled) {
+                    val filesStatus = itemContent.downloadableFiles().map {
+                        it.targetFilename to it.status
+                    }
+                    log.debug("Processor:'{}' item:{} file status:{}", name, sourceItem.title, filesStatus)
+                }
                 // 在处理完后释放
                 secondaryFileMover.preoccupiedTargetPath(downloadableTargetPaths)
             }
@@ -772,7 +767,7 @@ class SourceProcessor(
             val replaceFiles = identifyFilesToReplace(itemContent)
             val (shouldDownload, contentStatus) = probeContentStatus(itemContent, replaceFiles)
             log.trace(
-                "Processor:'{}' item:{} ,should download: {}, content status:{}",
+                "Processor:'{}' item:{}, shouldDownload: {}, contentStatus:{}",
                 name, sourceItem, shouldDownload, contentStatus
             )
             val processingContent = postProcessingContent(
@@ -780,7 +775,6 @@ class SourceProcessor(
             )
 
             if (shouldDownload) {
-                log.trace("Processor:'{}' start download item:{}", name, sourceItem)
                 val success = doDownload(processingContent, replaceFiles)
                 if (success && downloader !is AsyncDownloader) {
                     log.trace("Processor:'{}' start rename item:{}", name, sourceItem)
@@ -876,6 +870,16 @@ class SourceProcessor(
                     return
                 }
                 processingStorage.save(processingContent)
+            }
+
+            val warningFiles = processingContent.itemContent.sourceFiles.filter { it.status.isWarning() }
+            if (warningFiles.isNotEmpty()) {
+                log.warn(
+                    "Processor:'{}' has warning status, item:{} files:{}",
+                    name,
+                    processingContent.itemContent.sourceItem,
+                    warningFiles
+                )
             }
         }
 
