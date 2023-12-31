@@ -87,11 +87,20 @@ data class CoreItemContent(
     }
 
     override fun summaryContent(): String {
-
-        if (sourceFiles.size == 1) {
-            return sourceFiles.first().targetPath().name
+        if (sourceFiles.size == 1 && sourceFiles.first().status.isSuccessful()) {
+            val name = sourceFiles.first().targetPath().name
+            return "$name 处理完成"
         }
-        return "${sourceItem.title}内的${sourceFiles.size}个文件"
+
+        val hasWarning = sourceFiles.any { it.status.isWarning() }
+        if (hasWarning) {
+            val statusGrouping = sourceFiles.groupingBy { it.status }.eachCount()
+            return """
+                ${sourceItem.title}内的${sourceFiles.size}个文件处理完成
+                ${statusGrouping.map { "${it.key.status()}:${it.value}个" }.joinToString("\n")}
+            """.trimIndent()
+        }
+        return "${sourceItem.title}内的${sourceFiles.size}个文件处理完成"
     }
 
     companion object {

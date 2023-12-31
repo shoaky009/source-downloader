@@ -12,7 +12,6 @@ interface ItemContent {
 interface PathPattern {
 
     val pattern: String
-//    fun parse(patternVariables: PatternVariables): ParseResult
 
     fun depth(): Int {
         return pattern.split("/").size

@@ -45,7 +45,7 @@ components:
     - name: telegram-message-webhook
       type: http
       props:
-        url: "http://192.168.1.219:15678/webhook/telegram-notify?message=番剧 {summary}下载完成"
+        url: "http://192.168.1.219:15678/webhook/telegram-notify?message=番剧 {summary}"
   trigger:
     - name: 20min
       type: fixed
