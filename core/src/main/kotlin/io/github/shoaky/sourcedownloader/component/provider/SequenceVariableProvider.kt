@@ -8,7 +8,7 @@ import io.github.shoaky.sourcedownloader.sdk.component.VariableProvider
  */
 object SequenceVariableProvider : VariableProvider {
 
-    override fun createSourceGroup(sourceItem: SourceItem): SourceItemGroup {
+    override fun createItemGroup(sourceItem: SourceItem): SourceItemGroup {
         return object : SourceItemGroup {
             override fun filePatternVariables(paths: List<SourceFile>): List<FileVariable> {
                 val length = paths.size.toString().length
@@ -22,7 +22,7 @@ object SequenceVariableProvider : VariableProvider {
         }
     }
 
-    override fun support(item: SourceItem): Boolean {
+    override fun support(sourceItem: SourceItem): Boolean {
         return true
     }
 }

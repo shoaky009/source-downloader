@@ -12,10 +12,10 @@ class KeywordVariableProviderTest {
             listOf("1111")
         )
 
-        val group1 = provider.createSourceGroup(sourceItem("(1111)zxcvbnm"))
+        val group1 = provider.createItemGroup(sourceItem("(1111)zxcvbnm"))
         assertEquals(group1.sharedPatternVariables().variables()["keyword"], "1111")
 
-        val group2 = provider.createSourceGroup(sourceItem("[1111]zxcvbnm"))
+        val group2 = provider.createItemGroup(sourceItem("[1111]zxcvbnm"))
         assertEquals(group2.sharedPatternVariables().variables()["keyword"], "1111")
     }
 
@@ -25,7 +25,7 @@ class KeywordVariableProviderTest {
             listOf("1111")
         )
 
-        val group2 = provider.createSourceGroup(sourceItem("1111zxcvbnm"))
+        val group2 = provider.createItemGroup(sourceItem("1111zxcvbnm"))
         assert(group2.sharedPatternVariables().variables().contains("1111").not())
     }
 
@@ -34,7 +34,7 @@ class KeywordVariableProviderTest {
         val provider = KeywordVariableProvider(
             listOf("2222|1")
         )
-        val group2 = provider.createSourceGroup(sourceItem("2222zxcvbnm"))
+        val group2 = provider.createItemGroup(sourceItem("2222zxcvbnm"))
         assertEquals(group2.sharedPatternVariables().variables()["keyword"], "2222")
     }
 }

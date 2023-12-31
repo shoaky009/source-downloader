@@ -18,7 +18,7 @@ class LanguageVariableProviderTest {
             Properties.empty
         )
 
-        val group = provider.createSourceGroup(sourceItem())
+        val group = provider.createItemGroup(sourceItem())
         val sourceFiles = group.filePatternVariables(
             listOf(
                 SourceFile(Path("dsadsad.chs.ass")),

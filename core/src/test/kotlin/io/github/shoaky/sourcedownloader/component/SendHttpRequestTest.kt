@@ -47,7 +47,7 @@ class SendHttpRequestTest {
                 MapPatternVariables()
             )
         )
-        assertEquals("message=下载 test内的0个文件", queryString)
+        assertEquals("message=下载 test内的0个文件处理完成", queryString)
         assertEquals("test", header)
     }
 
@@ -116,7 +116,7 @@ class SendHttpRequestTest {
         )
 
         assertEquals("text", jsonPath?.read("$.type"))
-        assertEquals("番剧 test内的0个文件", jsonPath?.read("$.content"))
+        assertEquals("番剧 test内的0个文件处理完成", jsonPath?.read("$.content"))
     }
 
     companion object {

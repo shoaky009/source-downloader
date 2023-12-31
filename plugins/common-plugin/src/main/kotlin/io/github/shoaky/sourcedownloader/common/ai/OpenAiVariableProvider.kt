@@ -19,11 +19,11 @@ class OpenAiVariableProvider(
     private val systemRole: ChatMessage
 ) : VariableProvider {
 
-    override fun createSourceGroup(sourceItem: SourceItem): SourceItemGroup {
+    override fun createItemGroup(sourceItem: SourceItem): SourceItemGroup {
         return AiSourceGroup(openAiClient, systemRole, openAiBaseUri, sourceItem)
     }
 
-    override fun support(item: SourceItem): Boolean = true
+    override fun support(sourceItem: SourceItem): Boolean = true
 
     data class OpenAiConfig(
         val apiKeys: List<String>,

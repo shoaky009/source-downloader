@@ -123,12 +123,12 @@ interface VariableProvider : SdComponent {
     /**
      * @return the variables for the item
      */
-    fun createSourceGroup(sourceItem: SourceItem): SourceItemGroup
+    fun createItemGroup(sourceItem: SourceItem): SourceItemGroup
 
     /**
      * @return true if the provider can provide variables for the item
      */
-    fun support(item: SourceItem): Boolean
+    fun support(sourceItem: SourceItem): Boolean
 
 }
 

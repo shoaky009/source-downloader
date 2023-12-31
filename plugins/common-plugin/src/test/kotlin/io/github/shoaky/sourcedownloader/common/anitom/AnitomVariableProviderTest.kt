@@ -16,7 +16,7 @@ class AnitomVariableProviderTest {
         val provider = AnitomVariableProviderSupplier.apply(CoreContext.empty, Properties.empty)
         val sourceItem =
             sourceItem()
-        val group = provider.createSourceGroup(sourceItem)
+        val group = provider.createItemGroup(sourceItem)
         assertEquals(0, group.sharedPatternVariables().variables().size)
 
         val files = group.filePatternVariables(

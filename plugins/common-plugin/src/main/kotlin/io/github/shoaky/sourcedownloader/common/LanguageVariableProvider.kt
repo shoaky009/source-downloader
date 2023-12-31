@@ -21,7 +21,7 @@ object LanguageVariableProvider : VariableProvider {
         "jptc".toRegex(RegexOption.IGNORE_CASE) to "ja-JP.zh-CHT",
     )
 
-    override fun createSourceGroup(sourceItem: SourceItem): SourceItemGroup {
+    override fun createItemGroup(sourceItem: SourceItem): SourceItemGroup {
         return FunctionalItemGroup(
             function = {
                 val name = it.path.nameWithoutExtension.replaces(replaces, " ")
@@ -34,6 +34,6 @@ object LanguageVariableProvider : VariableProvider {
         )
     }
 
-    override fun support(item: SourceItem): Boolean = true
+    override fun support(sourceItem: SourceItem): Boolean = true
 
 }

@@ -61,7 +61,7 @@ class MikanVariableProvider(
         throw ComponentException.processing("获取Bangumi Subject失败")
     }
 
-    override fun createSourceGroup(sourceItem: SourceItem): SourceItemGroup {
+    override fun createItemGroup(sourceItem: SourceItem): SourceItemGroup {
         val pageInfo = mikanClient.getEpisodePageInfo(sourceItem.link.toURL())
         if (pageInfo.mikanHref == null) {
             log.warn("mikanHref is null, link:{}", sourceItem.link)
@@ -98,8 +98,8 @@ class MikanVariableProvider(
         return MikanSourceGroup(bangumiInfo)
     }
 
-    override fun support(item: SourceItem): Boolean {
-        return item.link.host.contains("mikan")
+    override fun support(sourceItem: SourceItem): Boolean {
+        return sourceItem.link.host.contains("mikan")
     }
 
 }

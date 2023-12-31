@@ -55,6 +55,7 @@ fun DependencyHandlerScope.resolveBuildInPlugins() {
         // 这里为了平时开发方便，如果没有指定插件就默认加载所有插件
         runtimeOnly(project(":plugins:common-plugin"))
         runtimeOnly(project(":plugins:telegram4j-plugin"))
+        runtimeOnly(project(":plugins:foreign-plugin"))
     }
 }
 

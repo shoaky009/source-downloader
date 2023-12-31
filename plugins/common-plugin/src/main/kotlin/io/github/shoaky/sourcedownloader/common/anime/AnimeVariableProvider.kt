@@ -31,12 +31,12 @@ class AnimeVariableProvider(
             }
         })
 
-    override fun createSourceGroup(sourceItem: SourceItem): SourceItemGroup {
+    override fun createItemGroup(sourceItem: SourceItem): SourceItemGroup {
         val create = create(sourceItem)
         return AnimeSourceGroup(create)
     }
 
-    override fun support(item: SourceItem): Boolean = true
+    override fun support(sourceItem: SourceItem): Boolean = true
 
     private fun create(sourceItem: SourceItem): Anime {
         val title = extractTitle(sourceItem)

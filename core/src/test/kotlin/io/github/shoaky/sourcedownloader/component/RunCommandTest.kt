@@ -4,6 +4,7 @@ import io.github.shoaky.sourcedownloader.component.supplier.RunCommandSupplier
 import io.github.shoaky.sourcedownloader.core.file.CoreFileContent
 import io.github.shoaky.sourcedownloader.core.file.CoreItemContent
 import io.github.shoaky.sourcedownloader.core.file.CorePathPattern
+import io.github.shoaky.sourcedownloader.core.file.FileContentStatus
 import io.github.shoaky.sourcedownloader.sdk.CoreContext
 import io.github.shoaky.sourcedownloader.sdk.MapPatternVariables
 import io.github.shoaky.sourcedownloader.sdk.Properties
@@ -38,7 +39,8 @@ class RunCommandTest {
         CorePathPattern.ORIGIN,
         CorePathPattern.ORIGIN,
         Path("test.txt"),
-        ""
+        "",
+        status = FileContentStatus.NORMAL
     )
 
     @Test

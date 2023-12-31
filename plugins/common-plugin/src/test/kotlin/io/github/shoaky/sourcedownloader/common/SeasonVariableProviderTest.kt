@@ -19,7 +19,7 @@ class SeasonVariableProviderTest {
                 Triple(split[0], split[1], split.elementAtOrNull(2) ?: "")
             }
             .forEach { (expect, name, path) ->
-                val group = provider.createSourceGroup(sourceItem(title = name))
+                val group = provider.createItemGroup(sourceItem(title = name))
                 val sourceFiles = group.filePatternVariables(
                     SourceFile(Path(path))
                 )

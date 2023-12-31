@@ -42,7 +42,7 @@ object EpisodeVariableProvider : VariableProvider {
         )
     )
 
-    override fun createSourceGroup(sourceItem: SourceItem): SourceItemGroup {
+    override fun createItemGroup(sourceItem: SourceItem): SourceItemGroup {
         return FunctionalItemGroup { file ->
             val string = textClear.input(file.path.nameWithoutExtension)
             val episode = parserChain.firstNotNullOfOrNull {
@@ -58,7 +58,7 @@ object EpisodeVariableProvider : VariableProvider {
         }
     }
 
-    override fun support(item: SourceItem): Boolean = true
+    override fun support(sourceItem: SourceItem): Boolean = true
 
     override val accuracy: Int = 3
 

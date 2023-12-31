@@ -27,7 +27,7 @@ class EpisodeVariableProviderTest {
             }
             .forEach {
                 val name = it.second
-                val group = provider.createSourceGroup(sourceItem())
+                val group = provider.createItemGroup(sourceItem())
                 val file = group.filePatternVariables(SourceFile(Path(name))).first()
                 assertEquals(it.first, file.patternVariables().variables()["episode"])
             }

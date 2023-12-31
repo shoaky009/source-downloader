@@ -20,7 +20,8 @@ import java.time.format.DateTimeFormatter
 class DlsiteVariableProvider(
     private val locale: String = "zh-cn"
 ) : VariableProvider {
-    override fun createSourceGroup(sourceItem: SourceItem): SourceItemGroup {
+
+    override fun createItemGroup(sourceItem: SourceItem): SourceItemGroup {
         val dlsiteId = getDlsiteId(sourceItem) ?: return SourceItemGroup.EMPTY
 
         val workInfo = getWorkInfo(dlsiteId)
@@ -79,8 +80,8 @@ class DlsiteVariableProvider(
         )
     }
 
-    override fun support(item: SourceItem): Boolean {
-        return getDlsiteId(item) != null
+    override fun support(sourceItem: SourceItem): Boolean {
+        return getDlsiteId(sourceItem) != null
     }
 
     companion object {

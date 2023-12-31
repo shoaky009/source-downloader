@@ -19,7 +19,7 @@ object SeasonVariableProvider : VariableProvider {
     )
 
     // 顺序filename, parent, title
-    override fun createSourceGroup(sourceItem: SourceItem): SourceItemGroup {
+    override fun createItemGroup(sourceItem: SourceItem): SourceItemGroup {
         return FunctionalItemGroup { file ->
             val seasonNumber = seasonSupport.input(
                 ParseValue(file.path.toString()),
@@ -30,7 +30,7 @@ object SeasonVariableProvider : VariableProvider {
         }
     }
 
-    override fun support(item: SourceItem): Boolean = true
+    override fun support(sourceItem: SourceItem): Boolean = true
     override val accuracy: Int = 2
 
 }

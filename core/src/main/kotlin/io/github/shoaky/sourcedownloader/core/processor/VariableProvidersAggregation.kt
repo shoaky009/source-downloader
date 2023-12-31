@@ -13,7 +13,7 @@ class VariableProvidersAggregation(
 
     private val groups = providers.associateBy({ it }, {
         NameReplaceGroup(
-            it.createSourceGroup(sourceItem),
+            it.createItemGroup(sourceItem),
             variableNameReplace
         )
     })

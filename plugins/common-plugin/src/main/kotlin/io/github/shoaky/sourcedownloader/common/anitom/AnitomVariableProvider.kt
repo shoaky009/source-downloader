@@ -10,7 +10,8 @@ import kotlin.io.path.name
  * Anitom的变量提供
  */
 class AnitomVariableProvider : VariableProvider {
-    override fun createSourceGroup(sourceItem: SourceItem): SourceItemGroup {
+
+    override fun createItemGroup(sourceItem: SourceItem): SourceItemGroup {
         return FunctionalItemGroup { file ->
             val parse = AnitomyJ.parse(file.path.name)
                 .associateBy({
@@ -22,6 +23,6 @@ class AnitomVariableProvider : VariableProvider {
         }
     }
 
-    override fun support(item: SourceItem): Boolean = true
+    override fun support(sourceItem: SourceItem): Boolean = true
 }
 

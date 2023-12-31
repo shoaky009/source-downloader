@@ -19,7 +19,7 @@ class AnimeVariableProviderTest {
             AnilistClient(),
             true
         )
-        val createSourceGroup = provider.createSourceGroup(
+        val createSourceGroup = provider.createItemGroup(
             sourceItem(
                 "てーきゅう 9期"
             )

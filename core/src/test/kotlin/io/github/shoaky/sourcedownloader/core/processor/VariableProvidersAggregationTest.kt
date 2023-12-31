@@ -393,7 +393,7 @@ private class CustomProvider(
     override val accuracy: Int = 2
 ) : VariableProvider {
 
-    override fun createSourceGroup(sourceItem: SourceItem): SourceItemGroup {
+    override fun createItemGroup(sourceItem: SourceItem): SourceItemGroup {
         return object : SourceItemGroup {
             override fun filePatternVariables(paths: List<SourceFile>): List<FileVariable> {
                 return files
@@ -405,6 +405,6 @@ private class CustomProvider(
         }
     }
 
-    override fun support(item: SourceItem): Boolean = true
+    override fun support(sourceItem: SourceItem): Boolean = true
 
 }

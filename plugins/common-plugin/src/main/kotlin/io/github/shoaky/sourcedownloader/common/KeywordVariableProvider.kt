@@ -29,7 +29,7 @@ class KeywordVariableProvider(
         Word(word, mode.toInt())
     }.toSet()
 
-    override fun createSourceGroup(sourceItem: SourceItem): SourceItemGroup {
+    override fun createItemGroup(sourceItem: SourceItem): SourceItemGroup {
         val title = sourceItem.title
         val result = words.match(title).firstOrNull {
             if (it.word.matchTitleMode == 1) {
@@ -48,7 +48,7 @@ class KeywordVariableProvider(
         return SourceItemGroup.shared(variables)
     }
 
-    override fun support(item: SourceItem): Boolean {
+    override fun support(sourceItem: SourceItem): Boolean {
         return true
     }
 
