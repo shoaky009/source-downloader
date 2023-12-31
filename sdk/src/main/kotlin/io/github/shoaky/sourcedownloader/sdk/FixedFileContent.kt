@@ -17,7 +17,11 @@ data class FixedFileContent(
     val itemDownloadRootDirectory: Path = fileDownloadPath,
     override val attrs: Map<String, Any> = emptyMap(),
     override val fileUri: URI? = null,
-    override val existTargetPath: Path? = null
+    override val existTargetPath: Path? = null,
+    val status: FileStatus = object : FileStatus {
+        override fun status(): String = "NORMAL"
+        override fun isSuccessful(): Boolean = true
+    }
 ) : FileContent {
 
     override fun targetPath(): Path = targetPath
@@ -27,4 +31,8 @@ data class FixedFileContent(
     override fun fileDownloadRootDirectory(): Path = itemDownloadRootDirectory
 
     override fun saveDirectoryPath(): Path = saveDirectoryPath
+
+    override fun status(): FileStatus {
+        return status
+    }
 }

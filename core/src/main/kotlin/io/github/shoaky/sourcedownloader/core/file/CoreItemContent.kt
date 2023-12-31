@@ -8,6 +8,7 @@ import io.github.shoaky.sourcedownloader.sdk.component.FileExistsDetector
 import io.github.shoaky.sourcedownloader.sdk.component.FileMover
 import org.slf4j.LoggerFactory
 import java.nio.file.Path
+import kotlin.io.path.name
 
 data class CoreItemContent(
     override val sourceItem: SourceItem,
@@ -83,6 +84,14 @@ data class CoreItemContent(
             throw IllegalStateException("Please update file status first")
         }
         return sourceFiles.filter { it.status != FileContentStatus.TARGET_EXISTS }
+    }
+
+    override fun summaryContent(): String {
+
+        if (sourceFiles.size == 1) {
+            return sourceFiles.first().targetPath().name
+        }
+        return "${sourceItem.title}内的${sourceFiles.size}个文件"
     }
 
     companion object {

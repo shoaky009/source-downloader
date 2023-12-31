@@ -51,6 +51,11 @@ interface FileContent {
     }
 
     /**
+     * @return The status of the file.
+     */
+    fun status(): FileStatus
+
+    /**
      * example:
      *  savePath=/mnt/bangumi
      *  targetPath=/mnt/bangumi/FATE/Season 01/EP01.mp4

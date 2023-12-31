@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer
 import io.github.shoaky.sourcedownloader.sdk.FileContent
+import io.github.shoaky.sourcedownloader.sdk.FileStatus
 import io.github.shoaky.sourcedownloader.sdk.MapPatternVariables
 import java.io.InputStream
 import java.net.URI
@@ -44,6 +45,10 @@ data class CoreFileContent(
 
     override fun saveDirectoryPath(): Path {
         return targetSavePath
+    }
+
+    override fun status(): FileStatus {
+        return status
     }
 
     fun targetFilename(): String {

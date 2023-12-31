@@ -1,19 +1,12 @@
 package io.github.shoaky.sourcedownloader.sdk
 
-import kotlin.io.path.name
-
 interface ItemContent {
 
     val sourceItem: SourceItem
     val sourceFiles: List<FileContent>
     val sharedPatternVariables: PatternVariables
 
-    fun summaryContent(): String {
-        if (sourceFiles.size == 1) {
-            return sourceFiles.first().targetPath().name
-        }
-        return "${sourceItem.title}内的${sourceFiles.size}个文件"
-    }
+    fun summaryContent(): String
 }
 
 interface PathPattern {

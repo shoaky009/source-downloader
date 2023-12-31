@@ -1,8 +1,9 @@
 package io.github.shoaky.sourcedownloader.core.file
 
+import io.github.shoaky.sourcedownloader.sdk.FileStatus
 import java.util.*
 
-enum class FileContentStatus {
+enum class FileContentStatus : FileStatus {
 
     UNDETECTED,
 
@@ -45,8 +46,17 @@ enum class FileContentStatus {
         return this in (warningStatuses)
     }
 
+    override fun status(): String {
+        return name
+    }
+
+    override fun isSuccessful(): Boolean {
+        return this in (successStatuses)
+    }
+
     companion object {
 
         private val warningStatuses = EnumSet.of(VARIABLE_ERROR, TARGET_EXISTS, FILE_CONFLICT)
+        private val successStatuses = EnumSet.of(NORMAL, REPLACED)
     }
 }
