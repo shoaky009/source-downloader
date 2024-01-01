@@ -110,6 +110,7 @@ class SourceProcessor(
     }
 
     private fun listenChannel() {
+        // 希望和Process使用同一个，但ProcessScope的Job取消后要恢复成原来的
         processorCoroutineScope.launch {
             for (process in itemChannel) {
                 process.run()
@@ -642,10 +643,9 @@ class SourceProcessor(
             stat.stopWatch.stop()
 
             stat.stopWatch.start("processItems")
-            // val filters = selectItemFilters()
-
             val processChannel = Channel<PointedItem<ItemPointer>>(options.parallelism)
-            val processJob = processorCoroutineScope.launch process@{
+            val processScope = CoroutineScope(Dispatchers.Default)
+            val processJob = processScope.launch process@{
                 for (item in itemIterable) {
                     processChannel.send(item)
                     log.trace("Processor:'{}' send item to channel:{}", name, item)
