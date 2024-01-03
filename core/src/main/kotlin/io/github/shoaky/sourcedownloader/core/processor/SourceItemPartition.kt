@@ -34,8 +34,8 @@ class ExpressionSourceItemPartition(
             Boolean::class.java, mapOf(
                 "title" to item.title,
                 "contentType" to item.contentType,
-                "link" to item.link,
-                "downloadUri" to item.downloadUri,
+                "link" to item.link.toString(),
+                "downloadUri" to item.downloadUri.toString(),
                 "date" to item.date,
                 "tags" to item.tags.toList(),
                 "attrs" to item.attrs,

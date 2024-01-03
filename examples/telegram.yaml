@@ -19,20 +19,43 @@ components:
     - name: telegram
       type: telegram
       props:
-        client: telegramClient
+        client: telegram-client
         chats:
           # 如果是私聊填正数，频道填负数
           - chat-id: "-190000000"
           - chat-id: "190000000"
   downloader:
+    - name: http
+      type: http
+      props:
+        download-path: /downloads
     - name: telegram
       type: telegram
       props:
         client: telegram-client
         download-path: /downloads
+    - name: telegram-message
+      type: composite
+      props:
+        default: telegram
+        rules:
+          - expression: "attrs.site == 'Telegraph'"
+            component: http
   item-file-resolver:
     - name: telegram
       type: telegram
+    - name: telegraph
+      type: html
+      props:
+        css-selector: "figure img"
+        extract-attribute: "abs:src"
+    - name: telegram-message
+      type: composite
+      props:
+        default: telegram
+        rules:
+          - expression: "attrs.site == 'Telegraph'"
+            component: "html:telegraph"
 
 processors:
   - name: telegram
@@ -41,16 +64,19 @@ processors:
       # 如果代理有闲时流量可以用cron触发
       #- cron:free-time
     source: telegram
-    downloader: telegram
-    item-file-resolver: telegram
+    downloader: "composite:telegram-message"
+    item-file-resolver: "composite:telegram-message"
     mover: general
     save-path: /mnt/telegram
     options:
       save-path-pattern: "{item.attrs.chatName}-{item.attrs.chatId}"
       filename-pattern: "{item.attrs.messageId}_{itemTitle}"
-      file-taggers:
-        - "telegram"
-      #过滤photo类型的消息
-      #item-expression-exclusions:
-      #  - "attrs.mediaType == 'photo'"
-      pointer-batch-mode: false
+      # 此处不会过滤所有webpage，分组的规则会优先
+      item-expression-exclusions:
+        - "attrs.mediaType == 'webpage'"
+      item-grouping:
+        - expression-matching: "has(attrs.site) && attrs.site == 'Telegraph'"
+          save-path-pattern: "{item.attrs.chatName}-{item.attrs.chatId}/{item.attrs.messageId}_{itemTitle}"
+          filename-pattern: "{itemTitle}_{sequence}"
+          variable-providers:
+            - "sequence"

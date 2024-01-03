@@ -263,7 +263,7 @@ class SourceProcessor(
         }
     }
 
-    private fun createItemContent(sourceItemGroup: SourceItemGroup, sourceItem: SourceItem): CoreItemContent {
+    private fun createItemContent(sourceItem: SourceItem, itemOptions: ItemSelectedOptions): CoreItemContent {
         val resolvedFiles = itemFileResolver.resolveFiles(sourceItem).map { file ->
             val tags = taggers.mapNotNull { it.tag(file) }.toMutableSet()
             if (tags.isEmpty() && file.tags.isEmpty()) {
@@ -286,6 +286,13 @@ class SourceProcessor(
             it.copy(path)
         }
         checkResolvedFiles(sourceItem, resolvedFiles)
+
+        val sourceItemGroup = VariableProvidersAggregation(
+            sourceItem,
+            itemOptions.variableProviders.filter { it.support(sourceItem) }.toList(),
+            options.variableConflictStrategy,
+            options.variableNameReplace
+        )
         val sharedPatternVariables = sourceItemGroup.sharedPatternVariables()
         val fileContents = resolvedFiles.groupBy {
             options.matchFileOption(it)
@@ -298,8 +305,8 @@ class SourceProcessor(
                     sourceSavePath,
                     downloadPath,
                     MapPatternVariables(fileVariables[index].patternVariables()),
-                    fileOption?.savePathPattern ?: savePathPattern,
-                    fileOption?.filenamePattern ?: filenamePattern,
+                    fileOption?.savePathPattern ?: itemOptions.savePathPattern ?: savePathPattern,
+                    fileOption?.filenamePattern ?: itemOptions.filenamePattern ?: filenamePattern,
                     file
                 )
                 val fileContent = renamer.createFileContent(sourceItem, rawFileContent, sharedPatternVariables)
@@ -617,7 +624,9 @@ class SourceProcessor(
     private data class ItemSelectedOptions(
         val item: PointedItem<ItemPointer>,
         val filters: List<SourceItemFilter>,
-        val variableProviders: List<VariableProvider>
+        val variableProviders: List<VariableProvider>,
+        val filenamePattern: CorePathPattern?,
+        val savePathPattern: CorePathPattern?,
     )
 
     private abstract inner class Process(
@@ -651,8 +660,8 @@ class SourceProcessor(
                     log.trace("Processor:'{}' send item to channel:{}", name, item)
                     launch {
                         log.trace("Processor:'{}' start process item:{}", name, item)
-                        val selected = selectItemOptions(item)
-                        val filterBy = selected.filters.firstOrNull { it.test(item.sourceItem).not() }
+                        val itemOptions = selectItemOptions(item)
+                        val filterBy = itemOptions.filters.firstOrNull { it.test(item.sourceItem).not() }
                         if (filterBy != null) {
                             log.debug("{} filtered item:{}", filterBy::class.simpleName, item.sourceItem)
                             onItemFiltered(item)
@@ -664,7 +673,7 @@ class SourceProcessor(
                         val processingContent = runCatching {
                             retry.execute<ProcessingContent, IOException> {
                                 it.setAttribute("stage", ProcessStage("ProcessItem", item))
-                                processItem(item.sourceItem)
+                                processItem(item.sourceItem, itemOptions)
                             }
                         }.onFailure {
                             log.error("Processor:'$name'处理失败, item:$item", it)
@@ -730,21 +739,21 @@ class SourceProcessor(
             val itemOption = options.matchItemOption(item.sourceItem)
             val itemFilters = itemOption?.sourceItemFilters ?: this.selectItemFilters()
             val itemVariableProviders = itemOption?.variableProviders ?: options.variableProviders
-            return ItemSelectedOptions(item, itemFilters, itemVariableProviders)
+            return ItemSelectedOptions(
+                item,
+                itemFilters,
+                itemVariableProviders,
+                itemOption?.filenamePattern,
+                itemOption?.savePathPattern
+            )
         }
 
         protected open fun selectItemFilters(): List<SourceItemFilter> {
             return sourceItemFilters
         }
 
-        fun processItem(sourceItem: SourceItem): ProcessingContent {
-            val variablesAggregation = VariableProvidersAggregation(
-                sourceItem,
-                variableProviders.filter { it.support(sourceItem) }.toList(),
-                options.variableConflictStrategy,
-                options.variableNameReplace
-            )
-            val itemContent = createItemContent(variablesAggregation, sourceItem)
+        fun processItem(sourceItem: SourceItem, itemOptions: ItemSelectedOptions): ProcessingContent {
+            val itemContent = createItemContent(sourceItem, itemOptions)
             val filterBy = itemContentFilters.firstOrNull { it.test(itemContent).not() }
             if (filterBy != null) {
                 log.info("Processor:'{}' {} filtered item:{}", name, filterBy::class.simpleName, sourceItem)

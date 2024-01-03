@@ -228,6 +228,20 @@ class SourceProcessorTest : InitializingBean {
         println(Jackson.toJsonString(dryRun))
     }
 
+    @Test
+    fun pattern_order() {
+        val processorName = "PatternOrderCase"
+        val processor = processorManager.getProcessor(processorName).get()
+        val contents = processor.dryRun()
+            .associateBy { it.itemContent.sourceItem.title }
+        val item1 = contents.getValue("test1").itemContent.sourceFiles.first()
+        val item2 = contents.getValue("test2").itemContent.sourceFiles.first()
+        val item3 = contents.getValue("test-dir").itemContent.sourceFiles.first()
+        assertEquals("test1_ITEM_GROUPING_1.jpg", item1.targetFilename)
+        assertEquals("test2_FILE_GROUPING.jpg", item2.targetFilename)
+        assertEquals("test3.jpg", item3.targetFilename)
+    }
+
     // 待测试场景
     // processing_record中的status
     // saveContent option测试
@@ -237,6 +251,7 @@ class SourceProcessorTest : InitializingBean {
     // error_continue
     // listener invoke测试
     // exists 和 replace冲突测试
+    // 并行测试
     companion object {
 
         private val savePath = testResourcePath.resolve("target")

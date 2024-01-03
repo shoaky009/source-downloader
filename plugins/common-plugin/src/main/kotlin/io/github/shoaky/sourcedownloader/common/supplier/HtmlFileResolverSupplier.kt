@@ -10,9 +10,9 @@ object HtmlFileResolverSupplier : ComponentSupplier<HtmlFileResolver> {
 
     override fun apply(context: CoreContext, props: Properties): HtmlFileResolver {
         return HtmlFileResolver(
-            props.get("cssSelector"),
-            props.get("extractAttribute"),
-            props.getOrDefault<Boolean>("directMode", false),
+            props.get("css-selector"),
+            props.get("extract-attribute"),
+            props.getOrDefault<Boolean>("direct-mode", false),
         )
     }
 

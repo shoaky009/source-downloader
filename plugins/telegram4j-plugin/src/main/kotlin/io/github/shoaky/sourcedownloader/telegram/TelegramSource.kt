@@ -17,6 +17,7 @@ import java.time.ZoneId
 class TelegramSource(
     private val messageFetcher: TelegramMessageFetcher,
     private val chats: List<ChatConfig>,
+    private val sites: Set<String> = setOf("Telegraph")
 ) : Source<TelegramPointer> {
 
     override fun fetch(pointer: TelegramPointer, limit: Int): Iterable<PointedItem<ChatPointer>> {
@@ -92,7 +93,13 @@ class TelegramSource(
 
             is MessageMediaWebPage -> {
                 attrs[MEDIA_TYPE_ATTR] = "webpage"
-                val webpage = media.webpage() as BaseWebPage
+                // 会有WebPageEmpty的情况
+                val webpage = media.webpage() as? BaseWebPage ?: return null
+                val siteName = webpage.siteName() ?: return null
+                if (sites.contains(siteName).not()) {
+                    log.debug("Ignore site: $siteName")
+                    return null
+                }
                 webpage.siteName()?.also {
                     attrs["site"] = it
                 }

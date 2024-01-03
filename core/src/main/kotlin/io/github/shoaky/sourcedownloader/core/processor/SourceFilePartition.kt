@@ -16,7 +16,7 @@ class ExpressionSourceFilePartition(
 ) : SourceFilePartition {
 
     private val script = scriptHost.buildScript(expression).withDeclarations(
-        Decls.newVar("filename", Decls.Dyn),
+        Decls.newVar("filename", Decls.String),
         Decls.newVar("tags", Decls.newListType(Decls.String)),
         Decls.newVar("attrs", Decls.newMapType(Decls.String, Decls.Dyn))
     ).build()

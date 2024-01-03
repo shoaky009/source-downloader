@@ -104,6 +104,8 @@ data class ProcessorConfig(
     data class ItemGroupingConfig(
         val tags: Set<String> = emptySet(),
         val expressionMatching: String? = null,
+        val filenamePattern: CorePathPattern? = null,
+        val savePathPattern: CorePathPattern? = null,
         val variableProviders: List<ComponentId>? = null,
         val sourceItemFilters: List<ComponentId>? = null,
         val itemExpressionExclusions: List<String>? = null,

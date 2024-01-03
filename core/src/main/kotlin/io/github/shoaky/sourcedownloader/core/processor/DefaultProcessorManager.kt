@@ -361,12 +361,8 @@ class DefaultProcessorManager(
                 throw ComponentException.other("fileGrouping must have tags or expressionMatching")
             }
             fileGrouping[matcher] = FileOption(
-                fileOption.savePathPattern?.let {
-                    CorePathPattern(it.pattern)
-                },
-                fileOption.filenamePattern?.let {
-                    CorePathPattern(it.pattern)
-                },
+                fileOption.savePathPattern,
+                fileOption.filenamePattern,
                 fileContentFilters
             )
         }
@@ -419,6 +415,8 @@ class DefaultProcessorManager(
 
             if (expressionFilters != null || sourceItemFilters != null) {
                 fileGrouping[matcher] = ItemOption(
+                    itemOption.savePathPattern,
+                    itemOption.filenamePattern,
                     buildList {
                         // 内置
                         add(SourceHashingItemFilter(config.name, processingStorage))
@@ -429,6 +427,8 @@ class DefaultProcessorManager(
                 )
             } else {
                 fileGrouping[matcher] = ItemOption(
+                    itemOption.savePathPattern,
+                    itemOption.filenamePattern,
                     null,
                     providers
                 )

@@ -53,7 +53,7 @@ class TelegramIntegration(
             return emptyList()
         }
 
-        val sourceFile = SourceFile(Path(sourceItem.title), sourceItem.attrs)
+        val sourceFile = SourceFile(Path(sourceItem.title))
         return listOf(sourceFile)
     }
 

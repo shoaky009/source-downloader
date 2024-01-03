@@ -65,6 +65,8 @@ data class FileOption(
 )
 
 data class ItemOption(
+    val savePathPattern: CorePathPattern? = null,
+    val filenamePattern: CorePathPattern? = null,
     val sourceItemFilters: List<SourceItemFilter>? = null,
-    val variableProviders: List<VariableProvider>? = null
+    val variableProviders: List<VariableProvider>? = null,
 )

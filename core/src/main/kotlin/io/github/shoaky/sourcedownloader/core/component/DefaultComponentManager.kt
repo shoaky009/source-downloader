@@ -94,7 +94,7 @@ class DefaultComponentManager(
                     false
                 )
                 objectContainer.put(typeBeanName, componentWrapper)
-                log.info("Successfully created component ${type}:${id}")
+                log.info("Successfully created component ${type.typeName}:${id}")
                 Events.register(componentWrapper)
                 componentWrapper
             }.first { it.type == targetComponentType }

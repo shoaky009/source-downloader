@@ -304,3 +304,21 @@ processors:
     save-path: "src/test/resources/target/MediaTypeExistCase"
     options:
       file-exists-detector: "media-type"
+  - name: "PatternOrderCase"
+    source: "fixed:normal-case"
+    item-file-resolver: "fixed:normal-case"
+    downloader: "none"
+    file-mover: "general"
+    save-path: "src/test/resources/target/PatternOrderCase"
+    options:
+      save-path-pattern: "{itemTitle}"
+      variable-providers:
+        - "sequence"
+      item-grouping:
+        - expression-matching: "title == 'test1'"
+          save-path-pattern: "{itemTitle}_ITEM_GROUPING"
+          filename-pattern: "{itemTitle}_ITEM_GROUPING_{sequence}"
+      file-grouping:
+        - expression-matching: "filename == 'test2.jpg'"
+          save-path-pattern: "{itemTitle}_FILE_GROUPING"
+          filename-pattern: "{itemTitle}_FILE_GROUPING"
