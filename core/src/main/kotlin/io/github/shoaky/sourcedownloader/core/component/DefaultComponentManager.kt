@@ -69,6 +69,7 @@ class DefaultComponentManager(
                 component
             )
             objectContainer.put(primaryTypeBeanName, wrapper)
+            log.info("Successfully created component ${type}:${id}")
             Events.register(wrapper)
             wrapper
         }
@@ -93,11 +94,11 @@ class DefaultComponentManager(
                     false
                 )
                 objectContainer.put(typeBeanName, componentWrapper)
+                log.info("Successfully created component ${type}:${id}")
                 Events.register(componentWrapper)
                 componentWrapper
             }.first { it.type == targetComponentType }
 
-        log.info("Successfully created component ${type}:${id}")
         @Suppress("UNCHECKED_CAST")
         return componentWrapper as ComponentWrapper<T>
     }
