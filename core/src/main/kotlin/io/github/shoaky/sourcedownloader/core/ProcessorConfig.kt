@@ -43,9 +43,9 @@ data class ProcessorConfig(
         @JsonAlias("content-filters")
         val itemContentFilters: List<ComponentId> = emptyList(),
         @JsonDeserialize(`as` = CorePathPattern::class)
-        val savePathPattern: PathPattern = CorePathPattern.ORIGIN,
+        val savePathPattern: PathPattern = CorePathPattern.origin,
         @JsonDeserialize(`as` = CorePathPattern::class)
-        val filenamePattern: PathPattern = CorePathPattern.ORIGIN,
+        val filenamePattern: PathPattern = CorePathPattern.origin,
         // 为了兼容
         @JsonAlias("run-after-completion")
         val processListeners: List<ComponentId> = emptyList(),

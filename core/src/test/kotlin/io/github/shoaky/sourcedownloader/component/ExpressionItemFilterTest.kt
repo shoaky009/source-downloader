@@ -67,8 +67,8 @@ fun createFileContent(
     sourceSavePath: Path = Path(""),
     downloadPath: Path = Path(""),
     patternVariables: MapPatternVariables = MapPatternVariables(),
-    pathPattern: CorePathPattern = CorePathPattern.ORIGIN,
-    sourcePathPattern: CorePathPattern = CorePathPattern.ORIGIN,
+    pathPattern: CorePathPattern = CorePathPattern.origin,
+    sourcePathPattern: CorePathPattern = CorePathPattern.origin,
     targetSavePath: Path = Path(""),
     targetFilename: String = "",
     tags: MutableSet<String> = mutableSetOf()

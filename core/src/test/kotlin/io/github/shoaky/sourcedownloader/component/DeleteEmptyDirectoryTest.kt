@@ -36,8 +36,8 @@ class DeleteEmptyDirectoryTest {
                     Path(""),
                     testResourcePath,
                     MapPatternVariables(),
-                    CorePathPattern.ORIGIN,
-                    CorePathPattern.ORIGIN,
+                    CorePathPattern.origin,
+                    CorePathPattern.origin,
                     Path(""),
                     ""
                 )
@@ -59,8 +59,8 @@ class DeleteEmptyDirectoryTest {
                     Path(""),
                     testResourcePath,
                     MapPatternVariables(),
-                    CorePathPattern.ORIGIN,
-                    CorePathPattern.ORIGIN,
+                    CorePathPattern.origin,
+                    CorePathPattern.origin,
                     Path(""),
                     ""
                 )

@@ -1,4 +1,4 @@
-package io.github.shoaky.sourcedownloader.util
+package io.github.shoaky.sourcedownloader.core.expression
 
 import org.projectnessie.cel.EnvOption
 import org.projectnessie.cel.Library
@@ -7,24 +7,6 @@ import org.projectnessie.cel.checker.Decls
 import org.projectnessie.cel.common.types.BoolT
 import org.projectnessie.cel.common.types.StringT
 import org.projectnessie.cel.interpreter.functions.Overload
-import org.projectnessie.cel.tools.ScriptHost
-import java.nio.file.Path
-import java.nio.file.attribute.BasicFileAttributes
-import java.time.LocalDateTime
-import java.time.ZoneId
-import kotlin.io.path.notExists
-import kotlin.io.path.readAttributes
-
-internal val scriptHost = ScriptHost.newBuilder().build()
-
-fun Path.creationTime(): LocalDateTime? {
-    if (this.notExists()) {
-        return null
-    }
-    val attrs = this.readAttributes<BasicFileAttributes>()
-    val creationTime = attrs.creationTime()
-    return LocalDateTime.ofInstant(creationTime.toInstant(), ZoneId.systemDefault())
-}
 
 class CelLibrary : Library {
 

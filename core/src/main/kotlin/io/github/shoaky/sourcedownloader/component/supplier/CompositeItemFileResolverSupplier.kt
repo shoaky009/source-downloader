@@ -2,7 +2,13 @@ package io.github.shoaky.sourcedownloader.component.supplier
 
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.JsonNode
-import io.github.shoaky.sourcedownloader.component.*
+import io.github.shoaky.sourcedownloader.component.ComponentSelectRule
+import io.github.shoaky.sourcedownloader.component.ComponentSelector
+import io.github.shoaky.sourcedownloader.component.CompositeDownloader
+import io.github.shoaky.sourcedownloader.component.CompositeItemFileResolver
+import io.github.shoaky.sourcedownloader.core.expression.CelCompiledExpressionFactory
+import io.github.shoaky.sourcedownloader.core.expression.CompiledExpressionFactory
+import io.github.shoaky.sourcedownloader.core.expression.sourceItemDefs
 import io.github.shoaky.sourcedownloader.sdk.CoreContext
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.component.*
@@ -49,7 +55,8 @@ private fun <T : SdComponent> createSelector(
     context: CoreContext,
     props: Properties,
     type: ComponentTopType,
-    typeReference: TypeReference<T>
+    typeReference: TypeReference<T>,
+    expressionFactory: CompiledExpressionFactory = CelCompiledExpressionFactory
 ): ComponentSelector<T> {
 
     val default = props.get<String>("default").let {
@@ -61,7 +68,9 @@ private fun <T : SdComponent> createSelector(
     }
 
     val rules = props.get<JsonNode>("rules").map {
-        val expression = ExpressionItemFilter.buildScript(it.get("expression").textValue())
+        val raw = it.get("expression").textValue()
+        // 这里不一定是SourceItem的
+        val expression = expressionFactory.create(raw, Boolean::class.java, sourceItemDefs())
         val component = context.getComponent(
             type,
             it.get("component").textValue(),

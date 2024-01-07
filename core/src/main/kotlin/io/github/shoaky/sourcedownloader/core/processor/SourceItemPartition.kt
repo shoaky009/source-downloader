@@ -1,8 +1,8 @@
 package io.github.shoaky.sourcedownloader.core.processor
 
+import io.github.shoaky.sourcedownloader.core.expression.CompiledExpression
+import io.github.shoaky.sourcedownloader.core.expression.variables
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
-import io.github.shoaky.sourcedownloader.util.scriptHost
-import org.projectnessie.cel.checker.Decls
 
 interface SourceItemPartition {
 
@@ -10,37 +10,11 @@ interface SourceItemPartition {
 }
 
 class ExpressionSourceItemPartition(
-    expression: String
+    private val expression: CompiledExpression<Boolean>
 ) : SourceItemPartition {
 
-    private val script = scriptHost.buildScript(expression).withDeclarations(
-        Decls.newVar("title", Decls.String),
-        Decls.newVar("contentType", Decls.String),
-        Decls.newVar("link", Decls.String),
-        Decls.newVar("downloadUri", Decls.String),
-        Decls.newVar("date", Decls.Timestamp),
-        Decls.newVar("tags", Decls.newListType(Decls.String)),
-        Decls.newVar("attrs", Decls.newMapType(Decls.String, Decls.Dyn))
-    ).build()
-
     override fun match(item: SourceItem): Boolean {
-        // 后面再调整
-        // script.execute(
-        //     Boolean::class.java, mapOf(
-        //         "item" to item,
-        //     )
-        // )
-        return script.execute(
-            Boolean::class.java, mapOf(
-                "title" to item.title,
-                "contentType" to item.contentType,
-                "link" to item.link.toString(),
-                "downloadUri" to item.downloadUri.toString(),
-                "date" to item.date,
-                "tags" to item.tags.toList(),
-                "attrs" to item.attrs,
-            )
-        )
+        return expression.execute(item.variables())
     }
 }
 

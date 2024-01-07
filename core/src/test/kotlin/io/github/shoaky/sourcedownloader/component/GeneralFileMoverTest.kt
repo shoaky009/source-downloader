@@ -48,16 +48,16 @@ class GeneralFileMoverTest {
             savePath,
             downloadPath,
             MapPatternVariables(),
-            CorePathPattern.ORIGIN,
-            CorePathPattern.ORIGIN,
+            CorePathPattern.origin,
+            CorePathPattern.origin,
         ), PatternVariables.EMPTY)
         val file2 = Renamer().createFileContent(sourceItem(), createRawFileContent(
             Path("2.txt"),
             savePath,
             downloadPath,
             MapPatternVariables(),
-            CorePathPattern.ORIGIN,
-            CorePathPattern.ORIGIN,
+            CorePathPattern.origin,
+            CorePathPattern.origin,
         ), PatternVariables.EMPTY)
         val itemContent = CoreItemContent(sourceItem(), listOf(file1, file2), MapPatternVariables())
         val result = mover.move(itemContent)

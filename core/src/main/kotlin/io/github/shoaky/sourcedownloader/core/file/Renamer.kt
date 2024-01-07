@@ -37,7 +37,7 @@ class Renamer(
     private fun targetFilename(ctx: RenameContext): ResultWrapper<String> {
         val fileDownloadPath = ctx.file.fileDownloadPath
         val filenamePattern = ctx.file.filenamePattern
-        if (filenamePattern == CorePathPattern.ORIGIN) {
+        if (filenamePattern == CorePathPattern.origin) {
             return ResultWrapper.fromFilename(fileDownloadPath.name)
         }
         val parse = parse(ctx.patternVariables, filenamePattern, ctx.extraVariables, ctx.extraListVariables)
@@ -140,12 +140,12 @@ class Renamer(
         }
         while (matcher.find()) {
             val expression = expressions[expressionIndex]
-            val value = expression.eval(variables)
-            variableResults.add(PathPattern.ExpressionResult(expression.raw, value != null || expression.isOptional()))
+            val value = expression.executeIgnoreError(variables)
+            variableResults.add(PathPattern.ExpressionResult(expression.raw(), value != null || expression.optional()))
             if (value != null) {
                 val replacement = Matcher.quoteReplacement(value)
                 matcher.appendReplacement(pathBuilder, replacement)
-            } else if (expression.isOptional()) {
+            } else if (expression.optional()) {
                 matcher.appendReplacement(pathBuilder, "")
             }
             expressionIndex = expressionIndex.inc()
@@ -225,7 +225,10 @@ private data class ResultWrapper<T>(
 
     companion object {
 
-        fun fromFilename(name: String, result: PathPattern.ParseResult = PathPattern.ParseResult(name, emptyList())): ResultWrapper<String> {
+        fun fromFilename(
+            name: String,
+            result: PathPattern.ParseResult = PathPattern.ParseResult(name, emptyList())
+        ): ResultWrapper<String> {
             return ResultWrapper(name, result)
         }
     }

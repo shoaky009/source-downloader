@@ -98,7 +98,7 @@ data class CoreItemContent(
             return """
                 ${sourceItem.title}内的${sourceFiles.size}个文件处理完成
                 ${statusGrouping.map { "${it.key.status()}:${it.value}个" }.joinToString("\n")}
-            """.trimIndent()
+            """.trim()
         }
         return "${sourceItem.title}内的${sourceFiles.size}个文件处理完成"
     }

@@ -1,9 +1,8 @@
 package io.github.shoaky.sourcedownloader.core.processor
 
+import io.github.shoaky.sourcedownloader.core.expression.CompiledExpression
+import io.github.shoaky.sourcedownloader.core.expression.variables
 import io.github.shoaky.sourcedownloader.sdk.SourceFile
-import io.github.shoaky.sourcedownloader.util.scriptHost
-import org.projectnessie.cel.checker.Decls
-import kotlin.io.path.name
 
 interface SourceFilePartition {
 
@@ -12,24 +11,11 @@ interface SourceFilePartition {
 }
 
 class ExpressionSourceFilePartition(
-    expression: String
+    private val expression: CompiledExpression<Boolean>
 ) : SourceFilePartition {
 
-    private val script = scriptHost.buildScript(expression).withDeclarations(
-        Decls.newVar("filename", Decls.String),
-        Decls.newVar("tags", Decls.newListType(Decls.String)),
-        Decls.newVar("attrs", Decls.newMapType(Decls.String, Decls.Dyn))
-    ).build()
-
     override fun match(sourceFile: SourceFile): Boolean {
-
-        return script.execute(
-            Boolean::class.java, mapOf(
-                "filename" to sourceFile.path.name,
-                "tags" to sourceFile.tags,
-                "attrs" to sourceFile.attrs,
-            )
-        )
+        return expression.execute(sourceFile.variables())
     }
 }
 

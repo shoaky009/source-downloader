@@ -3,13 +3,10 @@ package io.github.shoaky.sourcedownloader.core.file
 import com.fasterxml.jackson.annotation.JsonValue
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.google.api.expr.v1alpha1.Expr
-import io.github.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
+import io.github.shoaky.sourcedownloader.core.expression.*
 import io.github.shoaky.sourcedownloader.sdk.PathPattern
 import io.github.shoaky.sourcedownloader.util.jackson.PathPatternDeserializer
-import io.github.shoaky.sourcedownloader.util.scriptHost
 import org.projectnessie.cel.Env
-import org.projectnessie.cel.checker.Decls
-import org.projectnessie.cel.tools.Script
 import java.util.regex.Pattern
 
 @JsonDeserialize(using = PathPatternDeserializer::class)
@@ -18,68 +15,46 @@ data class CorePathPattern(
     override val pattern: String,
 ) : PathPattern {
 
-    val expressions: List<Expression> by lazy {
+    val expressions: List<CompiledExpression<String>> by lazy {
         val matcher = variablePatternRegex.matcher(pattern)
-        val expressions = mutableListOf<Expression>()
+        val expressions = mutableListOf<CompiledExpression<String>>()
         while (matcher.find()) {
-            expressions.add(Expression(matcher.group()))
+            val raw = matcher.group()
+            val parsed = parseRaw(raw)
+            val expression = expressionFactory.create(parsed, String::class.java, defs(parsed)) as CelCompiledExpression
+            expression.optional = isOptional(raw)
+            expressions.add(expression)
         }
         expressions
     }
 
-    companion object {
-
-        /**
-         * {expression} or :{expression}
-         */
-        private val variablePatternRegex: Pattern = Pattern.compile("\\{(.+?)}|:\\{(.+?)}")
-        val ORIGIN = CorePathPattern("")
-
-    }
-
-}
-
-class Expression(
-    val raw: String
-) {
-
-    private val script: Script by lazy {
-        val buildScript = scriptHost.buildScript(parseRaw())
-            .withDeclarations(
-                Decls.newVar("item.attrs", Decls.newMapType(Decls.String, Decls.String)),
-                Decls.newVar("file.attrs", Decls.newMapType(Decls.String, Decls.String)),
-                Decls.newVar("item.date", Decls.String),
-                Decls.newVar("item.title", Decls.String),
-                *this.getDeclaredVariables().map { Decls.newVar(it, Decls.String) }.toTypedArray(),
-            )
-        buildScript.build()
-    }
-
-    fun eval(variables: Map<String, Any>): String? {
-        val expression = parseRaw()
-        return runCatching {
-            script.execute(String::class.java, variables)
-        }.getOrElse {
-            log.debug("eval expression '$expression' failed:{}", it.message)
-            null
-        }
-    }
-
-    private fun parseRaw(): String {
+    private fun parseRaw(raw: String): String {
         if (raw.startsWith(OPTIONAL_EXPRESSION_PREFIX)) {
             return raw.substring(2, raw.length - 1)
         }
         return raw.substring(1, raw.length - 1)
     }
 
-    private fun getDeclaredVariables(): Set<String> {
-        val env = Env.newEnv()
-        val parse = env.parse(parseRaw())
-        return extractIdentifiers(parse.ast.expr)
+    private fun isOptional(raw: String): Boolean {
+        return raw.startsWith(OPTIONAL_EXPRESSION_PREFIX)
     }
 
-    fun isOptional(): Boolean {
-        return raw.startsWith(OPTIONAL_EXPRESSION_PREFIX)
+    private fun defs(parsed: String): Map<String, VariableType> {
+        return buildMap {
+            put("item.attrs", VariableType.MAP)
+            put("file.attrs", VariableType.MAP)
+            put("item.date", VariableType.STRING)
+            put("item.title", VariableType.STRING)
+            getDeclaredVariables(parsed).forEach {
+                put(it, VariableType.STRING)
+            }
+        }
+    }
+
+    private fun getDeclaredVariables(parsed: String): Set<String> {
+        val env = Env.newEnv()
+        val parse = env.parse(parsed)
+        return extractIdentifiers(parse.ast.expr)
     }
 
     private fun extractIdentifiers(expr: Expr): Set<String> {
@@ -126,6 +101,14 @@ class Expression(
 
     companion object {
 
+        /**
+         * {expression} or :{expression}
+         */
+        private val variablePatternRegex: Pattern = Pattern.compile("\\{(.+?)}|:\\{(.+?)}")
+        val origin = CorePathPattern("")
+        private val expressionFactory: CompiledExpressionFactory = CelCompiledExpressionFactory
         private const val OPTIONAL_EXPRESSION_PREFIX = ":"
+
     }
+
 }

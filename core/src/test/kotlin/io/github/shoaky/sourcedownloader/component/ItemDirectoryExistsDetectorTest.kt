@@ -32,7 +32,7 @@ class ItemDirectoryExistsDetectorTest {
             downloadPath.toAbsolutePath(),
             MapPatternVariables(),
             CorePathPattern("test"),
-            CorePathPattern.ORIGIN,
+            CorePathPattern.origin,
             Path("save", "test").toAbsolutePath(),
             "test1.mp4"
         )
@@ -59,7 +59,7 @@ class ItemDirectoryExistsDetectorTest {
             downloadPath.toAbsolutePath(),
             MapPatternVariables(),
             CorePathPattern("test"),
-            CorePathPattern.ORIGIN,
+            CorePathPattern.origin,
             Path("save", "test").toAbsolutePath(),
             "test1.mp4"
         )

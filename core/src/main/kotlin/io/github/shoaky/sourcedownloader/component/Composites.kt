@@ -1,12 +1,13 @@
 package io.github.shoaky.sourcedownloader.component
 
+import io.github.shoaky.sourcedownloader.core.expression.CompiledExpression
+import io.github.shoaky.sourcedownloader.core.expression.variables
 import io.github.shoaky.sourcedownloader.sdk.DownloadTask
 import io.github.shoaky.sourcedownloader.sdk.SourceFile
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.Downloader
 import io.github.shoaky.sourcedownloader.sdk.component.ItemFileResolver
 import io.github.shoaky.sourcedownloader.sdk.component.SdComponent
-import org.projectnessie.cel.tools.Script
 import java.nio.file.Path
 
 class CompositeDownloader(
@@ -54,15 +55,13 @@ class ComponentSelector<T : SdComponent>(
 ) {
 
     fun select(sourceItem: SourceItem): T {
-        val variables = bindItemScriptVars(sourceItem)
         return rules.firstOrNull {
-            it.script.execute(Boolean::class.java, variables) == true
-
+            it.expression.execute(sourceItem.variables())
         }?.component ?: default
     }
 }
 
 data class ComponentSelectRule<T : SdComponent>(
-    val script: Script,
+    val expression: CompiledExpression<Boolean>,
     val component: T
 )

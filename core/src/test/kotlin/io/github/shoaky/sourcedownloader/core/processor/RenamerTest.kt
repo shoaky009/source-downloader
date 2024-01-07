@@ -104,7 +104,11 @@ class RenamerTest {
         )
         val content1 = defaultRenamer.createFileContent(sourceItem(), raw, MapPatternVariables())
         assertEquals(sourceSavePath.resolve("test"), content1.fileSaveRootDirectory())
-        val content2 = defaultRenamer.createFileContent(sourceItem(), raw.copy(savePathPattern = CorePathPattern.ORIGIN), MapPatternVariables())
+        val content2 = defaultRenamer.createFileContent(
+            sourceItem(),
+            raw.copy(savePathPattern = CorePathPattern.origin),
+            MapPatternVariables()
+        )
         assertEquals(null, content2.fileSaveRootDirectory())
     }
 
@@ -456,8 +460,8 @@ fun createRawFileContent(
     sourceSavePath: Path = testResourcePath.resolve("target"),
     downloadPath: Path = testResourcePath.resolve("downloads"),
     patternVariables: MapPatternVariables = MapPatternVariables(),
-    savePathPattern: CorePathPattern = CorePathPattern.ORIGIN,
-    filenamePattern: CorePathPattern = CorePathPattern.ORIGIN,
+    savePathPattern: CorePathPattern = CorePathPattern.origin,
+    filenamePattern: CorePathPattern = CorePathPattern.origin,
     attrs: Map<String, Any> = emptyMap(),
     tags: Set<String> = emptySet()
 ): RawFileContent {

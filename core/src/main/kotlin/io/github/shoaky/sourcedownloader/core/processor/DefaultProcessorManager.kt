@@ -6,6 +6,10 @@ import io.github.shoaky.sourcedownloader.core.*
 import io.github.shoaky.sourcedownloader.core.component.ComponentManager
 import io.github.shoaky.sourcedownloader.core.component.ProcessorWrapper
 import io.github.shoaky.sourcedownloader.core.component.SourceHashingItemFilter
+import io.github.shoaky.sourcedownloader.core.expression.CelCompiledExpressionFactory
+import io.github.shoaky.sourcedownloader.core.expression.CompiledExpressionFactory
+import io.github.shoaky.sourcedownloader.core.expression.sourceFileDefs
+import io.github.shoaky.sourcedownloader.core.expression.sourceItemDefs
 import io.github.shoaky.sourcedownloader.core.file.CorePathPattern
 import io.github.shoaky.sourcedownloader.sdk.component.*
 
@@ -13,6 +17,7 @@ class DefaultProcessorManager(
     private val processingStorage: ProcessingStorage,
     private val componentManager: ComponentManager,
     private val container: ObjectWrapperContainer,
+    private val expressionFactory: CompiledExpressionFactory = CelCompiledExpressionFactory
 ) : ProcessorManager {
 
     override fun createProcessor(config: ProcessorConfig) {
@@ -356,7 +361,12 @@ class DefaultProcessorManager(
             val matcher = if (fileOption.tags.isNotEmpty()) {
                 TagSourceFilePartition(fileOption.tags)
             } else if (fileOption.expressionMatching != null) {
-                ExpressionSourceFilePartition(fileOption.expressionMatching)
+                val expression = expressionFactory.create(
+                    fileOption.expressionMatching,
+                    Boolean::class.java,
+                    sourceFileDefs()
+                )
+                ExpressionSourceFilePartition(expression)
             } else {
                 throw ComponentException.other("fileGrouping must have tags or expressionMatching")
             }
@@ -400,7 +410,13 @@ class DefaultProcessorManager(
             val matcher = if (itemOption.tags.isNotEmpty()) {
                 TagSourceItemPartition(itemOption.tags)
             } else if (itemOption.expressionMatching != null) {
-                ExpressionSourceItemPartition(itemOption.expressionMatching)
+                val expression =
+                    expressionFactory.create(
+                        itemOption.expressionMatching,
+                        Boolean::class.java,
+                        sourceItemDefs()
+                    )
+                ExpressionSourceItemPartition(expression)
             } else {
                 throw ComponentException.other("itemGrouping must have tags or expressionMatching")
             }
