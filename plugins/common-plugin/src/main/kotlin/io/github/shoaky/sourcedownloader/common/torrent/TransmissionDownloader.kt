@@ -76,39 +76,36 @@ class TransmissionDownloader(
     override fun move(itemContent: ItemContent): Boolean {
         // https://github.com/transmission/transmission/issues/3216
         // NOTE 目前Transmission的API无法完全满足命名种子内部的文件，重命名参数不能包含文件夹
-
         val torrentHash = getTorrentHash(itemContent.sourceItem)
         val sourceFiles = itemContent.sourceFiles
 
-        val firstFile = sourceFiles.first()
-        val saveItemFileRootDirectory = firstFile.fileSaveRootDirectory()
-        val itemLocation = saveItemFileRootDirectory ?: firstFile.saveDirectoryPath()
-
-        val allSuccess = sourceFiles.map {
+        val grouping = sourceFiles.groupBy { it.targetPath().parent }
+        if (grouping.size > 1) {
+            log.warn("TargetPaths has multiple parent paths, but transmission doesn't support them.")
+        }
+        val (location, files) = grouping.maxBy { it.value.size }
+        val allSuccess = files.map {
             val torrentRelativePath = it.downloadPath.relativize(it.fileDownloadPath)
-
-            val targetRelativePath = itemLocation.relativize(it.targetPath())
+            val targetPath = it.targetPath()
+            // 只能改文件名
             val renameFileResponse = client.execute(
-                TorrentRenamePath(listOf(torrentHash), torrentRelativePath, targetRelativePath)
+                TorrentRenamePath(listOf(torrentHash), torrentRelativePath, targetPath.fileName)
             )
+
             val isSuccess = renameFileResponse.body().isSuccess()
             if (isSuccess.not()) {
-                log.error("rename file failed,hash:$torrentHash code:${renameFileResponse.statusCode()} body:${renameFileResponse.body()}")
+                log.error("Rename file failed, hash:$torrentHash code:${renameFileResponse.statusCode()} body:${renameFileResponse.body()}")
             }
             isSuccess
         }.all { it }
 
         val setLocationResponse = client.execute(
-            TorrentSetLocation(
-                listOf(torrentHash),
-                itemLocation,
-                true
-            )
+            TorrentSetLocation(listOf(torrentHash), location, true)
         )
 
         val isSuccess = setLocationResponse.body().isSuccess().not()
         if (isSuccess) {
-            log.error("set location failed,hash:$torrentHash code:${setLocationResponse.statusCode()} body:${setLocationResponse.body()}")
+            log.error("Set location failed,hash:$torrentHash code:${setLocationResponse.statusCode()} body:${setLocationResponse.body()}")
         }
         return allSuccess && isSuccess
     }
