@@ -38,7 +38,7 @@ class IncludingTargetPathsFileMover(
     }
 
     fun preoccupiedTargetPath(paths: Collection<Path>) {
-        log.info("preoccupiedTargetPath: {}", paths)
+        log.debug("PreoccupiedTargetPath: {}", paths)
         preoccupiedTargetPaths.addAll(paths)
         if (log.isDebugEnabled) {
             log.debug("Preoccupied target path, current preoccupied target paths: {}", preoccupiedTargetPaths)
@@ -46,7 +46,7 @@ class IncludingTargetPathsFileMover(
     }
 
     fun releasePreoccupiedTargetPath(paths: Collection<Path>) {
-        log.info("ReleasePreoccupiedTargetPath: {}", paths)
+        log.debug("ReleasePreoccupiedTargetPath: {}", paths)
         preoccupiedTargetPaths.removeAll(paths.toSet())
         if (log.isDebugEnabled) {
             log.debug("Release preoccupied target path, current preoccupied target paths: {}", preoccupiedTargetPaths)
