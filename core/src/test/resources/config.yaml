@@ -104,6 +104,10 @@ components:
       type: "url"
       props:
         download-path: "src/test/resources/downloads"
+    - name: "test-dir-error"
+      type: "test-dir-error"
+      props:
+        download-path: "src/test/resources/downloads"
   file-tagger:
     - name: "mapping-test1file"
       type: "mapped"
@@ -322,3 +326,9 @@ processors:
         - expression-matching: "filename == 'test2.jpg'"
           save-path-pattern: "{itemTitle}_FILE_GROUPING"
           filename-pattern: "{itemTitle}_FILE_GROUPING"
+  - name: "DownloadErrorCase"
+    source: "fixed:normal-case"
+    item-file-resolver: "fixed:normal-case"
+    downloader: "test-dir-error"
+    file-mover: "general"
+    save-path: "src/test/resources/target/DownloadErrorCase"

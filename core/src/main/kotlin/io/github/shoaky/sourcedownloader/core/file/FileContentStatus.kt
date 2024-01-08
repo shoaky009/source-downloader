@@ -13,6 +13,11 @@ enum class FileContentStatus : FileStatus {
     NORMAL,
 
     /**
+     * 已下载
+     */
+    DOWNLOADED,
+
+    /**
      * 路径模板变量不存在
      */
     VARIABLE_ERROR,

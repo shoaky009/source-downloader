@@ -316,7 +316,7 @@ class SourceProcessor(
             val filters = fileOption?.fileContentFilters ?: fileContentFilters
             val filter = filters.all { it.test(fileContent) }
             if (filter.not()) {
-                log.trace("Filtered file:{}", fileContent)
+                log.trace("Filtered file:{}", fileContent.fileDownloadPath)
             }
             filter
         }.map { it.first }
@@ -355,7 +355,7 @@ class SourceProcessor(
 
         // 预防这一批次的Item有相同的目标，并且是AsyncDownloader的情况下会重复下载
         if (files.all { it.status == FileContentStatus.TARGET_EXISTS }) {
-            log.info("Item already exists:{}, files:{}", sc.sourceItem, sc.sourceFiles)
+            log.info("Item files already exists:{}, files:{}", sc.sourceItem, sc.sourceFiles.map { it.targetPath() })
             return false to TARGET_ALREADY_EXISTS
         }
 
@@ -391,7 +391,9 @@ class SourceProcessor(
                         modifyTime = LocalDateTime.now(),
                     )
                 )
-                processingStorage.deleteTargetPath(pc.itemContent.sourceFiles.map { it.targetPath() })
+                val targetPaths = pc.itemContent.sourceFiles.map { it.targetPath() }
+                val hashing = pc.itemContent.sourceItem.hashing()
+                processingStorage.deleteTargetPath(targetPaths, hashing)
             }.onFailure {
                 log.error("Processing更新状态出错, record:${Jackson.toJsonString(pc)}", it)
             }
@@ -469,7 +471,7 @@ class SourceProcessor(
 
     private fun saveTargetPaths(sourceItem: SourceItem, paths: List<Path>) {
         val processingTargetPaths = if (fileReplacementDecider == NeverReplace) {
-            paths.map { ProcessingTargetPath(it) }
+            paths.map { ProcessingTargetPath(it, null, sourceItem.hashing()) }
         } else {
             paths.map { ProcessingTargetPath(it, name, sourceItem.hashing()) }
         }
@@ -643,6 +645,7 @@ class SourceProcessor(
         protected fun processItems() {
             val stat = ProcessStat(name)
             val context = CoreProcessContext(name, processingStorage, info0())
+            secondaryFileMover.releaseAll()
 
             stat.stopWatch.start("fetchItems")
             val itemIterable = customIterable ?: retry.execute<Iterable<PointedItem<ItemPointer>>, IOException> {
@@ -686,6 +689,7 @@ class SourceProcessor(
 
                             if (options.itemErrorContinue.not()) {
                                 log.warn("Processor:'$name'处理失败, item:$item, 退出本次触发处理, 如果未能解决该处理器将无法继续处理后续Item")
+                                secondaryFileMover.releaseAll()
                                 processChannel.cancel()
                                 return@launch
                                 // return
@@ -818,12 +822,14 @@ class SourceProcessor(
             val downloadTask = createDownloadTask(itemContent, replaceFiles)
             // NOTE 非异步下载器会阻塞
             log.info(
-                "Processor:'{}' submit download item:{}, files:{}", name,
-                downloadTask.sourceItem, downloadTask.downloadFiles
+                "Processor:'{}' submit download item:{}, count:{}, files:{}",
+                name,
+                downloadTask.sourceItem,
+                downloadTask.downloadFiles.size,
+                downloadTask.downloadFiles
             )
             val submit = directDownloader.submit(downloadTask)
             val targetPaths = itemContent.downloadableFiles().map { it.targetPath() }
-            // TODO 应该先ProcessingContent后再保存targetPaths
             if (options.saveProcessingContent) {
                 saveTargetPaths(itemContent.sourceItem, targetPaths)
             }

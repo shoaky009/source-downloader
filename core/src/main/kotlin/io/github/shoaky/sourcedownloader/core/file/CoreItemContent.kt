@@ -23,9 +23,6 @@ data class CoreItemContent(
             return
         }
 
-        val conflicts = sourceFiles.map { it.targetPath() }.groupingBy { it }.eachCount()
-            .filter { it.value > 1 }.keys
-
         val undetectedFiles = sourceFiles.filter { it.status == FileContentStatus.UNDETECTED }
 
         // Key 是当前处理的路径, Value是认为存在的路径
@@ -34,6 +31,10 @@ data class CoreItemContent(
             val mapping = mutableMapOf<Path, Path?>()
             undetectedFiles.map { it.targetPath() }.zip(exists).forEach { (path, exist) ->
                 mapping[path] = if (exist) path else null
+            }
+
+            if (log.isDebugEnabled) {
+                log.debug("FileMover item:{}, exists: {}", sourceItem, mapping.filter { it.value != null })
             }
 
             if (fileExistsDetector !is SimpleFileExistsDetector) {
@@ -47,8 +48,11 @@ data class CoreItemContent(
         }
 
         if (log.isDebugEnabled) {
-            log.debug("item:{}, existsMapping: {}", sourceItem.title, existsMapping)
+            log.debug("Item:{}, existsMapping: {}", sourceItem.title, existsMapping)
         }
+
+        val conflicts = sourceFiles.map { it.targetPath() }.groupingBy { it }.eachCount()
+            .filter { it.value > 1 }.keys
         for (sourceFile in undetectedFiles) {
             // 校验顺序不可换
             if (sourceFile.errors.isNotEmpty()) {
@@ -83,7 +87,7 @@ data class CoreItemContent(
         if (updated.not()) {
             throw IllegalStateException("Please update file status first")
         }
-        return sourceFiles.filter { it.status != FileContentStatus.TARGET_EXISTS }
+        return sourceFiles.filter { it.status != FileContentStatus.TARGET_EXISTS && it.status != FileContentStatus.DOWNLOADED }
     }
 
     override fun summaryContent(): String {

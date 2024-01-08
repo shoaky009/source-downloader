@@ -34,6 +34,7 @@ data class CoreFileContent(
     /**
      * 只有在process中当[status] == [FileContentStatus.TARGET_EXISTS]时此值不为null
      */
+    @JsonSerialize(using = ToStringSerializer::class)
     override var existTargetPath: Path? = null
 ) : FileContent {
 

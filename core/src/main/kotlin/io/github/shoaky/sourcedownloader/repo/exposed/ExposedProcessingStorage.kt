@@ -256,7 +256,8 @@ class ExposedProcessingStorage : ProcessingStorage {
         }
     }
 
-    override fun deleteTargetPath(paths: List<Path>) {
+    override fun deleteTargetPath(paths: List<Path>, hashing: String) {
+        // TODO 只删除是该hashing下的paths，或强制删除
         transaction {
             TargetPaths.deleteWhere {
                 id inList paths.map { it.toString() }

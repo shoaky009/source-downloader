@@ -32,7 +32,7 @@ class SourceDownloaderApplication(
     private val processorManager: ProcessorManager,
     private val pluginManager: PluginManager,
     private val processorStorages: List<ProcessorConfigStorage>,
-    private val componentSupplier: List<ComponentSupplier<*>>
+    private val componentSupplier: List<ComponentSupplier<*>>,
 ) : InitializingBean {
 
     @EventListener(ApplicationReadyEvent::class)

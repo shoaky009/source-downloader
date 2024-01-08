@@ -1,8 +1,11 @@
 package io.github.shoaky.sourcedownloader.integration
 
+import io.github.shoaky.sourcedownloader.SourceDownloaderApplication
 import io.github.shoaky.sourcedownloader.component.source.FixedSource
+import io.github.shoaky.sourcedownloader.core.ProcessingContent
 import io.github.shoaky.sourcedownloader.core.ProcessingStorage
 import io.github.shoaky.sourcedownloader.core.ProcessorSourceState
+import io.github.shoaky.sourcedownloader.core.component.ComponentManager
 import io.github.shoaky.sourcedownloader.core.file.FileContentStatus
 import io.github.shoaky.sourcedownloader.core.processor.ProcessorManager
 import io.github.shoaky.sourcedownloader.createIfNotExists
@@ -28,6 +31,12 @@ class SourceProcessorTest : InitializingBean {
 
     @Autowired
     lateinit var processorManager: ProcessorManager
+
+    @Autowired
+    lateinit var componentManager: ComponentManager
+
+    @Autowired
+    lateinit var application: SourceDownloaderApplication
 
     @Test
     fun normal() {
@@ -242,6 +251,28 @@ class SourceProcessorTest : InitializingBean {
         assertEquals("test3.jpg", item3.targetFilename)
     }
 
+    @Test
+    fun download_error_case() {
+        val processorName = "DownloadErrorCase"
+        val testItemTitle = "test-dir"
+        val processor = processorManager.getProcessor(processorName).get()
+        val contents = processor.dryRun().associateBy { it.itemContent.sourceItem.title }
+        processor.run()
+        val sourceFiles = contents.getValue(testItemTitle).itemContent.sourceFiles
+        val targetPaths = sourceFiles.map { it.targetPath() }
+        val anyTargetPaths = processingStorage.targetPathExists(targetPaths).any { it }
+        val hasErrorItem = processingStorage.query(ProcessingQuery("DownloadErrorCase"))
+            .any { it.itemContent.sourceItem.title == testItemTitle }
+        assert(hasErrorItem.not())
+        assert(anyTargetPaths.not())
+
+        processor.run()
+        val testItem = processingStorage.query(ProcessingQuery("DownloadErrorCase"))
+            .first { it.itemContent.sourceItem.title == testItemTitle }
+
+        assertEquals(ProcessingContent.Status.RENAMED, testItem.status)
+    }
+
     // 待测试场景
     // processing_record中的status
     // saveContent option测试
@@ -266,6 +297,7 @@ class SourceProcessorTest : InitializingBean {
     }
 
     override fun afterPropertiesSet() {
-//        componentManager.registerSupplier()
+        // componentManager.registerSupplier(TestDirErrorDownloaderSupplier)
+        // application.createProcessors()
     }
 }
