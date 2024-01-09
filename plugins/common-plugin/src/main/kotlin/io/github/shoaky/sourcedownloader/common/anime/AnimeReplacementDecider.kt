@@ -13,8 +13,9 @@ object AnimeReplacementDecider : FileReplacementDecider {
 
     override fun isReplace(current: ItemContent, before: ItemContent?, existingFile: SourceFile): Boolean {
         val title = current.sourceItem.title
-        // 有水印的不要
-        if (isBilibili(title)) {
+        val isBilibili = isBilibili(title)
+        val hasVersion = hasVersion(current, before)
+        if (isBilibili && hasVersion.not()) {
             return false
         }
 
@@ -22,7 +23,10 @@ object AnimeReplacementDecider : FileReplacementDecider {
             return true
         }
 
-        return version(current, before)
+        if (before != null && isBilibili) {
+            return false
+        }
+        return hasVersion(current, before)
     }
 
     private fun replaceBilibili(before: ItemContent?): Boolean {
@@ -33,7 +37,7 @@ object AnimeReplacementDecider : FileReplacementDecider {
         return isBilibili(title)
     }
 
-    private fun version(current: ItemContent, before: ItemContent?): Boolean {
+    private fun hasVersion(current: ItemContent, before: ItemContent?): Boolean {
         // enhance, before version greater than current version don't replace
         val title = current.sourceItem.title
         return versionRegex.find(title)?.let { true } ?: false

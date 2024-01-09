@@ -29,4 +29,28 @@ class AnimeFileReplacerTest {
             content2, null, SourceFile(Path(""))
         ))
     }
+
+    @Test
+    fun given_bilibili_and_version() {
+        val content1 =
+            FixedItemContent(
+                sourceItem(title = "[ANi] 因为不是真正的伙伴而被逐出勇者队伍，流落到边境展开慢活人生 第二季（仅限港澳台地区） - 01 [1080P][Bilibili][WEB-DL][AAC AVC][CHT CHS][V2][MP4]"),
+                emptyList()
+            )
+        assertEquals(
+            true, AnimeReplacementDecider.isReplace(
+                content1, null, SourceFile(Path(""))
+            )
+        )
+
+        val notBillibili = FixedItemContent(
+            sourceItem(title = "[ANi] 因为不是真正的伙伴而被逐出勇者队伍，流落到边境展开慢活人生 第二季 - 01 [1080P][WEB-DL][AAC AVC][CHT CHS][MP4]"),
+            emptyList()
+        )
+        assertEquals(
+            false, AnimeReplacementDecider.isReplace(
+                content1, notBillibili, SourceFile(Path(""))
+            )
+        )
+    }
 }
