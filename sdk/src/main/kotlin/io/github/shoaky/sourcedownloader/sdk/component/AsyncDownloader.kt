@@ -29,7 +29,8 @@ interface TorrentDownloader : AsyncDownloader, FileMover {
         for (sourceFile in itemContent.sourceFiles) {
             val existTargetPath = sourceFile.existTargetPath ?: sourceFile.targetPath()
             if (existTargetPath.notExists()) {
-                log.warn("Replace file not exists $existTargetPath")
+                log.info("Replace file not exists $existTargetPath")
+                move(itemContent)
                 continue
             }
 
