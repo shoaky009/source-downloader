@@ -230,7 +230,7 @@ class SourceProcessor(
                     existingFile
                 )
                 if (replace) {
-                    cancelBeforeProcessing(before, fileContent, discardedItems)
+                    cancelSubmittedProcessing(before, fileContent, discardedItems)
                 }
                 fileContent to replace
             }.filter { it.second }
@@ -241,12 +241,19 @@ class SourceProcessor(
         return replaceFiles
     }
 
-    private fun cancelBeforeProcessing(
+    private fun cancelSubmittedProcessing(
         before: ProcessingContent?,
         existsFile: CoreFileContent,
         discardedItems: MutableMap<String, Boolean>
     ) {
+        log.info(
+            "Processor:'{}' cancel before processing, existsFile:{}, discardedItems:{}",
+            name,
+            existsFile,
+            discardedItems
+        )
         if (before == null || before.status != WAITING_TO_RENAME) {
+            log.info("Processor:'{}' before task is null or not waiting to rename, existsFile:{}", name, existsFile)
             return
         }
         val files = existsFile.let {
@@ -704,9 +711,6 @@ class SourceProcessor(
                             ).copy(status = FAILURE, failureReason = it.message)
                         }
 
-                        val targetPaths = processingContent.itemContent.downloadableFiles().map { it.targetPath() }
-                        secondaryFileMover.releasePreoccupiedTargetPath(targetPaths)
-
                         try {
                             context.touch(processingContent)
                             onItemCompleted(processingContent)
@@ -727,9 +731,9 @@ class SourceProcessor(
             runBlocking {
                 processJob.join()
             }
+            secondaryFileMover.releaseAll()
             if (processJob.isCancelled) {
                 log.info("Processor:'{}' process job cancelled", name)
-                // processorCoroutineScope.ensureActive()
             }
 
             stat.stopWatch.stop()

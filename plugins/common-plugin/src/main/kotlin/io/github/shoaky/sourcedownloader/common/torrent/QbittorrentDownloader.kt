@@ -92,7 +92,7 @@ class QbittorrentDownloader(
         val response = client.execute(
             TorrentDeleteRequest(listOf(torrentHash))
         )
-        log.info("cancel item:{} status:{} body:{}", sourceItem, response.statusCode(), response.body())
+        log.info("Cancel item:{} status:{} body:{}", sourceItem, response.statusCode(), response.body())
     }
 
     override fun isFinished(sourceItem: SourceItem): Boolean? {
