@@ -1,4 +1,4 @@
-package io.github.shoaky.sourcedownloader.support
+package io.github.shoaky.sourcedownloader.integration.support
 
 import io.github.shoaky.sourcedownloader.sdk.DownloadTask
 import io.github.shoaky.sourcedownloader.sdk.SourceFile

@@ -43,12 +43,12 @@ interface TorrentDownloader : AsyncDownloader, FileMover {
                 if (success) {
                     backupPath.deleteIfExists()
                 } else {
-                    log.error("Move file failed $targetPath, restore from backup file $backupPath")
+                    log.info("Move file failed $targetPath, restore from backup file $backupPath")
                     backupPath.moveTo(existTargetPath)
                 }
             } catch (e: Exception) {
                 if (existTargetPath.notExists()) {
-                    log.error("Move file failed $targetPath, restore from backup file $backupPath")
+                    log.info("Move file failed $targetPath, restore from backup file $backupPath")
                     backupPath.moveTo(existTargetPath)
                 }
                 throw e

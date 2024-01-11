@@ -108,6 +108,10 @@ components:
       type: "test-dir-error"
       props:
         download-path: "src/test/resources/downloads"
+    - name: "delay-item"
+      type: "delay-item"
+      props:
+        download-path: "src/test/resources/downloads"
   file-tagger:
     - name: "mapping-test1file"
       type: "mapped"
@@ -332,3 +336,14 @@ processors:
     downloader: "test-dir-error"
     file-mover: "general"
     save-path: "src/test/resources/target/DownloadErrorCase"
+  - name: "ReplaceFileCancelSubmittedItem"
+    source: "fixed:media-type-case"
+    item-file-resolver: "fixed:media-type-case"
+    downloader: "delay-item"
+    file-mover: "general"
+    save-path: "src/test/resources/target/ReplaceFileCancelSubmittedItem"
+    options:
+      filename-pattern: "1"
+      file-replacement-decider: "always"
+      file-exists-detector: "media-type"
+#      parallelism: 1

@@ -49,6 +49,12 @@ logging:
     reactor: debug
     io.github.shoaky: trace
     org.springframework.web: debug
+management:
+  endpoint:
+    configprops:
+      show-values: always
+    env:
+      show-values: always
 
 ---
 spring:
@@ -62,6 +68,10 @@ spring:
     show-sql: true
 source-downloader:
   data-location: src/test/resources
+
+logging:
+  level:
+    Exposed: debug
 
 springdoc:
   api-docs:
@@ -80,3 +90,12 @@ logging:
     rollingpolicy:
       max-history: 7
       max-file-size: 100MB
+---
+spring:
+  config:
+    activate:
+      on-profile:
+        - production
+logging:
+  level:
+    telegram4j.mtproto.MTProtoClient: warn

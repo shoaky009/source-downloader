@@ -5,10 +5,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.attribute.BasicFileAttributes
 import java.util.function.Predicate
-import kotlin.io.path.createDirectories
-import kotlin.io.path.exists
-import kotlin.io.path.notExists
-import kotlin.io.path.readAttributes
+import kotlin.io.path.*
 import kotlin.reflect.KClass
 import kotlin.reflect.full.allSuperclasses
 
@@ -157,7 +154,26 @@ interface FileMover : SdComponent {
     /**
      * @param itemContent the [ItemContent] to be replaced
      */
-    fun replace(itemContent: ItemContent): Boolean
+    fun replace(itemContent: ItemContent): Boolean {
+        var result = true
+        itemContent.sourceFiles.forEach {
+            // TODO existTargetPath标明是否实际存在的还是提前占用的
+            val existTargetPath = it.existTargetPath ?: throw IllegalStateException("existTargetPath is null")
+            val backupPath = existTargetPath.resolveSibling("${existTargetPath.name}.bak")
+            if (existTargetPath.exists()) {
+                existTargetPath.moveTo(backupPath)
+            }
+
+            try {
+                it.fileDownloadPath.moveTo(it.targetPath(), true)
+                backupPath.deleteIfExists()
+            } catch (e: Throwable) {
+                backupPath.moveTo(existTargetPath)
+                result = false
+            }
+        }
+        return result
+    }
 
     /**
      * @param path the path to be listed

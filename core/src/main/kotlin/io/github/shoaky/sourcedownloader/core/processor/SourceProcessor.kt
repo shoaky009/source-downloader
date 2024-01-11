@@ -90,13 +90,16 @@ class SourceProcessor(
     private val processorCoroutineScope = CoroutineScope(Dispatchers.Default)
 
     init {
-        scheduleRenameTask(options.renameTaskInterval)
+        scheduleRenameTask()
         if (options.parallelism != 1 && source !is AlwaysLatestSource) {
             /**
              * 因为是基于迭代器模式迭代，增加并行后Source组件的Pointer变得难以维护并且处理器State的存储存在并发问题暂时没有经过严格测试
              * AlwaysLatestSource因为是NullPointer，所以在并行处理上没有问题
              */
             log.warn("Processor:'$name' parallelism:${options.parallelism} > 1, but source is not AlwaysLatestSource, recommend to set parallelism to 1")
+        }
+        if (options.fileReplacementDecider !is NeverReplace) {
+            log.warn("Processor:'$name' fileReplacementDecider:${options.fileReplacementDecider} is not NeverReplace, may have unexpected results")
         }
         listenChannel()
     }
@@ -136,7 +139,7 @@ class SourceProcessor(
         itemChannel.send(ManualItemProcess(sourceItems))
     }
 
-    private fun scheduleRenameTask(interval: Duration) {
+    private fun scheduleRenameTask() {
         if (downloader !is AsyncDownloader) {
             return
         }
@@ -160,7 +163,7 @@ class SourceProcessor(
             if (modified.not() && measureTime.inWholeMilliseconds > renameCostTimeThreshold) {
                 log.warn("Processor:'$name' 重命名任务没有修改 took:${measureTime.inWholeMilliseconds}ms")
             }
-        }, 5L, interval.seconds, TimeUnit.SECONDS)
+        }, 30L, options.renameTaskInterval.seconds, TimeUnit.SECONDS)
     }
 
     fun info(): Map<String, Any> {
@@ -205,13 +208,13 @@ class SourceProcessor(
             existsContentFiles,
             processingStorage
         )
-
         val existTargets = existsContentFiles.mapNotNull { it.existTargetPath }
         val filesToCheck = fileMover.exists(existTargets).zip(existsContentFiles)
         val discardedItems = mutableMapOf<String, Boolean>()
         val replaceFiles = filesToCheck
             .map { (physicalExists, fileContent) ->
-                val existTargetPath = fileContent.existTargetPath!!
+                val existTargetPath =
+                    fileContent.existTargetPath ?: throw IllegalStateException("ExistTargetPath is null")
                 // 预防真实路径还不存在的情况，在(target_path_record)中提前占用的文件
                 val existingFile = if (physicalExists) {
                     existTargetPath.let {
@@ -230,6 +233,7 @@ class SourceProcessor(
                     existingFile
                 )
                 if (replace) {
+                    // 这里没有维护被替换Item的数据
                     cancelSubmittedProcessing(before, fileContent, discardedItems)
                 }
                 fileContent to replace
@@ -241,6 +245,8 @@ class SourceProcessor(
         return replaceFiles
     }
 
+    // 问题比较多
+    // 1.如果目标文件本身已经存在，但ProcessingContent是null
     private fun cancelSubmittedProcessing(
         before: ProcessingContent?,
         existsFile: CoreFileContent,
@@ -252,6 +258,9 @@ class SourceProcessor(
             existsFile,
             discardedItems
         )
+
+        // TODO 支持并行模式
+        // 虽然计算出已存在，但并行模式ProcessingContent可能还未入库，需要一个ProcessContext来获取冲突的ItemContent
         if (before == null || before.status != WAITING_TO_RENAME) {
             log.info("Processor:'{}' before task is null or not waiting to rename, existsFile:{}", name, existsFile)
             return

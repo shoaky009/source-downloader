@@ -16,12 +16,5 @@ object GeneralFileMover : FileMover {
             }
         return true
     }
-
-    override fun replace(itemContent: ItemContent): Boolean {
-        itemContent.sourceFiles.forEach {
-            it.fileDownloadPath.moveTo(it.targetPath(), true)
-        }
-        return true
-    }
 }
 

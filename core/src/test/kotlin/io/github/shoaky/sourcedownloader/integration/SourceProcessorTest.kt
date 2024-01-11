@@ -1,15 +1,20 @@
 package io.github.shoaky.sourcedownloader.integration
 
+import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import io.github.shoaky.sourcedownloader.SourceDownloaderApplication
 import io.github.shoaky.sourcedownloader.component.source.FixedSource
 import io.github.shoaky.sourcedownloader.core.ProcessingContent
 import io.github.shoaky.sourcedownloader.core.ProcessingStorage
 import io.github.shoaky.sourcedownloader.core.ProcessorSourceState
+import io.github.shoaky.sourcedownloader.core.component.ComponentId
 import io.github.shoaky.sourcedownloader.core.component.ComponentManager
+import io.github.shoaky.sourcedownloader.core.component.ComponentWrapper
 import io.github.shoaky.sourcedownloader.core.file.FileContentStatus
 import io.github.shoaky.sourcedownloader.core.processor.ProcessorManager
 import io.github.shoaky.sourcedownloader.createIfNotExists
+import io.github.shoaky.sourcedownloader.integration.support.DelayItemDownloader
 import io.github.shoaky.sourcedownloader.repo.ProcessingQuery
+import io.github.shoaky.sourcedownloader.sdk.component.ComponentTopType
 import io.github.shoaky.sourcedownloader.sdk.util.Jackson
 import io.github.shoaky.sourcedownloader.testResourcePath
 import org.junit.jupiter.api.AfterAll
@@ -219,7 +224,8 @@ class SourceProcessorTest : InitializingBean {
         assertEquals(2, op2.offset)
     }
 
-    @Test
+    // @Test
+    // 未实现
     fun record_minimized() {
         val processorName = "RecordMinimizedCase"
         val processor = processorManager.getProcessor(processorName).get()
@@ -233,8 +239,9 @@ class SourceProcessorTest : InitializingBean {
     fun media_type() {
         val processorName = "MediaTypeExistCase"
         val processor = processorManager.getProcessor(processorName).get()
-        val dryRun = processor.dryRun()
-        println(Jackson.toJsonString(dryRun))
+        val grouping = processor.dryRun().associateBy { it.itemContent.sourceItem.title }
+        assertEquals(ProcessingContent.Status.WAITING_TO_RENAME, grouping.getValue("test1").status)
+        assertEquals(ProcessingContent.Status.TARGET_ALREADY_EXISTS, grouping.getValue("test2").status)
     }
 
     @Test
@@ -273,8 +280,44 @@ class SourceProcessorTest : InitializingBean {
         assertEquals(ProcessingContent.Status.RENAMED, testItem.status)
     }
 
+    // @Test
+    fun replace_file_cancel_submitted_item() {
+        val processorName = "ReplaceFileCancelSubmittedItem"
+        val processor = processorManager.getProcessor(processorName).get()
+        processor.run()
+
+        val downloader = componentManager.getComponent(
+            ComponentTopType.DOWNLOADER,
+            ComponentId("delay-item"),
+            jacksonTypeRef<ComponentWrapper<DelayItemDownloader>>()
+        ).get()
+        println(downloader.getCanceled())
+
+        val contents = processingStorage.query(ProcessingQuery("ReplaceFileCancelSubmittedItem"))
+            .associateBy { it.itemContent.sourceItem.title }
+        println(Jackson.toJsonString(contents))
+        val test2 = contents.getValue("test2").itemContent.sourceFiles.first()
+        val test1 = contents.getValue("test1").itemContent.sourceFiles.first()
+        val selfPath = savePath.resolve(processorName)
+        when (test2.status) {
+            FileContentStatus.REPLACE -> {
+                assertEquals(FileContentStatus.NORMAL, test1.status)
+                assert(selfPath.resolve(Path("1.mkv")).exists())
+                assert(selfPath.resolve(Path("1.mp4")).notExists())
+            }
+
+            FileContentStatus.NORMAL -> {
+                assertEquals(FileContentStatus.REPLACE, test1.status)
+                assert(selfPath.resolve(Path("1.mp4")).exists())
+                assert(selfPath.resolve(Path("1.mkv")).notExists())
+            }
+
+            else -> throw RuntimeException("Should not entry here")
+        }
+
+    }
+
     // 待测试场景
-    // processing_record中的status
     // saveContent option测试
     // variableConflictStrategy option测试
     // variableNameReplace option测试

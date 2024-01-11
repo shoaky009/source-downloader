@@ -2,16 +2,16 @@ package io.github.shoaky.sourcedownloader.core.file
 
 import io.github.shoaky.sourcedownloader.core.ProcessingStorage
 import io.github.shoaky.sourcedownloader.sdk.component.FileMover
+import org.apache.commons.collections4.trie.PatriciaTrie
 import org.slf4j.LoggerFactory
 import java.nio.file.Path
-import java.util.*
 
 class IncludingTargetPathsFileMover(
     private val fileMover: FileMover,
     private val storage: ProcessingStorage,
 ) : FileMover by fileMover {
 
-    private val preoccupiedTargetPaths: MutableSet<Path> = Collections.synchronizedSet(mutableSetOf())
+    private val preoccupiedTargetPaths: PatriciaTrie<Path> = PatriciaTrie<Path>()
 
     override fun exists(paths: List<Path>): List<Boolean> {
         val exists = fileMover.exists(paths)
@@ -20,45 +20,43 @@ class IncludingTargetPathsFileMover(
         }
 
         val zip = exists.zip(storage.targetPathExists(paths)) { a, b -> a || b }
-        return paths.mapIndexed { index, path ->
-            // 如果不存在的需要再检查预占用的有没有
-            if (zip[index].not()) {
-                // 处理并行处理未预占用的重复下载的问题
-                preoccupiedTargetPaths.contains(path)
-            } else {
-                true
+        synchronized(preoccupiedTargetPaths) {
+            return paths.mapIndexed { index, path ->
+                // 如果不存在的需要再检查预占用的有没有
+                if (zip[index].not()) {
+                    // 处理并行处理未预占用的重复下载的问题
+                    preoccupiedTargetPaths.contains(path.toString())
+                } else {
+                    true
+                }
             }
         }
-
     }
 
     override fun listPath(path: Path): List<Path> {
+        val paths = preoccupiedTargetPaths.prefixMap(path.parent.toString()).values
         val listPath = fileMover.listPath(path)
-        return (listPath + storage.findSubPaths(path).map { it.targetPath }).distinct()
+        return (listPath + storage.findSubPaths(path).map { it.targetPath } + paths).distinct()
     }
 
     fun preoccupiedTargetPath(paths: Collection<Path>) {
         log.debug("PreoccupiedTargetPath: {}", paths)
-        preoccupiedTargetPaths.addAll(paths)
+        synchronized(preoccupiedTargetPaths) {
+            preoccupiedTargetPaths.putAll(
+                paths.map { it.toString() to it }
+            )
+        }
+
         if (log.isDebugEnabled) {
             log.debug("Preoccupied target path, current preoccupied target paths: {}", preoccupiedTargetPaths)
         }
     }
 
-    fun releasePreoccupiedTargetPath(paths: Collection<Path>) {
-        log.debug("ReleasePreoccupiedTargetPath: {}", paths)
-        preoccupiedTargetPaths.removeAll(paths.toSet())
-        if (log.isDebugEnabled) {
-            log.debug("Release preoccupied target path, current preoccupied target paths: {}", preoccupiedTargetPaths)
-        }
-    }
-
+    @Synchronized
     fun releaseAll() {
-        preoccupiedTargetPaths.clear()
-    }
-
-    fun currentOccupiedTargetPaths(): Set<Path> {
-        return preoccupiedTargetPaths.toSet()
+        synchronized(preoccupiedTargetPaths) {
+            preoccupiedTargetPaths.clear()
+        }
     }
 
     companion object {
