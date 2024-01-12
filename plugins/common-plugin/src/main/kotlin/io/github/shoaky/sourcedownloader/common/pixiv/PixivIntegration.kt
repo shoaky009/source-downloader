@@ -214,7 +214,7 @@ private fun createSourceItem(illustration: Illustration): SourceItem {
             "userId" to illustration.userId,
             "username" to illustration.userName,
             "illustrationId" to illustration.id,
-            "r18" to (illustration.xRestrict == 1),
+            "nsfw" to (illustration.xRestrict == 1),
             "illustrationType" to illustration.illustType
         ),
         illustration.tags.toSet(),

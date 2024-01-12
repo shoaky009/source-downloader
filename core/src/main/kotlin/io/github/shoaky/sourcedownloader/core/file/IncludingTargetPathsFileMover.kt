@@ -11,6 +11,7 @@ class IncludingTargetPathsFileMover(
     private val storage: ProcessingStorage,
 ) : FileMover by fileMover {
 
+    // 单批次如果有太多的文件处理又慢的，可能会导致内存占用过高
     private val preoccupiedTargetPaths: PatriciaTrie<Path> = PatriciaTrie<Path>()
 
     override fun exists(paths: List<Path>): List<Boolean> {

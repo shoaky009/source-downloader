@@ -906,7 +906,9 @@ class SourceProcessor(
                     "Processor:'{}' has warning status, item:{} files:{}",
                     name,
                     processingContent.itemContent.sourceItem,
-                    warningFiles
+                    warningFiles.map {
+                        it.targetPath() to it.status
+                    }
                 )
             }
         }
