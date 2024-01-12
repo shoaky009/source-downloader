@@ -22,7 +22,7 @@ object CelCompiledExpressionFactory : CompiledExpressionFactory {
             .withDeclarations(*defs)
             .withLibraries(CelLibrary())
             .build()
-            .let { CelCompiledExpression(it, resultType) }
+            .let { CelCompiledExpression(it, resultType, raw) }
     }
 
 }

@@ -5,7 +5,8 @@ import org.slf4j.LoggerFactory
 
 class CelCompiledExpression<T>(
     private val script: Script,
-    private val resultType: Class<T>
+    private val resultType: Class<T>,
+    private val rawString: String,
 ) : CompiledExpression<T> {
 
     var optional: Boolean = false
@@ -24,7 +25,7 @@ class CelCompiledExpression<T>(
     }
 
     override fun raw(): String {
-        return script.toString()
+        return rawString
     }
 
     override fun optional(): Boolean {
