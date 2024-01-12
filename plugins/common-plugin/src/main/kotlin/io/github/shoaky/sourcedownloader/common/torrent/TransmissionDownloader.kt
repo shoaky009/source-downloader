@@ -16,6 +16,10 @@ class TransmissionDownloader(
     private val client: TransmissionClient,
 ) : TorrentDownloader {
 
+    override fun getPaths(torrentHash: String): List<Path> {
+        TODO("Not yet implemented")
+    }
+
     override fun isFinished(sourceItem: SourceItem): Boolean? {
         val hash = getTorrentHash(sourceItem)
         val response = client.execute(

@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import java.io.IOException
 import java.nio.file.Path
+import kotlin.io.path.extension
 
 /**
  * qBittorrent下载器，支持保种和只下载需要的文件
@@ -55,7 +56,6 @@ class QbittorrentDownloader(
         }, condition = { it.statusCode() == HttpStatus.OK.value() })
 
         if (fileResponse.statusCode() != HttpStatus.OK.value()) {
-            // log.warn("Qbittorrent get files failed most likely because getting torrent metadata is slow, code:${fileResponse.statusCode()} body:${fileResponse.body()}")
             throw IOException("Qbittorrent get files failed most likely because getting torrent metadata is slow, code:${fileResponse.statusCode()} body:${fileResponse.body()}")
         }
 
@@ -93,6 +93,25 @@ class QbittorrentDownloader(
             TorrentDeleteRequest(listOf(torrentHash))
         )
         log.info("Cancel item:{} status:{} body:{}", sourceItem, response.statusCode(), response.body())
+    }
+
+    override fun getPaths(torrentHash: String): List<Path> {
+        val torrentInfo =
+            client.execute(TorrentInfoRequest(hashes = torrentHash)).body().firstOrNull() ?: return emptyList()
+        val extension = torrentInfo.contentPath.extension
+        // 只有一个文件的torrent
+        if (extension.isNotBlank()) {
+            return listOf(torrentInfo.contentPath)
+        }
+
+        return client.execute(
+            TorrentFilesRequest(
+                torrentHash
+            )
+        ).body().parseJson(jacksonTypeRef<List<TorrentFile>>())
+            .map {
+                torrentInfo.contentPath.resolve(it.name)
+            }
     }
 
     override fun isFinished(sourceItem: SourceItem): Boolean? {

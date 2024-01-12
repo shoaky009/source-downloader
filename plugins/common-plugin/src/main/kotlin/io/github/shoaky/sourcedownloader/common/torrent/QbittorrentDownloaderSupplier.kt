@@ -18,8 +18,6 @@ class QbittorrentDownloaderSupplier(
         val parse = props.parse<QbittorrentConfig>()
         val name = "qbittorrentClient:${parse.username}"
         val client = instanceManager.loadInstance(name, QbittorrentClient::class.java, props)
-
-        // val client = instanceManager.load(clientName, QbittorrentClient::class.java)
         return QbittorrentDownloader(client, props.getOrDefault("always-download-all", false))
     }
 

@@ -15,6 +15,7 @@ import java.net.http.HttpResponse
 import java.time.LocalDateTime
 import java.util.*
 import javax.net.ssl.SSLSession
+import kotlin.io.path.Path
 
 class QbittorrentDownloaderTest {
 
@@ -29,7 +30,7 @@ class QbittorrentDownloaderTest {
                 it.hashes == torrentHash
             }
         )).thenReturn(
-            R(listOf(TorrentInfo(0, torrentHash, 305807162L, 1.0f)))
+            R(listOf(TorrentInfo(0, torrentHash, 305807162L, 1.0f, Path(""))))
         )
 
         val sourceItem = SourceItem(
@@ -50,7 +51,7 @@ class QbittorrentDownloaderTest {
                 it.hashes == torrentHash
             }
         )).thenReturn(
-            R(listOf(TorrentInfo(0, torrentHash, 305807162L, 0.95f)))
+            R(listOf(TorrentInfo(0, torrentHash, 305807162L, 0.95f, Path(""))))
         )
 
         val sourceItem = SourceItem(
@@ -66,6 +67,7 @@ class QbittorrentDownloaderTest {
 }
 
 class R<T>(private val body: T) : HttpResponse<T> {
+
     override fun statusCode(): Int {
         return 200
     }

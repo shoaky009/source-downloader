@@ -3,6 +3,7 @@ package io.github.shoaky.sourcedownloader.sdk.component
 import io.github.shoaky.sourcedownloader.sdk.ItemContent
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import org.slf4j.LoggerFactory
+import java.nio.file.Path
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.moveTo
 import kotlin.io.path.name
@@ -26,11 +27,26 @@ interface TorrentDownloader : AsyncDownloader, FileMover {
      * 容器化时需要和下载器的路径对齐，否则会出现文件找不到的问题
      */
     override fun replace(itemContent: ItemContent): Boolean {
+        val torrentHash = lazy {
+            tryParseTorrentHash(itemContent.sourceItem)?.let {
+                getPaths(it)
+            } ?: emptyList()
+        }
+
         for (sourceFile in itemContent.sourceFiles) {
             val existTargetPath = sourceFile.existTargetPath ?: sourceFile.targetPath()
             if (existTargetPath.notExists()) {
                 log.info("Replace file not exists $existTargetPath")
                 move(itemContent)
+                continue
+            }
+
+            val torrentFiles = torrentHash.value
+            if (torrentFiles.isNotEmpty()) {
+                val exists = torrentFiles.contains(sourceFile.targetPath())
+                if (exists) {
+                    log.info("Torrent file is same as target file $existTargetPath, skip")
+                }
                 continue
             }
 
@@ -56,6 +72,8 @@ interface TorrentDownloader : AsyncDownloader, FileMover {
         }
         return true
     }
+
+    fun getPaths(torrentHash: String): List<Path>
 
     companion object {
 

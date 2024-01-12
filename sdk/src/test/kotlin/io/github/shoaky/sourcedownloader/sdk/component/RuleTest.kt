@@ -70,6 +70,10 @@ object TestDownloader : Downloader {
 
 object TestTorrentDownloader : TorrentDownloader {
 
+    override fun getPaths(torrentHash: String): List<Path> {
+        return emptyList()
+    }
+
     override fun isFinished(sourceItem: SourceItem): Boolean {
         return true
     }

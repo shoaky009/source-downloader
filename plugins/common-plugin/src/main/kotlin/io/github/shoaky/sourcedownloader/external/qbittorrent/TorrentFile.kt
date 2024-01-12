@@ -6,7 +6,7 @@ data class TorrentFile(
     val index: Int,
     val name: Path,
     val progress: Float,
-    val size: Int,
+    val size: Long,
     /**
      * 0	Do not download
      * 1	Normal priority
