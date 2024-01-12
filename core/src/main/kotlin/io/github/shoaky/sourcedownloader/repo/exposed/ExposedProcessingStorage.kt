@@ -9,6 +9,7 @@ import io.github.shoaky.sourcedownloader.repo.ProcessingQuery
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
+import org.jetbrains.exposed.sql.json.extract
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.springframework.stereotype.Component
 import java.nio.file.Path
@@ -288,6 +289,42 @@ class ExposedProcessingStorage : ProcessingStorage {
                 }
         }
     }
+
+    override fun queryContents(query: ProcessingQuery, limit: Int, maxId: Long): List<ProcessingContent> {
+        return transaction {
+            val builder = Processings.selectAll()
+            if (query.id != null) builder.andWhere { Processings.id inList query.id }
+            if (query.processorName != null) builder.andWhere { Processings.processorName eq query.processorName }
+            if (query.status != null) builder.andWhere { Processings.status inList query.status }
+            if (query.itemHash != null) builder.andWhere { Processings.itemHash eq query.itemHash }
+            if (query.itemTitle != null) {
+                builder.andWhere { Processings.itemContent.extract<String>(".sourceItem.title") glob "*${query.itemTitle}*" }
+            }
+            if (query.createTime.begin != null) builder.andWhere { Processings.createTime greaterEq query.createTime.begin }
+            if (query.createTime.end != null) builder.andWhere { Processings.createTime lessEq query.createTime.end }
+            if (maxId > 0) builder.andWhere { Processings.id less maxId }
+
+            if (builder.where == null) {
+                builder.orderBy(Processings.id, SortOrder.DESC)
+            } else {
+                builder.orderBy(Processings.createTime, SortOrder.DESC)
+            }
+                .limit(limit)
+                .map {
+                    ProcessingContent(
+                        id = it[Processings.id].value,
+                        processorName = it[Processings.processorName],
+                        itemHash = it[Processings.itemHash],
+                        itemContent = it[Processings.itemContent],
+                        renameTimes = it[Processings.renameTimes],
+                        status = it[Processings.status],
+                        failureReason = it[Processings.failureReason],
+                        modifyTime = it[Processings.modifyTime],
+                        createTime = it[Processings.createTime]
+                    )
+                }
+        }
+    }
 }
 
 class GlobOp(
@@ -302,4 +339,10 @@ class GlobOp(
 
 infix fun <S1> Expression<in S1>.glob(pattern: String): Op<Boolean> {
     return GlobOp(this, pattern)
+}
+
+fun Query.andWhere(andPart: SqlExpressionBuilder.() -> Op<Boolean>) = adjustWhere {
+    val expr = Op.build { andPart() }
+    if (this == null) expr
+    else this and expr
 }

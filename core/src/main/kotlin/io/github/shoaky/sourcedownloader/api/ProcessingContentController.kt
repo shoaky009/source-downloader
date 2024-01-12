@@ -3,9 +3,7 @@ package io.github.shoaky.sourcedownloader.api
 import io.github.shoaky.sourcedownloader.core.ProcessingContent
 import io.github.shoaky.sourcedownloader.core.ProcessingStorage
 import io.github.shoaky.sourcedownloader.core.processor.ProcessorManager
-import org.springframework.data.domain.Pageable
-import org.springframework.data.domain.Sort
-import org.springframework.data.web.PageableDefault
+import io.github.shoaky.sourcedownloader.repo.ProcessingQuery
 import org.springframework.web.bind.annotation.*
 import java.time.LocalDateTime
 
@@ -17,18 +15,27 @@ private class ProcessingContentController(
 ) {
 
     @GetMapping("/{id}")
-    fun findProcessingContent(@PathVariable id: Long): ProcessingContent? {
+    fun getProcessingContent(@PathVariable id: Long): ProcessingContent {
         return storage.findById(id)
     }
 
     @GetMapping
-    fun findProcessingContents(
-        query: Query,
-        @PageableDefault(sort = ["id"], direction = Sort.Direction.DESC)
-        page: Pageable
-    ): List<ProcessingContent> {
-        // TODO
-        return emptyList()
+    fun queryContents(
+        query: ProcessingQuery,
+        limit: Int = 20,
+        maxId: Long = 0
+    ): Scroll {
+        if (query.itemTitle != null && query.processorName == null) {
+            throw IllegalArgumentException("itemTitle must be used with processorName")
+        }
+        if ((query.createTime.begin != null || query.createTime.end != null) && query.processorName == null) {
+            throw IllegalArgumentException("range must be used with processorName")
+        }
+        val contents = storage.queryContents(query, limit, maxId)
+        return Scroll(
+            contents,
+            contents.lastOrNull()?.id ?: maxId
+        )
     }
 
     @PutMapping("/{id}")
@@ -57,9 +64,7 @@ private class ProcessingContentController(
     }
 }
 
-data class Query(
-    var ids: List<Long> = emptyList(),
-    var processorName: String? = null,
-    var createdStart: LocalDateTime? = null,
-    var createdEnd: LocalDateTime? = null,
+data class Scroll(
+    val contents: List<ProcessingContent>,
+    val nextMaxId: Long
 )

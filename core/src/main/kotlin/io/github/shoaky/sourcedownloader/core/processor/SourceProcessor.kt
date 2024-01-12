@@ -245,8 +245,6 @@ class SourceProcessor(
         return replaceFiles
     }
 
-    // 问题比较多
-    // 1.如果目标文件本身已经存在，但ProcessingContent是null
     private fun cancelSubmittedProcessing(
         before: ProcessingContent?,
         existsFile: CoreFileContent,
@@ -259,8 +257,7 @@ class SourceProcessor(
             discardedItems
         )
 
-        // TODO 支持并行模式
-        // 虽然计算出已存在，但并行模式ProcessingContent可能还未入库，需要一个ProcessContext来获取冲突的ItemContent
+        // TODO 虽然计算出已存在，但并行模式ProcessingContent可能还未入库，需要一个ProcessContext来获取冲突的ItemContent
         if (before == null || before.status != WAITING_TO_RENAME) {
             log.info("Processor:'{}' before task is null or not waiting to rename, existsFile:{}", name, existsFile)
             return

@@ -1,3 +1,6 @@
+server:
+  http2:
+    enabled: true
 spring:
   application:
     name: source-downloader
