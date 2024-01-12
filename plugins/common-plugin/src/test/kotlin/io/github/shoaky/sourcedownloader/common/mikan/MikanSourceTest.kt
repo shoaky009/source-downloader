@@ -28,7 +28,7 @@ class MikanSourceTest {
     )
 
     @Test
-    fun given_max_datetime_should_empty() {
+    fun given_max_datetime_should_return_origin() {
         val rssReader = Mockito.mock(RssReader::class.java)
         val source = MikanSource("", true, rssReader = rssReader)
         Mockito.`when`(rssReader.read(Mockito.anyString()))
@@ -37,7 +37,7 @@ class MikanSourceTest {
         val list = source.fetch(MikanPointer(
             LocalDateTime.MAX
         )).toList()
-        assert(list.isEmpty())
+        assertEquals(topItemData.size, list.size)
     }
 
     @Test

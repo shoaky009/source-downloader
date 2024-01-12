@@ -47,6 +47,13 @@ class MikanSource(
             .filter { it.date.isAfter(pointer.latest) }
             .sortedBy { it.date }
 
+        // 解决新番更新和添加顺序不一致的问题
+        if (items.isEmpty()) {
+            return sourceItems.map {
+                PointedItem(it, NullPointer)
+            }.toList()
+        }
+
         return ExpandIterator<SourceItem, PointedItem<ItemPointer>>(
             items, limit,
         ) { item ->
