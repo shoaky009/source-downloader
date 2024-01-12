@@ -170,7 +170,7 @@ class SourceProcessorTest : InitializingBean {
         processor.run()
         processor.runRename()
         val contents = processingStorage.query(ProcessingQuery(processorName))
-            .associateBy { it.sourceHash }
+            .associateBy { it.itemHash }
         println(Jackson.toJsonString(contents))
         // 如果实现了对被替换文件的状态更新，这里需要断言REPLACED
         assertEquals(
@@ -190,7 +190,7 @@ class SourceProcessorTest : InitializingBean {
 
         processor.run()
         val contents = processingStorage.query(ProcessingQuery(processorName))
-            .associateBy { it.sourceHash }
+            .associateBy { it.itemHash }
         println(Jackson.toJsonString(contents))
         // 如果实现了对被替换文件的状态更新，这里需要断言REPLACED
         assertEquals(

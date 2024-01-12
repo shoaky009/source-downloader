@@ -23,7 +23,7 @@ interface ProcessingStorage {
 
     fun targetPathExists(paths: List<Path>, excludedItemHashing: String? = null): List<Boolean>
 
-    fun findById(id: Long): ProcessingContent?
+    fun findById(id: Long): ProcessingContent
 
     fun findProcessorSourceState(processorName: String, sourceId: String): ProcessorSourceState?
 

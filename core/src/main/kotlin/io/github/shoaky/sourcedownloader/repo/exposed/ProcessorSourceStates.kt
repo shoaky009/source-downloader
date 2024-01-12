@@ -17,7 +17,7 @@ object ProcessorSourceStates : LongIdTable("processor_source_state_record") {
     val lastActiveTime = datetime("last_active_time").default(LocalDateTime.now())
 
     init {
-        uniqueIndex("uidx_sourceitemhashing_processorname", processorName, sourceId)
+        uniqueIndex("uidx_processorname_sourceid", processorName, sourceId)
     }
 }
 

@@ -21,7 +21,7 @@ class TargetPathRelationSupport(
     private val contents = processingStorage.findByItemHashing(
         targetPaths.mapNotNull { it.itemHashing }.distinct()
     ).filter { it.status == ProcessingContent.Status.RENAMED }
-        .groupBy { it.sourceHash }
+        .groupBy { it.itemHash }
         .mapValues { ent -> ent.value.maxBy { it.createTime } }
 
     private val targetPathMapping = targetPaths.filter { it.itemHashing != null }

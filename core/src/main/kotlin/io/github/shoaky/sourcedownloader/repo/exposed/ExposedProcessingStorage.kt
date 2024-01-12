@@ -1,5 +1,6 @@
 package io.github.shoaky.sourcedownloader.repo.exposed
 
+import io.github.shoaky.sourcedownloader.api.NotFoundException
 import io.github.shoaky.sourcedownloader.core.ProcessingContent
 import io.github.shoaky.sourcedownloader.core.ProcessingStorage
 import io.github.shoaky.sourcedownloader.core.ProcessorSourceState
@@ -24,7 +25,7 @@ class ExposedProcessingStorage : ProcessingStorage {
             if (content.id != null) {
                 Processings.update({ Processings.id eq content.id }) {
                     it[processorName] = content.processorName
-                    it[sourceItemHashing] = content.sourceHash
+                    it[itemHash] = content.itemHash
                     it[itemContent] = content.itemContent
                     it[renameTimes] = content.renameTimes
                     it[status] = content.status
@@ -35,7 +36,7 @@ class ExposedProcessingStorage : ProcessingStorage {
             } else {
                 val id = Processings.insertAndGetId {
                     it[processorName] = content.processorName
-                    it[sourceItemHashing] = content.sourceHash
+                    it[itemHash] = content.itemHash
                     it[itemContent] = content.itemContent
                     it[renameTimes] = content.renameTimes
                     it[status] = content.status
@@ -106,7 +107,7 @@ class ExposedProcessingStorage : ProcessingStorage {
                 ProcessingContent(
                     id = it.id.value,
                     processorName = it.processorName,
-                    sourceHash = it.sourceItemHashing,
+                    itemHash = it.itemHash,
                     itemContent = it.itemContent,
                     renameTimes = it.renameTimes,
                     status = it.status,
@@ -127,12 +128,12 @@ class ExposedProcessingStorage : ProcessingStorage {
     override fun findByNameAndHash(processorName: String, itemHashing: String): ProcessingContent? {
         return transaction {
             Processing.find {
-                Processings.processorName eq processorName and (Processings.sourceItemHashing eq itemHashing)
+                Processings.processorName eq processorName and (Processings.itemHash eq itemHashing)
             }.firstOrNull()?.let {
                 ProcessingContent(
                     id = it.id.value,
                     processorName = it.processorName,
-                    sourceHash = it.sourceItemHashing,
+                    itemHash = it.itemHash,
                     itemContent = it.itemContent,
                     renameTimes = it.renameTimes,
                     status = it.status,
@@ -150,12 +151,12 @@ class ExposedProcessingStorage : ProcessingStorage {
         }
         return transaction {
             Processing.find {
-                Processings.sourceItemHashing inList itemHashing
+                Processings.itemHash inList itemHashing
             }.map {
                 ProcessingContent(
                     id = it.id.value,
                     processorName = it.processorName,
-                    sourceHash = it.sourceItemHashing,
+                    itemHash = it.itemHash,
                     itemContent = it.itemContent,
                     renameTimes = it.renameTimes,
                     status = it.status,
@@ -190,13 +191,13 @@ class ExposedProcessingStorage : ProcessingStorage {
         }
     }
 
-    override fun findById(id: Long): ProcessingContent? {
+    override fun findById(id: Long): ProcessingContent {
         return transaction {
             Processing.findById(id)?.let {
                 ProcessingContent(
                     id = it.id.value,
                     processorName = it.processorName,
-                    sourceHash = it.sourceItemHashing,
+                    itemHash = it.itemHash,
                     itemContent = it.itemContent,
                     renameTimes = it.renameTimes,
                     status = it.status,
@@ -204,7 +205,9 @@ class ExposedProcessingStorage : ProcessingStorage {
                     modifyTime = it.modifyTime,
                     createTime = it.createTime
                 )
-            }
+            } ?: throw NotFoundException(
+                "ProcessingContent with id $id not found"
+            )
         }
     }
 
@@ -274,7 +277,7 @@ class ExposedProcessingStorage : ProcessingStorage {
                     ProcessingContent(
                         id = it[Processings.id].value,
                         processorName = it[Processings.processorName],
-                        sourceHash = it[Processings.sourceItemHashing],
+                        itemHash = it[Processings.itemHash],
                         itemContent = it[Processings.itemContent],
                         renameTimes = it[Processings.renameTimes],
                         status = it[Processings.status],

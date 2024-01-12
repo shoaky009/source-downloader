@@ -33,9 +33,7 @@ private class ProcessingContentController(
 
     @PutMapping("/{id}")
     fun modifyProcessingContent(@PathVariable id: Long, @RequestBody body: ProcessingContent): ProcessingContent {
-        val current = storage.findById(id) ?: throw NotFoundException(
-            "ProcessingContent with id $id not found"
-        )
+        val current = storage.findById(id)
         return storage.save(
             current.copy(
                 // 这个待定，有些字段不允许修改
@@ -51,9 +49,9 @@ private class ProcessingContentController(
         storage.deleteProcessingContent(id)
     }
 
-    @GetMapping("/{id}/reprocess")
+    @PostMapping("/{id}/reprocess")
     suspend fun reprocess(@PathVariable id: Long) {
-        val content = storage.findById(id) ?: throw NotFoundException("ProcessingContent with id $id not found")
+        val content = storage.findById(id)
         val processor = processorManager.getProcessor(content.processorName).get()
         processor.reprocess(content)
     }

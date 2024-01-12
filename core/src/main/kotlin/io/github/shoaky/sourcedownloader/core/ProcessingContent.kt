@@ -9,7 +9,7 @@ import java.time.LocalDateTime
 data class ProcessingContent(
     var id: Long? = null,
     val processorName: String,
-    val sourceHash: String,
+    val itemHash: String,
     val itemContent: CoreItemContent,
     val renameTimes: Int = 0,
     val status: Status = Status.WAITING_TO_RENAME,
@@ -20,7 +20,7 @@ data class ProcessingContent(
 
     constructor(processorName: String, itemContent: CoreItemContent) : this(
         processorName = processorName,
-        sourceHash = itemContent.sourceItem.hashing(),
+        itemHash = itemContent.sourceItem.hashing(),
         itemContent = itemContent
     )
 

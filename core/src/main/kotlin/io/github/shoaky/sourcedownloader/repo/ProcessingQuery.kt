@@ -8,7 +8,7 @@ import org.jetbrains.exposed.sql.andWhere
 
 class ProcessingQuery(
     val processorName: String? = null,
-    val sourceItemHashing: String? = null,
+    val itemHash: String? = null,
     val status: Int? = null,
 ) {
 
@@ -16,8 +16,8 @@ class ProcessingQuery(
         processorName?.apply {
             query.andWhere { Processings.processorName eq processorName }
         }
-        sourceItemHashing?.apply {
-            query.andWhere { Processings.sourceItemHashing eq sourceItemHashing }
+        itemHash?.apply {
+            query.andWhere { Processings.itemHash eq itemHash }
         }
         status?.apply {
             val fromValue = ProcessingContent.Status::class.fromValue(status)

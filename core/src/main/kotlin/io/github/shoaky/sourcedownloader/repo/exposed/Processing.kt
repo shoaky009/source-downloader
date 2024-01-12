@@ -11,7 +11,7 @@ import org.jetbrains.exposed.sql.javatime.datetime
 object Processings : LongIdTable("processing_record") {
 
     val processorName = varchar("processor_name", 64)
-    val sourceItemHashing = varchar("source_item_hashing", 64)
+    val itemHash = varchar("item_hash", 64)
     val itemContent = json<CoreItemContent>("item_content")
     val renameTimes = integer("rename_times").default(0)
     val status = enum<Status, Int>("status")
@@ -20,7 +20,7 @@ object Processings : LongIdTable("processing_record") {
     val createTime = datetime("create_time")
 
     init {
-        uniqueIndex("uidx_processorname_sourceid", sourceItemHashing, processorName)
+        uniqueIndex("uidx_processorname_sourceid", itemHash, processorName)
     }
 }
 
@@ -28,7 +28,7 @@ class Processing(id: EntityID<Long>) : LongEntity(id) {
     companion object : LongEntityClass<Processing>(Processings)
 
     var processorName by Processings.processorName
-    var sourceItemHashing by Processings.sourceItemHashing
+    var itemHash by Processings.itemHash
     var itemContent by Processings.itemContent
     var renameTimes by Processings.renameTimes
     var status by Processings.status
