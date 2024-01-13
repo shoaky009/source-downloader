@@ -38,14 +38,9 @@ private class ComponentController(
             }
     }
 
-    @PostMapping("/{type}/{typeName}/{name}")
+    @PostMapping("/{type}")
     @ResponseStatus(HttpStatus.CREATED)
-    fun createComponent(
-        @PathVariable type: ComponentTopType,
-        @PathVariable typeName: String,
-        @PathVariable name: String,
-        @RequestBody config: ComponentConfig
-    ) {
+    fun createComponent(@PathVariable type: ComponentTopType, @RequestBody config: ComponentConfig) {
         configOperator.save(
             type.lowerHyphenName(),
             config

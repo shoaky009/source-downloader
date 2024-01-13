@@ -41,7 +41,7 @@ class ComponentControllerTest {
     @Test
     fun create_component() {
         mockMvc.perform(
-            post("/api/component/source/system-file/api-create")
+            post("/api/component/source")
                 .content(
                     """{"name":"api-create","type":"system-file","props":{"path":"src/test/resources/sources"}}"""
                 ).contentType(MediaType.APPLICATION_JSON)
