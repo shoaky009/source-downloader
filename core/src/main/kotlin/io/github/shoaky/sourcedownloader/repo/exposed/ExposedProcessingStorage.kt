@@ -260,11 +260,23 @@ class ExposedProcessingStorage : ProcessingStorage {
         }
     }
 
-    override fun deleteTargetPath(paths: List<Path>, hashing: String) {
+    override fun deleteTargetPaths(paths: List<String>, hashing: String?) {
         // TODO 只删除是该hashing下的paths，或强制删除
-        transaction {
-            TargetPaths.deleteWhere {
-                id inList paths.map { it.toString() }
+        val (pathPrefixes, ids) = paths.partition { it.endsWith("*") }
+        if (ids.isNotEmpty()) {
+            transaction {
+                TargetPaths.deleteWhere {
+                    id inList ids
+                }
+            }
+        }
+        if (pathPrefixes.isNotEmpty()) {
+            transaction {
+                pathPrefixes.forEach { prefix ->
+                    TargetPaths.deleteWhere {
+                        id glob prefix
+                    }
+                }
             }
         }
     }

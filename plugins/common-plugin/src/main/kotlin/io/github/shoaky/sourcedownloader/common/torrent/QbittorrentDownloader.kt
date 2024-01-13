@@ -118,7 +118,7 @@ class QbittorrentDownloader(
         val torrentHash = getTorrentHash(sourceItem)
         val torrent = client.execute(TorrentInfoRequest(hashes = torrentHash))
         val torrents = torrent.body()
-        return torrents.map { it.progress >= 0.99f }.firstOrNull()
+        return torrents.map { it.progress >= 1.0f }.firstOrNull()
     }
 
     override fun move(itemContent: ItemContent): Boolean {

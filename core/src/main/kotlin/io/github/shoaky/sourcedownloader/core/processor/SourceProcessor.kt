@@ -404,9 +404,9 @@ class SourceProcessor(
                         modifyTime = LocalDateTime.now(),
                     )
                 )
-                val targetPaths = pc.itemContent.sourceFiles.map { it.targetPath() }
+                val targetPaths = pc.itemContent.sourceFiles.map { it.targetPath().toString() }
                 val hashing = pc.itemContent.sourceItem.hashing()
-                processingStorage.deleteTargetPath(targetPaths, hashing)
+                processingStorage.deleteTargetPaths(targetPaths, hashing)
             }.onFailure {
                 log.error("Processing更新状态出错, record:${Jackson.toJsonString(pc)}", it)
             }
