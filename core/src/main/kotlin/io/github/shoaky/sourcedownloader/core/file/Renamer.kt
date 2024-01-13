@@ -166,11 +166,11 @@ class Renamer(
                 sourceItem.datetime.year.toString().replaceVariable("item.year"),
                 sourceItem.datetime.monthValue.toString().replaceVariable("item.month"),
                 sourceItem.contentType.replaceVariable("item.contentType"),
-                sourceItem.attrs.replaceVariables()
+                sourceItem.attrs.mapValues { it.value.toString() }.replaceVariables()
             )
             map["file"] = SourceFileRenameVariables(
                 file.fileDownloadPath.nameWithoutExtension.replaceVariable("file.name"),
-                file.sourceFile.attrs.replaceVariables(),
+                file.sourceFile.attrs.mapValues { it.value.toString() }.replaceVariables(),
                 file.getPathOriginalLayout().joinToString("/") { it.replaceVariable("file.originalLayout") }
             )
 
@@ -192,33 +192,29 @@ class Renamer(
             return text
         }
 
-        private fun Map<String, Any>.replaceVariables(): Map<String, Any> {
+        private fun Map<String, String>.replaceVariables(): Map<String, String> {
             return this.mapValues { entry ->
                 val value = entry.value
-                if (value is String) {
-                    value.replaceVariable(entry.key)
-                } else {
-                    value
-                }
+                value.replaceVariable(entry.key)
             }
         }
     }
-
-    private data class SourceItemRenameVariables(
-        val title: String,
-        val date: String,
-        val year: String,
-        val month: String,
-        val contentType: String,
-        val attrs: Map<String, Any>
-    )
-
-    private data class SourceFileRenameVariables(
-        val name: String,
-        val attrs: Map<String, Any>,
-        val originalLayout: String
-    )
 }
+
+private data class SourceItemRenameVariables(
+    val title: String,
+    val date: String,
+    val year: String,
+    val month: String,
+    val contentType: String,
+    val attrs: Map<String, Any>
+)
+
+private data class SourceFileRenameVariables(
+    val name: String,
+    val attrs: Map<String, Any>,
+    val originalLayout: String
+)
 
 private data class ResultWrapper<T>(
     val value: T,
