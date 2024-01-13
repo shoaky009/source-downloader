@@ -775,8 +775,9 @@ class SourceProcessor(
                 return ProcessingContent(name, itemContent).copy(status = FILTERED)
             }
 
+            val mover = this.selectUpdateStatusMover()
             processLock.lock {
-                itemContent.updateFileStatus(secondaryFileMover, fileExistsDetector)
+                itemContent.updateFileStatus(mover, fileExistsDetector)
                 val downloadableTargetPaths = itemContent.downloadableFiles().map { it.targetPath() }
                 if (log.isDebugEnabled) {
                     val filesStatus = itemContent.downloadableFiles().map {
@@ -818,6 +819,10 @@ class SourceProcessor(
             }
 
             return processingContent
+        }
+
+        open fun selectUpdateStatusMover(): FileMover {
+            return secondaryFileMover
         }
 
         private fun doMovement(itemContent: CoreItemContent): Pair<Boolean, Boolean> {
@@ -1037,6 +1042,11 @@ class SourceProcessor(
 
         override fun selectItemFilters(): List<SourceItemFilter> {
             return super.selectItemFilters().filter { it !is SourceHashingItemFilter }
+        }
+
+        override fun selectUpdateStatusMover(): FileMover {
+            // 重新处理只检查真实存在的文件
+            return fileMover
         }
     }
 
