@@ -191,9 +191,9 @@ data class RenameContext(
     val patternVariables: PatternVariables by lazy {
         val map = mutableMapOf<String, String>()
         map["itemTitle"] = sourceItem.title
-        map["itemDate"] = sourceItem.date.toLocalDate().toString()
-        map["itemYear"] = sourceItem.date.year.toString()
-        map["itemMonth"] = sourceItem.date.monthValue.toString()
+        map["itemDate"] = sourceItem.datetime.toLocalDate().toString()
+        map["itemYear"] = sourceItem.datetime.year.toString()
+        map["itemMonth"] = sourceItem.datetime.monthValue.toString()
         map["filename"] = file.fileDownloadPath.nameWithoutExtension
 
         map.putAll(sharedVariables.variables())

@@ -44,8 +44,8 @@ class MikanSource(
         }
 
         val items = sourceItems
-            .filter { it.date.isAfter(pointer.latest) }
-            .sortedBy { it.date }
+            .filter { it.datetime.isAfter(pointer.latest) }
+            .sortedBy { it.datetime }
 
         // 解决新番更新和添加顺序不一致的问题
         if (items.isEmpty()) {
@@ -71,7 +71,7 @@ class MikanSource(
                     fromRssItem(it)
                 }
                 .toList()
-                .sortedBy { it.date }
+                .sortedBy { it.datetime }
             if (pointedItems.contains(item).not()) {
                 log.debug("Item不在RSS列表中:{}", item)
                 pointedItems = pointedItems.toMutableList()
@@ -82,13 +82,13 @@ class MikanSource(
                 .map {
                     PointedItem(
                         it,
-                        FansubPointer(bangumiId, subGroupId, it.date)
+                        FansubPointer(bangumiId, subGroupId, it.datetime)
                     )
                 }
                 .filter {
                     val key = it.pointer.key()
                     val date = pointer.shows[key]
-                    date == null || it.sourceItem.date.isAfter(date)
+                    date == null || it.sourceItem.datetime.isAfter(date)
                 }
             RequestResult(result, true)
         }.asIterable()

@@ -39,7 +39,7 @@ class TelegramSource(
             val items = messages.mapNotNull { message ->
                 val sourceItem = mediaMessageToSourceItem(message, chatPointer, chat.name) ?: return@mapNotNull null
                 PointedItem(sourceItem, chatPointer.copy(fromMessageId = message.id()))
-            }.filter { beginDate == null || beginDate <= it.sourceItem.date.toLocalDate() }
+            }.filter { beginDate == null || beginDate <= it.sourceItem.datetime.toLocalDate() }
             chatPointer.fromMessageId = messages.last().id()
             RequestResult(items)
         }.asIterable()

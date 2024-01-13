@@ -52,7 +52,7 @@ class MikanSourceTest {
         val items = source.fetch(MikanPointer(
             targetDate
         ))
-        assert(items.all { it.sourceItem.date > targetDate })
+        assert(items.all { it.sourceItem.datetime > targetDate })
     }
 
     @Test

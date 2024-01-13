@@ -28,11 +28,10 @@ dependencies {
     implementation(enforcedPlatform(libs.cel.bom))
     implementation(libs.bundles.cel)
     implementation(libs.bundles.exposed)
-//    implementation("org.springdoc:springdoc-openapi-starter-webmvc-api:2.2.0")
-//    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0")
 
     resolveBuildInPlugins()
     implementation("org.springframework.boot:spring-boot-starter-actuator")
+    // implementation("org.springframework.boot:spring-boot-starter-validation")
 }
 
 fun DependencyHandlerScope.resolveBuildInPlugins() {

@@ -18,6 +18,7 @@ atomashpolskiy-bt = "1.10"
 tika = "2.7.0"
 jsoup = "1.17.2"
 exposed = "0.46.0"
+protobuf = "3.25.2"
 
 [libraries]
 springboot-dependencies = { module = "org.springframework.boot:spring-boot-dependencies", version.ref = "springboot" }
@@ -26,6 +27,7 @@ commons-lang3 = { module = "org.apache.commons:commons-lang3", version.ref = "co
 commons-collections4 = { module = "org.apache.commons:commons-collections4", version.ref = "commons-collections4" }
 cel-bom = { module = "org.projectnessie.cel:cel-bom", version.ref = "cel" }
 cel-tools = { module = "org.projectnessie.cel:cel-tools", version.ref = "cel" }
+cel-jackson = { module = "org.projectnessie.cel:cel-jackson", version.ref = "cel" }
 sqlite-jdbc = { module = "org.xerial:sqlite-jdbc", version.ref = "sqlite" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-core-jvm = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm", version.ref = "kotlinx-coroutines" }
@@ -42,9 +44,10 @@ exposed-java-time = { module = "org.jetbrains.exposed:exposed-java-time", versio
 exposed-json = { module = "org.jetbrains.exposed:exposed-json", version.ref = "exposed" }
 exposed-spring-boot-stater = { module = "org.jetbrains.exposed:exposed-spring-boot-starter", version.ref = "exposed" }
 graalvm-sdk = { module = "org.graalvm.sdk:graal-sdk", version.ref = "graalvm" }
+protobuf = { module = "com.google.protobuf:protobuf-java", version.ref = "protobuf" }
 
 [bundles]
-cel = ["cel-tools"]
+cel = ["cel-tools", "cel-jackson"]
 bt = ["bt-core", "bt-dht"]
 exposed = ["exposed-java-time", "exposed-spring-boot-stater", "exposed-json"]
 

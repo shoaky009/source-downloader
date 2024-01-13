@@ -21,7 +21,7 @@ fun sourceItemDefs(): Map<String, VariableType> {
 }
 
 fun SourceItem.variables(): Map<String, Any> {
-    val instant = this.date.toInstant(ZoneOffset.UTC)
+    val instant = this.datetime.toInstant(ZoneOffset.UTC)
     val vars = mapOf(
         "title" to this.title,
         "contentType" to this.contentType,
