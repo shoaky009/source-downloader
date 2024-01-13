@@ -131,8 +131,8 @@ processors:
     file-mover: "general"
     save-path: "src/test/resources/target/NormalCase"
     options:
-      save-path-pattern: "{itemTitle}/{itemDate}/"
-      filename-pattern: "{filename} - {sequence}"
+      save-path-pattern: "{item.title}/{item.date}/"
+      filename-pattern: "{file.name} - {sequence}"
       variable-providers:
         - "sequence"
     enabled: true
@@ -143,8 +143,8 @@ processors:
     file-mover: "general"
     save-path: "src/test/resources/target/NormalCaseCopy"
     options:
-      save-path-pattern: "{itemTitle}/{itemDate}/"
-      filename-pattern: "{filename} - {sequence}"
+      save-path-pattern: "{item.title}/{item.date}/"
+      filename-pattern: "{file.name} - {sequence}"
       variable-providers:
         - "sequence"
     enabled: true
@@ -155,7 +155,7 @@ processors:
     file-mover: "general"
     save-path: "src/test/resources/target/FileStatusCase"
     options:
-      save-path-pattern: "{itemTitle}"
+      save-path-pattern: "{item.title}"
     enabled: true
   - name: "FileStatusCase2"
     source: "fixed:normal-case"
@@ -174,7 +174,7 @@ processors:
     file-mover: "general"
     save-path: "src/test/resources/target/PointerStorageCase"
     options:
-      save-path-pattern: "{itemTitle}"
+      save-path-pattern: "{item.title}"
     enabled: true
   - name: "ErrorContinueCase"
     source: "fixed:error-item"
@@ -193,15 +193,15 @@ processors:
     options:
       variable-providers:
         - "sequence"
-      save-path-pattern: "{itemTitle}/{itemDate}/"
-      filename-pattern: "{filename} - {sequence}"
+      save-path-pattern: "{item.title}/{item.date}/"
+      filename-pattern: "{file.name} - {sequence}"
       file-taggers:
         - "mapped:mapping-test1file"
       file-grouping:
         - tags:
             - "test1"
-          filename-pattern: "{filename}"
-          save-path-pattern: "{itemTitle}"
+          filename-pattern: "{file.name}"
+          save-path-pattern: "{item.title}"
     enabled: true
   - name: "FileGroupingFilterCase"
     source: "fixed:normal-case"
@@ -212,14 +212,14 @@ processors:
     options:
       variable-providers:
         - "sequence"
-      save-path-pattern: "{itemTitle}"
+      save-path-pattern: "{item.title}"
       file-expression-exclusions:
         - "true"
       file-grouping:
-        - expression-matching: "filename == 'test3.jpg'"
+        - expression-matching: "file.name == 'test3.jpg'"
           file-expression-exclusions:
             - "false"
-        - expression-matching: "filename == 'test1.jpg'"
+        - expression-matching: "file.name == 'test1.jpg'"
           file-expression-inclusions:
             - "true"
     enabled: true
@@ -232,7 +232,7 @@ processors:
     options:
       variable-providers:
         - "sequence"
-      save-path-pattern: "{itemTitle}"
+      save-path-pattern: "{item.title}"
       filename-pattern: "{sequence}"
       file-taggers:
         - "mapped:mapping-test3file"
@@ -241,7 +241,7 @@ processors:
             - "test3"
           matched-expression: null
           filename-pattern: "{sequence}"
-          save-path-pattern: "{itemTitle}"
+          save-path-pattern: "{item.title}"
           file-content-filters: [ ]
           file-expression-exclusions: [ ]
           file-expression-inclusions: [ ]
@@ -256,8 +256,8 @@ processors:
     options:
       variable-providers:
         - "sequence"
-      save-path-pattern: "{itemTitle}/{itemDate}/"
-      filename-pattern: "{filename} - {sequence}"
+      save-path-pattern: "{item.title}/{item.date}/"
+      filename-pattern: "{file.name} - {sequence}"
     enabled: true
   - name: "AsyncReplaceFileCase"
     source: "fixed:replace-case"
@@ -268,7 +268,7 @@ processors:
     options:
       variable-providers:
         - "sequence"
-      save-path-pattern: "{itemTitle}"
+      save-path-pattern: "{item.title}"
       filename-pattern: "{sequence}"
       file-replacement-decider: "always"
     enabled: true
@@ -281,7 +281,7 @@ processors:
     options:
       variable-providers:
         - "sequence"
-      save-path-pattern: "{itemTitle}"
+      save-path-pattern: "{item.title}"
       filename-pattern: "{sequence}"
       file-replacement-decider: "always"
     enabled: true
@@ -319,17 +319,17 @@ processors:
     file-mover: "general"
     save-path: "src/test/resources/target/PatternOrderCase"
     options:
-      save-path-pattern: "{itemTitle}"
+      save-path-pattern: "{item.title}"
       variable-providers:
         - "sequence"
       item-grouping:
-        - expression-matching: "title == 'test1'"
-          save-path-pattern: "{itemTitle}_ITEM_GROUPING"
-          filename-pattern: "{itemTitle}_ITEM_GROUPING_{sequence}"
+        - expression-matching: "item.title == 'test1'"
+          save-path-pattern: "{item.title}_ITEM_GROUPING"
+          filename-pattern: "{item.title}_ITEM_GROUPING_{sequence}"
       file-grouping:
-        - expression-matching: "filename == 'test2.jpg'"
-          save-path-pattern: "{itemTitle}_FILE_GROUPING"
-          filename-pattern: "{itemTitle}_FILE_GROUPING"
+        - expression-matching: "file.name == 'test2.jpg'"
+          save-path-pattern: "{item.title}_FILE_GROUPING"
+          filename-pattern: "{item.title}_FILE_GROUPING"
   - name: "DownloadErrorCase"
     source: "fixed:normal-case"
     item-file-resolver: "fixed:normal-case"

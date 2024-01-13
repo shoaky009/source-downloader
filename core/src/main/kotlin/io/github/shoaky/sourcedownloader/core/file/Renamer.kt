@@ -20,7 +20,7 @@ class Renamer(
         rawFile: RawFileContent,
         group: PatternVariables,
     ): CoreFileContent {
-        val ctx = RenameContext(sourceItem, rawFile, group)
+        val ctx = RenameContext(sourceItem, rawFile, group, variableReplacers)
         val dirResult = saveDirectoryPath(ctx)
         val filenameResult = targetFilename(ctx)
         val errors = mutableListOf<String>()
@@ -40,7 +40,7 @@ class Renamer(
         if (filenamePattern == CorePathPattern.origin) {
             return ResultWrapper.fromFilename(fileDownloadPath.name)
         }
-        val parse = parse(ctx.patternVariables, filenamePattern, ctx.extraVariables, ctx.extraListVariables)
+        val parse = parse(ctx.variables, filenamePattern)
         val success = parse.success()
         if (success) {
             val targetFilename = parse.path
@@ -78,10 +78,10 @@ class Renamer(
         val fileSavePathPattern = file.savePathPattern
         val sourceSavePath = file.sourceSavePath
         val fileDownloadPath = file.fileDownloadPath
-        val parse = parse(ctx.patternVariables, fileSavePathPattern, ctx.extraVariables, ctx.extraListVariables)
+        val parse = parse(ctx.variables, fileSavePathPattern)
         if (parse.success()) {
             if (VariableErrorStrategy.TO_UNRESOLVED == variableErrorStrategy) {
-                val success = parse(ctx.patternVariables, file.filenamePattern, ctx.extraVariables).success()
+                val success = parse(ctx.variables, file.filenamePattern).success()
                 if (success.not()) {
                     return ResultWrapper(sourceSavePath.resolve(parse.path).resolve(UNRESOLVED), parse)
                 }
@@ -109,35 +109,24 @@ class Renamer(
         }
     }
 
+    /**
+     * @param variables if value is Collection, will join with '/'
+     */
     fun parse(
-        patternVariables: PatternVariables,
+        variables: Map<String, Any>,
         pathPattern: CorePathPattern,
-        extraVariables: Map<String, Map<String, String>> = emptyMap(),
-        extraListVariables: Map<String, List<String>> = emptyMap(),
     ): PathPattern.ParseResult {
         val pattern = pathPattern.pattern
         val expressions = pathPattern.expressions
         val matcher = variablePatternRegex.matcher(pattern)
 
-        val replacedVariables = patternVariables.variables().replaceVariables()
-        val replacedExtraVariables = extraVariables.mapValues { (_, value) ->
-            value.replaceVariables()
-        }
-        val replacedListVariables = extraListVariables.mapValues { (key, value) ->
-            value.joinToString("/") { it.replaceVariable(key) }
+        if (log.isDebugEnabled) {
+            log.debug("Rename variables:{}", variables)
         }
 
         val pathBuilder = StringBuilder()
         val variableResults = mutableListOf<PathPattern.ExpressionResult>()
         var expressionIndex = 0
-        val variables = mutableMapOf<String, Any>()
-        variables.putAll(replacedListVariables)
-        variables.putAll(replacedExtraVariables)
-        variables.putAll(replacedVariables)
-
-        if (log.isDebugEnabled) {
-            log.debug("Rename variables:{}", variables)
-        }
         while (matcher.find()) {
             val expression = expressions[expressionIndex]
             val value = expression.executeIgnoreError(variables)
@@ -154,24 +143,6 @@ class Renamer(
         return PathPattern.ParseResult(pathBuilder.toString(), variableResults)
     }
 
-    private fun Map<String, String>.replaceVariables(): Map<String, String> {
-        return this.mapValues { entry ->
-            entry.value.replaceVariable(entry.key)
-        }
-    }
-
-    private fun String.replaceVariable(name: String): String {
-        var text = this
-        variableReplacers.forEach {
-            val before = text
-            text = it.replace(name, text)
-            if (before != text) {
-                log.debug("replace variable '{}' from '{}' to '{}'", name, before, text)
-            }
-        }
-        return text
-    }
-
     companion object {
 
         private const val UNRESOLVED = "unresolved"
@@ -180,42 +151,73 @@ class Renamer(
 
     }
 
-}
+    data class RenameContext(
+        val sourceItem: SourceItem,
+        val file: RawFileContent,
+        val sharedVariables: PatternVariables,
+        val variableReplacers: List<VariableReplacer>,
+    ) {
 
-data class RenameContext(
-    val sourceItem: SourceItem,
-    val file: RawFileContent,
-    val sharedVariables: PatternVariables,
-) {
+        val variables: Map<String, Any> by lazy {
+            val map = mutableMapOf<String, Any>()
+            map["item"] = SourceItemRenameVariables(
+                sourceItem.title.replaceVariable("item.title"),
+                sourceItem.datetime.toLocalDate().toString().replaceVariable("item.date"),
+                sourceItem.datetime.year.toString().replaceVariable("item.year"),
+                sourceItem.datetime.monthValue.toString().replaceVariable("item.month"),
+                sourceItem.contentType.replaceVariable("item.contentType"),
+                sourceItem.attrs.replaceVariables()
+            )
+            map["file"] = SourceFileRenameVariables(
+                file.fileDownloadPath.nameWithoutExtension.replaceVariable("file.name"),
+                file.sourceFile.attrs.replaceVariables(),
+                file.getPathOriginalLayout().joinToString("/") { it.replaceVariable("file.originalLayout") }
+            )
 
-    val patternVariables: PatternVariables by lazy {
-        val map = mutableMapOf<String, String>()
-        map["itemTitle"] = sourceItem.title
-        map["itemDate"] = sourceItem.datetime.toLocalDate().toString()
-        map["itemYear"] = sourceItem.datetime.year.toString()
-        map["itemMonth"] = sourceItem.datetime.monthValue.toString()
-        map["filename"] = file.fileDownloadPath.nameWithoutExtension
+            map.putAll(sharedVariables.variables().replaceVariables())
+            // 文件变量的优先
+            map.putAll(file.patternVariables.variables().replaceVariables())
+            map
+        }
 
-        map.putAll(sharedVariables.variables())
-        // 文件变量的优先
-        map.putAll(file.patternVariables.getVariables())
-        MapPatternVariables(map)
+        private fun String.replaceVariable(name: String): String {
+            var text = this
+            variableReplacers.forEach {
+                val before = text
+                text = it.replace(name, text)
+                if (before != text) {
+                    log.debug("replace variable '{}' from '{}' to '{}'", name, before, text)
+                }
+            }
+            return text
+        }
+
+        private fun Map<String, Any>.replaceVariables(): Map<String, Any> {
+            return this.mapValues { entry ->
+                val value = entry.value
+                if (value is String) {
+                    value.replaceVariable(entry.key)
+                } else {
+                    value
+                }
+            }
+        }
     }
-    val extraVariables: Map<String, Map<String, String>> = run {
-        val map = mutableMapOf<String, Map<String, String>>()
-        map["item.attrs"] = sourceItem.attrs.mapValues { it.value.toString() }
-        map["file.attrs"] = file.sourceFile.attrs.mapValues { it.value.toString() }
-        map
-    }
 
-    /**
-     * Value会被join成字符串，分隔符/
-     */
-    val extraListVariables: Map<String, List<String>> = run {
-        val map = mutableMapOf<String, List<String>>()
-        map["originalLayout"] = file.getPathOriginalLayout()
-        map
-    }
+    private data class SourceItemRenameVariables(
+        val title: String,
+        val date: String,
+        val year: String,
+        val month: String,
+        val contentType: String,
+        val attrs: Map<String, Any>
+    )
+
+    private data class SourceFileRenameVariables(
+        val name: String,
+        val attrs: Map<String, Any>,
+        val originalLayout: String
+    )
 }
 
 private data class ResultWrapper<T>(

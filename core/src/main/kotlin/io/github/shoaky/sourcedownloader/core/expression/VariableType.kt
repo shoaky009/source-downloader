@@ -10,7 +10,7 @@ enum class VariableType {
     MAP,
 
     /**
-     * 没有范型描述默认String
+     * 没有范型描述默认Any
      */
     ARRAY,
     DATE,

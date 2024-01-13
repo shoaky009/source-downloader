@@ -13,7 +13,7 @@ class ExpressionFileFilterTest {
     @Test
     fun test_simple_exclusions() {
         val filter = ExpressionFileFilterSupplier.expressions(
-            listOf("filename == '1.txt'")
+            listOf("file.name == '1.txt'")
         )
         val testFileContent1 = FixedFileContent(Path("1.txt"))
         assertEquals(false, filter.test(testFileContent1))
@@ -24,7 +24,7 @@ class ExpressionFileFilterTest {
     @Test
     fun test_simple_inclusions() {
         val filter = ExpressionFileFilterSupplier.expressions(
-            inclusions = listOf("filename == '1.txt'")
+            inclusions = listOf("file.name == '1.txt'")
         )
         val testFileContent1 = FixedFileContent(Path("1.txt"))
         assertEquals(true, filter.test(testFileContent1))
@@ -36,12 +36,12 @@ class ExpressionFileFilterTest {
     fun test_multiple() {
         val filter = ExpressionFileFilterSupplier.expressions(
             exclusions = listOf(
-                "attrs['size'] > 1024*1024",
-                "filename.matches('.*qaz.*')"
+                "file.attrs.size > 1024*1024",
+                "file.name.matches('.*qaz.*')"
             ),
             inclusions = listOf(
-                "attrs['size'] < 1024*1024",
-                "filename.matches('.*Test.*')"
+                "file.attrs.size < 1024*1024",
+                "file.name.matches('.*Test.*')"
             ),
         )
 
@@ -68,12 +68,12 @@ class ExpressionFileFilterTest {
         val filter = ExpressionFileFilter(
             inclusions = listOf(
                 """
-                filename.contains('test') && 
-                'video' in tags &&
-                ext == 'txt' &&
-                vars['test'] == 'test' &&
-                attrs['size'] > 10 &&
-                'book' in paths
+                file.name.contains('test') && 
+                'video' in file.tags &&
+                file.extension == 'txt' &&
+                file.vars.test == 'test' &&
+                file.attrs.size > 10 &&
+                'book' in file.paths
             """.trimIndent()
             )
         )
@@ -93,7 +93,7 @@ class ExpressionFileFilterTest {
         val filter1 = ExpressionFileFilter(
             exclusions = listOf(
                 """
-                paths.containsAny(['SPs'])
+                file.paths.containsAny(['SPs'])
             """.trimIndent()
             )
         )
@@ -114,7 +114,7 @@ class ExpressionFileFilterTest {
         val filter1 = ExpressionFileFilter(
             exclusions = listOf(
                 """
-                paths.containsAny(['sp', 'sps', 'extra'], true)
+                file.paths.containsAny(['sp', 'sps', 'extra'], true)
             """.trimIndent()
             )
         )

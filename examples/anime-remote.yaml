@@ -47,10 +47,10 @@ processors:
       file-filters:
         - "anime"
       item-expression-exclusions:
-        - "title.matches('剧场版') || title.matches('BDMV') || title.matches('劇場版')"
+        - "item.title.matches('剧场版') || item.title.matches('BDMV') || item.title.matches('劇場版')"
       content-expression-exclusions:
         - "files.filter(x, 'video' in x.tags).size() < 3"
       file-expression-exclusions:
-        - "ext in ['torrent', 'md5', 'txt', 'rar', 'zip']"
-        - "tags.containsAny(['image'], true)"
-        - "paths.containsAny(['extra', 'special', 'others', '映像特典', 'cd', 'cds'], true)"
+        - "file.extension in ['torrent', 'md5', 'txt', 'rar', 'zip']"
+        - "file.tags.containsAny(['image'], true)"
+        - "file.paths.containsAny(['extra', 'special', 'others', '映像特典', 'cd', 'cds'], true)"

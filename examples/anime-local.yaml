@@ -43,9 +43,9 @@ processors:
       file-filters:
         - "anime"
       file-expression-exclusions:
-        - "ext in ['torrent', 'md5', 'txt']"
-        - "tags.containsAny(['image'], true)"
-        - "paths.containsAny(['extra', 'special', 'others', '映像特典'], true)"
+        - "file.extension in ['torrent', 'md5', 'txt']"
+        - "file.tags.containsAny(['image'], true)"
+        - "file.paths.containsAny(['extra', 'special', 'others', '映像特典'], true)"
       save-processing-content: false
       process-listeners:
         - "delete-empty-directory"

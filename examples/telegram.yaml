@@ -70,13 +70,13 @@ processors:
     save-path: /mnt/telegram
     options:
       save-path-pattern: "{item.attrs.chatName}-{item.attrs.chatId}"
-      filename-pattern: "{item.attrs.messageId}_{itemTitle}"
+      filename-pattern: "{item.attrs.messageId}_{item.title}"
       # 此处不会过滤所有webpage，分组的规则会优先
       item-expression-exclusions:
-        - "attrs.mediaType == 'webpage'"
+        - "item.attrs.mediaType == 'webpage'"
       item-grouping:
-        - expression-matching: "has(attrs.site) && attrs.site == 'Telegraph'"
-          save-path-pattern: "{item.attrs.chatName}-{item.attrs.chatId}/{item.attrs.messageId}_{itemTitle}"
-          filename-pattern: "{itemTitle}_{sequence}"
+        - expression-matching: "has(item.attrs.site) && item.attrs.site == 'Telegraph'"
+          save-path-pattern: "{item.attrs.chatName}-{item.attrs.chatId}/{item.attrs.messageId}_{item.title}"
+          filename-pattern: "{item.title}_{sequence}"
           variable-providers:
             - "sequence"

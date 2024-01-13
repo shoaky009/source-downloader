@@ -16,7 +16,7 @@ class ExpressionItemFilterTest {
     fun test_simple_exclusions() {
         val sourceItem = sourceItem("test1234")
         val filter = ExpressionItemFilterSupplier.expressions(
-            listOf("title == 'test1234'")
+            listOf("item.title == 'test1234'")
         )
         assertEquals(false, filter.test(sourceItem))
         assertEquals(true, filter.test(sourceItem.copy("11111")))
@@ -26,7 +26,7 @@ class ExpressionItemFilterTest {
     fun test_simple_inclusions() {
         val sourceItem = sourceItem("test1234")
         val filter = ExpressionItemFilterSupplier.expressions(
-            inclusions = listOf("title == 'test1234'")
+            inclusions = listOf("item.title == 'test1234'")
         )
         assertEquals(true, filter.test(sourceItem))
         assertEquals(false, filter.test(sourceItem.copy("11111")))
@@ -37,12 +37,12 @@ class ExpressionItemFilterTest {
         val sourceItem = sourceItem("222Test111")
         val filter = ExpressionItemFilterSupplier.expressions(
             listOf(
-                "date > timestamp('2130-03-31T00:00:00Z')",
-                "title.matches('qaz')"
+                "item.datetime > timestamp('2130-03-31T00:00:00Z')",
+                "item.title.matches('qaz')"
             ),
             listOf(
-                "date > timestamp('2023-03-30T00:00:00Z') && date < timestamp('2130-03-31T00:00:00Z')",
-                "title.matches('Test')"
+                "item.datetime > timestamp('2023-03-30T00:00:00Z') && item.datetime < timestamp('2130-03-31T00:00:00Z')",
+                "item.title.matches('Test')"
             ),
         )
         assertEquals(true, filter.test(sourceItem))
@@ -54,7 +54,7 @@ class ExpressionItemFilterTest {
         val sourceItem = sourceItem("[Nekomoe kissaten][The iDOLM@STER CINDERELLA GIRLS U149][02][720p][JPSC]")
         val filter = ExpressionItemFilterSupplier.expressions(
             exclusions = listOf(
-                "title.matches('720(?i)P')"
+                "item.title.matches('720(?i)P')"
             ),
         )
         assertEquals(false, filter.test(sourceItem))

@@ -30,5 +30,5 @@ processors:
       variable-providers:
         - "sequence"
       save-path-pattern: "{item.attrs.username}"
-      filename-pattern: "{itemDate}_{itemTitle}_{sequence}"
+      filename-pattern: "{item.date}_{item.title}_{sequence}"
       pointer-batch-mode: false

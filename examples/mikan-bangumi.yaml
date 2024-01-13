@@ -85,5 +85,5 @@ processors:
       # 目标文件替换策略，anime总是会替换bilibili源和如果当前带版本号的会替换
       #file-replacement-decider: anime
       item-expression-exclusions:
-        - "title.matches('720(?i)P')"
-        - "title.matches('中文配音')"
+        - "item.title.matches('720(?i)P')"
+        - "item.title.matches('中文配音')"

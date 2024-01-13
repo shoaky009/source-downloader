@@ -1,109 +1,149 @@
 package io.github.shoaky.sourcedownloader.core.expression
 
-import com.google.protobuf.Timestamp
 import io.github.shoaky.sourcedownloader.sdk.FileContent
 import io.github.shoaky.sourcedownloader.sdk.ItemContent
 import io.github.shoaky.sourcedownloader.sdk.SourceFile
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
+import java.time.Instant
 import java.time.ZoneOffset
 import kotlin.io.path.extension
 import kotlin.io.path.name
 
 fun sourceItemDefs(): Map<String, VariableType> {
     return mapOf(
-        "title" to VariableType.STRING,
-        "contentType" to VariableType.STRING,
-        "date" to VariableType.DATE,
-        "link" to VariableType.STRING,
-        "tags" to VariableType.ARRAY,
-        "attrs" to VariableType.MAP
+        "item" to VariableType.ANY,
     )
 }
 
 fun SourceItem.variables(): Map<String, Any> {
-    val instant = this.datetime.toInstant(ZoneOffset.UTC)
     val vars = mapOf(
-        "title" to this.title,
-        "contentType" to this.contentType,
-        "date" to Timestamp.newBuilder()
-            .setSeconds(instant.epochSecond)
-            .setNanos(instant.nano)
-            .build(),
-        "link" to this.link,
-        "tags" to this.tags.toList(),
-        "attrs" to this.attrs
+        "item" to SourceItemVariables(this)
     )
     return vars
 }
 
 fun sourceFileDefs(): Map<String, VariableType> {
     return mapOf(
-        "filename" to VariableType.STRING,
-        "tags" to VariableType.ARRAY,
-        "attrs" to VariableType.MAP
+        "file" to VariableType.ANY,
     )
 }
 
 fun SourceFile.variables(): Map<String, Any> {
     return mapOf(
-        "filename" to this.path.name,
-        "tags" to this.tags,
-        "attrs" to this.attrs,
+        "file" to SourceFileVariables(this)
     )
 }
 
 fun fileContentDefs(): Map<String, VariableType> {
     return mapOf(
-        "filename" to VariableType.STRING,
-        "tags" to VariableType.ARRAY,
-        // abbr. extension
-        "ext" to VariableType.STRING,
-        // abbr. patternVariables
-        "vars" to VariableType.MAP,
-        "attrs" to VariableType.MAP,
-        "paths" to VariableType.ARRAY,
+        "file" to VariableType.ANY
     )
 }
 
 fun FileContent.variables(): Map<String, Any> {
-    val paths = this.fileDownloadRelativeParentDirectory()?.toList()?.map { it.name } ?: emptyList()
     return mapOf(
-        "filename" to this.fileDownloadPath.name,
-        "tags" to this.tags.toList(),
-        "ext" to this.fileDownloadPath.extension.lowercase(),
-        "vars" to this.patternVariables.variables(),
-        "attrs" to this.attrs,
-        "paths" to paths
+        "file" to FileContentVariables(this)
     )
 }
 
 fun itemContentDefs(): Map<String, VariableType> {
     return mapOf(
-        "title" to VariableType.STRING,
-        "contentType" to VariableType.STRING,
-        "link" to VariableType.STRING,
-        "date" to VariableType.DATE,
-        "tags" to VariableType.ARRAY,
-        "attrs" to VariableType.MAP,
-        "vars" to VariableType.MAP,
-        // TODO 范型定义
-        "files" to VariableType.ARRAY
+        "item" to VariableType.ANY,
     )
 }
 
 fun ItemContent.variables(): Map<String, Any> {
-    val itemVars = this.sourceItem.variables()
-    val sourceFiles = this.sourceFiles
-    val extraVars = mutableMapOf<String, Any>(
-        "files" to sourceFiles.map {
-            mapOf(
-                "tags" to it.tags.toList(),
-                "attrs" to it.attrs,
-                "vars" to it.patternVariables.variables()
-            )
-        }
+    return mapOf("item" to ItemContentVariables(this))
+}
+
+data class SourceItemVariables(
+    val title: String,
+    val datetime: Instant,
+    val date: String,
+    val year: Int,
+    val month: Int,
+    val link: String,
+    val downloadUri: String,
+    val contentType: String,
+    val tags: List<String>,
+    val attrs: Map<String, Any>
+) {
+
+    constructor(sourceItem: SourceItem) : this(
+        sourceItem.title,
+        sourceItem.datetime.toInstant(ZoneOffset.UTC),
+        sourceItem.datetime.toLocalDate().toString(),
+        sourceItem.datetime.year,
+        sourceItem.datetime.month.value,
+        sourceItem.link.toString(),
+        sourceItem.downloadUri.toString(),
+        sourceItem.contentType,
+        sourceItem.tags.toList(),
+        sourceItem.attrs
     )
-    extraVars["vars"] = this.sharedPatternVariables.variables()
-    extraVars.putAll(itemVars)
-    return extraVars
+}
+
+data class SourceFileVariables(
+    val name: String,
+    val extension: String,
+    val tags: List<String>,
+    val attrs: Map<String, Any>
+) {
+
+    constructor(sourceItem: SourceFile) : this(
+        sourceItem.path.name,
+        sourceItem.path.extension,
+        sourceItem.tags.toList(),
+        sourceItem.attrs
+    )
+}
+
+data class ItemContentVariables(
+    val title: String,
+    val datetime: Instant,
+    val date: String,
+    val year: Int,
+    val month: Int,
+    val link: String,
+    val downloadUri: String,
+    val contentType: String,
+    val tags: List<String>,
+    val attrs: Map<String, Any>,
+    val vars: Map<String, String>,
+    val files: List<FileContentVariables>
+) {
+
+    constructor(itemContent: ItemContent) : this(
+        itemContent.sourceItem.title,
+        itemContent.sourceItem.datetime.toInstant(ZoneOffset.UTC),
+        itemContent.sourceItem.datetime.toLocalDate().toString(),
+        itemContent.sourceItem.datetime.year,
+        itemContent.sourceItem.datetime.month.value,
+        itemContent.sourceItem.link.toString(),
+        itemContent.sourceItem.downloadUri.toString(),
+        itemContent.sourceItem.contentType,
+        itemContent.sourceItem.tags.toList(),
+        itemContent.sourceItem.attrs,
+        itemContent.sharedPatternVariables.variables(),
+        itemContent.sourceFiles.map { FileContentVariables(it) }
+    )
+}
+
+data class FileContentVariables(
+    val name: String,
+    val extension: String,
+    val vars: Map<String, String>,
+    val tags: List<String>,
+    val attrs: Map<String, Any>,
+    val paths: List<String>
+) {
+
+    constructor(fileContent: FileContent) : this(
+        fileContent.fileDownloadPath.name,
+        fileContent.fileDownloadPath.extension,
+        fileContent.patternVariables.variables(),
+        fileContent.tags.toList(),
+        fileContent.attrs,
+        fileContent.fileDownloadRelativeParentDirectory()?.toList()?.map { it.name } ?: emptyList()
+    )
 }

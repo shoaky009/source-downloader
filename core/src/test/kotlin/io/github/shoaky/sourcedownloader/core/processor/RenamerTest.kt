@@ -18,6 +18,7 @@ import java.nio.file.Path
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.Path
 import kotlin.io.path.deleteRecursively
+import kotlin.io.path.nameWithoutExtension
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
@@ -76,7 +77,14 @@ class RenamerTest {
     @Test
     fun given_vars_pattern_should_target_expected() {
         val raw = createRawFileContent(
-            patternVariables = MapPatternVariables(mapOf("date" to "2022-01-01", "work" to "test", "year" to "2022", "title" to "123")),
+            patternVariables = MapPatternVariables(
+                mapOf(
+                    "date" to "2022-01-01",
+                    "work" to "test",
+                    "year" to "2022",
+                    "title" to "123"
+                )
+            ),
             savePathPattern = CorePathPattern("{year}/{work}"),
             filenamePattern = CorePathPattern("{date} - {title}")
         )
@@ -116,7 +124,8 @@ class RenamerTest {
     fun given_shared_vars() {
         val raw = createRawFileContent(
             savePathPattern = CorePathPattern("{name}/S{season}"),
-            patternVariables = MapPatternVariables(mapOf("name" to "test")))
+            patternVariables = MapPatternVariables(mapOf("name" to "test"))
+        )
         val content = defaultRenamer.createFileContent(sourceItem(), raw, MapPatternVariables(mapOf("season" to "01")))
         val saveDir = content.saveDirectoryPath()
         assertEquals(sourceSavePath.resolve(Path("test", "S01")), saveDir)
@@ -139,7 +148,8 @@ class RenamerTest {
         val raw = createRawFileContent(
             filePath = Path("src", "test", "resources", "downloads", "easd", "222", "1.mp4"),
             filenamePattern = CorePathPattern("{name} - {season}.mp4"),
-            patternVariables = MapPatternVariables(mapOf("name" to "test")))
+            patternVariables = MapPatternVariables(mapOf("name" to "test"))
+        )
         val content = defaultRenamer.createFileContent(sourceItem(), raw, MapPatternVariables(mapOf("season" to "01")))
         assertEquals("test - 01.mp4", content.targetFilename())
     }
@@ -193,7 +203,8 @@ class RenamerTest {
             savePathPattern = CorePathPattern("{name}/S{season}"),
             filenamePattern = CorePathPattern("{name} - {season}"),
         )
-        val content = Renamer(VariableErrorStrategy.ORIGINAL).createFileContent(sourceItem(), raw, MapPatternVariables())
+        val content =
+            Renamer(VariableErrorStrategy.ORIGINAL).createFileContent(sourceItem(), raw, MapPatternVariables())
         println(content.targetPath())
         assertEquals(content.fileDownloadPath, content.targetPath())
     }
@@ -205,7 +216,8 @@ class RenamerTest {
             savePathPattern = CorePathPattern("{name}/S{season}"),
             filenamePattern = CorePathPattern("{title} - {season}"),
         )
-        val content = Renamer(VariableErrorStrategy.ORIGINAL).createFileContent(sourceItem(), raw, MapPatternVariables())
+        val content =
+            Renamer(VariableErrorStrategy.ORIGINAL).createFileContent(sourceItem(), raw, MapPatternVariables())
         val resolve = sourceSavePath.resolve("test").resolve("S01").resolve("1.txt")
         assertEquals(resolve, content.targetPath())
     }
@@ -217,7 +229,8 @@ class RenamerTest {
             savePathPattern = CorePathPattern("{name}/S{season}"),
             filenamePattern = CorePathPattern("{title} - {season}"),
         )
-        val content = Renamer(VariableErrorStrategy.ORIGINAL).createFileContent(sourceItem(), raw, MapPatternVariables())
+        val content =
+            Renamer(VariableErrorStrategy.ORIGINAL).createFileContent(sourceItem(), raw, MapPatternVariables())
         assertEquals(downloadPath.resolve("test 01 - 01.txt"), content.targetPath())
     }
 
@@ -237,7 +250,8 @@ class RenamerTest {
             savePathPattern = CorePathPattern("{title}/S{season}"),
             filenamePattern = CorePathPattern("{title} S{season}E{episode}"),
         )
-        val content = Renamer(VariableErrorStrategy.TO_UNRESOLVED).createFileContent(sourceItem(), raw, MapPatternVariables())
+        val content =
+            Renamer(VariableErrorStrategy.TO_UNRESOLVED).createFileContent(sourceItem(), raw, MapPatternVariables())
         val path = Path("test 01", "S01", "unresolved", "1.txt")
         assertEquals(content.sourceSavePath.resolve(path), content.targetPath())
     }
@@ -249,7 +263,8 @@ class RenamerTest {
             savePathPattern = CorePathPattern(""),
             filenamePattern = CorePathPattern("{title} S{season}E{episode}"),
         )
-        val content = Renamer(VariableErrorStrategy.TO_UNRESOLVED).createFileContent(sourceItem(), raw, MapPatternVariables())
+        val content =
+            Renamer(VariableErrorStrategy.TO_UNRESOLVED).createFileContent(sourceItem(), raw, MapPatternVariables())
         val path = Path("unresolved", "1.txt")
         assertEquals(content.sourceSavePath.resolve(path), content.targetPath())
     }
@@ -262,7 +277,8 @@ class RenamerTest {
             savePathPattern = CorePathPattern("{title}"),
             filenamePattern = CorePathPattern("S{season}E{episode}"),
         )
-        val content = Renamer(VariableErrorStrategy.TO_UNRESOLVED).createFileContent(sourceItem(), raw, MapPatternVariables())
+        val content =
+            Renamer(VariableErrorStrategy.TO_UNRESOLVED).createFileContent(sourceItem(), raw, MapPatternVariables())
         val path = Path("unresolved", "FATE", "S01E02.mp4")
         assertEquals(content.sourceSavePath.resolve(path), content.targetPath())
     }
@@ -275,7 +291,8 @@ class RenamerTest {
             savePathPattern = CorePathPattern("{title}"),
             filenamePattern = CorePathPattern("S{season}E{episode}"),
         )
-        val content = Renamer(VariableErrorStrategy.TO_UNRESOLVED).createFileContent(sourceItem(), raw, MapPatternVariables())
+        val content =
+            Renamer(VariableErrorStrategy.TO_UNRESOLVED).createFileContent(sourceItem(), raw, MapPatternVariables())
         val path = Path("unresolved", "FATE", "S01E02.mp4")
         assertEquals(content.sourceSavePath.resolve(path), content.targetPath())
     }
@@ -288,7 +305,8 @@ class RenamerTest {
             savePathPattern = CorePathPattern("{Title}"),
             filenamePattern = CorePathPattern("S{Season}E{Episod}"),
         )
-        val content = Renamer(VariableErrorStrategy.TO_UNRESOLVED).createFileContent(sourceItem(), raw, MapPatternVariables())
+        val content =
+            Renamer(VariableErrorStrategy.TO_UNRESOLVED).createFileContent(sourceItem(), raw, MapPatternVariables())
         val path = Path("unresolved", "FATE", "AAAAA.mp4")
         println(content.targetPath())
         assertEquals(content.sourceSavePath.resolve(path), content.targetPath())
@@ -302,7 +320,8 @@ class RenamerTest {
             savePathPattern = CorePathPattern("{Title}"),
             filenamePattern = CorePathPattern("S{Season}E{Episod}"),
         )
-        val content = Renamer(VariableErrorStrategy.TO_UNRESOLVED).createFileContent(sourceItem(), raw, MapPatternVariables())
+        val content =
+            Renamer(VariableErrorStrategy.TO_UNRESOLVED).createFileContent(sourceItem(), raw, MapPatternVariables())
         val path = Path("unresolved", "AAAAA.mp4")
         assertEquals(content.sourceSavePath.resolve(path), content.targetPath())
     }
@@ -310,10 +329,11 @@ class RenamerTest {
     @Test
     fun normal_parse() {
         val pathPattern = CorePathPattern("{name}/{title}abc")
-        val variables = MapPatternVariables(mapOf(
+        val variables = mapOf(
             "name" to "111",
             "title" to "test"
-        ))
+        )
+
         val parseResult = defaultRenamer.parse(variables, pathPattern)
         assertEquals("111/testabc", parseResult.path)
         assertEquals(true, parseResult.results.all { it.success })
@@ -322,10 +342,10 @@ class RenamerTest {
     @Test
     fun given_option_pattern_with_exists_variables() {
         val pathPattern = CorePathPattern("{name}/:{title}abc")
-        val variables = MapPatternVariables(mapOf(
+        val variables = mapOf(
             "name" to "111",
             "title" to "test"
-        ))
+        )
         val parseResult = defaultRenamer.parse(variables, pathPattern)
         assertEquals("111/testabc", parseResult.path)
         assertEquals(true, parseResult.results.all { it.success })
@@ -334,9 +354,9 @@ class RenamerTest {
     @Test
     fun given_option_pattern_with_not_exists_variables() {
         val pathPattern = CorePathPattern("{name}/:{title}abc")
-        val variables = MapPatternVariables(mapOf(
+        val variables = mapOf(
             "name" to "111",
-        ))
+        )
         val parseResult = defaultRenamer.parse(variables, pathPattern)
         assertEquals("111/abc", parseResult.path)
         assertEquals(true, parseResult.results.all { it.success })
@@ -345,18 +365,18 @@ class RenamerTest {
     @Test
     fun given_expression() {
         val pathPattern = CorePathPattern("{'test '+name} E{episode + '1'}:{' - '+source}")
-        val variables = MapPatternVariables(mapOf(
+        val variables = mapOf(
             "name" to "111",
             "episode" to "2",
             "source" to "1"
-        ))
+        )
         val parseResult = defaultRenamer.parse(variables, pathPattern)
         assertEquals("test 111 E21 - 1", parseResult.path)
         assertEquals(true, parseResult.results.all { it.success })
-        val variables2 = MapPatternVariables(mapOf(
+        val variables2 = mapOf(
             "name" to "111",
             "episode" to "2",
-        ))
+        )
         val result2 = defaultRenamer.parse(variables2, pathPattern)
         assertEquals("test 111 E21", result2.path)
         assertEquals(true, result2.results.all { it.success })
@@ -364,14 +384,16 @@ class RenamerTest {
 
     @Test
     fun test_replacement_given_pattern_variables() {
-        val renamer = Renamer(variableReplacers = listOf(
-            RegexVariableReplacer("BDRIP".toRegex(RegexOption.IGNORE_CASE), "BD"),
-        ))
+        val renamer = Renamer(
+            variableReplacers = listOf(
+                RegexVariableReplacer("BDRIP".toRegex(RegexOption.IGNORE_CASE), "BD"),
+            )
+        )
         val result = renamer.parse(
-            MapPatternVariables(mapOf(
+            mapOf(
                 "title" to "111",
                 "source" to "Web",
-            )),
+            ),
             CorePathPattern("{title}-{source}")
         )
         assertEquals("111-Web", result.path)
@@ -379,17 +401,20 @@ class RenamerTest {
 
     @Test
     fun test_replacement_given_pattern_variables_and_extra_variables() {
-        val renamer = Renamer(variableReplacers = listOf(
-            RegexVariableReplacer("BDRIP".toRegex(RegexOption.IGNORE_CASE), "BD"),
-            RegexVariableReplacer("333".toRegex(RegexOption.IGNORE_CASE), "111")
-        ))
-
-        val result = renamer.parse(
-            MapPatternVariables(mapOf("source" to "BDrip")),
-            CorePathPattern("{item.attrs.title}-{source}"),
-            mapOf("item.attrs" to mapOf("title" to "333"))
+        val renamer = Renamer(
+            variableReplacers = listOf(
+                RegexVariableReplacer("BDRIP".toRegex(RegexOption.IGNORE_CASE), "BD"),
+                RegexVariableReplacer("333".toRegex(RegexOption.IGNORE_CASE), "111")
+            )
         )
-        assertEquals("111-BD", result.path)
+
+        val result = renamer.createFileContent(
+            sourceItem(attrs = mapOf("title" to "333")),
+            createRawFileContent(filenamePattern = CorePathPattern("{item.attrs.title}-{source}")),
+            MapPatternVariables(mapOf("source" to "BDrip"))
+        )
+
+        assertEquals("111-BD", result.targetPath().nameWithoutExtension)
     }
 
     @Test
@@ -400,11 +425,13 @@ class RenamerTest {
             ),
             savePathPattern = CorePathPattern("{item.attrs.creatorId}/{date}"),
             filenamePattern = CorePathPattern("{file.attrs.seq}"),
-            attrs = mapOf("seq" to 2)
+            attrs = mapOf("seq" to "2")
         )
-        val content = defaultRenamer.createFileContent(sourceItem(
-            attrs = mapOf("creatorId" to "Idk111")
-        ), raw, MapPatternVariables())
+        val content = defaultRenamer.createFileContent(
+            sourceItem(
+                attrs = mapOf("creatorId" to "Idk111")
+            ), raw, MapPatternVariables()
+        )
         val targetFilePath = content.targetPath()
         val expected = sourceSavePath.resolve(Path("Idk111", "2022-01-01", "2.txt"))
         assertEquals(expected, targetFilePath)
@@ -414,7 +441,7 @@ class RenamerTest {
     fun given_origin_layout_pattern() {
         val file1 = createRawFileContent(
             filePath = Path("wp", "mp3", "origin", "1.mp3"),
-            savePathPattern = CorePathPattern("wp-test/{originalLayout}"),
+            savePathPattern = CorePathPattern("wp-test/{file.originalLayout}"),
         )
 
         val renamer = Renamer(
@@ -427,14 +454,14 @@ class RenamerTest {
 
         val file2 = createRawFileContent(
             filePath = Path("wp", "1.mp3"),
-            savePathPattern = CorePathPattern("wp-test/{originalLayout}"),
+            savePathPattern = CorePathPattern("wp-test/{file.originalLayout}"),
         )
         val content2 = renamer.createFileContent(sourceItem(), file2, MapPatternVariables())
         assertEquals(sourceSavePath.resolve(Path("wp-test", "1.mp3")), content2.targetPath())
 
         val file3 = createRawFileContent(
             filePath = Path("1.mp3"),
-            savePathPattern = CorePathPattern("wp-test/{originalLayout}"),
+            savePathPattern = CorePathPattern("wp-test/{file.originalLayout}"),
         )
         val content3 = renamer.createFileContent(sourceItem(), file3, MapPatternVariables())
         assertEquals(sourceSavePath.resolve(Path("wp-test", "1.mp3")), content3.targetPath())

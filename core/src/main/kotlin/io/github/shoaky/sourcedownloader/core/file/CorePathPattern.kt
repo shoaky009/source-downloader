@@ -41,10 +41,11 @@ data class CorePathPattern(
 
     private fun defs(parsed: String): Map<String, VariableType> {
         return buildMap {
-            put("item.attrs", VariableType.MAP)
-            put("file.attrs", VariableType.MAP)
-            put("item.date", VariableType.STRING)
-            put("item.title", VariableType.STRING)
+            put("item", VariableType.ANY)
+            put("file", VariableType.ANY)
+            if (parsed.startsWith("item.") || parsed.startsWith("file.")) {
+                return@buildMap
+            }
             getDeclaredVariables(parsed).forEach {
                 put(it, VariableType.STRING)
             }
