@@ -378,7 +378,8 @@ class SourceProcessor(
         }
         val allExists = fileMover.exists(files.map { it.fileDownloadPath }).all { it }
         return if (allExists) {
-            false to WAITING_TO_RENAME
+            // 这里待定，有些下载器重复提交不会有问题
+            (downloader is AsyncDownloader) to WAITING_TO_RENAME
         } else {
             true to WAITING_TO_RENAME
         }
@@ -801,8 +802,7 @@ class SourceProcessor(
                 val success = doDownload(processingContent, replaceFiles)
                 if (success && downloader !is AsyncDownloader) {
                     log.trace("Processor:'{}' start rename item:{}", name, sourceItem)
-                    val moveSuccess = moveFiles(itemContent)
-                    val replaceSuccess = replaceFiles(itemContent)
+                    val (moveSuccess, replaceSuccess) = doMovement(itemContent)
                     if (moveSuccess || replaceSuccess) {
                         return processingContent.copy(status = RENAMED, renameTimes = 1)
                     }
@@ -810,7 +810,20 @@ class SourceProcessor(
                 }
             }
 
+            if (contentStatus == WAITING_TO_RENAME && downloader !is AsyncDownloader) {
+                val (moveSuccess, replaceSuccess) = doMovement(itemContent)
+                if (moveSuccess || replaceSuccess) {
+                    return processingContent.copy(status = RENAMED, renameTimes = 1)
+                }
+            }
+
             return processingContent
+        }
+
+        private fun doMovement(itemContent: CoreItemContent): Pair<Boolean, Boolean> {
+            val moveSuccess = moveFiles(itemContent)
+            val replaceSuccess = replaceFiles(itemContent)
+            return Pair(moveSuccess, replaceSuccess)
         }
 
         open fun postProcessingContent(processingContent: ProcessingContent): ProcessingContent {

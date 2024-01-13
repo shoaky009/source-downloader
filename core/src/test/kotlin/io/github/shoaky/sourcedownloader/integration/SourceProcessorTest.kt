@@ -326,6 +326,7 @@ class SourceProcessorTest : InitializingBean {
     // listener invoke测试
     // exists 和 replace冲突测试
     // 并行测试
+    // downloadPath文件已存在
     companion object {
 
         private val savePath = testResourcePath.resolve("target")
