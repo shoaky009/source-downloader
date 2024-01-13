@@ -54,7 +54,7 @@ class ComponentControllerTest {
     @Test
     fun delete_component() {
         mockMvc.perform(
-            post("/api/component/source/system-file/api-create2")
+            delete("/api/component/source/system-file/api-create2")
                 .content(
                     """{"name":"api-create2","type":"system-file","props":{"path":"src/test/resources/sources"}}"""
                 ).contentType(MediaType.APPLICATION_JSON)
