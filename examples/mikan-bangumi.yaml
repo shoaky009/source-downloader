@@ -27,7 +27,7 @@ components:
     - name: qbittorrent
       type: qbittorrent
       props:
-        url: http://192.168.1.219:10095
+        endpoint: http://192.168.1.219:10095
         username: admin
         password: 123456
   variable-provider:

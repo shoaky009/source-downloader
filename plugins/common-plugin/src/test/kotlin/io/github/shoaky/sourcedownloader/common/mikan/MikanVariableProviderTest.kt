@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import java.net.URI
-import java.net.URL
 import java.time.LocalDate
 import java.time.LocalDateTime
 import kotlin.io.path.Path
@@ -27,7 +26,7 @@ class MikanVariableProviderTest {
         val mikanClient = Mockito.mock(MikanClient::class.java)
         Mockito.`when`(
             mikanClient.getEpisodePageInfo(
-            URL("https://mikanani.me/Home/Episode/324b70bd8a170bcf13d7f5bdf9d3e8df4065f682")
+                URI("https://mikanani.me/Home/Episode/324b70bd8a170bcf13d7f5bdf9d3e8df4065f682").toURL()
         ))
             .thenReturn(
                 MikanClient.EpisodePageInfo(
@@ -38,7 +37,7 @@ class MikanVariableProviderTest {
 
         Mockito.`when`(
             mikanClient.getBangumiPageInfo(
-            URL("https://mikanani.me/Home/Bangumi/2852#583")
+                URI("https://mikanani.me/Home/Bangumi/2852#583").toURL()
             )
         ).thenReturn(MikanClient.BangumiPageInfo("290980"))
 

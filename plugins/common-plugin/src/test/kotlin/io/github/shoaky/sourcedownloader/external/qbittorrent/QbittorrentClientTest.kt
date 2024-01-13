@@ -4,18 +4,18 @@ import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import io.github.shoaky.sourcedownloader.sdk.util.Jackson
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
-import java.net.URL
+import java.net.URI
 import java.nio.file.Path
 
 @Disabled("依赖于qBittorrent应用测试才有意义")
 class QbittorrentClientTest {
 
-    private val config = QbittorrentConfig(URL("http://truenas:10095"), "admin", "adminadmin")
+    private val config = QbittorrentConfig(URI("http://truenas:10095"), "admin", "adminadmin")
     private val client = QbittorrentClient(config)
 
     @Test
     fun torrent_add() {
-        val url = URL("https://mikanani.me/Download/20221128/7443ef7a687f1068ee47cf0b9e38a6b2eba6a75b.torrent")
+        val url = URI("https://mikanani.me/Download/20221128/7443ef7a687f1068ee47cf0b9e38a6b2eba6a75b.torrent").toURL()
         val execute = client.execute(TorrentsAddRequest(listOf(url)))
         println(execute.body())
     }

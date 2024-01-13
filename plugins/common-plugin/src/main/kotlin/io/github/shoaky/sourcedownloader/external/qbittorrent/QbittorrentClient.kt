@@ -6,7 +6,7 @@ import io.github.shoaky.sourcedownloader.sdk.util.Jackson
 import io.github.shoaky.sourcedownloader.sdk.util.http.defaultCookieManager
 import org.slf4j.LoggerFactory
 import java.net.HttpCookie
-import java.net.URL
+import java.net.URI
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 
@@ -16,7 +16,7 @@ class QbittorrentClient(
 
     @Volatile
     private var authenticationLegal: Boolean = false
-    private val endpoint = qbittorrentConfig.url.toURI()
+    private val server = qbittorrentConfig.endpoint
 
     @Synchronized
     private fun tryLogin() {
@@ -28,7 +28,7 @@ class QbittorrentClient(
 
         val loginRequest = LoginRequest(qbittorrentConfig.username, qbittorrentConfig.password)
 
-        execute(endpoint, loginRequest)
+        execute(server, loginRequest)
         val cookie = getSidCookie()
         if (cookie != null) {
             authenticationLegal = true
@@ -38,11 +38,11 @@ class QbittorrentClient(
     }
 
     fun <R : BaseRequest<T>, T : Any> execute(request: R): HttpResponse<T> {
-        return super.execute(endpoint, request)
+        return super.execute(server, request)
     }
 
     private fun getSidCookie(): HttpCookie? {
-        val cookies = defaultCookieManager.cookieStore.get(endpoint)
+        val cookies = defaultCookieManager.cookieStore.get(server)
         if (log.isDebugEnabled) {
             log.debug("qBittorrent cookies:${Jackson.toJsonString(cookies)}")
         }
@@ -89,7 +89,7 @@ class QbittorrentClient(
 }
 
 data class QbittorrentConfig(
-    val url: URL,
+    val endpoint: URI,
     val username: String?,
     val password: String?
 )

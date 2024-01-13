@@ -12,7 +12,7 @@ import io.github.shoaky.sourcedownloader.sdk.PointedItem
 import io.github.shoaky.sourcedownloader.sdk.util.Jackson
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
-import java.net.URL
+import java.net.URI
 import java.time.LocalDateTime
 import kotlin.io.path.Path
 import kotlin.io.path.readText
@@ -105,19 +105,19 @@ class MikanSourceTest {
 
         val support = Mockito.mock(MikanClient::class.java)
         Mockito.`when`(support.getEpisodePageInfo(
-            URL("https://mikanani.me/Home/Episode/fd1a9d6157ff60052ec223586745278dd1d6c9fa")
+            URI("https://mikanani.me/Home/Episode/fd1a9d6157ff60052ec223586745278dd1d6c9fa").toURL()
         )
         )
             .thenReturn(MikanClient.EpisodePageInfo(fansubRss = "https://mikanani.me/RSS/Bangumi?bangumiId=2906&subgroupid=583"))
 
         Mockito.`when`(support.getEpisodePageInfo(
-            URL("https://mikanani.me/Home/Episode/38765370c4058c8d928f97d4c0f3f93564762aa6")
+            URI("https://mikanani.me/Home/Episode/38765370c4058c8d928f97d4c0f3f93564762aa6").toURL()
         )
         )
             .thenReturn(MikanClient.EpisodePageInfo(fansubRss = "https://mikanani.me/RSS/Bangumi?bangumiId=2976&subgroupid=583"))
 
         Mockito.`when`(support.getEpisodePageInfo(
-            URL("https://mikanani.me/Home/Episode/e3a592a221d70310e6f576f39303d63618e4dc4c"),
+            URI("https://mikanani.me/Home/Episode/e3a592a221d70310e6f576f39303d63618e4dc4c").toURL(),
         )
         )
             .thenReturn(MikanClient.EpisodePageInfo(fansubRss = "https://mikanani.me/RSS/Bangumi?bangumiId=2994&subgroupid=604"))
