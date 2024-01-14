@@ -37,6 +37,9 @@ management:
       show-details: ALWAYS
     env:
       show-values: ALWAYS
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} %clr(%5p) %clr(${PID:- }){magenta} %clr([%15.15t]){cyan} %-40.40logger{39} %clr(:){cyan} %m%n%wex"
 ---
 spring:
   config:
@@ -52,6 +55,7 @@ logging:
     reactor: debug
     io.github.shoaky: trace
     org.springframework.web: debug
+    Exposed: debug
 management:
   endpoint:
     configprops:

@@ -102,19 +102,19 @@ processors:
       save-processing-content: true
       #CEL表达式过滤SourceItem,任意一个为true则过滤
       item-expression-exclusions:
-        - "title.matches('720(?!)P')"
-        - "title.matches('中文配音')"
+        - "item.title.matches('720(?!)P')"
+        - "item.title.matches('中文配音')"
       #CEL表达式过滤sourceItem,任意一个为false则过滤,支持变量title,contentType,date(yyyy-MM-dd),link
       item-expression-inclusions:
-        - "date > timestamp('2023-03-30T00:00:00Z')"
+        - "item.datetime > timestamp('2023-03-30T00:00:00Z')"
       #CEL表达式过滤sourceFile,任意一个为true则过滤,支持filename,size,contentType
       file-expression-exclusions:
         #文件大小小于1MB的
-        - "attrs.size > 1024 * 1024"
+        - "item.attrs.size > 1024 * 1024"
       #CEL表达式过滤sourceFile,任意一个为false则过滤
       file-expression-inclusions:
         #文件名包含test的
-        - "filename.contains('test')"
+        - "file.name.contains('test')"
       #定义的模板变量不存在时的处理策略,默认:USE_ORIGINAL_FILENAME
       #USE_ORIGINAL_FILENAME:使用原文件名
       #USE_PATTERN:使用模板

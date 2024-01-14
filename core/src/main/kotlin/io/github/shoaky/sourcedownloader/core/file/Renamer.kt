@@ -159,8 +159,11 @@ class Renamer(
     ) {
 
         val variables: Map<String, Any> by lazy {
-            val map = mutableMapOf<String, Any>()
-            map["item"] = SourceItemRenameVariables(
+            val vars = mutableMapOf<String, Any>()
+            vars.putAll(sharedVariables.variables().replaceVariables())
+            // 文件变量的优先
+            vars.putAll(file.patternVariables.variables().replaceVariables())
+            vars["item"] = SourceItemRenameVariables(
                 sourceItem.title.replaceVariable("item.title"),
                 sourceItem.datetime.toLocalDate().toString().replaceVariable("item.date"),
                 sourceItem.datetime.year.toString().replaceVariable("item.year"),
@@ -168,16 +171,12 @@ class Renamer(
                 sourceItem.contentType.replaceVariable("item.contentType"),
                 sourceItem.attrs.mapValues { it.value.toString() }.replaceVariables()
             )
-            map["file"] = SourceFileRenameVariables(
+            vars["file"] = SourceFileRenameVariables(
                 file.fileDownloadPath.nameWithoutExtension.replaceVariable("file.name"),
                 file.sourceFile.attrs.mapValues { it.value.toString() }.replaceVariables(),
                 file.getPathOriginalLayout().joinToString("/") { it.replaceVariable("file.originalLayout") }
             )
-
-            map.putAll(sharedVariables.variables().replaceVariables())
-            // 文件变量的优先
-            map.putAll(file.patternVariables.variables().replaceVariables())
-            map
+            vars
         }
 
         private fun String.replaceVariable(name: String): String {

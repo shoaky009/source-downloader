@@ -22,6 +22,9 @@ fun <T : SdComponent> KClass<T>.componentSuperClasses(): List<KClass<out SdCompo
     return result.toList()
 }
 
+/**
+ * Trigger the process
+ */
 interface Trigger : SdComponent, AutoCloseable {
 
     /**
@@ -96,6 +99,9 @@ interface Downloader : SdComponent {
 
 }
 
+/**
+ *
+ */
 interface ItemFileResolver : SdComponent {
 
     /**
@@ -129,6 +135,9 @@ interface VariableProvider : SdComponent {
 
 }
 
+/**
+ * The bridge between the downloadPath and the savePath
+ */
 interface FileMover : SdComponent {
 
     /**
@@ -237,6 +246,9 @@ interface ItemContentFilter : SdComponent, Predicate<ItemContent>
  */
 interface FileContentFilter : SdComponent, Predicate<FileContent>
 
+/**
+ * Tag the file
+ */
 interface FileTagger : SdComponent {
 
     /**
@@ -245,6 +257,9 @@ interface FileTagger : SdComponent {
     fun tag(fileContent: SourceFile): String?
 }
 
+/**
+ * Decide whether to replace the file
+ */
 interface FileReplacementDecider : SdComponent {
 
     /**

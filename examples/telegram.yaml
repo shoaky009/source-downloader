@@ -39,7 +39,7 @@ components:
       props:
         default: telegram
         rules:
-          - expression: "attrs.site == 'Telegraph'"
+          - expression: "has(item.attrs.site) && item.attrs.site == 'Telegraph'"
             component: http
   item-file-resolver:
     - name: telegram
@@ -54,7 +54,7 @@ components:
       props:
         default: telegram
         rules:
-          - expression: "attrs.site == 'Telegraph'"
+          - expression: "has(item.attrs.site) && item.attrs.site == 'Telegraph'"
             component: "html:telegraph"
 
 processors:
