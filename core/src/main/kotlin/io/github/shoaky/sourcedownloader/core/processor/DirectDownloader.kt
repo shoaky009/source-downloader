@@ -5,6 +5,8 @@ import io.github.shoaky.sourcedownloader.sdk.component.Downloader
 import java.nio.channels.Channels
 import java.nio.channels.FileChannel
 import java.nio.file.StandardOpenOption
+import kotlin.io.path.createParentDirectories
+import kotlin.io.path.notExists
 
 class DirectDownloader(
     private val downloader: Downloader
@@ -19,6 +21,9 @@ class DirectDownloader(
                     file to Channels.newChannel(it)
                 }
             }.forEach { (file, channel) ->
+                if (file.path.parent.notExists()) {
+                    file.path.createParentDirectories()
+                }
                 FileChannel.open(
                     file.path,
                     StandardOpenOption.WRITE,

@@ -17,7 +17,8 @@ import java.time.ZoneId
 class TelegramSource(
     private val messageFetcher: TelegramMessageFetcher,
     private val chats: List<ChatConfig>,
-    private val sites: Set<String> = setOf("Telegraph")
+    private val sites: Set<String> = setOf("Telegraph"),
+    private val includeNonMedia: Boolean = false
 ) : Source<TelegramPointer> {
 
     override fun fetch(pointer: TelegramPointer, limit: Int): Iterable<PointedItem<ChatPointer>> {
@@ -50,17 +51,26 @@ class TelegramSource(
         chatPointer: ChatPointer,
         chatName: String
     ): SourceItem? {
-        val media = message.media() ?: return null
-        val chatId = chatPointer.parseChatId()
         val messageId = message.id()
-        val uri = URI("telegram://?chatId=${chatPointer.chatId}&messageId=$messageId")
+        val link = URI("telegram://?chatId=${chatPointer.chatId}&messageId=$messageId")
         val messageDateTime = Instant.ofEpochSecond(message.date().toLong()).atZone(zoneId).toLocalDateTime()
-
+        val media = message.media()
+        val chatId = chatPointer.parseChatId()
         val attrs = mutableMapOf(
             "messageId" to messageId,
             "chatId" to chatId,
             "chatName" to chatName
         )
+        if (includeNonMedia && media == null) {
+            return SourceItem(
+                "message-$messageId",
+                link,
+                messageDateTime,
+                "message",
+                link,
+                attrs
+            )
+        }
         when (media) {
             is MessageMediaPhoto -> {
                 attrs[MEDIA_TYPE_ATTR] = "photo"
@@ -68,8 +78,8 @@ class TelegramSource(
                     attrs["size"] = it
                 }
                 return SourceItem(
-                    "$chatId-$messageId.jpg", uri,
-                    messageDateTime, "image/jpg", uri,
+                    "$chatId-$messageId.jpg", link,
+                    messageDateTime, "image/jpg", link,
                     attrs = attrs
                 )
             }
@@ -83,10 +93,10 @@ class TelegramSource(
                 attrs["size"] = document.size()
                 return SourceItem(
                     filename,
-                    uri,
+                    link,
                     messageDateTime,
                     document.mimeType(),
-                    uri,
+                    link,
                     attrs
                 )
             }
@@ -105,7 +115,7 @@ class TelegramSource(
                 }
                 return SourceItem(
                     webpage.title() ?: message.message(),
-                    uri,
+                    link,
                     messageDateTime,
                     webpage.type() ?: "webpage",
                     URI(webpage.url()),
