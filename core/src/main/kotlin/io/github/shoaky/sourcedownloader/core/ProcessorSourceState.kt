@@ -27,6 +27,10 @@ data class ProcessorSourceState(
         return printStr
     }
 
+    override fun toString(): String {
+        return formatPointerString(1000)
+    }
+
     companion object {
 
         fun <T : SourcePointer> resolvePointer(klass: KClass<out Source<T>>, values: Map<String, Any>): T {

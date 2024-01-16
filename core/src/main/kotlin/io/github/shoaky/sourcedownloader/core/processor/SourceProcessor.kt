@@ -459,7 +459,7 @@ class SourceProcessor(
             val replaced = replaceFiles(itemContent)
             moved || replaced
         }.onFailure {
-            log.error("重命名出错, record:${Jackson.toJsonString(pc)}", it)
+            log.error("重命名出错, record:{}", Jackson.toJsonString(pc), it)
             invokeListeners {
                 this.onItemError(itemContent.sourceItem, it)
             }
@@ -473,7 +473,7 @@ class SourceProcessor(
 
         val renameTimesThreshold = options.renameTimesThreshold
         if (pc.renameTimes == renameTimesThreshold) {
-            log.warn("重命名${renameTimesThreshold}次重试失败, record:${Jackson.toJsonString(pc)}")
+            log.warn("重命名{}次重试失败, record:{}", renameTimesThreshold, Jackson.toJsonString(pc))
         }
         val toUpdate = pc.copy(
             renameTimes = pc.renameTimes.inc(),
@@ -663,7 +663,7 @@ class SourceProcessor(
 
             stat.stopWatch.start("fetchItems")
             val itemIterable = customIterable ?: retry.execute<Iterable<PointedItem<ItemPointer>>, IOException> {
-                it.setAttribute("stage", ProcessStage("FetchSourceItems", sourceState))
+                it.setAttribute("stage", ProcessStage("FetchSourceItems", "Processor:$name SourceId:${sourceId}"))
                 source.fetch(sourcePointer, options.fetchLimit)
             }
             stat.stopWatch.stop()

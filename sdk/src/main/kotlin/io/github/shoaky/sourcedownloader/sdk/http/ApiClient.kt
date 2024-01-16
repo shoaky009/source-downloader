@@ -23,7 +23,7 @@ interface ApiClient {
 }
 
 abstract class HookedApiClient(
-    val client: HttpClient = httpClient,
+    private val client: HttpClient = httpClient,
 ) : ApiClient {
 
     override fun <R : BaseRequest<T>, T : Any> execute(endpoint: URI, request: R): HttpResponse<T> {
