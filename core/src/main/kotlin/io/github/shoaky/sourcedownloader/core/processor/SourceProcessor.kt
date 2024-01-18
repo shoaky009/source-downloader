@@ -614,6 +614,10 @@ class SourceProcessor(
             .withListener(LoggingStageRetryListener())
             .build()
 
+        private val processDispatcher = Executors.newThreadPerTaskExecutor(
+            Thread.ofVirtual().name("process-task", 1).factory()
+        ).asCoroutineDispatcher()
+
         private val filteredStatuses = setOf(FILTERED, TARGET_ALREADY_EXISTS)
         private val fsMaxFilenameLengthMapping = mapOf(
             "zfs" to 250
@@ -670,7 +674,8 @@ class SourceProcessor(
 
             stat.stopWatch.start("processItems")
             val processChannel = Channel<PointedItem<ItemPointer>>(options.parallelism)
-            val processScope = CoroutineScope(Dispatchers.Default)
+
+            val processScope = CoroutineScope(processDispatcher)
             val processJob = processScope.launch process@{
                 for (item in itemIterable) {
                     processChannel.send(item)
