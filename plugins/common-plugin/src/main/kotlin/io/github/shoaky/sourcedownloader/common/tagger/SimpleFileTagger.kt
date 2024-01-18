@@ -28,7 +28,7 @@ object SimpleFileTagger : FileTagger {
         if (detect != MimeTypes.OCTET_STREAM) {
             return detect.split("/").first()
         }
-        log.info("Can't detect file type for $name")
+        log.debug("Can't detect file type for {}", name)
         return null
     }
 

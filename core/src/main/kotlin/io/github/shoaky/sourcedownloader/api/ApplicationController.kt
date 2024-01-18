@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
-// 只是没ui临时用着
 @RestController
 @RequestMapping("/api/application")
 class ApplicationController(
