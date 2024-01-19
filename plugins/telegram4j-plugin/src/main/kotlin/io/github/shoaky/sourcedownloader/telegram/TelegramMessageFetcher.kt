@@ -1,5 +1,6 @@
 package io.github.shoaky.sourcedownloader.telegram
 
+import telegram4j.mtproto.MTProtoRetrySpec
 import telegram4j.tl.*
 import telegram4j.tl.messages.BaseMessages
 import telegram4j.tl.messages.ChannelMessages
@@ -50,9 +51,9 @@ class TelegramMessageFetcher(
         }
         val getHistory = getHistoryBuilder.peer(inputPeer).build()
         val historyMessage = client.serviceHolder.chatService.getHistory(getHistory)
-            .onErrorMap {
-                wrapRetryableExceptionIfNeeded(it)
-            }
+            .retryWhen(
+                MTProtoRetrySpec.max(2)
+            )
             .blockOptional(timeout).get()
         if (historyMessage is ChannelMessages) {
             return historyMessage.messages().filterIsInstance<BaseMessage>().reversed()
