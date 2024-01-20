@@ -2,15 +2,14 @@ package io.github.shoaky.sourcedownloader.sdk.util
 
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.core.type.TypeReference
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.databind.SerializerProvider
+import com.fasterxml.jackson.databind.*
+import com.fasterxml.jackson.databind.deser.DeserializationProblemHandler
 import com.fasterxml.jackson.databind.ser.std.StdSerializer
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import java.io.InputStream
+import java.nio.file.Path
 import kotlin.reflect.KClass
 
 // TODO 支持kebab-case和camelCase
@@ -28,6 +27,7 @@ object Jackson {
             .enable(DeserializationFeature.FAIL_ON_INVALID_SUBTYPE)
             .enable(DeserializationFeature.FAIL_ON_MISSING_EXTERNAL_TYPE_ID_PROPERTY)
             .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
+            .addHandler(DefaultHandler)
     }
 
     fun <T : Any> fromJson(json: String, type: KClass<T>): T {
@@ -68,6 +68,19 @@ object Jackson {
 
     fun convertToMap(any: Any): Map<String, Any> {
         return convert(any, mapRef)
+    }
+
+}
+
+private object DefaultHandler : DeserializationProblemHandler() {
+
+    override fun handleInstantiationProblem(
+        ctxt: DeserializationContext, instClass: Class<*>, argument: Any, t: Throwable
+    ): Any {
+        if (instClass == Path::class.java) {
+            return Path.of(argument.toString())
+        }
+        return super.handleInstantiationProblem(ctxt, instClass, argument, t)
     }
 
 }
