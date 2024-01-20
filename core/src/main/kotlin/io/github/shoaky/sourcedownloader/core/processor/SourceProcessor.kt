@@ -31,6 +31,7 @@ import java.time.Duration
 import java.time.LocalDateTime
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
+import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.locks.Lock
 import java.util.concurrent.locks.ReentrantLock
@@ -671,15 +672,14 @@ class SourceProcessor(
                 source.fetch(sourcePointer, options.fetchLimit)
             }
             stat.stopWatch.stop()
-
             stat.stopWatch.start("processItems")
-            val processChannel = Channel<PointedItem<ItemPointer>>(options.parallelism)
 
+            val semaphore = Semaphore(options.parallelism)
             val processScope = CoroutineScope(processDispatcher)
             val processJob = processScope.launch process@{
                 for (item in itemIterable) {
-                    processChannel.send(item)
-                    log.trace("Processor:'{}' send item to channel:{}", name, item)
+                    semaphore.acquire()
+                    log.trace("Processor:'{}' submit item:{}", name, item)
                     launch {
                         log.trace("Processor:'{}' start process item:{}", name, item)
                         val itemOptions = selectItemOptions(item)
@@ -688,10 +688,10 @@ class SourceProcessor(
                             log.debug("{} filtered item:{}", filterBy::class.simpleName, item.sourceItem)
                             onItemFiltered(item)
                             stat.incFilterCounting()
-                            processChannel.receive()
+                            semaphore.release()
                             return@launch
-                            // continue
                         }
+
                         val processingContent = runCatching {
                             retry.execute<ProcessingContent, IOException> {
                                 it.setAttribute("stage", ProcessStage("ProcessItem", item))
@@ -708,10 +708,8 @@ class SourceProcessor(
 
                             if (options.itemErrorContinue.not()) {
                                 log.warn("Processor:'$name'处理失败, item:$item, 退出本次触发处理, 如果未能解决该处理器将无法继续处理后续Item")
-                                secondaryFileMover.releaseAll()
-                                processChannel.cancel()
+                                processScope.cancel()
                                 return@launch
-                                // return
                             }
                         }.onSuccess {
                             onItemSuccess(item, it)
@@ -726,6 +724,8 @@ class SourceProcessor(
                         try {
                             context.touch(processingContent)
                             onItemCompleted(processingContent)
+                            // 也有可能会重复，取消了不属于该Item的路径
+                            // secondaryFileMover.release(processingContent.itemContent.downloadableFiles().map { it.targetPath() })
                             log.trace("Processor:'{}' finished process item:{}", name, item)
 
                             if (filteredStatuses.contains(processingContent.status)) {
@@ -734,9 +734,10 @@ class SourceProcessor(
                                 stat.incProcessingCounting()
                             }
                         } finally {
-                            processChannel.receive()
+                            semaphore.release()
                         }
                     }
+
                 }
             }
 
@@ -816,7 +817,7 @@ class SourceProcessor(
                 }
             }
 
-            if (contentStatus == WAITING_TO_RENAME && downloader !is AsyncDownloader) {
+            if (contentStatus == WAITING_TO_RENAME && downloader !is AsyncDownloader && this !is DryRunProcess) {
                 val (moveSuccess, replaceSuccess) = doMovement(itemContent)
                 if (moveSuccess || replaceSuccess) {
                     return processingContent.copy(status = RENAMED, renameTimes = 1)

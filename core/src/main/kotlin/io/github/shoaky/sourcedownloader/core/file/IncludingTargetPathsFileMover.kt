@@ -42,6 +42,9 @@ class IncludingTargetPathsFileMover(
 
     fun preoccupiedTargetPath(paths: Collection<Path>) {
         log.debug("PreoccupiedTargetPath: {}", paths)
+        if (paths.isEmpty()) {
+            return
+        }
         synchronized(preoccupiedTargetPaths) {
             preoccupiedTargetPaths.putAll(
                 paths.map { it.toString() to it }
@@ -57,6 +60,17 @@ class IncludingTargetPathsFileMover(
     fun releaseAll() {
         synchronized(preoccupiedTargetPaths) {
             preoccupiedTargetPaths.clear()
+        }
+    }
+
+    fun release(paths: Collection<Path>) {
+        if (paths.isEmpty()) {
+            return
+        }
+        synchronized(preoccupiedTargetPaths) {
+            paths.forEach {
+                preoccupiedTargetPaths.remove(it.toString())
+            }
         }
     }
 
