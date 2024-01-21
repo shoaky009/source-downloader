@@ -37,7 +37,7 @@ object EpisodeVariableProvider : VariableProvider {
             Regex("x(?:264|265)", RegexOption.IGNORE_CASE) to "",
             Regex("flacx2|ma10p|hi10p|yuv420p10|10bit|hevc10|aacx2|flac|4k|_", RegexOption.IGNORE_CASE) to "",
             Regex("\\b[A-Fa-f0-9]{8}\\b", RegexOption.IGNORE_CASE) to "",
-            Regex("v\\d") to "",
+            Regex("v\\d+") to "",
             Regex("FIN", RegexOption.IGNORE_CASE) to ""
         )
     )
