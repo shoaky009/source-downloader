@@ -39,16 +39,15 @@ private class ProcessingContentController(
     }
 
     @PutMapping("/{id}")
-    fun modifyProcessingContent(@PathVariable id: Long, @RequestBody body: ProcessingContent): ProcessingContent {
+    fun modifyProcessingContent(@PathVariable id: Long, @RequestBody body: UpdateProcessingContent): ProcessingContent {
         val current = storage.findById(id)
-        return storage.save(
-            current.copy(
-                // 这个待定，有些字段不允许修改
-                itemContent = body.itemContent,
-                renameTimes = body.renameTimes,
-                modifyTime = LocalDateTime.now()
-            )
+        val update = current.copy(
+            // 这个待定，有些字段不允许修改
+            status = body.status ?: current.status,
+            renameTimes = body.renameTimes ?: current.renameTimes,
+            modifyTime = LocalDateTime.now()
         )
+        return storage.save(update)
     }
 
     @DeleteMapping("/{id}")
@@ -67,4 +66,9 @@ private class ProcessingContentController(
 data class Scroll(
     val contents: List<ProcessingContent>,
     val nextMaxId: Long
+)
+
+data class UpdateProcessingContent(
+    val status: ProcessingContent.Status? = null,
+    val renameTimes: Int? = null
 )
