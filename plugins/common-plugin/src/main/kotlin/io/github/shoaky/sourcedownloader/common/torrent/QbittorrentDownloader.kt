@@ -1,5 +1,6 @@
 package io.github.shoaky.sourcedownloader.common.torrent
 
+import bt.bencoding.serializers.BEParser
 import bt.metainfo.MetadataService
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import io.github.shoaky.sourcedownloader.external.qbittorrent.*
@@ -13,7 +14,10 @@ import io.github.shoaky.sourcedownloader.sdk.component.TorrentDownloader.Compani
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import java.io.IOException
+import java.net.URL
 import java.nio.file.Path
+import java.security.MessageDigest
+import java.util.*
 import kotlin.io.path.extension
 
 /**
@@ -43,40 +47,64 @@ class QbittorrentDownloader(
             return true
         }
 
-        val torrentHash = getTorrentHash(task.sourceItem)
+        val torrentHash = getInfoHashV1(task.sourceItem)
         // NOTE 必须要等一下qbittorrent(不知道有没有同步添加的方法)
         Thread.sleep(400L)
 
-        val fileResponse = retryWhen({
-            client.execute(
+        val (success, infoHash, body) = retryWhen({
+            val fileResponse = client.execute(
                 TorrentFilesRequest(
                     torrentHash
                 )
             )
-        }, condition = { it.statusCode() == HttpStatus.OK.value() })
-
-        if (fileResponse.statusCode() != HttpStatus.OK.value()) {
-            throw IOException("Qbittorrent get files failed most likely because getting torrent metadata is slow, code:${fileResponse.statusCode()} body:${fileResponse.body()}")
+            Triple(fileResponse.statusCode() == HttpStatus.OK.value(), torrentHash, fileResponse.body())
+        }, condition = { it.first }) {
+            val infoHashV2 = getInfoHashV2(task.downloadUri().toURL())
+            log.info("Get info hash v2:$infoHashV2")
+            val files = client.execute(
+                TorrentFilesRequest(
+                    infoHashV2
+                )
+            )
+            Triple(files.statusCode() == HttpStatus.OK.value(), infoHashV2, files.body())
         }
 
-        val torrentFiles = fileResponse.body().parseJson(jacksonTypeRef<List<TorrentFile>>())
+        if (success.not()) {
+            throw IOException("Qbittorrent get files failed most likely because getting torrent metadata is slow, infoHash:$infoHash")
+        }
+
+        val torrentFiles = body.parseJson(jacksonTypeRef<List<TorrentFile>>())
         val relativePaths = task.relativePaths()
         val stopDownloadFiles = torrentFiles.filter {
             relativePaths.contains(it.name).not()
         }
-        log.debug("torrent:{} set prio 0 files: {}", torrentHash, stopDownloadFiles)
+        log.debug("torrent:{} set prio 0 files: {}", infoHash, stopDownloadFiles)
         if (stopDownloadFiles.isEmpty()) {
             return true
         }
 
         client.execute(
             TorrentFilePrioRequest(
-                torrentHash,
+                infoHash,
                 stopDownloadFiles.map { it.index },
                 0
             )
         )
         return true
+    }
+
+    private fun getInfoHashV2(url: URL): String {
+        val content = BEParser(url).use {
+            it.readMap().value["info"]?.content
+                ?: throw ComponentException.processing(
+                    "Try to get torrent info failed, url:${url}"
+                )
+        }
+        val digest = MessageDigest.getInstance("SHA-256")
+        val hashBytes = digest.digest(content)
+        val infoHashV2 = HexFormat.of().formatHex(hashBytes).substring(0, 40)
+        log.info("Get info hash v2:$infoHashV2 from url:$url")
+        return infoHashV2
     }
 
     override fun defaultDownloadPath(): Path {
@@ -88,7 +116,7 @@ class QbittorrentDownloader(
     }
 
     override fun cancel(sourceItem: SourceItem, files: List<SourceFile>) {
-        val torrentHash = getTorrentHash(sourceItem)
+        val torrentHash = getInternalInfoHash(sourceItem)
         val response = client.execute(
             TorrentDeleteRequest(listOf(torrentHash))
         )
@@ -115,14 +143,14 @@ class QbittorrentDownloader(
     }
 
     override fun isFinished(sourceItem: SourceItem): Boolean? {
-        val torrentHash = getTorrentHash(sourceItem)
+        val torrentHash = getInternalInfoHash(sourceItem)
         val torrent = client.execute(TorrentInfoRequest(hashes = torrentHash))
         val torrents = torrent.body()
         return torrents.map { it.progress >= 1.0f }.firstOrNull()
     }
 
     override fun move(itemContent: ItemContent): Boolean {
-        val torrentHash = getTorrentHash(itemContent.sourceItem)
+        val torrentHash = getInternalInfoHash(itemContent.sourceItem)
         val sourceFiles = itemContent.sourceFiles
 
         val firstFile = sourceFiles.first()
@@ -143,6 +171,9 @@ class QbittorrentDownloader(
             success
         }.all { it }
 
+        if (allSuccess.not()) {
+            return false
+        }
         val setLocationResponse = client.execute(
             TorrentsSetLocationRequest(
                 listOf(torrentHash),
@@ -155,28 +186,30 @@ class QbittorrentDownloader(
         return allSuccess && setLocationResponse.statusCode() == HttpStatus.OK.value()
     }
 
+    private fun getInternalInfoHash(sourceItem: SourceItem): String {
+        val torrentHash = getInfoHashV1(sourceItem)
+        val torrent = client.execute(TorrentInfoRequest(hashes = torrentHash))
+        if (torrent.body().isEmpty()) {
+            val infoHashV2 = getInfoHashV2(sourceItem.downloadUri.toURL())
+            val response = client.execute(TorrentInfoRequest(hashes = infoHashV2))
+            if (response.statusCode() == 200) {
+                return infoHashV2
+            }
+            log.warn("Get torrent info failed, hash:$torrentHash code:${torrent.statusCode()} body:${torrent.body()}")
+        }
+        return torrentHash
+    }
+
     companion object {
 
         private val log = LoggerFactory.getLogger(QbittorrentDownloader::class.java)
 
-        fun <T> retry(block: () -> T, times: Int = 3): T {
-            var count = 0
-            while (count < times) {
-                try {
-                    return block()
-                } catch (e: Exception) {
-                    count++
-                    log.info("retry times: $count")
-                    Thread.sleep(200L * count)
-                    if (count == times) {
-                        throw e
-                    }
-                }
-            }
-            throw ComponentException.processing("max retry times")
-        }
-
-        fun <T> retryWhen(block: () -> T, times: Int = 3, condition: (T) -> Boolean): T {
+        private fun <T> retryWhen(
+            block: () -> T,
+            times: Int = 3,
+            condition: (T) -> Boolean,
+            default: () -> T
+        ): T {
             var count = 0
             while (count < times) {
                 try {
@@ -199,14 +232,14 @@ class QbittorrentDownloader(
                     }
                 }
             }
-            throw ComponentException.processing("max retry times")
+            return default.invoke()
         }
     }
 
 }
 
 private val metadataService = MetadataService()
-fun getTorrentHash(sourceItem: SourceItem): String {
+fun getInfoHashV1(sourceItem: SourceItem): String {
     return tryParseTorrentHash(sourceItem)
         ?: metadataService.fromUrl(sourceItem.downloadUri.toURL()).torrentId.toString()
 }

@@ -2,12 +2,11 @@ package io.github.shoaky.sourcedownloader.external.qbittorrent
 
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import io.github.shoaky.sourcedownloader.sdk.util.Jackson
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import java.net.URI
 import java.nio.file.Path
 
-@Disabled("依赖于qBittorrent应用测试才有意义")
+// @Disabled("依赖于qBittorrent应用测试才有意义")
 class QbittorrentClientTest {
 
     private val config = QbittorrentConfig(URI("http://truenas:10095"), "admin", "adminadmin")
@@ -53,7 +52,7 @@ class QbittorrentClientTest {
     @Test
     fun torrent_get_files() {
         val request = TorrentFilesRequest("2ae25932f3b02800f191a08f395cc7ee920ce117")
-        val execute = client.execute(request).body().parseJson(jacksonTypeRef<String>())
+        val execute = client.execute(request).body().parseJson(jacksonTypeRef<List<TorrentFile>>())
         println(Jackson.toJsonString(execute))
     }
 

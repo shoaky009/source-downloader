@@ -21,7 +21,7 @@ class TransmissionDownloader(
     }
 
     override fun isFinished(sourceItem: SourceItem): Boolean? {
-        val hash = getTorrentHash(sourceItem)
+        val hash = getInfoHashV1(sourceItem)
         val response = client.execute(
             TorrentGet(
                 listOf(hash)
@@ -72,7 +72,7 @@ class TransmissionDownloader(
     }
 
     override fun cancel(sourceItem: SourceItem, files: List<SourceFile>) {
-        val hash = getTorrentHash(sourceItem)
+        val hash = getInfoHashV1(sourceItem)
         val response = client.execute(TorrentDelete(listOf(hash)))
         log.info("cancel item:{} status:{} body:{}", sourceItem, response.statusCode(), response.body())
     }
@@ -80,7 +80,7 @@ class TransmissionDownloader(
     override fun move(itemContent: ItemContent): Boolean {
         // https://github.com/transmission/transmission/issues/3216
         // NOTE 目前Transmission的API无法完全满足命名种子内部的文件，重命名参数不能包含文件夹
-        val torrentHash = getTorrentHash(itemContent.sourceItem)
+        val torrentHash = getInfoHashV1(itemContent.sourceItem)
         val sourceFiles = itemContent.sourceFiles
 
         val grouping = sourceFiles.groupBy { it.targetPath().parent }

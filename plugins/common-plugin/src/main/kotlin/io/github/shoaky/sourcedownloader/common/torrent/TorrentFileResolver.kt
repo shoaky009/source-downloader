@@ -39,6 +39,8 @@ object TorrentFileResolver : ItemFileResolver {
             metadataService.fromUrl(downloadUri.toURL())
         }
 
+        // TODO support BitTorrent v2 get torrent file tree
+        // https://blog.libtorrent.org/2020/09/bittorrent-v2/
         if (torrent.files.size == 1) {
             return torrent.files
                 .map {
