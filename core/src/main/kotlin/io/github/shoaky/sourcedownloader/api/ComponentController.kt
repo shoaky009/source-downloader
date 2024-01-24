@@ -10,6 +10,10 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
+/**
+ * Component相关接口
+
+ */
 @RestController
 @RequestMapping("/api/component")
 private class ComponentController(
@@ -17,6 +21,13 @@ private class ComponentController(
     private val configOperator: ConfigOperator,
 ) {
 
+    /**
+     * 获取所有Component的信息
+     * @param type Component类型
+     * @param typeName Component类型名称
+     * @param name Component名称
+     * @return Component信息列表
+     */
     @GetMapping
     fun getComponents(
         type: ComponentTopType?, typeName: String?, name: String?,
@@ -38,6 +49,11 @@ private class ComponentController(
             }
     }
 
+    /**
+     * 创建Component
+     * @param type Component类型
+     * @param config Component配置
+     */
     @PostMapping("/{type}")
     @ResponseStatus(HttpStatus.CREATED)
     fun createComponent(@PathVariable type: ComponentTopType, @RequestBody config: ComponentConfig) {
@@ -47,6 +63,12 @@ private class ComponentController(
         )
     }
 
+    /**
+     * 删除Component
+     * @param type Component类型
+     * @param typeName Component类型名称
+     * @param name Component名称
+     */
     @DeleteMapping("/{type}/{typeName}/{name}")
     fun deleteComponent(
         @PathVariable type: ComponentTopType,
@@ -65,6 +87,9 @@ private class ComponentController(
         return ResponseEntity.ok().build()
     }
 
+    /**
+     * 获取Component描述(未完成)
+     */
     @GetMapping("/descriptions")
     fun getComponentDescriptions(): List<ComponentDescription> {
         return componentManager.getComponentDescriptions()
@@ -73,6 +98,12 @@ private class ComponentController(
             }
     }
 
+    /**
+     * 重载Component
+     * @param type Component类型
+     * @param typeName Component类型名称
+     * @param name Component名称
+     */
     @GetMapping("/{type}/{typeName}/{name}/reload")
     fun reload(
         @PathVariable type: ComponentTopType,

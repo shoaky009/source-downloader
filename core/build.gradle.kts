@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.spring)
     id("jacoco-report-aggregation")
     alias(libs.plugins.graalvm)
+    id("org.springdoc.openapi-gradle-plugin") version "1.8.0"
 }
 
 dependencies {
@@ -32,6 +33,12 @@ dependencies {
     resolveBuildInPlugins()
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     // implementation("org.springframework.boot:spring-boot-starter-validation")
+    val isGenerateOpenApiDocs = gradle.startParameter.taskNames.contains("generateOpenApiDocs")
+    if (isGenerateOpenApiDocs) {
+        implementation(libs.therapi.runtime.javadoc)
+        kapt(libs.therapi.javadoc.scribe)
+        implementation(libs.springdocs.openapi.starter.webmvc.api)
+    }
 }
 
 fun DependencyHandlerScope.resolveBuildInPlugins() {

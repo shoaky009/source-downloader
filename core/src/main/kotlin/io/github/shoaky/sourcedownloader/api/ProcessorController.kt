@@ -1,5 +1,6 @@
 package io.github.shoaky.sourcedownloader.api
 
+import io.github.shoaky.sourcedownloader.core.ProcessingContent
 import io.github.shoaky.sourcedownloader.core.ProcessorConfig
 import io.github.shoaky.sourcedownloader.core.ProcessorConfigStorage
 import io.github.shoaky.sourcedownloader.core.component.ConfigOperator
@@ -12,6 +13,9 @@ import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import java.util.concurrent.Executors
 
+/**
+ * Processor相关的API
+ */
 @RestController
 @RequestMapping("/api/processor")
 private class ProcessorController(
@@ -24,6 +28,10 @@ private class ProcessorController(
         Thread.ofVirtual().name("manual-trigger", 0).factory()
     )
 
+    /**
+     * 获取所有Processor的信息
+     * @return Processor信息列表
+     */
     @GetMapping
     fun getProcessors(): List<ProcessorInfo> {
         val processors = processorManager.getProcessors()
@@ -32,17 +40,23 @@ private class ProcessorController(
         }
     }
 
+    /**
+     * 获取指定Processor的信息
+     * @param processorName Processor名称
+     */
     @GetMapping("/{processorName}")
     fun getConfig(@PathVariable processorName: String): ProcessorConfig? {
         return configStorages.flatMap { it.getAllProcessorConfig() }
             .firstOrNull { it.name == processorName }
     }
 
-    @PostMapping("/{processorName}")
-    fun create(
-        @PathVariable processorName: String,
-        @RequestBody processorConfig: ProcessorConfig
-    ) {
+    /**
+     * 创建Processor
+     * @param processorConfig Processor配置
+     */
+    @PostMapping
+    fun create(@RequestBody processorConfig: ProcessorConfig) {
+        val processorName = processorConfig.name
         if (processorManager.exists(processorName)) {
             throw ComponentException.processorExists("Processor $processorName already exists")
         }
@@ -50,6 +64,11 @@ private class ProcessorController(
         processorManager.createProcessor(processorConfig)
     }
 
+    /**
+     * 更新Processor配置，会自动重载Processor
+     * @param processorName Processor名称
+     * @param processorConfig Processor配置
+     */
     @PutMapping("/{processorName}")
     fun update(
         @PathVariable processorName: String,
@@ -64,6 +83,10 @@ private class ProcessorController(
         return ProcessorInfo(processorName, info)
     }
 
+    /**
+     * 删除Processor
+     * @param processorName Processor名称
+     */
     @DeleteMapping("/{processorName}")
     fun delete(@PathVariable processorName: String) {
         processorManager.destroyProcessor(processorName)
@@ -71,9 +94,10 @@ private class ProcessorController(
     }
 
     /**
-     * 只针对Processor配置的重载，涉及到组件或实例变更时没有处理。
-     * 并且有可能会有组件或实例泄漏的问题，但一般数量并不会特别多后续继续优化。
+     * 重载Processor
      *
+     * @description 只重新加载Processor配置，但不会重新加载引用的Component
+     * @param processorName Processor名称
      */
     @GetMapping("/{processorName}/reload")
     fun reload(@PathVariable processorName: String) {
@@ -84,6 +108,12 @@ private class ProcessorController(
         processorManager.createProcessor(config)
     }
 
+    /**
+     * Processor模拟处理
+     * @param processorName Processor名称
+     * @param options 模拟处理选项
+     * @return 模拟处理结果
+     */
     @RequestMapping(
         "/{processorName}/dry-run",
         method = [RequestMethod.GET, RequestMethod.POST],
@@ -109,17 +139,24 @@ private class ProcessorController(
                 val variables = itemContent.sharedPatternVariables.variables()
                 DryRunResult(
                     itemContent.sourceItem, variables,
-                    fileResult, pc.status.name
+                    fileResult, pc.status
                 )
             }
     }
 
+    /**
+     * 手动触发Processor
+     * @param processorName Processor名称
+     */
     @GetMapping("/{processorName}/trigger")
     fun trigger(@PathVariable processorName: String) {
         val sourceProcessor = processorManager.getProcessor(processorName)
         manualTriggerExecutor.submit(sourceProcessor.get().safeTask())
     }
 
+    /**
+     * 手动提交Items到Processor(experimental)
+     */
     @PostMapping("/{processorName}/items")
     @ResponseStatus(HttpStatus.ACCEPTED)
     suspend fun postItems(@PathVariable processorName: String, @RequestBody items: List<SourceItem>) {
@@ -134,18 +171,54 @@ private data class ProcessorInfo(
     val components: Map<String, Any>
 )
 
+/**
+ * Processor模拟处理结果
+ */
 private data class DryRunResult(
+    /**
+     * SourceItem
+     */
     val sourceItem: SourceItem,
+    /**
+     * 共享命名变量
+     */
     val sharedVariables: Map<String, Any>,
+    /**
+     * 文件处理结果
+     */
     val fileResults: List<FileResult>,
-    val status: String
+    /**
+     * 处理状态
+     */
+    val status: ProcessingContent.Status
 )
 
+/**
+ * 文件处理结果
+ */
 private data class FileResult(
+    /**
+     * 下载路径
+     */
     val from: String,
+    /**
+     * 目标路径
+     */
     val to: String,
+    /**
+     * 私有命名变量
+     */
     val variables: Map<String, Any>,
+    /**
+     * 文件标签
+     */
     val tags: Collection<String>,
+    /**
+     * 文件处理状态
+     */
     val status: FileContentStatus,
+    /**
+     * 错误信息
+     */
     val error: String? = null
 )

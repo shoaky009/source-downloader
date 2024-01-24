@@ -7,7 +7,7 @@ import io.github.shoaky.sourcedownloader.sdk.PointedItem
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 
 /**
- * 根源没有时间 limit等请求参数
+ * Fetch latest items every time, no need to store pointer
  */
 abstract class AlwaysLatestSource : Source<NullPointer> {
 

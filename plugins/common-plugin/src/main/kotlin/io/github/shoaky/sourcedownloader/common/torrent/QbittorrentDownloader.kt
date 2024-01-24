@@ -123,9 +123,9 @@ class QbittorrentDownloader(
         log.info("Cancel item:{} status:{} body:{}", sourceItem, response.statusCode(), response.body())
     }
 
-    override fun getPaths(torrentHash: String): List<Path> {
+    override fun getPaths(infoHash: String): List<Path> {
         val torrentInfo =
-            client.execute(TorrentInfoRequest(hashes = torrentHash)).body().firstOrNull() ?: return emptyList()
+            client.execute(TorrentInfoRequest(hashes = infoHash)).body().firstOrNull() ?: return emptyList()
         val extension = torrentInfo.contentPath.extension
         // 只有一个文件的torrent
         if (extension.isNotBlank()) {
@@ -134,7 +134,7 @@ class QbittorrentDownloader(
 
         return client.execute(
             TorrentFilesRequest(
-                torrentHash
+                infoHash
             )
         ).body().parseJson(jacksonTypeRef<List<TorrentFile>>())
             .map {

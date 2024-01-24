@@ -7,6 +7,9 @@ class UniversalFileVariable(
         return patternVariables
     }
 
+    /**
+     * @suppress
+     */
     override fun toString(): String {
         return "UniversalSourceFile(patternVariables=$patternVariables)"
     }

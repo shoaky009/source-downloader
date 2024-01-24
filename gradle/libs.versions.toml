@@ -19,6 +19,9 @@ tika = "2.7.0"
 jsoup = "1.17.2"
 exposed = "0.46.0"
 protobuf = "3.25.2"
+dokka = "1.9.10"
+springdocs = "2.3.0"
+therapi-javadoc = "0.15.0"
 
 [libraries]
 springboot-dependencies = { module = "org.springframework.boot:spring-boot-dependencies", version.ref = "springboot" }
@@ -45,6 +48,9 @@ exposed-json = { module = "org.jetbrains.exposed:exposed-json", version.ref = "e
 exposed-spring-boot-stater = { module = "org.jetbrains.exposed:exposed-spring-boot-starter", version.ref = "exposed" }
 graalvm-sdk = { module = "org.graalvm.sdk:graal-sdk", version.ref = "graalvm" }
 protobuf = { module = "com.google.protobuf:protobuf-java", version.ref = "protobuf" }
+springdocs-openapi-starter-webmvc-api = { module = "org.springdoc:springdoc-openapi-starter-webmvc-api", version.ref = "springdocs" }
+therapi-runtime-javadoc = { module = "com.github.therapi:therapi-runtime-javadoc", version.ref = "therapi-javadoc" }
+therapi-javadoc-scribe = { module = "com.github.therapi:therapi-runtime-javadoc-scribe", version.ref = "therapi-javadoc" }
 
 [bundles]
 cel = ["cel-tools", "cel-jackson"]
@@ -57,3 +63,4 @@ kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-spring = { id = "org.jetbrains.kotlin.plugin.spring", version.ref = "kotlin" }
 graalvm = { id = "org.graalvm.buildtools.native", version.ref = "graalvm-plugin" }
 axion-release = { id = "pl.allegro.tech.build.axion-release", version.ref = "axion-release" }
+dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }

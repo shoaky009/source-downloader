@@ -16,7 +16,7 @@ class TransmissionDownloader(
     private val client: TransmissionClient,
 ) : TorrentDownloader {
 
-    override fun getPaths(torrentHash: String): List<Path> {
+    override fun getPaths(infoHash: String): List<Path> {
         TODO("Not yet implemented")
     }
 

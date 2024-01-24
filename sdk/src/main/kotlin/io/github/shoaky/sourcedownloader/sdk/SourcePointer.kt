@@ -30,6 +30,9 @@ object NullPointer : SourcePointer, ItemPointer {
     }
 }
 
+/**
+ * 用于标识[Source]中的一个Item
+ */
 interface ItemPointer {
 
     companion object {

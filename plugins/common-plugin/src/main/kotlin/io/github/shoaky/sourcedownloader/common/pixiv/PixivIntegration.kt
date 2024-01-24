@@ -143,7 +143,7 @@ class PixivIntegration(
         val response = httpClient.send(bodyRequest, BodyHandlers.ofInputStream())
         return listOf(
             SourceFile(
-                Path(ugoira.originalSrc.pathSegments().last),
+                Path(ugoira.originalSrc.pathSegments().last()),
                 mapOf("size" to contentLength),
                 data = response.body(),
             )

@@ -70,7 +70,7 @@ object TestDownloader : Downloader {
 
 object TestTorrentDownloader : TorrentDownloader {
 
-    override fun getPaths(torrentHash: String): List<Path> {
+    override fun getPaths(infoHash: String): List<Path> {
         return emptyList()
     }
 

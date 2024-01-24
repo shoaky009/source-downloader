@@ -4,6 +4,7 @@ plugins {
     `java-library`
     `maven-publish`
     signing
+    alias(libs.plugins.dokka)
 }
 
 dependencies {

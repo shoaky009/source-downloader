@@ -24,6 +24,9 @@ data class ProcessingContent(
         itemContent = itemContent
     )
 
+    /**
+     * SourceItem处理状态
+     */
     enum class Status(val value: Int) : EnumValue<Int> {
 
         /**

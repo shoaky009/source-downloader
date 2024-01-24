@@ -15,16 +15,22 @@ import kotlin.io.path.notExists
 interface AsyncDownloader : Downloader {
 
     /**
+     * @param sourceItem the item to check if finished
      * @return null if the task not found, otherwise return true if the task is finished
      */
     fun isFinished(sourceItem: SourceItem): Boolean?
 
 }
 
+/**
+ * A downloader that can move files using self api
+ */
 interface TorrentDownloader : AsyncDownloader, FileMover {
 
     /**
-     * 容器化时需要和下载器的路径对齐，否则会出现文件找不到的问题
+     * replace the file with the same name in the target directory
+     * @param itemContent the item to replace
+     * @return true if the item is replaced
      */
     override fun replace(itemContent: ItemContent): Boolean {
         val torrentHash = lazy {
@@ -73,7 +79,11 @@ interface TorrentDownloader : AsyncDownloader, FileMover {
         return true
     }
 
-    fun getPaths(torrentHash: String): List<Path>
+    /**
+     * @param infoHash the torrent info hash
+     * @return the paths of the torrent files, relative to the download path
+     */
+    fun getPaths(infoHash: String): List<Path>
 
     companion object {
 

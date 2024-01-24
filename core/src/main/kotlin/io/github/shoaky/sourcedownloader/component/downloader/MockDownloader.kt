@@ -59,7 +59,7 @@ class MockDownloader(
         return true
     }
 
-    override fun getPaths(torrentHash: String): List<Path> {
+    override fun getPaths(infoHash: String): List<Path> {
         return emptyList()
     }
 

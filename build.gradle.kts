@@ -32,6 +32,7 @@ subprojects {
     apply(plugin = "org.jetbrains.kotlin.jvm")
     apply(plugin = "java")
     apply(plugin = "jacoco")
+    project(":core").apply(plugin = "org.jetbrains.kotlin.kapt")
 
     tasks.test {
         useJUnitPlatform()
