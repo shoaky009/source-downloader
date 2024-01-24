@@ -12,14 +12,11 @@ object KeywordVariableProviderSupplier : ComponentSupplier<KeywordVariableProvid
     override fun apply(context: CoreContext, props: Properties): KeywordVariableProvider {
         val keywords = props.getOrDefault<List<String>>("keywords", emptyList())
         val keywordsFile = props.getOrNull<Path>("keywords-file")
-        val prefixes = props.getOrDefault<List<Char>>("prefixes", listOf('(', '['))
-        val suffixes = props.getOrDefault<List<Char>>("suffixes", listOf(')', ']'))
         return KeywordVariableProvider(
             keywords,
             keywordsFile,
-            prefixes,
-            suffixes
-        )
+
+            )
     }
 
     override fun supplyTypes(): List<ComponentType> {

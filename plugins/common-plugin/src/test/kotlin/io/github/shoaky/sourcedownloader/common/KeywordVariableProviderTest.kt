@@ -37,4 +37,13 @@ class KeywordVariableProviderTest {
         val group2 = provider.createItemGroup(sourceItem("2222zxcvbnm"))
         assertEquals(group2.sharedPatternVariables().variables()["keyword"], "2222")
     }
+
+    @Test
+    fun given_alias_keyword_and_mode() {
+        val provider = KeywordVariableProvider(
+            listOf("2222|1|abc222")
+        )
+        val group2 = provider.createItemGroup(sourceItem("2222zxcvbnm"))
+        assertEquals(group2.sharedPatternVariables().variables()["keyword"], "abc222")
+    }
 }

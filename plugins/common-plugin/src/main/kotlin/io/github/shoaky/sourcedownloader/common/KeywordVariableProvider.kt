@@ -15,34 +15,41 @@ import kotlin.io.path.readLines
 class KeywordVariableProvider(
     private val keywords: List<String> = emptyList(),
     private val keywordsFile: Path? = null,
-    private val prefixes: List<Char> = listOf('(', '['),
-    private val suffixes: List<Char> = listOf(')', ']')
+    private val regexPattern: String = "[()\\[](@keyword)[()\\]]",
 ) : VariableProvider {
 
     private val words = buildList {
         addAll(keywords)
         addAll(keywordsFile?.readLines() ?: emptyList())
     }.map {
+        // "keyword" 匹配的字符串
+        // "mode" 0:默认 [value]不包含括号时如果前后没有括号不则不匹配, [value]包含括号时则不检查括号
+        // "alias" 如果不为空优先使用该值作为匹配结果的变量
+        // "keyword|mode|alias"
         val split = it.split("|")
         val word = split.first()
         val mode = split.getOrElse(1) { "0" }
-        Word(word, mode.toInt())
+        val alias = split.getOrElse(2) { null }
+        Word(word, mode.toIntOrNull() ?: 0, alias)
     }.toSet()
 
     override fun createItemGroup(sourceItem: SourceItem): SourceItemGroup {
         val title = sourceItem.title
-        val result = words.match(title).firstOrNull {
-            if (it.word.matchTitleMode == 1) {
-                return@firstOrNull true
+        val matchedWord = words.firstOrNull { word ->
+            if (word.matchTitleMode == 1) {
+                return@firstOrNull title.contains(word.value, ignoreCase = true)
             }
 
-            defaultTitleMatch(it, title)
-        }?.word?.value
-        log.info("Keyword $result match: $title")
+            val regex = regexPattern.replace("@keyword", word.value)
+                .toRegex(RegexOption.IGNORE_CASE)
+            regex.find(title) != null
+        }
+        log.info("Keyword $matchedWord match: $title")
 
-        val variables = result?.let {
+        val variables = matchedWord?.let {
+            val word = it.alias ?: it.value
             MapPatternVariables(
-                mapOf("keyword" to it)
+                mapOf("keyword" to word)
             )
         } ?: PatternVariables.EMPTY
         return SourceItemGroup.shared(variables)
@@ -52,38 +59,12 @@ class KeywordVariableProvider(
         return true
     }
 
-    private fun Set<Word>.match(title: String): List<MatchedResult> {
-        return this.mapNotNull {
-            val index = title.indexOf(it.value, ignoreCase = true)
-            if (index < 0) {
-                return@mapNotNull null
-            }
-            MatchedResult(it, index..(index + it.value.length))
-        }
-    }
-
-    private fun defaultTitleMatch(it: MatchedResult, title: String): Boolean {
-        if (it.word.containsPairs(prefixes, suffixes)) {
-            return true
-        }
-        val beginStr = title.getOrNull(it.range.first - 1)
-        val endStr = title.getOrNull(it.range.last)
-        return prefixes.contains(beginStr) && suffixes.contains(endStr)
-    }
-
     companion object {
 
         private val log = LoggerFactory.getLogger(KeywordVariableProvider::class.java)
-        private fun Word.containsPairs(prefixes: List<Char>, suffixes: List<Char>): Boolean {
-            return value.any { prefixes.contains(it) } and value.any { suffixes.contains(it) }
-        }
+
     }
 }
-
-private data class MatchedResult(
-    val word: Word,
-    val range: IntRange
-)
 
 private data class Word(
     val value: String,
@@ -91,5 +72,6 @@ private data class Word(
      * 0:默认 [value]不包含括号时如果前后没有括号不则不匹配, [value]包含括号时则不检查括号
      * 1:只要contains则匹配
      */
-    val matchTitleMode: Int
+    val matchTitleMode: Int,
+    val alias: String?
 )
