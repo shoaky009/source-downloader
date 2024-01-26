@@ -41,7 +41,7 @@ class FanboxIntegration(
         return FanboxPointer()
     }
 
-    override fun headers(): Map<String, String> {
+    override fun headers(sourceItem: SourceItem): Map<String, String> {
         return client.headers
     }
 

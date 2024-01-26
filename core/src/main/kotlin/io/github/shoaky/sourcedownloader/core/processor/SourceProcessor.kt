@@ -511,7 +511,7 @@ class SourceProcessor(
             )
         }
 
-        val headers = HashMap(source.headers())
+        val headers = HashMap(source.headers(content.sourceItem))
         headers.putAll(options.downloadOptions.headers)
         val downloadOptions = options.downloadOptions
         return DownloadTask(

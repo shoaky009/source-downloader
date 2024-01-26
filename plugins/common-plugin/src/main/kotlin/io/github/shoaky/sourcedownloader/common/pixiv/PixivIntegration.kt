@@ -103,7 +103,7 @@ class PixivIntegration(
         return PixivPointer()
     }
 
-    override fun headers(): Map<String, String> {
+    override fun headers(sourceItem: SourceItem): Map<String, String> {
         return client.basicHeaders
     }
 
@@ -123,7 +123,7 @@ class PixivIntegration(
 
         val basicRequestBuilder = HttpRequest.newBuilder(ugoira.originalSrc)
             .HEAD()
-        headers()
+        headers(sourceItem)
             .forEach { (key, value) -> basicRequestBuilder.setHeader(key, value) }
         val headResponse = httpClient.send(basicRequestBuilder.build(), BodyHandlers.discarding())
         if (headResponse.statusCode() != HttpStatus.OK.value()) {
