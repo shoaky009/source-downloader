@@ -33,6 +33,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.locks.Lock
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.io.path.extension
@@ -674,7 +675,7 @@ class SourceProcessor(
             stat.stopWatch.stop()
             stat.stopWatch.start("processItems")
 
-            val semaphore = Semaphore(options.parallelism)
+            val semaphore = Semaphore(options.parallelism, true)
             val processScope = CoroutineScope(processDispatcher)
             val processJob = processScope.launch process@{
                 for (item in itemIterable) {
@@ -686,9 +687,9 @@ class SourceProcessor(
                         val filterBy = itemOptions.filters.firstOrNull { it.test(item.sourceItem).not() }
                         if (filterBy != null) {
                             log.debug("{} filtered item:{}", filterBy::class.simpleName, item.sourceItem)
+                            semaphore.release()
                             onItemFiltered(item)
                             stat.incFilterCounting()
-                            semaphore.release()
                             return@launch
                         }
 
@@ -708,6 +709,7 @@ class SourceProcessor(
 
                             if (options.itemErrorContinue.not()) {
                                 log.warn("Processor:'$name'处理失败, item:$item, 退出本次触发处理, 如果未能解决该处理器将无法继续处理后续Item")
+                                semaphore.release()
                                 processScope.cancel()
                                 return@launch
                             }
@@ -1058,26 +1060,26 @@ class SourceProcessor(
 
 }
 
-val log: Logger = LoggerFactory.getLogger(SourceProcessor::class.java)
+val log: Logger = LoggerFactory.getLogger("SourceProcessor")
 
 private class ProcessStat(
     private val name: String,
-    var processingCounting: Int = 0,
-    var filterCounting: Int = 0,
+    var processingCounting: AtomicInteger = AtomicInteger(0),
+    var filterCounting: AtomicInteger = AtomicInteger(0),
 ) {
 
     val stopWatch = StopWatch(name)
 
     fun incProcessingCounting() {
-        processingCounting = processingCounting.inc()
+        processingCounting.incrementAndGet()
     }
 
     fun incFilterCounting() {
-        filterCounting = filterCounting.inc()
+        filterCounting.incrementAndGet()
     }
 
     fun hasChange(): Boolean {
-        return processingCounting > 0 || filterCounting > 0
+        return processingCounting.get() > 0 || filterCounting.get() > 0
     }
 
     override fun toString(): String {

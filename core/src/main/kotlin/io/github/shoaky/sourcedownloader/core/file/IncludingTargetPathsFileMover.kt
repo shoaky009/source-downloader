@@ -56,7 +56,6 @@ class IncludingTargetPathsFileMover(
         }
     }
 
-    @Synchronized
     fun releaseAll() {
         synchronized(preoccupiedTargetPaths) {
             preoccupiedTargetPaths.clear()
