@@ -413,7 +413,7 @@ class SourceProcessor(
                 val hashing = pc.itemContent.sourceItem.hashing()
                 processingStorage.deleteTargetPaths(targetPaths, hashing)
             }.onFailure {
-                log.error("Processing更新状态出错, record:${Jackson.toJsonString(pc)}", it)
+                log.error("Processing更新状态出错, id:{} item:{}", pc.id, pc.itemContent.sourceItem, it)
             }
         }
 
@@ -422,7 +422,7 @@ class SourceProcessor(
             kotlin.runCatching {
                 processRenameTask(pc)
             }.onFailure {
-                log.error("Processing重命名任务出错, record:${Jackson.toJsonString(pc)}", it)
+                log.error("Processing重命名任务出错, id:{} item:{}", pc.id, pc.itemContent.sourceItem, it)
             }
         }
         val context = CoreProcessContext(name, processingStorage, info0())
@@ -453,7 +453,7 @@ class SourceProcessor(
                 modifyTime = LocalDateTime.now(),
             )
             processingStorage.save(toUpdate)
-            log.info("全部目标文件已存在，无需重命名，record:${Jackson.toJsonString(pc)}")
+            log.info("全部目标文件已存在无需重命名，id:{} item:{}", pc.id, pc.itemContent.sourceItem)
             return
         }
 
@@ -461,9 +461,9 @@ class SourceProcessor(
         val success = runCatching {
             val moved = moveFiles(itemContent)
             val replaced = replaceFiles(itemContent)
-            moved || replaced
+            moved && replaced
         }.onFailure {
-            log.error("重命名出错, record:{}", Jackson.toJsonString(pc), it)
+            log.error("重命名出错, id:{} item:{}", pc.id, pc.itemContent.sourceItem, it)
             invokeListeners {
                 this.onItemError(itemContent.sourceItem, it)
             }
@@ -477,7 +477,7 @@ class SourceProcessor(
 
         val renameTimesThreshold = options.renameTimesThreshold
         if (pc.renameTimes == renameTimesThreshold) {
-            log.warn("重命名{}次重试失败, record:{}", renameTimesThreshold, Jackson.toJsonString(pc))
+            log.warn("重命名{}次重试失败, id:{} item:{}", renameTimesThreshold, pc.id, pc.itemContent.sourceItem)
         }
         val toUpdate = pc.copy(
             renameTimes = pc.renameTimes.inc(),
