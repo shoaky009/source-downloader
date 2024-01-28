@@ -1,8 +1,6 @@
 package io.github.shoaky.sourcedownloader.api
 
-import io.github.shoaky.sourcedownloader.core.ProcessingContent
-import io.github.shoaky.sourcedownloader.core.ProcessorConfig
-import io.github.shoaky.sourcedownloader.core.ProcessorConfigStorage
+import io.github.shoaky.sourcedownloader.core.*
 import io.github.shoaky.sourcedownloader.core.component.ConfigOperator
 import io.github.shoaky.sourcedownloader.core.file.FileContentStatus
 import io.github.shoaky.sourcedownloader.core.processor.DryRunOptions
@@ -11,6 +9,7 @@ import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentException
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
+import java.time.LocalDateTime
 import java.util.concurrent.Executors
 
 /**
@@ -21,7 +20,8 @@ import java.util.concurrent.Executors
 private class ProcessorController(
     private val processorManager: ProcessorManager,
     private val configStorages: List<ProcessorConfigStorage>,
-    private val configOperator: ConfigOperator
+    private val configOperator: ConfigOperator,
+    private val processingStorage: ProcessingStorage
 ) {
 
     private val manualTriggerExecutor = Executors.newThreadPerTaskExecutor(
@@ -164,7 +164,36 @@ private class ProcessorController(
         processor.run(items)
     }
 
+    /**
+     * 获取Processor状态
+     * @param processorName Processor名称
+     * @return Processor状态
+     */
+    @GetMapping("/{processorName}/state")
+    fun getState(@PathVariable processorName: String): ProcessorState {
+        val config = configOperator.getProcessorConfig(processorName)
+        val state = processingStorage.findProcessorSourceState(processorName, config.source.name())
+            ?.let {
+                ProcessorState(it.lastPointer, it.lastActiveTime)
+            } ?: ProcessorState(PersistentPointer(mutableMapOf()), null)
+        return state
+    }
+
 }
+
+/**
+ * Processor状态
+ */
+private data class ProcessorState(
+    /**
+     * Source当前处理的未知
+     */
+    val pointer: PersistentPointer,
+    /**
+     * 最后一次活跃时间
+     */
+    val lastActiveTime: LocalDateTime? = null
+)
 
 private data class ProcessorInfo(
     val name: String,
