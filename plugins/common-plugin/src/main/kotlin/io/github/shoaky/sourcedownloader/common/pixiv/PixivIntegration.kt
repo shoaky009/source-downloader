@@ -38,7 +38,7 @@ class PixivIntegration(
             }
         }
 
-        val followings = getFollowings(pointer)
+        val followings = getUpdatedFollowings(pointer)
         if (log.isTraceEnabled) {
             log.trace("Followings: {}", followings.map { it.userId to it.userName })
         }
@@ -66,7 +66,7 @@ class PixivIntegration(
                 resp.illusts.keys + mangeIds
             }
             .sorted()
-            .takeWhile { it > lastIllustrationId }
+            .filter { it > lastIllustrationId }
             .chunked(50)
             .flatMap {
                 val request = GetIllustrationsRequest(following.userId, it)
@@ -74,10 +74,10 @@ class PixivIntegration(
             }
     }
 
-    private fun getFollowings(pointer: PixivPointer): MutableList<PixivUser> {
+    private fun getUpdatedFollowings(pointer: PixivPointer): MutableList<PixivUser> {
         val followings: MutableList<PixivUser> = mutableListOf()
         var request = GetFollowingRequest(userId)
-        val followingFetchLimit = 100
+        val followingFetchLimit = 50
         while (true) {
             val response = client.execute(request).body()
             if (response.body.users.isEmpty()) {
