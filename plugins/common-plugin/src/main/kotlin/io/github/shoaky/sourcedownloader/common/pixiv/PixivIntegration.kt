@@ -39,6 +39,9 @@ class PixivIntegration(
         }
 
         val followings = getFollowings(pointer)
+        if (log.isTraceEnabled) {
+            log.trace("Followings: {}", followings.map { it.userId to it.userName })
+        }
         return ExpandIterator<PixivUser, PointedItem<ItemPointer>>(followings, limit) { following ->
             val items = getFollowingIllustration(following, pointer)
                 .map {
@@ -74,7 +77,7 @@ class PixivIntegration(
     private fun getFollowings(pointer: PixivPointer): MutableList<PixivUser> {
         val followings: MutableList<PixivUser> = mutableListOf()
         var request = GetFollowingRequest(userId)
-        val followingFetchLimit = 50
+        val followingFetchLimit = 100
         while (true) {
             val response = client.execute(request).body()
             if (response.body.users.isEmpty()) {

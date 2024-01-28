@@ -15,11 +15,8 @@ object PixivIntegrationSupplier : ComponentSupplier<PixivIntegration> {
         val mode = props.getOrDefault<String>("mode", "bookmark")
         val client = PixivClient(sessionId)
         val userId = props.getOrNull<Long>("user-id") ?: run {
-            if (client.sessionId == null) {
-                throw IllegalStateException("Client sessionId is null")
-            }
-            Regex("\\d+_").find(client.sessionId)?.value?.dropLast(1)?.toLongOrNull()
-                ?: throw IllegalStateException("sessionId is null")
+            Regex("\\d+_").find(sessionId)?.value?.dropLast(1)?.toLongOrNull()
+                ?: throw IllegalStateException("sessionId is invalid, because user-id is not provided")
         }
         return PixivIntegration(userId, client, mode)
     }
