@@ -18,10 +18,13 @@ import io.github.shoaky.sourcedownloader.util.NoLock
 import io.github.shoaky.sourcedownloader.util.lock
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.retryWhen
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.retry.support.RetryTemplateBuilder
-import org.springframework.util.StopWatch
 import java.io.IOException
 import java.nio.ByteBuffer
 import java.nio.charset.CodingErrorAction
@@ -33,7 +36,6 @@ import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.locks.Lock
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.io.path.extension
@@ -663,10 +665,9 @@ class SourceProcessor(
         protected val processLock: Lock = if (options.parallelism > 1) ReentrantLock(true) else NoLock
 
         protected fun processItems() {
-            val stat = ProcessStat(name)
-            val context = CoreProcessContext(name, processingStorage, info0())
             secondaryFileMover.releaseAll()
-
+            val context = CoreProcessContext(name, processingStorage, info0())
+            val stat = context.stat
             stat.stopWatch.start("fetchItems")
             val itemIterable = customIterable ?: retry.execute<Iterable<PointedItem<ItemPointer>>, IOException> {
                 it.setAttribute("stage", ProcessStage("FetchSourceItems", "Processor:$name SourceId:${sourceId}"))
@@ -692,12 +693,20 @@ class SourceProcessor(
                             stat.incFilterCounting()
                             return@launch
                         }
-
+                        val sourceItem = item.sourceItem
                         val processingContent = runCatching {
-                            retry.execute<ProcessingContent, IOException> {
-                                it.setAttribute("stage", ProcessStage("ProcessItem", item))
-                                processItem(item.sourceItem, itemOptions)
-                            }
+                            flowOf(sourceItem)
+                                .map {
+                                    processItem(it, itemOptions)
+                                }
+                                .retryWhen { cause, attempt ->
+                                    secondaryFileMover.release(sourceItem)
+                                    val retry = cause is IOException && attempt < 3
+                                    if (retry) {
+                                        delay(5000)
+                                    }
+                                    retry
+                                }.first()
                         }.onFailure {
                             log.error("Processor:'$name'处理失败, item:$item", it)
                             onItemError(item.sourceItem, it)
@@ -709,6 +718,7 @@ class SourceProcessor(
 
                             if (options.itemErrorContinue.not()) {
                                 log.warn("Processor:'$name'处理失败, item:$item, 退出本次触发处理, 如果未能解决该处理器将无法继续处理后续Item")
+                                secondaryFileMover.release(item.sourceItem)
                                 semaphore.release()
                                 processScope.cancel()
                                 return@launch
@@ -735,6 +745,7 @@ class SourceProcessor(
                             } else {
                                 stat.incProcessingCounting()
                             }
+                            releasePaths(processingContent)
                         } finally {
                             semaphore.release()
                         }
@@ -755,6 +766,18 @@ class SourceProcessor(
             onProcessCompleted(context)
             if (stat.hasChange()) {
                 log.info("Processor:{}", stat)
+            }
+        }
+
+        private fun releasePaths(processingContent: ProcessingContent) {
+            val paths = processingContent.itemContent.downloadableFiles().map {
+                it.targetPath()
+            }
+            if (paths.isEmpty()) {
+                // 提前占用了但是处理时失败需要释放该Item下的路径
+                secondaryFileMover.release(processingContent.itemContent.sourceItem)
+            } else {
+                secondaryFileMover.release(processingContent.itemContent.sourceItem, paths)
             }
         }
 
@@ -794,7 +817,7 @@ class SourceProcessor(
                     log.debug("Processor:'{}' item:{} file status:{}", name, sourceItem.title, filesStatus)
                 }
                 // 在处理完后释放
-                secondaryFileMover.preoccupiedTargetPath(downloadableTargetPaths)
+                secondaryFileMover.preoccupiedTargetPath(sourceItem, downloadableTargetPaths)
             }
 
             val replaceFiles = identifyFilesToReplace(itemContent)
@@ -1061,34 +1084,3 @@ class SourceProcessor(
 }
 
 val log: Logger = LoggerFactory.getLogger("SourceProcessor")
-
-private class ProcessStat(
-    private val name: String,
-    var processingCounting: AtomicInteger = AtomicInteger(0),
-    var filterCounting: AtomicInteger = AtomicInteger(0),
-) {
-
-    val stopWatch = StopWatch(name)
-
-    fun incProcessingCounting() {
-        processingCounting.incrementAndGet()
-    }
-
-    fun incFilterCounting() {
-        filterCounting.incrementAndGet()
-    }
-
-    fun hasChange(): Boolean {
-        return processingCounting.get() > 0 || filterCounting.get() > 0
-    }
-
-    override fun toString(): String {
-        val sb = StringBuilder("'$name' 处理了${processingCounting}个 过滤了${filterCounting}个")
-        for (task in stopWatch.taskInfo) {
-            sb.append("; [").append(task.taskName).append("] took ").append(task.timeMillis).append(" ms")
-            val percent = Math.round(100.0 * task.timeMillis / stopWatch.totalTimeMillis)
-            sb.append(" = ").append(percent).append('%')
-        }
-        return sb.toString()
-    }
-}

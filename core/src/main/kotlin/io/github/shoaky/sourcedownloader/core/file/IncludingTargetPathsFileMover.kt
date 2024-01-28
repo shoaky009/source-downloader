@@ -1,6 +1,7 @@
 package io.github.shoaky.sourcedownloader.core.file
 
 import io.github.shoaky.sourcedownloader.core.ProcessingStorage
+import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.FileMover
 import org.apache.commons.collections4.trie.PatriciaTrie
 import org.slf4j.LoggerFactory
@@ -11,8 +12,7 @@ class IncludingTargetPathsFileMover(
     private val storage: ProcessingStorage,
 ) : FileMover by fileMover {
 
-    // 单批次如果有太多的文件处理又慢的，可能会导致内存占用过高
-    private val preoccupiedTargetPaths: PatriciaTrie<Path> = PatriciaTrie<Path>()
+    private val preoccupiedTargetPaths: PatriciaTrie<Value> = PatriciaTrie<Value>()
 
     override fun exists(paths: List<Path>): List<Boolean> {
         val exists = fileMover.exists(paths)
@@ -35,19 +35,19 @@ class IncludingTargetPathsFileMover(
     }
 
     override fun listPath(path: Path): List<Path> {
-        val paths = preoccupiedTargetPaths.prefixMap(path.parent.toString()).values
+        val paths = preoccupiedTargetPaths.prefixMap(path.parent.toString()).values.map { it.path }
         val listPath = fileMover.listPath(path)
         return (listPath + storage.findSubPaths(path).map { it.targetPath } + paths).distinct()
     }
 
-    fun preoccupiedTargetPath(paths: Collection<Path>) {
+    fun preoccupiedTargetPath(sourceItem: SourceItem, paths: Collection<Path>) {
         log.debug("PreoccupiedTargetPath: {}", paths)
         if (paths.isEmpty()) {
             return
         }
         synchronized(preoccupiedTargetPaths) {
             preoccupiedTargetPaths.putAll(
-                paths.map { it.toString() to it }
+                paths.map { it.toString() to Value(sourceItem, it) }
             )
         }
 
@@ -62,16 +62,31 @@ class IncludingTargetPathsFileMover(
         }
     }
 
-    fun release(paths: Collection<Path>) {
+    fun release(sourceItem: SourceItem, paths: Collection<Path>) {
         if (paths.isEmpty()) {
             return
         }
         synchronized(preoccupiedTargetPaths) {
             paths.forEach {
-                preoccupiedTargetPaths.remove(it.toString())
+                val pathString = it.toString()
+                val value = preoccupiedTargetPaths[pathString]
+                if (value != null && value.sourceItem == sourceItem) {
+                    preoccupiedTargetPaths.remove(pathString)
+                }
             }
         }
     }
+
+    fun release(sourceItem: SourceItem) {
+        synchronized(preoccupiedTargetPaths) {
+            preoccupiedTargetPaths.entries.removeIf { it.value.sourceItem == sourceItem }
+        }
+    }
+
+    private data class Value(
+        val sourceItem: SourceItem,
+        val path: Path,
+    )
 
     companion object {
 

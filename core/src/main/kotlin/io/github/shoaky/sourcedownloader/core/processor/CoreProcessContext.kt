@@ -13,6 +13,8 @@ class CoreProcessContext(
     override val processor: ProcessorInfo,
 ) : ProcessContext {
 
+    val stat: ProcessStat = ProcessStat(processName)
+
     private val sourceItems: MutableList<SourceItem> = mutableListOf()
     private var hasError: Boolean = false
 

@@ -239,9 +239,11 @@ class SourceProcessorTest : InitializingBean {
     fun media_type() {
         val processorName = "MediaTypeExistCase"
         val processor = processorManager.getProcessor(processorName).get()
-        val grouping = processor.dryRun().associateBy { it.itemContent.sourceItem.title }
-        assertEquals(ProcessingContent.Status.WAITING_TO_RENAME, grouping.getValue("test1").status)
-        assertEquals(ProcessingContent.Status.TARGET_ALREADY_EXISTS, grouping.getValue("test2").status)
+        processor.run()
+        val contents =
+            processingStorage.query(ProcessingQuery(processorName)).associateBy { it.itemContent.sourceItem.title }
+        assertEquals(ProcessingContent.Status.WAITING_TO_RENAME, contents.getValue("test1").status)
+        assertEquals(ProcessingContent.Status.TARGET_ALREADY_EXISTS, contents.getValue("test2").status)
     }
 
     @Test
@@ -327,6 +329,7 @@ class SourceProcessorTest : InitializingBean {
     // exists 和 replace冲突测试
     // 并行测试
     // downloadPath文件已存在
+    // 文件下载失败重试时
     companion object {
 
         private val savePath = testResourcePath.resolve("target")
