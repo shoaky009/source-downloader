@@ -1,5 +1,6 @@
 package io.github.shoaky.sourcedownloader.sdk.util
 
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.*
@@ -27,6 +28,7 @@ object Jackson {
             .enable(DeserializationFeature.FAIL_ON_INVALID_SUBTYPE)
             .enable(DeserializationFeature.FAIL_ON_MISSING_EXTERNAL_TYPE_ID_PROPERTY)
             .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
+            .setSerializationInclusion(JsonInclude.Include.NON_NULL)
             .addHandler(DefaultHandler)
     }
 

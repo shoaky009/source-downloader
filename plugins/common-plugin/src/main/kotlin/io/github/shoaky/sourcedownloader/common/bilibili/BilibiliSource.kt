@@ -9,6 +9,7 @@ import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.Source
 import io.github.shoaky.sourcedownloader.sdk.util.ExpandIterator
 import io.github.shoaky.sourcedownloader.sdk.util.RequestResult
+import java.net.URI
 import java.time.Instant
 import java.time.ZoneId
 
@@ -57,17 +58,19 @@ class BilibiliSource(
             val item = SourceItem(
                 media.title,
                 media.link,
+                // 这个时间待定应该要用修改时间不然分P视频更新了无法再处理
                 Instant.ofEpochSecond(media.pubtime)
                     .atZone(ZoneId.systemDefault())
                     .toLocalDateTime(),
                 "video",
-                media.link,
+                URI("https://www.bilibili.com/video/${media.bvId}"),
                 // 后面看需求加，目前只需要这些
                 mapOf(
                     "upper" to media.upper.name,
                     "type" to media.type,
                     "page" to media.page,
                     "bv" to media.bvId,
+                    "duration" to media.duration,
                 )
             )
 
