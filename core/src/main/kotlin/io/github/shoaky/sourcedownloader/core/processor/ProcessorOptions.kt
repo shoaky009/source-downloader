@@ -41,7 +41,8 @@ data class ProcessorOptions(
     val channelBufferSize: Int = 20,
     val listenerMode: ListenerMode = ListenerMode.EACH,
     val recordMinimized: Boolean = false,
-    val parallelism: Int = 1
+    val parallelism: Int = 1,
+    val retryBackoffMills: Long = 5000L
 ) {
 
     fun matchFileOption(sourceFile: SourceFile): FileOption? {

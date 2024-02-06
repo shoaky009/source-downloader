@@ -43,20 +43,18 @@ class MikanSource(
             }.toList()
         }
 
-        val items = sourceItems
+        val latestItems = sourceItems
             .filter { it.datetime.isAfter(pointer.latest) }
             .sortedBy { it.datetime }
 
         // 解决新番更新和添加顺序不一致的问题
-        if (items.isEmpty()) {
+        if (latestItems.isEmpty()) {
             return sourceItems.map {
                 PointedItem(it, NullPointer)
             }.toList()
         }
 
-        return ExpandIterator<SourceItem, PointedItem<ItemPointer>>(
-            items, limit,
-        ) { item ->
+        return ExpandIterator<SourceItem, PointedItem<ItemPointer>>(latestItems, limit) { item ->
             val fansubRss = mikanClient.getEpisodePageInfo(item.link.toURL()).fansubRss
             if (fansubRss == null) {
                 log.debug("FansubRss is null:{}", item)
@@ -66,30 +64,30 @@ class MikanSource(
             val fansubQuery = URI(fansubRss).queryMap()
             val bangumiId = fansubQuery["bangumiId"] ?: error("bangumiId is null")
             val subGroupId = fansubQuery["subgroupid"] ?: error("subgroupid is null")
-            var pointedItems = rssReader.read(fansubRss)
+            var fansubItems = rssReader.read(fansubRss)
                 .map {
                     fromRssItem(it)
                 }
                 .toList()
                 .sortedBy { it.datetime }
-            if (pointedItems.contains(item).not()) {
+            if (fansubItems.contains(item).not()) {
                 log.debug("Item不在RSS列表中:{}", item)
-                pointedItems = pointedItems.toMutableList()
-                pointedItems.add(item)
+                fansubItems = fansubItems.toMutableList()
+                fansubItems.add(item)
             }
 
-            val result = pointedItems
+            val result = fansubItems
                 .map {
-                    PointedItem(
-                        it,
-                        FansubPointer(bangumiId, subGroupId, it.datetime)
-                    )
+                    PointedItem(it, FansubPointer(bangumiId, subGroupId, it.datetime))
                 }
                 .filter {
                     val key = it.pointer.key()
                     val date = pointer.shows[key]
                     date == null || it.sourceItem.datetime.isAfter(date)
                 }
+            if (log.isDebugEnabled) {
+                log.debug("Fetch fansub items:{}", result)
+            }
             RequestResult(result, true)
         }.asIterable()
     }

@@ -664,7 +664,7 @@ class SourceProcessor(
 
         protected val processLock: Lock = if (options.parallelism > 1) ReentrantLock(true) else NoLock
 
-        protected fun processItems() {
+        protected suspend fun processItems() {
             secondaryFileMover.releaseAll()
             val context = CoreProcessContext(name, processingStorage, info0())
             val stat = context.stat
@@ -678,57 +678,45 @@ class SourceProcessor(
 
             val semaphore = Semaphore(options.parallelism, true)
             val processScope = CoroutineScope(processDispatcher)
+            // FIXME 依旧有单个Item重复处理的问题不好复现和排查
             val processJob = processScope.launch process@{
-                for (item in itemIterable) {
+                for (pointed in itemIterable) {
                     semaphore.acquire()
-                    log.trace("Processor:'{}' submit item:{}", name, item)
+                    log.info("Processor:'{}' launch item:{}", name, pointed)
                     launch {
-                        log.trace("Processor:'{}' start process item:{}", name, item)
-                        val itemOptions = selectItemOptions(item)
-                        val filterBy = itemOptions.filters.firstOrNull { it.test(item.sourceItem).not() }
-                        if (filterBy != null) {
-                            log.debug("{} filtered item:{}", filterBy::class.simpleName, item.sourceItem)
+                        log.trace("Processor:'{}' start process item:{}", name, pointed)
+                        val itemOptions = selectItemOptions(pointed)
+                        val filtered = filterItem(itemOptions, pointed)
+                        if (filtered) {
                             semaphore.release()
-                            onItemFiltered(item)
                             stat.incFilterCounting()
                             return@launch
                         }
-                        val sourceItem = item.sourceItem
+
                         val processingContent = runCatching {
-                            flowOf(sourceItem)
-                                .map {
-                                    processItem(it, itemOptions)
-                                }
-                                .retryWhen { cause, attempt ->
-                                    secondaryFileMover.release(sourceItem)
-                                    val retry = cause is IOException && attempt < 3
-                                    if (retry) {
-                                        delay(5000)
-                                    }
-                                    retry
-                                }.first()
+                            processWithRetry(pointed, itemOptions)
                         }.onFailure {
-                            log.error("Processor:'$name'处理失败, item:$item", it)
-                            onItemError(item.sourceItem, it)
+                            log.error("Processor:'$name'处理失败, item:$pointed", it)
+                            onItemError(pointed.sourceItem, it)
 
                             if (it is ProcessingException && it.skip) {
-                                log.error("Processor:'$name'处理失败, item:$item, 被组件定义为可跳过的异常")
+                                log.error("Processor:'$name'处理失败, item:$pointed, 被组件定义为可跳过的异常")
                                 return@onFailure
                             }
 
                             if (options.itemErrorContinue.not()) {
-                                log.warn("Processor:'$name'处理失败, item:$item, 退出本次触发处理, 如果未能解决该处理器将无法继续处理后续Item")
-                                secondaryFileMover.release(item.sourceItem)
+                                log.warn("Processor:'$name'处理失败, item:$pointed, 退出本次触发处理, 如果未能解决该处理器将无法继续处理后续Item")
+                                secondaryFileMover.release(pointed.sourceItem)
                                 semaphore.release()
                                 processScope.cancel()
                                 return@launch
                             }
                         }.onSuccess {
-                            onItemSuccess(item, it)
+                            onItemSuccess(pointed, it)
                         }.getOrElse {
                             ProcessingContent(
                                 name, CoreItemContent(
-                                    item.sourceItem, emptyList(), MapPatternVariables()
+                                    pointed.sourceItem, emptyList(), MapPatternVariables()
                                 )
                             ).copy(status = FAILURE, failureReason = it.message)
                         }
@@ -736,27 +724,23 @@ class SourceProcessor(
                         try {
                             context.touch(processingContent)
                             onItemCompleted(processingContent)
-                            // 也有可能会重复，取消了不属于该Item的路径
-                            // secondaryFileMover.release(processingContent.itemContent.downloadableFiles().map { it.targetPath() })
-                            log.trace("Processor:'{}' finished process item:{}", name, item)
-
-                            if (filteredStatuses.contains(processingContent.status)) {
-                                stat.incFilterCounting()
-                            } else {
-                                stat.incProcessingCounting()
-                            }
+                            log.trace("Processor:'{}' finished process item:{}", name, pointed)
                             releasePaths(processingContent)
                         } finally {
                             semaphore.release()
+                        }
+                        if (filteredStatuses.contains(processingContent.status)) {
+                            stat.incFilterCounting()
+                        } else {
+                            stat.incProcessingCounting()
                         }
                     }
 
                 }
             }
 
-            runBlocking {
-                processJob.join()
-            }
+            processJob.join()
+
             secondaryFileMover.releaseAll()
             if (processJob.isCancelled) {
                 log.info("Processor:'{}' process job cancelled", name)
@@ -767,6 +751,35 @@ class SourceProcessor(
             if (stat.hasChange()) {
                 log.info("Processor:{}", stat)
             }
+        }
+
+        private suspend fun processWithRetry(
+            pointed: PointedItem<ItemPointer>, itemOptions: ItemSelectedOptions,
+        ): ProcessingContent {
+            val sourceItem = pointed.sourceItem
+            return flowOf(sourceItem)
+                .map { processItem(it, itemOptions) }
+                .retryWhen { cause, attempt ->
+                    secondaryFileMover.release(sourceItem)
+                    val retry = cause is IOException && attempt < 3
+                    if (retry) {
+                        delay(options.retryBackoffMills)
+                    }
+                    retry
+                }.first()
+        }
+
+        private fun filterItem(
+            itemOptions: ItemSelectedOptions,
+            item: PointedItem<ItemPointer>,
+        ): Boolean {
+            val filterBy = itemOptions.filters.firstOrNull { it.test(item.sourceItem).not() }
+            if (filterBy != null) {
+                log.debug("{} filtered item:{}", filterBy::class.simpleName, item.sourceItem)
+                onItemFiltered(item)
+                return true
+            }
+            return false
         }
 
         private fun releasePaths(processingContent: ProcessingContent) {
@@ -897,7 +910,9 @@ class SourceProcessor(
         }
 
         fun run() {
-            processItems()
+            runBlocking {
+                processItems()
+            }
         }
     }
 

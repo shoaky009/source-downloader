@@ -5,6 +5,7 @@ import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.ItemFileResolver
 import org.jsoup.Jsoup
 import org.slf4j.LoggerFactory
+import org.springframework.core.io.UrlResource
 import java.net.URI
 import kotlin.io.path.Path
 
@@ -21,15 +22,19 @@ class HtmlFileResolver(
         }
         return document.select(cssSelector).mapIndexed { index, element ->
             val uri = URI(element.attr(extractAttribute))
+            val length = UrlResource(uri).contentLength()
+            val attr = mapOf("size" to length)
             val filename = resolveFilename(uri, sourceItem, index)
             if (directMode) {
                 SourceFile(
                     Path(filename),
-                    data = uri.toURL().openStream()
+                    attr,
+                    data = uri.toURL().openStream(),
                 )
             } else {
                 SourceFile(
                     Path(filename),
+                    attr,
                     downloadUri = uri
                 )
             }
