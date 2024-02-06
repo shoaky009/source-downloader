@@ -1,5 +1,5 @@
 plugins {
-    alias(libs.plugins.springboot)
+    alias(libs.plugins.spring.boot)
     alias(libs.plugins.kotlin.spring)
     id("jacoco-report-aggregation")
     alias(libs.plugins.graalvm)

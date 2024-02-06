@@ -1,30 +1,30 @@
 [versions]
-springboot = "3.2.1"
+spring-boot = "3.2.1"
 guava = "33.0.0-jre"
 commons-lang3 = "3.14.0"
 cel = "0.4.3"
 kotlinx-coroutines = "1.7.3"
 kotlin = "1.9.22"
-graalvm-plugin = "0.9.27"
-graalvm = "23.1.0"
-sqlite = "3.44.1.0"
+graalvm-plugin = "0.10.0"
+graalvm = "23.1.2"
+sqlite = "3.45.1.0"
 commons-collections4 = "4.4"
-axion-release = "1.15.5"
-zxing = "3.5.2"
+axion-release = "1.16.1"
+zxing = "3.5.3"
 telegram4j = "0.1.0-SNAPSHOT"
-rssreader = "3.5.0"
+rssreader = "3.6.0"
 anitomyJ = "0.0.7"
 atomashpolskiy-bt = "1.10"
-tika = "2.7.0"
+tika = "2.9.1"
 jsoup = "1.17.2"
-exposed = "0.46.0"
+exposed = "0.47.0"
 protobuf = "3.25.2"
 dokka = "1.9.10"
 springdocs = "2.3.0"
 therapi-javadoc = "0.15.0"
 
 [libraries]
-springboot-dependencies = { module = "org.springframework.boot:spring-boot-dependencies", version.ref = "springboot" }
+spring-boot-dependencies = { module = "org.springframework.boot:spring-boot-dependencies", version.ref = "spring-boot" }
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
 commons-lang3 = { module = "org.apache.commons:commons-lang3", version.ref = "commons-lang3" }
 commons-collections4 = { module = "org.apache.commons:commons-collections4", version.ref = "commons-collections4" }
@@ -58,7 +58,7 @@ bt = ["bt-core", "bt-dht"]
 exposed = ["exposed-java-time", "exposed-spring-boot-stater", "exposed-json"]
 
 [plugins]
-springboot = { id = "org.springframework.boot", version.ref = "springboot" }
+spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-spring = { id = "org.jetbrains.kotlin.plugin.spring", version.ref = "kotlin" }
 graalvm = { id = "org.graalvm.buildtools.native", version.ref = "graalvm-plugin" }
