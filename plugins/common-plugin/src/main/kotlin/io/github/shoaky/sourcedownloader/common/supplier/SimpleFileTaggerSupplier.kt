@@ -9,7 +9,10 @@ import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
 internal object SimpleFileTaggerSupplier : ComponentSupplier<SimpleFileTagger> {
 
     override fun apply(context: CoreContext, props: Properties): SimpleFileTagger {
-        return SimpleFileTagger
+        props.getOrNull<Map<String, String>>("external-mapping")?.let {
+            return SimpleFileTagger(it)
+        }
+        return SimpleFileTagger()
     }
 
     override fun supplyTypes(): List<ComponentType> {

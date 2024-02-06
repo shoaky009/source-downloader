@@ -24,6 +24,9 @@ class SimpleFileTaggerTest {
         assertEquals("subtitle", tagger.tag("test.ass"))
         assertEquals("subtitle", tagger.tag("test.srt"))
         assertEquals("subtitle", tagger.tag("test.ssa"))
-        assertEquals("subtitle", tagger.tag("[UHA-WINGS&VCB-Studio] Karakai Jouzu no Takagi-san 2 [04][Ma10p_1080p][x265_flac].tc.ass"))
+        assertEquals(
+            "subtitle",
+            tagger.tag("[UHA-WINGS&VCB-Studio] Karakai Jouzu no Takagi-san 2 [04][Ma10p_1080p][x265_flac].tc.ass")
+        )
     }
 }

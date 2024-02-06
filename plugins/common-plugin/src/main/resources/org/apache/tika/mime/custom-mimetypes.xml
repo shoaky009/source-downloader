@@ -1,17 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mime-info>
-    <mime-type type="subtitle/x-ssa">
+    <mime-type type="application/x-subrip">
         <_comment>Subtitle File</_comment>
-        <alias type="subtitle/ssa"/>
+        <alias type="application/x-subrip"/>
         <sub-class-of type="text/plain"/>
         <glob pattern="*.ass"/>
         <glob pattern="*.ssa"/>
-    </mime-type>
-    <mime-type type="subtitle/x-subrip">
-        <_comment>Subtitle File</_comment>
-        <alias type="subtitle/srt"/>
-        <sub-class-of type="text/plain"/>
-        <glob pattern="*.srt"/>
     </mime-type>
     <mime-type type="text/x-nfo">
         <_comment>Nfo File</_comment>

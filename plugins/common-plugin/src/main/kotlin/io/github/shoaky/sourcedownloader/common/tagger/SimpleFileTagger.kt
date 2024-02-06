@@ -10,10 +10,20 @@ import kotlin.io.path.name
 /**
  * 从扩展名中提取文件类型
  */
-object SimpleFileTagger : FileTagger {
+class SimpleFileTagger(
+    private val externalMapping: Map<String, String> = emptyMap()
+) : FileTagger {
 
     private val log = LoggerFactory.getLogger(SimpleFileTagger::class.java)
     private val tika = Tika()
+    private val mapping: Map<String, String> = buildMap {
+        val defaultMapping: Map<String, String> = mapOf(
+            "x-subrip" to "subtitle"
+        )
+        this.putAll(defaultMapping)
+        // 外部映射优先级更高
+        this.putAll(externalMapping)
+    }
 
     override fun tag(fileContent: SourceFile): String? {
         val name = fileContent.path.name
@@ -26,7 +36,12 @@ object SimpleFileTagger : FileTagger {
     fun tag(name: String): String? {
         val detect = tika.detect(name)
         if (detect != MimeTypes.OCTET_STREAM) {
-            return detect.split("/").first()
+            val split = detect.split("/")
+            val type = split.first()
+            if (type != "application") {
+                return type
+            }
+            return mapping[split.last()]
         }
         log.debug("Can't detect file type for {}", name)
         return null
