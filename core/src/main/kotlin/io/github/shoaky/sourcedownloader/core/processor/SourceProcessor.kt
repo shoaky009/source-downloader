@@ -32,6 +32,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Duration
 import java.time.LocalDateTime
+import java.util.*
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.Semaphore
@@ -678,18 +679,27 @@ class SourceProcessor(
 
             val semaphore = Semaphore(options.parallelism, true)
             val processScope = CoroutineScope(processDispatcher)
-            // FIXME 依旧有单个Item重复处理的问题不好复现和排查
+            // 处理Source的迭代器返回重复的Item
+            val itemSet = Collections.synchronizedSet(mutableSetOf<SourceItem>())
             val processJob = processScope.launch process@{
                 for (pointed in itemIterable) {
                     semaphore.acquire()
-                    log.info("Processor:'{}' launch item:{}", name, pointed)
+                    if (itemSet.contains(pointed.sourceItem)) {
+                        log.info("Processor:'{}' source given duplicate item:{}", name, pointed.sourceItem)
+                        semaphore.release()
+                        continue
+                    }
+
+                    log.trace("Processor:'{}' launch item:{}", name, pointed)
+                    itemSet.add(pointed.sourceItem)
                     launch {
                         log.trace("Processor:'{}' start process item:{}", name, pointed)
                         val itemOptions = selectItemOptions(pointed)
                         val filtered = filterItem(itemOptions, pointed)
                         if (filtered) {
-                            semaphore.release()
+                            itemSet.remove(pointed.sourceItem)
                             stat.incFilterCounting()
+                            semaphore.release()
                             return@launch
                         }
 
@@ -727,6 +737,7 @@ class SourceProcessor(
                             log.trace("Processor:'{}' finished process item:{}", name, pointed)
                             releasePaths(processingContent)
                         } finally {
+                            itemSet.remove(pointed.sourceItem)
                             semaphore.release()
                         }
                         if (filteredStatuses.contains(processingContent.status)) {
@@ -916,7 +927,7 @@ class SourceProcessor(
         }
     }
 
-    fun invokeListeners(
+    private fun invokeListeners(
         mode: ListenerMode = ListenerMode.EACH,
         inProcess: Boolean = true,
         block: ProcessListener.() -> Unit

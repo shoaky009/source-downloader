@@ -13,7 +13,7 @@ class FixedScheduleTrigger(
     private val onStartRunTasks: Boolean = false,
 ) : HoldingTaskTrigger() {
 
-    private val timer = Timer("fixed-schedule-trigger")
+    private val timer = Timer("fixed-schedule-trigger:$interval")
 
     override fun stop() {
         timer.cancel()

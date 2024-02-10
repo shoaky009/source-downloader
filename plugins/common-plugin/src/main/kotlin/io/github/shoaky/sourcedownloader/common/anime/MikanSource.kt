@@ -70,6 +70,7 @@ class MikanSource(
                 }
                 .toList()
                 .sortedBy { it.datetime }
+            // 字幕组的RSS列表会比订阅的晚些更新
             if (fansubItems.contains(item).not()) {
                 log.debug("Item不在RSS列表中:{}", item)
                 fansubItems = fansubItems.toMutableList()
