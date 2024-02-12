@@ -15,3 +15,11 @@ fun Path.creationTime(): LocalDateTime? {
     val creationTime = attrs.creationTime()
     return LocalDateTime.ofInstant(creationTime.toInstant(), ZoneId.systemDefault())
 }
+
+fun <T, K> MutableMap<K, List<T>>.addToCollection(key: K, value: T) {
+    if (this.containsKey(key)) {
+        this[key] = this.getValue(key) + value
+    } else {
+        this[key] = listOf(value)
+    }
+}

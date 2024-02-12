@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer
 import io.github.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
 import io.github.shoaky.sourcedownloader.sdk.ItemContent
+import io.github.shoaky.sourcedownloader.sdk.ProcessContext
 import io.github.shoaky.sourcedownloader.sdk.component.ProcessListener
 import io.github.shoaky.sourcedownloader.sdk.util.Jackson
 import io.github.shoaky.sourcedownloader.sdk.util.http.httpClient
@@ -21,22 +22,48 @@ import java.net.http.HttpResponse.BodyHandlers
  * 发送一个HTTP请求
  */
 class SendHttpRequest(
-    private val props: Props
+    private val config: HttpRequestConfig
 ) : ProcessListener {
 
     override fun onItemSuccess(itemContent: ItemContent) {
-        val uriComponents = UriComponentsBuilder.fromHttpUrl(props.url)
+        val uriComponents = UriComponentsBuilder.fromHttpUrl(config.url)
             .encode().build().expand(
                 mapOf("summary" to itemContent.summaryContent())
             )
 
         val headers = mutableMapOf<String, String>()
-        headers.putAll(props.headers)
+        headers.putAll(config.headers)
         val bodyPublishers = buildBodyPublisher(itemContent, headers)
 
         val uri = uriComponents.toUri()
         val request = HttpRequest.newBuilder(uri)
-            .method(props.method.name(), bodyPublishers)
+            .method(config.method.name(), bodyPublishers)
+
+        headers.forEach(request::setHeader)
+        val response = httpClient.send(request.build(), BodyHandlers.discarding())
+        if (response.statusCode() != HttpStatus.OK.value()) {
+            log.warn("Send http request to $uri, response code is ${response.statusCode()}")
+        }
+    }
+
+    override fun onProcessCompleted(processContext: ProcessContext) {
+        val processedItems = processContext.processedItems()
+        val size = processedItems.size
+        val uriComponents = UriComponentsBuilder.fromHttpUrl(config.url)
+            .encode().build().expand(
+                mapOf("summary" to "Processed $size items")
+            )
+
+        val contents = processedItems.map {
+            processContext.getItemContent(it)
+        }
+        val headers = mutableMapOf<String, String>()
+        headers.putAll(config.headers)
+        val bodyPublishers = buildBodyPublisher(contents, headers)
+
+        val uri = uriComponents.toUri()
+        val request = HttpRequest.newBuilder(uri)
+            .method(config.method.name(), bodyPublishers)
 
         headers.forEach(request::setHeader)
         val response = httpClient.send(request.build(), BodyHandlers.discarding())
@@ -49,10 +76,10 @@ class SendHttpRequest(
         content: ItemContent,
         headers: MutableMap<String, String>
     ): HttpRequest.BodyPublisher {
-        return if (props.body.isNullOrBlank().not()) {
-            val body = props.body?.replace("{summary}", content.summaryContent())
+        return if (config.body.isNullOrBlank().not()) {
+            val body = config.body?.replace("{summary}", content.summaryContent())
             BodyPublishers.ofString(body)
-        } else if (props.withContentBody) {
+        } else if (config.withContentBody) {
             headers[HttpHeaders.CONTENT_TYPE] = MediaType.APPLICATION_JSON_VALUE
             BodyPublishers.ofString(Jackson.toJsonString(content))
         } else {
@@ -60,7 +87,22 @@ class SendHttpRequest(
         }
     }
 
-    data class Props(
+    private fun buildBodyPublisher(
+        contents: List<ItemContent>,
+        headers: MutableMap<String, String>
+    ): HttpRequest.BodyPublisher {
+        return if (config.body.isNullOrBlank().not()) {
+            val body = config.body?.replace("{summary}", "Processed ${contents.size} items")
+            BodyPublishers.ofString(body)
+        } else if (config.withContentBody) {
+            headers[HttpHeaders.CONTENT_TYPE] = MediaType.APPLICATION_JSON_VALUE
+            BodyPublishers.ofString(Jackson.toJsonString(contents))
+        } else {
+            BodyPublishers.noBody()
+        }
+    }
+
+    data class HttpRequestConfig(
         val url: String,
         @JsonSerialize(using = ToStringSerializer::class)
         val method: HttpMethod = HttpMethod.POST,

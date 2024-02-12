@@ -79,6 +79,7 @@ source-downloader:
 logging:
   level:
     Exposed: debug
+    SourceProcessor: debug
 ---
 spring:
   config:

@@ -7,9 +7,9 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer
 import io.github.shoaky.sourcedownloader.core.component.ComponentId
+import io.github.shoaky.sourcedownloader.core.component.ListenerConfig
 import io.github.shoaky.sourcedownloader.core.file.CorePathPattern
 import io.github.shoaky.sourcedownloader.core.file.VariableErrorStrategy
-import io.github.shoaky.sourcedownloader.core.processor.ListenerMode
 import io.github.shoaky.sourcedownloader.core.processor.VariableConflictStrategy
 import io.github.shoaky.sourcedownloader.sdk.DownloadOptions
 import io.github.shoaky.sourcedownloader.sdk.PathPattern
@@ -48,7 +48,7 @@ data class ProcessorConfig(
         val filenamePattern: PathPattern = CorePathPattern.origin,
         // 为了兼容
         @JsonAlias("run-after-completion")
-        val processListeners: List<ComponentId> = emptyList(),
+        val processListeners: List<ListenerConfig> = emptyList(),
         @JsonFormat(shape = JsonFormat.Shape.STRING)
         val renameTaskInterval: Duration = Duration.ofMinutes(5),
         val downloadOptions: DownloadOptions = DownloadOptions(),
@@ -82,10 +82,6 @@ data class ProcessorConfig(
         val itemGrouping: List<ItemGroupingConfig> = emptyList(),
         val manualSources: List<ComponentId> = emptyList(),
         val channelBufferSize: Int = 20,
-        val listenerMode: ListenerMode = ListenerMode.EACH,
-        /**
-         * 未实现
-         */
         val recordMinimized: Boolean = false,
         val parallelism: Int = 1
     )

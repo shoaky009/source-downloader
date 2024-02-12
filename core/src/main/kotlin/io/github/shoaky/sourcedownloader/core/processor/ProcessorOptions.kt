@@ -16,7 +16,7 @@ data class ProcessorOptions(
     val savePathPattern: PathPattern = CorePathPattern.origin,
     val filenamePattern: PathPattern = CorePathPattern.origin,
     val variableProviders: List<VariableProvider> = emptyList(),
-    val processListeners: List<ProcessListener> = emptyList(),
+    val processListeners: Map<ListenerMode, List<ProcessListener>> = emptyMap(),
     val sourceItemFilters: List<SourceItemFilter> = emptyList(),
     val itemContentFilters: List<ItemContentFilter> = emptyList(),
     val fileContentFilters: List<FileContentFilter> = emptyList(),
@@ -39,7 +39,6 @@ data class ProcessorOptions(
     val itemErrorContinue: Boolean = false,
     val fileExistsDetector: FileExistsDetector = SimpleFileExistsDetector,
     val channelBufferSize: Int = 20,
-    val listenerMode: ListenerMode = ListenerMode.EACH,
     val recordMinimized: Boolean = false,
     val parallelism: Int = 1,
     val retryBackoffMills: Long = 5000L

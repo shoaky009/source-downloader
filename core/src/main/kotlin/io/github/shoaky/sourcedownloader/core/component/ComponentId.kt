@@ -30,4 +30,15 @@ data class ComponentId(
     override fun toString(): String {
         return id
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is ComponentId) return false
+
+        if (id == other.id) return true
+
+        val split = id.split(":")
+        val otherSplit = other.id.split(":")
+        return split.first() == otherSplit.first() && split.last() == otherSplit.last()
+    }
 }

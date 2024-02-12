@@ -282,7 +282,7 @@ class SourceProcessorTest : InitializingBean {
         assertEquals(ProcessingContent.Status.RENAMED, testItem.status)
     }
 
-    // @Test
+    @Test
     fun replace_file_cancel_submitted_item() {
         val processorName = "ReplaceFileCancelSubmittedItem"
         val processor = processorManager.getProcessor(processorName).get()
@@ -330,6 +330,7 @@ class SourceProcessorTest : InitializingBean {
     // 并行测试
     // downloadPath文件已存在
     // 文件下载失败重试时
+    // Listener调用测试
     companion object {
 
         private val savePath = testResourcePath.resolve("target")

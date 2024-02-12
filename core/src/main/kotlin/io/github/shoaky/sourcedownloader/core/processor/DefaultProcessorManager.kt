@@ -3,15 +3,14 @@ package io.github.shoaky.sourcedownloader.core.processor
 import io.github.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
 import io.github.shoaky.sourcedownloader.component.*
 import io.github.shoaky.sourcedownloader.core.*
-import io.github.shoaky.sourcedownloader.core.component.ComponentManager
-import io.github.shoaky.sourcedownloader.core.component.ProcessorWrapper
-import io.github.shoaky.sourcedownloader.core.component.SourceHashingItemFilter
+import io.github.shoaky.sourcedownloader.core.component.*
 import io.github.shoaky.sourcedownloader.core.expression.CelCompiledExpressionFactory
 import io.github.shoaky.sourcedownloader.core.expression.CompiledExpressionFactory
 import io.github.shoaky.sourcedownloader.core.expression.sourceFileDefs
 import io.github.shoaky.sourcedownloader.core.expression.sourceItemDefs
 import io.github.shoaky.sourcedownloader.core.file.CorePathPattern
 import io.github.shoaky.sourcedownloader.sdk.component.*
+import io.github.shoaky.sourcedownloader.util.addToCollection
 
 class DefaultProcessorManager(
     private val processingStorage: ProcessingStorage,
@@ -250,18 +249,21 @@ class DefaultProcessorManager(
             }
         )
 
-        val listeners = options.processListeners.map {
-            componentManager.getComponent(
+        val listeners = options.processListeners.groupBy({ it.mode }, {
+            val cp = componentManager.getComponent(
                 ComponentTopType.PROCESS_LISTENER,
-                it,
+                it.id,
                 processListenerTypeRef,
             ).getAndMarkRef(config.name)
-        }.toMutableList()
+            NamedProcessListener(it.id, cp)
+        }).toMutableMap()
         if (options.deleteEmptyDirectory) {
-            listeners.add(DeleteEmptyDirectory)
+            val named = NamedProcessListener(ComponentId("delete-empty-directory"), DeleteEmptyDirectory)
+            listeners.addToCollection(ListenerMode.EACH, named)
         }
         if (options.touchItemDirectory) {
-            listeners.add(TouchItemDirectory)
+            val named = NamedProcessListener(ComponentId("touch-item-directory"), TouchItemDirectory)
+            listeners.addToCollection(ListenerMode.EACH, named)
         }
 
         val taggers = options.fileTaggers.map {
@@ -297,7 +299,6 @@ class DefaultProcessorManager(
         val variableReplacers: MutableList<VariableReplacer> = mutableListOf(
             *options.variableReplacers.toTypedArray(), WindowsPathReplacer
         )
-
         val fileGrouping = applyFileGrouping(options, config)
         val itemGrouping = applyItemGrouping(options, config)
         return ProcessorOptions(
@@ -327,7 +328,6 @@ class DefaultProcessorManager(
             options.itemErrorContinue,
             fileExistsDetector,
             options.channelBufferSize,
-            options.listenerMode,
             options.recordMinimized,
             options.parallelism
         )

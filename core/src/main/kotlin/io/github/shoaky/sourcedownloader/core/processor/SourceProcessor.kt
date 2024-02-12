@@ -71,7 +71,7 @@ class SourceProcessor(
     private val itemContentFilters: List<ItemContentFilter> = options.itemContentFilters
     private val fileContentFilters: List<FileContentFilter> = options.fileContentFilters
     private val variableProviders = options.variableProviders
-    private val processListeners: List<ProcessListener> = options.processListeners
+    private val processListeners: Map<ListenerMode, List<ProcessListener>> = options.processListeners
     private val taggers: List<FileTagger> = options.fileTaggers
     private val fileReplacementDecider: FileReplacementDecider = options.fileReplacementDecider
     private val fileExistsDetector: FileExistsDetector = options.fileExistsDetector
@@ -106,6 +106,7 @@ class SourceProcessor(
         if (options.fileReplacementDecider !is NeverReplace) {
             log.warn("Processor:'$name' fileReplacementDecider:${options.fileReplacementDecider} is not NeverReplace, may have unexpected results")
         }
+        log.debug("Processor:'{}' listeners{}", name, processListeners)
         listenChannel()
     }
 
@@ -704,11 +705,13 @@ class SourceProcessor(
                         }
 
                         val processingContent = runCatching {
-                            processWithRetry(pointed, itemOptions)
+                            val ct = processWithRetry(pointed, itemOptions)
+                            context.touch(ct)
+                            onItemSuccess(pointed, ct)
+                            ct
                         }.onFailure {
                             log.error("Processor:'$name'处理失败, item:$pointed", it)
                             onItemError(pointed.sourceItem, it)
-
                             if (it is ProcessingException && it.skip) {
                                 log.error("Processor:'$name'处理失败, item:$pointed, 被组件定义为可跳过的异常")
                                 return@onFailure
@@ -721,8 +724,6 @@ class SourceProcessor(
                                 processScope.cancel()
                                 return@launch
                             }
-                        }.onSuccess {
-                            onItemSuccess(pointed, it)
                         }.getOrElse {
                             ProcessingContent(
                                 name, CoreItemContent(
@@ -732,7 +733,6 @@ class SourceProcessor(
                         }
 
                         try {
-                            context.touch(processingContent)
                             onItemCompleted(processingContent)
                             log.trace("Processor:'{}' finished process item:{}", name, pointed)
                             releasePaths(processingContent)
@@ -936,12 +936,13 @@ class SourceProcessor(
             log.trace("Processor:'{}' async downloader not invoke listeners in process", name)
             return
         }
-        if (mode != options.listenerMode) {
-            log.trace("Processor:'{}' listener mode:{} not match", name, mode)
+        val targetListeners = processListeners[mode] ?: emptyList()
+        if (targetListeners.isEmpty()) {
+            log.trace("Processor:'{}' no listeners", name)
             return
         }
         log.trace("Processor:'{}' invoke listeners", name)
-        for (listener in processListeners) {
+        for (listener in targetListeners) {
             listener.runCatching {
                 block.invoke(this)
             }.onFailure {
@@ -953,8 +954,10 @@ class SourceProcessor(
     private inner class NormalProcess : Process() {
 
         override fun onProcessCompleted(processContext: ProcessContext) {
-            invokeListeners(ListenerMode.BATCH) {
-                this.onProcessCompleted(processContext)
+            if (processContext.processedItems().isNotEmpty()) {
+                invokeListeners(ListenerMode.BATCH) {
+                    this.onProcessCompleted(processContext)
+                }
             }
             if (options.pointerBatchMode) {
                 saveSourceState()
@@ -1003,7 +1006,7 @@ class SourceProcessor(
         }
 
         override fun onItemError(item: SourceItem, throwable: Throwable) {
-            invokeListeners(ListenerMode.EACH) {
+            invokeListeners {
                 this.onItemError(item, throwable)
             }
         }
