@@ -87,6 +87,7 @@ private class ProcessorController(
      * 删除Processor
      * @param processorName Processor名称
      */
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{processorName}")
     fun delete(@PathVariable processorName: String) {
         processorManager.destroyProcessor(processorName)
@@ -99,6 +100,7 @@ private class ProcessorController(
      * @description 只重新加载Processor配置，但不会重新加载引用的Component
      * @param processorName Processor名称
      */
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @GetMapping("/{processorName}/reload")
     fun reload(@PathVariable processorName: String) {
         val config = configOperator.getProcessorConfig(processorName)
@@ -148,6 +150,7 @@ private class ProcessorController(
      * 手动触发Processor
      * @param processorName Processor名称
      */
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @GetMapping("/{processorName}/trigger")
     fun trigger(@PathVariable processorName: String) {
         val sourceProcessor = processorManager.getProcessor(processorName)
@@ -179,6 +182,28 @@ private class ProcessorController(
         return state
     }
 
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PostMapping("/{processorName}/enable")
+    fun enableProcessor(@PathVariable processorName: String) {
+        val config = configOperator.getProcessorConfig(processorName)
+        if (config.enabled) return
+
+        val enabled = config.copy(enabled = true)
+        configOperator.save(processorName, enabled)
+        processorManager.destroyProcessor(processorName)
+        processorManager.createProcessor(enabled)
+    }
+
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PostMapping("/{processorName}/disable")
+    fun disableProcessor(@PathVariable processorName: String) {
+        val config = configOperator.getProcessorConfig(processorName)
+        if (config.enabled.not()) return
+
+        val enabled = config.copy(enabled = false)
+        configOperator.save(processorName, enabled)
+        processorManager.destroyProcessor(processorName)
+    }
 }
 
 /**
