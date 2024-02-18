@@ -26,6 +26,10 @@ interface SourceItemGroup {
         fun shared(variables: PatternVariables): SourceItemGroup {
             return JustShared(variables)
         }
+
+        fun shared(variables: Map<String, String>): SourceItemGroup {
+            return JustShared(MapPatternVariables(variables))
+        }
     }
 
     private data class JustShared(

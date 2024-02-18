@@ -184,21 +184,23 @@ class DefaultComponentManager(
 
     override fun destroy(type: ComponentType, name: String) {
         val instanceName = type.instanceName(name)
-        if (objectContainer.contains(instanceName)) {
-            val wrapper = objectContainer.get(instanceName)
-            val obj = wrapper.get()
-            if (obj is AutoCloseable) {
-                obj.close()
-            }
-            objectContainer.remove(instanceName)
-            log.info("Destroy component $instanceName")
-            val supplier = componentSuppliers.getValue(type)
-            supplier.supplyTypes().filter { type != it }
-                .forEach {
-                    destroy(it, name)
-                }
-            Events.unregister(wrapper)
+        if (objectContainer.contains(instanceName).not()) {
+            return
         }
+
+        val wrapper = objectContainer.get(instanceName)
+        val obj = wrapper.get()
+        if (obj is AutoCloseable) {
+            obj.close()
+        }
+        objectContainer.remove(instanceName)
+        log.info("Destroy component $instanceName")
+        val supplier = componentSuppliers.getValue(type)
+        supplier.supplyTypes().filter { type != it }
+            .forEach {
+                destroy(it, name)
+            }
+        Events.unregister(wrapper)
     }
 
     private fun componentTypeDescriptors(supplier: ComponentSupplier<*>) =
