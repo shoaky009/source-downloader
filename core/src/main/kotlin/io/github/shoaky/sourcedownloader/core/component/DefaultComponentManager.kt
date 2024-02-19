@@ -2,13 +2,13 @@ package io.github.shoaky.sourcedownloader.core.component
 
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
+import io.github.shoaky.sourcedownloader.core.DefaultCoreContext
 import io.github.shoaky.sourcedownloader.core.ObjectWrapperContainer
 import io.github.shoaky.sourcedownloader.core.processor.SourceProcessor
-import io.github.shoaky.sourcedownloader.core.processor.log
-import io.github.shoaky.sourcedownloader.sdk.CoreContext
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.component.*
 import io.github.shoaky.sourcedownloader.util.Events
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.DisposableBean
 import java.util.concurrent.ConcurrentHashMap
 
@@ -230,26 +230,7 @@ class DefaultComponentManager(
     companion object {
 
         private val componentWrapperTypeRef = jacksonTypeRef<ComponentWrapper<SdComponent>>()
+        private val log = LoggerFactory.getLogger("ComponentManager")
     }
-}
 
-class DefaultCoreContext(
-    private val componentManager: ComponentManager,
-    private val type: ComponentTopType,
-    private val self: String
-) : CoreContext {
-
-    override fun <T : SdComponent> getComponent(
-        type: ComponentTopType,
-        componentId: String,
-        typeReference: TypeReference<T>
-    ): T {
-        if (type == this.type && componentId == self) {
-            throw ComponentException.other("Can't get self component")
-        }
-        return componentManager.getComponent(
-            type,
-            ComponentId(componentId),
-            object : TypeReference<ComponentWrapper<T>>() {}).get()
-    }
 }

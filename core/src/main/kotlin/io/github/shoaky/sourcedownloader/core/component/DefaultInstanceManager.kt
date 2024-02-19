@@ -1,9 +1,9 @@
 package io.github.shoaky.sourcedownloader.core.component
 
-import io.github.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
 import io.github.shoaky.sourcedownloader.sdk.InstanceFactory
 import io.github.shoaky.sourcedownloader.sdk.InstanceManager
 import io.github.shoaky.sourcedownloader.sdk.Properties
+import org.slf4j.LoggerFactory
 import java.util.concurrent.ConcurrentHashMap
 
 class DefaultInstanceManager(
@@ -60,6 +60,11 @@ class DefaultInstanceManager(
         instances.keys.forEach {
             destroyInstance(it)
         }
+    }
+
+    companion object {
+
+        private val log = LoggerFactory.getLogger("InstanceManager")
     }
 }
 

@@ -26,9 +26,7 @@ class FanboxClient(
     }
 
     override fun <R : BaseRequest<T>, T : Any> beforeRequest(requestBuilder: HttpRequest.Builder, request: R) {
-        request.setHeaders(
-            headers
-        )
+        request.setHeaders(headers)
     }
 
     override fun <R : BaseRequest<T>, T : Any> afterRequest(response: HttpResponse<T>, request: R) {

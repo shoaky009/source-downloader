@@ -182,8 +182,8 @@ private class ProcessorController(
         return state
     }
 
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    @PostMapping("/{processorName}/enable")
+    // @ResponseStatus(HttpStatus.NO_CONTENT)
+    // @PostMapping("/{processorName}/enable")
     fun enableProcessor(@PathVariable processorName: String) {
         val config = configOperator.getProcessorConfig(processorName)
         if (config.enabled) return
@@ -194,8 +194,8 @@ private class ProcessorController(
         processorManager.createProcessor(enabled)
     }
 
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    @PostMapping("/{processorName}/disable")
+    // @ResponseStatus(HttpStatus.NO_CONTENT)
+    // @PostMapping("/{processorName}/disable")
     fun disableProcessor(@PathVariable processorName: String) {
         val config = configOperator.getProcessorConfig(processorName)
         if (config.enabled.not()) return

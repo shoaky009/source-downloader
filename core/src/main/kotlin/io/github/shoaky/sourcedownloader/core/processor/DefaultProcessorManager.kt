@@ -189,6 +189,7 @@ class DefaultProcessorManager(
 
     private fun createOptions(config: ProcessorConfig): ProcessorOptions {
         val options = config.options
+        checkOptions(options)
         val sourceItemFilter = mutableListOf<SourceItemFilter>()
         if (options.saveProcessingContent) {
             sourceItemFilter.add(SourceHashingItemFilter(config.name, processingStorage))
@@ -331,6 +332,12 @@ class DefaultProcessorManager(
             options.recordMinimized,
             options.parallelism
         )
+    }
+
+    private fun checkOptions(options: ProcessorConfig.Options) {
+        if (options.parallelism < 1) {
+            throw IllegalArgumentException("parallelism must be greater than 0")
+        }
     }
 
     private fun applyFileGrouping(

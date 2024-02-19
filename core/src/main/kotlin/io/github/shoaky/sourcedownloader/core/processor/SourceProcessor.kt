@@ -98,13 +98,14 @@ class SourceProcessor(
         scheduleRenameTask()
         if (options.parallelism != 1 && source !is AlwaysLatestSource) {
             /**
-             * 因为是基于迭代器模式迭代，增加并行后Source组件的Pointer变得难以维护并且处理器State的存储存在并发问题暂时没有经过严格测试
+             * 因为是基于迭代器模式迭代，单线程下如果SourceItem处理出现异常会根据配置终止当前触发的处理或跳过，到下一次触发会继续处理该异常的Item
+             * 并行模式下，某个Item出现异常时虽然会根据配置中止当前触发的处理或跳过，但其他Item可能已经处理成功更新了pointer，导致异常的Item下一次触发可能会被跳过
              * AlwaysLatestSource因为是NullPointer，所以在并行处理上没有问题
              */
             log.warn("Processor:'$name' parallelism:${options.parallelism} > 1, but source is not AlwaysLatestSource, recommend to set parallelism to 1")
-        }
-        if (options.fileReplacementDecider !is NeverReplace) {
-            log.warn("Processor:'$name' fileReplacementDecider:${options.fileReplacementDecider} is not NeverReplace, may have unexpected results")
+            if (options.fileReplacementDecider !is NeverReplace) {
+                log.warn("Processor:'$name' fileReplacementDecider:${options.fileReplacementDecider} is not NeverReplace, may have unexpected results")
+            }
         }
         log.debug("Processor:'{}' listeners{}", name, processListeners)
         listenChannel()
