@@ -4,6 +4,7 @@ import io.github.shoaky.sourcedownloader.external.fanbox.*
 import io.github.shoaky.sourcedownloader.sdk.*
 import io.github.shoaky.sourcedownloader.sdk.component.ItemFileResolver
 import io.github.shoaky.sourcedownloader.sdk.component.Source
+import org.slf4j.LoggerFactory
 import java.net.URI
 import kotlin.io.path.Path
 
@@ -126,9 +127,11 @@ private class CreatorPostsIterator(
 
     override fun hasNext(): Boolean {
         if (finished) {
+            log.debug("creatorPointer:{} finished", creatorPointer)
             return false
         }
         if (touchBottom.not()) {
+            log.debug("creatorPointer:{} not touch bottom", creatorPointer)
             return true
         }
         val lastMaxId = creatorPointer.topId
@@ -139,22 +142,30 @@ private class CreatorPostsIterator(
         val request = creatorPointer.nextRequest()
 
         posts = client.execute(request).body().body
-        finished = posts.hasNext().not()
         val items = posts.items.filter { it.isRestricted.not() }
             .map {
-                val update = creatorPointer.update(it, finished)
+                val update = creatorPointer.update(it, posts.hasNext().not())
                 creatorPointer = update
                 PointedItem(toItem(client.server, it), update) to it
             }
 
         return if (touchBottom) {
-            items.filter { (_, post) -> post.id > lastMaxId }
+            val res = items.filter { (_, post) -> post.id > lastMaxId }
                 .map { it.first }
+            finished = res.isEmpty()
+            log.debug("creatorPointer:{} touch bottom next items:{}", creatorPointer, res)
+            res
         } else {
-            items.map { (item, _) -> item }
+            val res = items.map { (item, _) -> item }
+            log.debug("creatorPointer:{} next items:{}", creatorPointer, res)
+            res
         }
     }
 
+    companion object {
+
+        private val log = LoggerFactory.getLogger(CreatorPostsIterator::class.java)
+    }
 }
 
 private fun toItem(server: URI, post: Post): SourceItem {
