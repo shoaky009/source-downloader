@@ -33,8 +33,8 @@ class RssSource(
         }
 
         attributes.forEach {
-            rssReader.addItemExtension(it.key) { i, s ->
-                i.attrs[it.value] = s
+            rssReader.addItemExtension(it.value) { i, s ->
+                i.attrs[it.key] = s
             }
         }
     }
