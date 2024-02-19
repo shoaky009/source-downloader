@@ -87,11 +87,20 @@ interface TorrentDownloader : AsyncDownloader, FileMover {
 
     companion object {
 
-        private val torrentHashRegex = Regex("[0-9a-f]{40}")
+        private val infoHashRegex = Regex("[0-9a-f]{40}")
         fun tryParseTorrentHash(sourceItem: SourceItem): String? {
-            val find = torrentHashRegex.find(sourceItem.downloadUri.toString())
-                ?: torrentHashRegex.find(sourceItem.link.toString()) ?: torrentHashRegex.find(sourceItem.title)
-            return find?.value
+            val find = infoHashRegex.find(sourceItem.downloadUri.toString())
+                ?: infoHashRegex.find(sourceItem.link.toString()) ?: infoHashRegex.find(sourceItem.title)
+            if (find != null) {
+                return find.value
+            }
+
+            return sourceItem.attrs.asSequence()
+                .filter { it.key.contains("infoHash", true) || it.key.contains("torrent", true) }
+                .map { it.value }
+                .filterIsInstance<String>()
+                .mapNotNull { infoHashRegex.find(it)?.value }
+                .firstOrNull()
         }
 
         private val log = LoggerFactory.getLogger(TorrentDownloader::class.java)
