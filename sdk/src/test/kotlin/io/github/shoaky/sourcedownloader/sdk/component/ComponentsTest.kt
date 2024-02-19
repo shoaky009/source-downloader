@@ -44,7 +44,7 @@ private class DownloaderCp : Downloader {
 
 private class MultiCp : TorrentDownloader, FileTagger {
 
-    override fun getPaths(infoHash: String): List<Path> {
+    override fun getTorrentFiles(infoHash: String): List<Path> {
         throw NotImplementedError()
     }
 

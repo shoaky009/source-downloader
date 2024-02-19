@@ -51,21 +51,15 @@ class QbittorrentDownloader(
         // NOTE 必须要等一下qbittorrent(不知道有没有同步添加的方法)
         Thread.sleep(400L)
 
+        // 可以优化暂时不知道qbittorrent是不是info hash v2优先
+        // 目前如果info hash只有v1也会试一遍v2，没必要
         val (success, infoHash, body) = retryWhen({
-            val fileResponse = client.execute(
-                TorrentFilesRequest(
-                    torrentHash
-                )
-            )
+            val fileResponse = client.execute(TorrentFilesRequest(torrentHash))
             Triple(fileResponse.statusCode() == HttpStatus.OK.value(), torrentHash, fileResponse.body())
         }, condition = { it.first }) {
             val infoHashV2 = getInfoHashV2(task.downloadUri().toURL())
-            log.info("Get info hash v2:$infoHashV2")
-            val files = client.execute(
-                TorrentFilesRequest(
-                    infoHashV2
-                )
-            )
+            log.info("Try to get files with info hash v2:$infoHashV2")
+            val files = client.execute(TorrentFilesRequest(infoHashV2))
             Triple(files.statusCode() == HttpStatus.OK.value(), infoHashV2, files.body())
         }
 
@@ -116,14 +110,14 @@ class QbittorrentDownloader(
     }
 
     override fun cancel(sourceItem: SourceItem, files: List<SourceFile>) {
-        val torrentHash = getInternalInfoHash(sourceItem)
+        val torrentHash = getInfoHash(sourceItem)
         val response = client.execute(
             TorrentDeleteRequest(listOf(torrentHash))
         )
         log.info("Cancel item:{} status:{} body:{}", sourceItem, response.statusCode(), response.body())
     }
 
-    override fun getPaths(infoHash: String): List<Path> {
+    override fun getTorrentFiles(infoHash: String): List<Path> {
         val torrentInfo =
             client.execute(TorrentInfoRequest(hashes = infoHash)).body().firstOrNull() ?: return emptyList()
         val extension = torrentInfo.contentPath.extension
@@ -132,25 +126,22 @@ class QbittorrentDownloader(
             return listOf(torrentInfo.contentPath)
         }
 
-        return client.execute(
-            TorrentFilesRequest(
-                infoHash
-            )
-        ).body().parseJson(jacksonTypeRef<List<TorrentFile>>())
+        return client.execute(TorrentFilesRequest(infoHash))
+            .body().parseJson(jacksonTypeRef<List<TorrentFile>>())
             .map {
                 torrentInfo.contentPath.resolve(it.name)
             }
     }
 
     override fun isFinished(sourceItem: SourceItem): Boolean? {
-        val torrentHash = getInternalInfoHash(sourceItem)
+        val torrentHash = getInfoHash(sourceItem)
         val torrent = client.execute(TorrentInfoRequest(hashes = torrentHash))
         val torrents = torrent.body()
         return torrents.map { it.progress >= 1.0f }.firstOrNull()
     }
 
     override fun move(itemContent: ItemContent): Boolean {
-        val torrentHash = getInternalInfoHash(itemContent.sourceItem)
+        val torrentHash = getInfoHash(itemContent.sourceItem)
         val sourceFiles = itemContent.sourceFiles
 
         val firstFile = sourceFiles.first()
@@ -159,7 +150,6 @@ class QbittorrentDownloader(
 
         val allSuccess = sourceFiles.map {
             val torrentRelativePath = it.downloadPath.relativize(it.fileDownloadPath).toString()
-
             val targetRelativePath = itemLocation.relativize(it.targetPath()).toString()
             val renameFile = client.execute(
                 TorrentsRenameFileRequest(torrentHash, torrentRelativePath, targetRelativePath)
@@ -186,7 +176,7 @@ class QbittorrentDownloader(
         return allSuccess && setLocationResponse.statusCode() == HttpStatus.OK.value()
     }
 
-    private fun getInternalInfoHash(sourceItem: SourceItem): String {
+    private fun getInfoHash(sourceItem: SourceItem): String {
         val torrentHash = getInfoHashV1(sourceItem)
         val torrent = client.execute(TorrentInfoRequest(hashes = torrentHash))
         if (torrent.body().isEmpty()) {

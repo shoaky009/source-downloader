@@ -38,10 +38,6 @@ class QbittorrentClient(
     }
 
     fun <R : BaseRequest<T>, T : Any> execute(request: R): HttpResponse<T> {
-        if (request is TorrentsSetLocationRequest || request is TorrentsRenameFileRequest) {
-            log.debug("TorrentsSetLocationRequest:{}", Jackson.toJsonString(request))
-        }
-
         return super.execute(server, request)
     }
 

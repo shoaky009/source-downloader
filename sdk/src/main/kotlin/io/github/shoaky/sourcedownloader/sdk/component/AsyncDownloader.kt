@@ -35,7 +35,7 @@ interface TorrentDownloader : AsyncDownloader, FileMover {
     override fun replace(itemContent: ItemContent): Boolean {
         val torrentHash = lazy {
             tryParseTorrentHash(itemContent.sourceItem)?.let {
-                getPaths(it)
+                getTorrentFiles(it)
             } ?: emptyList()
         }
 
@@ -83,7 +83,7 @@ interface TorrentDownloader : AsyncDownloader, FileMover {
      * @param infoHash the torrent info hash
      * @return the paths of the torrent files, relative to the download path
      */
-    fun getPaths(infoHash: String): List<Path>
+    fun getTorrentFiles(infoHash: String): List<Path>
 
     companion object {
 

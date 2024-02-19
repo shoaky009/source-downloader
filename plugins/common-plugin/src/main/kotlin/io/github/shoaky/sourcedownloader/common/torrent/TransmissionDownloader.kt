@@ -16,7 +16,7 @@ class TransmissionDownloader(
     private val client: TransmissionClient,
 ) : TorrentDownloader {
 
-    override fun getPaths(infoHash: String): List<Path> {
+    override fun getTorrentFiles(infoHash: String): List<Path> {
         TODO("Not yet implemented")
     }
 
@@ -107,8 +107,8 @@ class TransmissionDownloader(
             TorrentSetLocation(listOf(torrentHash), location, true)
         )
 
-        val isSuccess = setLocationResponse.body().isSuccess().not()
-        if (isSuccess) {
+        val isSuccess = setLocationResponse.body().isSuccess()
+        if (isSuccess.not()) {
             log.error("Set location failed,hash:$torrentHash code:${setLocationResponse.statusCode()} body:${setLocationResponse.body()}")
         }
         return allSuccess && isSuccess
