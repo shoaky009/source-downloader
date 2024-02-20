@@ -11,7 +11,6 @@ import io.github.shoaky.sourcedownloader.sdk.util.Jackson
 import io.github.shoaky.sourcedownloader.sdk.util.http.httpClient
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
-import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.web.util.UriComponentsBuilder
 import java.net.http.HttpRequest
@@ -41,7 +40,7 @@ class SendHttpRequest(
 
         headers.forEach(request::setHeader)
         val response = httpClient.send(request.build(), BodyHandlers.discarding())
-        if (response.statusCode() != HttpStatus.OK.value()) {
+        if (isNot2XX(response.statusCode())) {
             log.warn("Send http request to $uri, response code is ${response.statusCode()}")
         }
     }
@@ -67,9 +66,13 @@ class SendHttpRequest(
 
         headers.forEach(request::setHeader)
         val response = httpClient.send(request.build(), BodyHandlers.discarding())
-        if (response.statusCode() != HttpStatus.OK.value()) {
+        if (isNot2XX(response.statusCode())) {
             log.warn("Send http request to $uri, response code is ${response.statusCode()}")
         }
+    }
+
+    private fun isNot2XX(statusCode: Int): Boolean {
+        return statusCode.toString().startsWith("2").not()
     }
 
     private fun buildBodyPublisher(
