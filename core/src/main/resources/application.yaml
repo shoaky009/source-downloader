@@ -24,6 +24,9 @@ spring:
       - org.springframework.boot.autoconfigure.jdbc.JdbcTemplateAutoConfiguration
   jackson:
     default-property-inclusion: non_null
+  threads:
+    virtual:
+      enabled: true
 source-downloader:
   data-location: ${SOURCE_DOWNLOADER_DATA_LOCATION:./}
 

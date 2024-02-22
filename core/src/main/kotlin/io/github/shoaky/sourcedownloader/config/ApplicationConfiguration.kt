@@ -9,12 +9,9 @@ import io.github.shoaky.sourcedownloader.core.component.DefaultComponentManager
 import io.github.shoaky.sourcedownloader.core.processor.DefaultProcessorManager
 import io.github.shoaky.sourcedownloader.core.processor.ProcessorManager
 import io.github.shoaky.sourcedownloader.util.converter.ComponentsConverter
-import org.apache.coyote.ProtocolHandler
 import org.springframework.beans.factory.support.DefaultListableBeanFactory
-import org.springframework.boot.web.embedded.tomcat.TomcatProtocolHandlerCustomizer
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import java.util.concurrent.Executors
 
 @Configuration
 class ApplicationConfiguration {
@@ -25,7 +22,10 @@ class ApplicationConfiguration {
     }
 
     @Bean
-    fun componentManager(objectWrapperContainer: ObjectWrapperContainer, configStorages: List<ComponentConfigStorage>): ComponentManager {
+    fun componentManager(
+        objectWrapperContainer: ObjectWrapperContainer,
+        configStorages: List<ComponentConfigStorage>
+    ): ComponentManager {
         return DefaultComponentManager(objectWrapperContainer, configStorages)
     }
 
@@ -41,11 +41,6 @@ class ApplicationConfiguration {
     @Bean
     fun componentsConverter(): ComponentsConverter {
         return ComponentsConverter()
-    }
-
-    @Bean
-    fun protocolHandlerVirtualThreadExecutorCustomizer(): TomcatProtocolHandlerCustomizer<*> {
-        return TomcatProtocolHandlerCustomizer { protocolHandler: ProtocolHandler -> protocolHandler.executor = Executors.newVirtualThreadPerTaskExecutor() }
     }
 
 }
