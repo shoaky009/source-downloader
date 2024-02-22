@@ -4,6 +4,7 @@ import io.github.shoaky.sourcedownloader.core.ProcessingContent
 import io.github.shoaky.sourcedownloader.core.ProcessingStorage
 import io.github.shoaky.sourcedownloader.core.processor.ProcessorManager
 import io.github.shoaky.sourcedownloader.repo.ProcessingQuery
+import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import java.time.LocalDateTime
 
@@ -76,6 +77,7 @@ private class ProcessingContentController(
      * @param id ProcessingContent ID
      */
     @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     fun deleteProcessingContent(@PathVariable id: Long) {
         storage.deleteProcessingContent(id)
     }

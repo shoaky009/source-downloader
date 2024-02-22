@@ -7,7 +7,6 @@ import io.github.shoaky.sourcedownloader.sdk.component.ComponentStateful
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentTopType
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
 import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
 /**
@@ -29,20 +28,19 @@ private class ComponentController(
      * @return Component信息列表
      */
     @GetMapping
-    fun getComponents(
+    fun queryComponents(
         type: ComponentTopType?, typeName: String?, name: String?,
     ): List<ComponentInfo> {
         return componentManager.getAllComponent()
-            .filter { name == null || it.name == name }
-            .filter { type == null || it.type.topType == type }
-            .filter { typeName == null || it.type.typeName == typeName }
+            .filter { name matchesNullOrEqual it.name }
+            .filter { type matchesNullOrEqual it.type.topType }
+            .filter { typeName matchesNullOrEqual it.type.typeName }
             .map { wrapper ->
                 ComponentInfo(
                     wrapper.type.topType,
                     wrapper.type.typeName,
                     wrapper.name,
                     wrapper.props.rawValues,
-                    ComponentDetail(),
                     if (wrapper.primary) wrapper.component.let { it as? ComponentStateful }?.stateDetail() else null,
                     wrapper.primary
                 )
@@ -54,12 +52,16 @@ private class ComponentController(
      * @param type Component类型
      * @param config Component配置
      */
-    @PostMapping("/{type}")
+    @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    fun createComponent(@PathVariable type: ComponentTopType, @RequestBody config: ComponentConfig) {
+    fun createComponent(@RequestBody body: ComponentCreateBody) {
         configOperator.save(
-            type.lowerHyphenName(),
-            config
+            body.type.lowerHyphenName(),
+            ComponentConfig(
+                body.name,
+                body.typeName,
+                body.props
+            )
         )
     }
 
@@ -70,11 +72,12 @@ private class ComponentController(
      * @param name Component名称
      */
     @DeleteMapping("/{type}/{typeName}/{name}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     fun deleteComponent(
         @PathVariable type: ComponentTopType,
         @PathVariable typeName: String,
         @PathVariable name: String,
-    ): ResponseEntity<Any> {
+    ) {
         val componentType = ComponentType.of(type, typeName)
         val component = componentManager.getComponent(componentType, name)
         if (component?.getRefs()?.isNotEmpty() == true) {
@@ -84,7 +87,6 @@ private class ComponentController(
         configOperator.deleteComponent(type, typeName, name)
         // 待定是否要删除
         componentManager.destroy(componentType, name)
-        return ResponseEntity.ok().build()
     }
 
     /**
@@ -127,7 +129,21 @@ private data class ComponentInfo(
     val typeName: String,
     val name: String,
     val props: Map<String, Any>,
-    val detail: ComponentDetail,
+    // val detail: ComponentDetail,
     val stateDetail: Any? = null,
     val primary: Boolean
 )
+
+private data class ComponentCreateBody(
+    val type: ComponentTopType,
+    val typeName: String,
+    val name: String,
+    val props: Map<String, Any>,
+)
+
+private infix fun <T> T?.matchesNullOrEqual(any: T?): Boolean {
+    if (any == null) {
+        return true
+    }
+    return this == any
+}

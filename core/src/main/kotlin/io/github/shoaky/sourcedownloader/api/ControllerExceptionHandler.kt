@@ -24,4 +24,12 @@ private class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
     fun notFoundException(e: NotFoundException): ProblemDetail {
         return ProblemDetail.forStatus(HttpStatus.NOT_FOUND)
     }
+
+    @ExceptionHandler(IllegalArgumentException::class)
+    fun illegalArgumentException(e: IllegalArgumentException): ProblemDetail {
+        val problemDetail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST)
+        problemDetail.title = "参数错误"
+        problemDetail.detail = e.message
+        return problemDetail
+    }
 }

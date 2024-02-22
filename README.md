@@ -2,7 +2,7 @@
 
 # 暂时请勿部署在不安全的网络环境下，API并未做认证处理
 
-![Kotlin](https://img.shields.io/badge/Kotlin-1.9.10-blueviolet)
+![Kotlin](https://img.shields.io/badge/Kotlin-1.9.22-blueviolet)
 ![JRE](https://img.shields.io/badge/JRE-21-orange)
 [![GPLv3 license](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://github.com/shoaky009/source-downloader/blob/main/LICENSE)
 ![Test](https://github.com/shoaky009/source-downloader/actions/workflows/test.yml/badge.svg?branch=main)
@@ -42,3 +42,5 @@ docker run -p 8080:8080 -e "JAVA_OPTS=-Dhttp.proxyHost={your-host} -Dhttp.proxyP
 - [整理本地动画](examples/anime-local.yaml)
 - [远程动画订阅](examples/anime-remote.yaml)
 - [电报频道下载](examples/telegram.yaml)
+
+## [API 文档](docs/api.md)
