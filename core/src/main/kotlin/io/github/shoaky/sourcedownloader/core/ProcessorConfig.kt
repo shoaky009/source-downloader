@@ -86,6 +86,7 @@ data class ProcessorConfig(
         val parallelism: Int = 1
     )
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     data class FileGroupingConfig(
         val tags: Set<String> = emptySet(),
         val expressionMatching: String? = null,
@@ -97,6 +98,7 @@ data class ProcessorConfig(
         val fileReplacementDecider: ComponentId? = null,
     )
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     data class ItemGroupingConfig(
         val tags: Set<String> = emptySet(),
         val expressionMatching: String? = null,

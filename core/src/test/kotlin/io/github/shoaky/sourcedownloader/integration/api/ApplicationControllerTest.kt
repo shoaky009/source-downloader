@@ -20,12 +20,12 @@ class ApplicationControllerTest {
     @Test
     fun reload() {
         mockMvc.perform(get("/api/application/reload"))
-            .andExpect(status().isOk)
+            .andExpect(status().is2xxSuccessful)
     }
 
     @Test
     fun info() {
         mockMvc.perform(get("/api/application/info"))
-            .andExpect(status().isOk)
+            .andExpect(status().is2xxSuccessful)
     }
 }

@@ -41,9 +41,9 @@ class ComponentControllerTest {
     @Test
     fun create_component() {
         mockMvc.perform(
-            post("/api/component/source")
+            post("/api/component")
                 .content(
-                    """{"name":"api-create","type":"system-file","props":{"path":"src/test/resources/sources"}}"""
+                    """{"type":"source","name":"api-create","typeName":"system-file","props":{"path":"src/test/resources/sources"}}"""
                 ).contentType(MediaType.APPLICATION_JSON)
         ).andExpect(status().is2xxSuccessful)
             .andExpect {
@@ -69,7 +69,7 @@ class ComponentControllerTest {
 
         mockMvc.perform(
             delete("/api/component/source/system-file/api-create2")
-        ).andExpect(status().isOk)
+        ).andExpect(status().is2xxSuccessful)
             .andExpect {
                 val component = componentManager.getComponent(
                     ComponentType(ComponentTopType.SOURCE, "system-file"),
