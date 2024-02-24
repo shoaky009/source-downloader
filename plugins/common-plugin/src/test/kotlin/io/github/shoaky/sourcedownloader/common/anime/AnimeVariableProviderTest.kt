@@ -19,12 +19,12 @@ class AnimeVariableProviderTest {
             AnilistClient(),
             true
         )
-        val createSourceGroup = provider.createItemGroup(
+        val sharedVariables = provider.itemSharedVariables(
             sourceItem(
                 "てーきゅう 9期"
             )
         )
-        println(createSourceGroup.sharedPatternVariables().variables())
+        println(sharedVariables.variables())
     }
 
     @Test

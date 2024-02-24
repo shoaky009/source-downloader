@@ -1,9 +1,7 @@
 package io.github.shoaky.sourcedownloader.common.dlsite
 
-import io.github.shoaky.sourcedownloader.sdk.FunctionalItemGroup
+import io.github.shoaky.sourcedownloader.sdk.PatternVariables
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
-import io.github.shoaky.sourcedownloader.sdk.SourceItemGroup
-import io.github.shoaky.sourcedownloader.sdk.UniversalFileVariable
 import io.github.shoaky.sourcedownloader.sdk.component.VariableProvider
 import io.github.shoaky.sourcedownloader.sdk.util.find
 import io.github.shoaky.sourcedownloader.sdk.util.http.httpClient
@@ -21,13 +19,9 @@ class DlsiteVariableProvider(
     private val locale: String = "zh-cn"
 ) : VariableProvider {
 
-    override fun createItemGroup(sourceItem: SourceItem): SourceItemGroup {
-        val dlsiteId = getDlsiteId(sourceItem) ?: return SourceItemGroup.EMPTY
-
-        val workInfo = getWorkInfo(dlsiteId)
-        return FunctionalItemGroup(
-            workInfo,
-        ) { UniversalFileVariable(workInfo) }
+    override fun itemSharedVariables(sourceItem: SourceItem): PatternVariables {
+        val dlsiteId = getDlsiteId(sourceItem) ?: return PatternVariables.EMPTY
+        return getWorkInfo(dlsiteId)
     }
 
     private fun getWorkInfo(

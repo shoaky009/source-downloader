@@ -18,9 +18,11 @@ class LanguageVariableProviderTest {
             Properties.empty
         )
 
-        val group = provider.createItemGroup(sourceItem())
-        val sourceFiles = group.filePatternVariables(
-            listOf(
+        val item = sourceItem()
+        val group = provider.itemSharedVariables(item)
+
+        val sourceFiles = provider.itemFileVariables(
+            item, group, listOf(
                 SourceFile(Path("dsadsad.chs.ass")),
                 SourceFile(Path("dsadsad[CHS].ass")),
                 SourceFile(Path("dsadsad_CHS.ass")),
@@ -28,7 +30,7 @@ class LanguageVariableProviderTest {
             )
         )
         val langs = sourceFiles.map {
-            it.patternVariables().variables()["language"].toString()
+            it.variables()["language"].toString()
         }
         assertContentEquals(listOf("zh-CHS", "zh-CHS", "zh-CHS", "zh-CHT"), langs)
     }

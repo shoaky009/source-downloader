@@ -8,17 +8,19 @@ import io.github.shoaky.sourcedownloader.sdk.component.VariableProvider
  */
 object SequenceVariableProvider : VariableProvider {
 
-    override fun createItemGroup(sourceItem: SourceItem): SourceItemGroup {
-        return object : SourceItemGroup {
-            override fun filePatternVariables(paths: List<SourceFile>): List<FileVariable> {
-                val length = paths.size.toString().length
-                return List(paths.size) { index ->
-                    val variables = MapPatternVariables(
-                        mapOf("sequence" to "${index + 1}".padStart(length, '0'))
-                    )
-                    UniversalFileVariable(variables)
-                }
-            }
+    override fun itemSharedVariables(sourceItem: SourceItem): PatternVariables = PatternVariables.EMPTY
+
+    override fun itemFileVariables(
+        sourceItem: SourceItem,
+        sharedVariables: PatternVariables,
+        sourceFiles: List<SourceFile>,
+    ): List<PatternVariables> {
+        val length = sourceFiles.size.toString().length
+        return List(sourceFiles.size) { index ->
+            val variables = MapPatternVariables(
+                mapOf("sequence" to "${index + 1}".padStart(length, '0'))
+            )
+            variables
         }
     }
 

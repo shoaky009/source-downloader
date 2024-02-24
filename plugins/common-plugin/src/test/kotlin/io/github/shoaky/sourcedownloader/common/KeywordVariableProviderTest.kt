@@ -12,11 +12,11 @@ class KeywordVariableProviderTest {
             listOf("1111")
         )
 
-        val group1 = provider.createItemGroup(sourceItem("(1111)zxcvbnm"))
-        assertEquals(group1.sharedPatternVariables().variables()["keyword"], "1111")
+        val group1 = provider.itemSharedVariables(sourceItem("(1111)zxcvbnm"))
+        assertEquals(group1.variables()["keyword"], "1111")
 
-        val group2 = provider.createItemGroup(sourceItem("[1111]zxcvbnm"))
-        assertEquals(group2.sharedPatternVariables().variables()["keyword"], "1111")
+        val group2 = provider.itemSharedVariables(sourceItem("[1111]zxcvbnm"))
+        assertEquals(group2.variables()["keyword"], "1111")
     }
 
     @Test
@@ -25,8 +25,8 @@ class KeywordVariableProviderTest {
             listOf("1111")
         )
 
-        val group2 = provider.createItemGroup(sourceItem("1111zxcvbnm"))
-        assert(group2.sharedPatternVariables().variables().contains("1111").not())
+        val group2 = provider.itemSharedVariables(sourceItem("1111zxcvbnm"))
+        assert(group2.variables().contains("1111").not())
     }
 
     @Test
@@ -34,8 +34,8 @@ class KeywordVariableProviderTest {
         val provider = KeywordVariableProvider(
             listOf("2222|1")
         )
-        val group2 = provider.createItemGroup(sourceItem("2222zxcvbnm"))
-        assertEquals(group2.sharedPatternVariables().variables()["keyword"], "2222")
+        val group2 = provider.itemSharedVariables(sourceItem("2222zxcvbnm"))
+        assertEquals(group2.variables()["keyword"], "2222")
     }
 
     @Test
@@ -43,7 +43,7 @@ class KeywordVariableProviderTest {
         val provider = KeywordVariableProvider(
             listOf("2222|1|abc222")
         )
-        val group2 = provider.createItemGroup(sourceItem("2222zxcvbnm"))
-        assertEquals(group2.sharedPatternVariables().variables()["keyword"], "abc222")
+        val group2 = provider.itemSharedVariables(sourceItem("2222zxcvbnm"))
+        assertEquals(group2.variables()["keyword"], "abc222")
     }
 }

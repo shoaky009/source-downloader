@@ -307,24 +307,25 @@ class SourceProcessor(
         }
         checkResolvedFiles(sourceItem, resolvedFiles)
 
-        val sourceItemGroup = VariableProvidersAggregation(
+        val variableProvider = VariableProvidersAggregation(
             sourceItem,
             itemOptions.variableProviders.filter { it.support(sourceItem) }.toList(),
             options.variableConflictStrategy,
             options.variableNameReplace
         )
-        val sharedPatternVariables = sourceItemGroup.sharedPatternVariables()
+        val sharedPatternVariables = variableProvider.itemSharedVariables(sourceItem)
         val fileContents = resolvedFiles.groupBy {
             options.matchFileOption(it)
         }.flatMap { entry ->
             val fileOption = entry.key
             val files = entry.value
-            val fileVariables = sourceItemGroup.filePatternVariables(files)
+            val fileVariables = variableProvider.itemFileVariables(sourceItem, sharedPatternVariables, files)
+            checkFileVariables(files, fileVariables)
             files.mapIndexed { index, file ->
                 val rawFileContent = RawFileContent(
                     sourceSavePath,
                     downloadPath,
-                    MapPatternVariables(fileVariables[index].patternVariables()),
+                    MapPatternVariables(fileVariables[index]),
                     fileOption?.savePathPattern ?: itemOptions.savePathPattern ?: savePathPattern,
                     fileOption?.filenamePattern ?: itemOptions.filenamePattern ?: filenamePattern,
                     file
@@ -341,6 +342,17 @@ class SourceProcessor(
             filter
         }.map { it.first }
         return CoreItemContent(sourceItem, fileContents, MapPatternVariables(sharedPatternVariables))
+    }
+
+    private fun checkFileVariables(files: List<SourceFile>, fileVariables: List<PatternVariables>) {
+        if (files.size == fileVariables.size) {
+            return
+        }
+        log.error(
+            "Processor:'{}' ItemFileResolver:{} resolved files:{} and fileVariables:{} size not match",
+            name, itemFileResolver::class.jvmName, files, fileVariables
+        )
+        throw IllegalStateException("Resolved files and fileVariables size not match")
     }
 
     private fun checkResolvedFiles(sourceItem: SourceItem, resolvedFiles: List<SourceFile>) {

@@ -16,13 +16,15 @@ class AnitomVariableProviderTest {
         val provider = AnitomVariableProviderSupplier.apply(CoreContext.empty, Properties.empty)
         val sourceItem =
             sourceItem()
-        val group = provider.createItemGroup(sourceItem)
-        assertEquals(0, group.sharedPatternVariables().variables().size)
+        val sharedVariables = provider.itemSharedVariables(sourceItem)
+        assertEquals(0, sharedVariables.variables().size)
 
-        val files = group.filePatternVariables(
+        val files = provider.itemFileVariables(
+            sourceItem(),
+            sharedVariables,
             listOf(SourceFile(Path("[漫猫字幕社&波子汽水汉化组][在地下城寻求邂逅是否搞错了什么 IV 深章 灾厄篇][Dungeon ni Deai wo Motomeru no wa Machigatteiru Darou ka S4][20][720P][MP4][繁中].mp4")))
         )
 
-        assert(files.first().patternVariables().variables().isNotEmpty())
+        assert(files.first().variables().isNotEmpty())
     }
 }

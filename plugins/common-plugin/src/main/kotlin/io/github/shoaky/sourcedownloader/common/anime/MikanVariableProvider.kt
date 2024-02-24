@@ -61,11 +61,11 @@ class MikanVariableProvider(
         throw ComponentException.processing("获取Bangumi Subject失败")
     }
 
-    override fun createItemGroup(sourceItem: SourceItem): SourceItemGroup {
+    override fun itemSharedVariables(sourceItem: SourceItem): PatternVariables {
         val pageInfo = mikanClient.getEpisodePageInfo(sourceItem.link.toURL())
         if (pageInfo.mikanHref == null) {
             log.warn("mikanHref is null, link:{}", sourceItem.link)
-            return SourceItemGroup.EMPTY
+            return PatternVariables.EMPTY
         }
 
         val subject = try {
@@ -75,7 +75,7 @@ class MikanVariableProvider(
             throw ProcessingException.retryable("因网络异常获取Bangumi Subject失败")
         } catch (e: Exception) {
             log.error("获取Bangumi Subject失败, 如果404请更新对应Client的token item:{}", sourceItem, e)
-            return SourceItemGroup.EMPTY
+            return PatternVariables.EMPTY
         }
 
         // 有些纯字母的没有中文名
@@ -86,7 +86,7 @@ class MikanVariableProvider(
             ParseValue(nameCn),
         )
 
-        val bangumiInfo = BangumiInfo(
+        return BangumiInfo(
             subject.name,
             nameCn,
             pageInfo.bangumiTitle,
@@ -95,28 +95,31 @@ class MikanVariableProvider(
             subject.date.monthValue,
             season
         )
-        return MikanSourceGroup(bangumiInfo)
+    }
+
+    override fun itemFileVariables(
+        sourceItem: SourceItem,
+        sharedVariables: PatternVariables,
+        sourceFiles: List<SourceFile>
+    ): List<PatternVariables> {
+        return sourceFiles.map {
+            if (sharedVariables !is BangumiInfo) {
+                return@map PatternVariables.EMPTY
+            }
+
+            val variables = buildMap {
+                if (sharedVariables.season != null) {
+                    put("season", sharedVariables.season)
+                }
+            }
+            MapPatternVariables(variables)
+        }
     }
 
     override fun support(sourceItem: SourceItem): Boolean {
         return sourceItem.link.host.contains("mikan")
     }
 
-}
-
-private class MikanSourceGroup(
-    private val bangumiInfo: BangumiInfo,
-) : SourceItemGroup {
-
-    override fun filePatternVariables(paths: List<SourceFile>): List<FileVariable> {
-        return paths.map {
-            BangumiFile(bangumiInfo)
-        }
-    }
-
-    override fun sharedPatternVariables(): PatternVariables {
-        return bangumiInfo
-    }
 }
 
 fun URI.pathSegments(): List<String> {

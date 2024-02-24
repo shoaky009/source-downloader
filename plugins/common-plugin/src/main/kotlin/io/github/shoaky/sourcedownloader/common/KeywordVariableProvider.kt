@@ -3,7 +3,6 @@ package io.github.shoaky.sourcedownloader.common
 import io.github.shoaky.sourcedownloader.sdk.MapPatternVariables
 import io.github.shoaky.sourcedownloader.sdk.PatternVariables
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
-import io.github.shoaky.sourcedownloader.sdk.SourceItemGroup
 import io.github.shoaky.sourcedownloader.sdk.component.VariableProvider
 import org.slf4j.LoggerFactory
 import java.nio.file.Path
@@ -33,7 +32,7 @@ class KeywordVariableProvider(
         Word(word, mode.toIntOrNull() ?: 0, alias)
     }.toSet()
 
-    override fun createItemGroup(sourceItem: SourceItem): SourceItemGroup {
+    override fun itemSharedVariables(sourceItem: SourceItem): PatternVariables {
         val title = sourceItem.title
         val matchedWord = words.firstOrNull { word ->
             if (word.matchTitleMode == 1) {
@@ -52,7 +51,7 @@ class KeywordVariableProvider(
                 mapOf("keyword" to word)
             )
         } ?: PatternVariables.EMPTY
-        return SourceItemGroup.shared(variables)
+        return variables
     }
 
     override fun support(sourceItem: SourceItem): Boolean {

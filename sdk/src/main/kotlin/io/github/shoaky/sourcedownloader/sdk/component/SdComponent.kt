@@ -126,7 +126,15 @@ interface VariableProvider : SdComponent {
     /**
      * @return the variables for the item
      */
-    fun createItemGroup(sourceItem: SourceItem): SourceItemGroup
+    fun itemSharedVariables(sourceItem: SourceItem): PatternVariables
+
+    fun itemFileVariables(
+        sourceItem: SourceItem,
+        sharedVariables: PatternVariables,
+        sourceFiles: List<SourceFile>,
+    ): List<PatternVariables> {
+        return sourceFiles.map { PatternVariables.EMPTY }
+    }
 
     /**
      * @return true if the provider can provide variables for the item

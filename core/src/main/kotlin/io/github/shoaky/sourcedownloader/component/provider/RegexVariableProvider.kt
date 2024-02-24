@@ -1,19 +1,21 @@
 package io.github.shoaky.sourcedownloader.component.provider
 
+import io.github.shoaky.sourcedownloader.sdk.MapPatternVariables
+import io.github.shoaky.sourcedownloader.sdk.PatternVariables
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
-import io.github.shoaky.sourcedownloader.sdk.SourceItemGroup
 import io.github.shoaky.sourcedownloader.sdk.component.VariableProvider
 
 class RegexVariableProvider(
     private val regexes: List<RegexVariable>
 ) : VariableProvider {
 
-    override fun createItemGroup(sourceItem: SourceItem): SourceItemGroup {
+    override fun itemSharedVariables(sourceItem: SourceItem): PatternVariables {
         val variables = regexes.mapNotNull { regexVariable ->
             val find = regexVariable.regex.find(resolveField(sourceItem, regexVariable))
             find?.let { regexVariable.name to it.value }
         }.toMap()
-        return SourceItemGroup.shared(variables)
+
+        return MapPatternVariables(variables)
     }
 
     private fun resolveField(sourceItem: SourceItem, regexVariable: RegexVariable): CharSequence {

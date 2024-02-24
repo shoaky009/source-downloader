@@ -19,11 +19,14 @@ class SeasonVariableProviderTest {
                 Triple(split[0], split[1], split.elementAtOrNull(2) ?: "")
             }
             .forEach { (expect, name, path) ->
-                val group = provider.createItemGroup(sourceItem(title = name))
-                val sourceFiles = group.filePatternVariables(
-                    SourceFile(Path(path))
+                val item = sourceItem(title = name)
+                val sharedVariables = provider.itemSharedVariables(item)
+                val sourceFiles = provider.itemFileVariables(
+                    item,
+                    sharedVariables,
+                    listOf(SourceFile(Path(path)))
                 )
-                val season = sourceFiles.first().patternVariables().variables()["season"]
+                val season = sourceFiles.first().variables()["season"]
                 assertEquals(expect, season, "name:${name}")
             }
     }

@@ -19,8 +19,25 @@ class OpenAiVariableProvider(
     private val systemRole: ChatMessage
 ) : VariableProvider {
 
-    override fun createItemGroup(sourceItem: SourceItem): SourceItemGroup {
-        return AiSourceGroup(openAiClient, systemRole, openAiBaseUri, sourceItem)
+    override fun itemSharedVariables(sourceItem: SourceItem): PatternVariables {
+        return PatternVariables.EMPTY
+    }
+
+    override fun itemFileVariables(
+        sourceItem: SourceItem,
+        sharedVariables: PatternVariables,
+        sourceFiles: List<SourceFile>,
+    ): List<PatternVariables> {
+        return sourceFiles.map { file ->
+            val path = file.path
+            val chatCompletion = ChatCompletion(
+                listOf(systemRole, ChatMessage.ofUser("${sourceItem.title} ${path.name}"))
+            )
+            val response = openAiClient.execute(openAiBaseUri, chatCompletion).body()
+            val first = response.choices.map { it.message }.first()
+            val variables = Jackson.fromJson(first.content, jacksonTypeRef<Map<String, String>>())
+            MapPatternVariables(variables)
+        }
     }
 
     override fun support(sourceItem: SourceItem): Boolean = true
@@ -35,25 +52,4 @@ class OpenAiVariableProvider(
             如果不存在字段无需返回，不返回其他会干扰json解析的字符
         """.trimIndent()
     )
-}
-
-
-private class AiSourceGroup(
-    val openAiClient: OpenAiClient,
-    val systemRole: ChatMessage,
-    val uri: URI,
-    val sourceItem: SourceItem,
-) : SourceItemGroup {
-    override fun filePatternVariables(paths: List<SourceFile>): List<FileVariable> {
-        return paths.map { file ->
-            val path = file.path
-            val chatCompletion = ChatCompletion(
-                listOf(systemRole, ChatMessage.ofUser("${sourceItem.title} ${path.name}"))
-            )
-            val response = openAiClient.execute(uri, chatCompletion).body()
-            val first = response.choices.map { it.message }.first()
-            val variables = Jackson.fromJson(first.content, jacksonTypeRef<Map<String, String>>())
-            UniversalFileVariable(MapPatternVariables(variables))
-        }
-    }
 }

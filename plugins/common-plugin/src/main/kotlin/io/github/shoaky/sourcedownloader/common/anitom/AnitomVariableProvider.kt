@@ -11,15 +11,22 @@ import kotlin.io.path.name
  */
 class AnitomVariableProvider : VariableProvider {
 
-    override fun createItemGroup(sourceItem: SourceItem): SourceItemGroup {
-        return FunctionalItemGroup { file ->
+    override fun itemSharedVariables(sourceItem: SourceItem): PatternVariables = PatternVariables.EMPTY
+
+    override fun itemFileVariables(
+        sourceItem: SourceItem,
+        sharedVariables: PatternVariables,
+        sourceFiles: List<SourceFile>
+    ): List<PatternVariables> {
+        return sourceFiles.map { file ->
             val parse = AnitomyJ.parse(file.path.name)
                 .associateBy({
-                    CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_CAMEL,
+                    CaseFormat.UPPER_CAMEL.to(
+                        CaseFormat.LOWER_CAMEL,
                         it.category.name.removePrefix("kElement")
                     )
                 }, { it.value })
-            UniversalFileVariable(MapPatternVariables(parse))
+            MapPatternVariables(parse)
         }
     }
 

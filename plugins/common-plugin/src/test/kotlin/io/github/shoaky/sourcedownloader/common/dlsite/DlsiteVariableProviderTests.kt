@@ -43,7 +43,7 @@ class DlsiteVariableProviderTests {
     @Test
     @Disabled
     fun test_group() {
-        val group = provider.createItemGroup(sourceItem).sharedPatternVariables() as DlsiteWorkInfo
+        val group = provider.itemSharedVariables(sourceItem) as DlsiteWorkInfo
         assertEquals("RJ01042626", group.dlsiteId)
     }
 

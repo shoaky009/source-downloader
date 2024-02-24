@@ -86,7 +86,7 @@ interface FileContent {
             return null
         }
 
-        var path = fileDownloadPath.parent
+        var path = fileDownloadPath.parent ?: return null
         while (path.parent != downloadPath) {
             path = path.parent
         }

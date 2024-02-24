@@ -2,11 +2,10 @@ package io.github.shoaky.sourcedownloader.foreign.component
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
-import io.github.shoaky.sourcedownloader.foreign.ForeignSourceItemGroup
 import io.github.shoaky.sourcedownloader.foreign.ForeignStateClient
 import io.github.shoaky.sourcedownloader.foreign.methods.VariableProviderMethods
+import io.github.shoaky.sourcedownloader.sdk.PatternVariables
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
-import io.github.shoaky.sourcedownloader.sdk.SourceItemGroup
 import io.github.shoaky.sourcedownloader.sdk.component.VariableProvider
 
 open class ForeignVariableProvider(
@@ -26,15 +25,8 @@ open class ForeignVariableProvider(
     override val accuracy: Int
         get() = remoteAccuracy
 
-    override fun createItemGroup(sourceItem: SourceItem): SourceItemGroup {
-        return client.postState(
-            paths.createItemGroup,
-            mapOf("sourceItem" to sourceItem),
-            jacksonTypeRef<ForeignSourceItemGroup>()
-        ).also {
-            it.client = this.client
-            it.paths = this.paths
-        }
+    override fun itemSharedVariables(sourceItem: SourceItem): PatternVariables {
+        TODO()
     }
 
     override fun support(sourceItem: SourceItem): Boolean {

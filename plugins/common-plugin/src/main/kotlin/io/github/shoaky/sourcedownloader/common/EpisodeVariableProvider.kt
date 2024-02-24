@@ -42,8 +42,14 @@ object EpisodeVariableProvider : VariableProvider {
         )
     )
 
-    override fun createItemGroup(sourceItem: SourceItem): SourceItemGroup {
-        return FunctionalItemGroup { file ->
+    override fun itemSharedVariables(sourceItem: SourceItem): PatternVariables = PatternVariables.EMPTY
+
+    override fun itemFileVariables(
+        sourceItem: SourceItem,
+        sharedVariables: PatternVariables,
+        sourceFiles: List<SourceFile>,
+    ): List<PatternVariables> {
+        return sourceFiles.map { file ->
             val string = textClear.input(file.path.nameWithoutExtension)
             val episode = parserChain.firstNotNullOfOrNull {
                 log.debug("Parser {}", it)
@@ -54,7 +60,7 @@ object EpisodeVariableProvider : VariableProvider {
             padNumber(episode)?.run {
                 vars.addVariable("episode", this)
             }
-            UniversalFileVariable(vars)
+            vars
         }
     }
 

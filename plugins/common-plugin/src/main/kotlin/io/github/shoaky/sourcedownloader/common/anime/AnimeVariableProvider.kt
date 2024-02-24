@@ -31,9 +31,8 @@ class AnimeVariableProvider(
             }
         })
 
-    override fun createItemGroup(sourceItem: SourceItem): SourceItemGroup {
-        val create = create(sourceItem)
-        return AnimeSourceGroup(create)
+    override fun itemSharedVariables(sourceItem: SourceItem): PatternVariables {
+        return create(sourceItem)
     }
 
     override fun support(sourceItem: SourceItem): Boolean = true
@@ -192,21 +191,7 @@ private class TitleScore(
     }
 }
 
-private val log = LoggerFactory.getLogger(AnimeSourceGroup::class.java)
-
-internal class AnimeSourceGroup(
-    private val anime: Anime,
-) : SourceItemGroup {
-
-    override fun sharedPatternVariables(): PatternVariables {
-        return anime
-    }
-
-    override fun filePatternVariables(paths: List<SourceFile>): List<FileVariable> {
-        return paths.map { FileVariable.EMPTY }
-    }
-
-}
+private val log = LoggerFactory.getLogger(AnimeVariableProvider::class.java)
 
 internal data class Anime(
     val romajiName: String? = null,

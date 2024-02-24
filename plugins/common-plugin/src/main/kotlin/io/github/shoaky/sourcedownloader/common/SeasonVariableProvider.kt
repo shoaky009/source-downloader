@@ -18,15 +18,21 @@ object SeasonVariableProvider : VariableProvider {
         true
     )
 
-    // 顺序filename, parent, title
-    override fun createItemGroup(sourceItem: SourceItem): SourceItemGroup {
-        return FunctionalItemGroup { file ->
+    override fun itemSharedVariables(sourceItem: SourceItem): PatternVariables = PatternVariables.EMPTY
+
+    override fun itemFileVariables(
+        sourceItem: SourceItem,
+        sharedVariables: PatternVariables,
+        sourceFiles: List<SourceFile>,
+    ): List<PatternVariables> {
+        // 顺序filename, parent, title
+        return sourceFiles.map { file ->
             val seasonNumber = seasonSupport.input(
                 ParseValue(file.path.toString()),
                 ParseValue(sourceItem.title),
             )
             val season = seasonNumber.toString().padStart(2, '0')
-            UniversalFileVariable(Season(season))
+            Season(season)
         }
     }
 
