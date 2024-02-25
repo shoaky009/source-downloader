@@ -543,10 +543,6 @@ class SourceProcessor(
     }
 
     private fun moveFiles(content: CoreItemContent): Boolean {
-        if (downloader is NoneDownloader) {
-            return true
-        }
-
         val movableFiles = content.movableFiles()
         if (movableFiles.isEmpty()) {
             log.info("Processor:'$name' no available files to rename, item:'${content.sourceItem}'")

@@ -1,6 +1,9 @@
 package io.github.shoaky.sourcedownloader.common.torrent
 
 import bt.Bt
+import bt.bencoding.serializers.BEParser
+import bt.bencoding.types.BEList
+import bt.bencoding.types.BEMap
 import bt.data.file.FileSystemStorage
 import bt.dht.DHTConfig
 import bt.dht.DHTModule
@@ -12,12 +15,14 @@ import bt.runtime.Config
 import io.github.shoaky.sourcedownloader.sdk.SourceFile
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.ItemFileResolver
+import org.slf4j.LoggerFactory
 import java.net.URI
 import java.nio.file.Path
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
 import kotlin.io.path.Path
+import kotlin.jvm.optionals.getOrNull
 
 /**
  * Torrent文件解析器，支持磁力连接但是不推荐不太稳定
@@ -39,14 +44,39 @@ object TorrentFileResolver : ItemFileResolver {
             metadataService.fromUrl(downloadUri.toURL())
         }
 
-        // TODO support BitTorrent v2 get torrent file tree
-        // https://blog.libtorrent.org/2020/09/bittorrent-v2/
         if (torrent.files.size == 1) {
-            return torrent.files
-                .map {
-                    val path = Path(it.pathElements.joinToString("/"))
-                    SourceFile(path, mapOf("size" to it.size))
+            val metadata = torrent.source.metadata.getOrNull()
+            if (metadata == null) {
+                log.warn("torrent:$downloadUri metadata is null, returning empty files")
+                return emptyList()
+            }
+            val infoMap = BEParser(metadata).use {
+                (it.readMap().value["info"] as BEMap).value
+            }
+            val infoMapFiles = infoMap["files"] as? BEList
+                ?: return torrent.files
+                    .map {
+                        val path = Path(it.pathElements.joinToString("/"))
+                        SourceFile(path, mapOf("size" to it.size))
+                    }
+
+            val torrentName = infoMap["name"]?.toString()
+            return infoMapFiles.value.filterIsInstance<BEMap>().map { file ->
+                val fileMap = file.value
+                val length = fileMap.getValue("length").toString().toLong()
+                val fileMapPath = fileMap.getValue("path")
+                val pathElements = if (fileMapPath is BEList) {
+                    fileMapPath.value.map { it.toString() }
+                } else {
+                    listOf(fileMapPath.toString())
                 }
+                val path = if (torrentName == null) {
+                    Path(pathElements.joinToString("/"))
+                } else {
+                    Path(torrentName, pathElements.joinToString("/"))
+                }
+                SourceFile(path, mapOf("size" to length))
+            }
         }
         val parent = Path(torrent.name)
         return torrent.files
@@ -91,6 +121,7 @@ object TorrentFileResolver : ItemFileResolver {
         return torrentConsumer.get()
     }
 
+    private val log = LoggerFactory.getLogger(TorrentFileResolver::class.java)
 }
 
 private class TorrentConsumer : Consumer<Torrent> {

@@ -1,10 +1,11 @@
-package io.github.shoaky.sourcedownloader.common.dlsite
+package io.github.shoaky.sourcedownloader.external.dlsite
 
 import io.github.shoaky.sourcedownloader.sdk.PatternVariables
 
 data class DlsiteWorkInfo(
     val dlsiteId: String,
     val title: String? = null,
+    val releaseDate: String? = null,
     val year: Int? = null,
     val month: Int? = null,
     val day: Int? = null,

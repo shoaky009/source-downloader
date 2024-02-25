@@ -2,12 +2,15 @@ package io.github.shoaky.sourcedownloader.sdk
 
 import com.fasterxml.jackson.annotation.JsonAlias
 import com.fasterxml.jackson.annotation.JsonIgnore
+import com.fasterxml.jackson.databind.annotation.JsonSerialize
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer
 import io.github.shoaky.sourcedownloader.sdk.component.ItemFileResolver
 import java.io.InputStream
 import java.net.URI
 import java.nio.file.Path
 
 data class SourceFile @JvmOverloads constructor(
+    @JsonSerialize(using = ToStringSerializer::class)
     /**
      * The path of the file.
      * From [ItemFileResolver], it's a relative path.

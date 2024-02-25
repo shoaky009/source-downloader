@@ -26,8 +26,8 @@ object GetchuClient {
         val doc = Jsoup.connect(url)
             .cookie("getchu_adalt_flag", "getchu.com")
             .get()
-        val brand = doc.select("#brandsite").attr("title")
-        val title = doc.select("#soft-title").text()
+        val brand = doc.getElementById("brandsite")?.ownText()
+        val title = doc.getElementById("soft-title")?.ownText()
         val p = doc.select("#soft_table tbody tr:nth-child(2) tr td:nth-child(1)")
         val targets = mapOf("発売日：" to "releaseDate", "品番：" to "isbn")
         val fieldContent = p.mapNotNull {

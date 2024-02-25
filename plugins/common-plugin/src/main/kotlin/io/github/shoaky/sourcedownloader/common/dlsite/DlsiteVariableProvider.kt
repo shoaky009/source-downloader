@@ -1,109 +1,96 @@
 package io.github.shoaky.sourcedownloader.common.dlsite
 
+import com.google.common.cache.CacheBuilder
+import com.google.common.cache.CacheLoader
+import io.github.shoaky.sourcedownloader.external.dlsite.DlsiteClient
+import io.github.shoaky.sourcedownloader.external.dlsite.DlsiteWorkInfo
 import io.github.shoaky.sourcedownloader.sdk.PatternVariables
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.VariableProvider
-import io.github.shoaky.sourcedownloader.sdk.util.find
-import io.github.shoaky.sourcedownloader.sdk.util.http.httpClient
-import io.github.shoaky.sourcedownloader.sdk.util.http.httpGetRequest
-import org.jsoup.Jsoup
-import java.net.URI
-import java.net.http.HttpResponse
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
+import org.slf4j.LoggerFactory
+import java.util.*
+import kotlin.jvm.optionals.getOrNull
 
 /**
  * 通过RJ号获取DLsite的作品信息，SourceItem中必须有RJ号相关的内容
  */
 class DlsiteVariableProvider(
-    private val locale: String = "zh-cn"
+    private val dlistClient: DlsiteClient = DlsiteClient(),
+    private val locale: String = "zh-cn",
+    private val idOnly: Boolean = true,
 ) : VariableProvider {
 
+    private val cache = CacheBuilder.newBuilder().maximumSize(500).build(
+        object : CacheLoader<WorkRequest, Optional<DlsiteWorkInfo>>() {
+            override fun load(workRequest: WorkRequest): Optional<DlsiteWorkInfo> {
+                val workInfo = requestWork(workRequest)
+                return Optional.ofNullable(workInfo)
+            }
+        })
+
     override fun itemSharedVariables(sourceItem: SourceItem): PatternVariables {
-        val dlsiteId = getDlsiteId(sourceItem) ?: return PatternVariables.EMPTY
-        return getWorkInfo(dlsiteId)
+        val dlsiteId = parseDlsiteId(sourceItem)
+        if (dlsiteId == null && idOnly) {
+            return PatternVariables.EMPTY
+        }
+        if (dlsiteId != null) {
+            val work = cache.get(WorkRequest(dlsiteId)).getOrNull()
+            if (work == null) {
+                log.info("No work found for dlsiteId: {}", dlsiteId)
+                return PatternVariables.EMPTY
+            }
+            return work
+        }
+
+        // 后续需要对关键词进行处理
+        val req = WorkRequest(keyword = sourceItem.title)
+        return cache.get(req).getOrNull() ?: PatternVariables.EMPTY
     }
 
-    private fun getWorkInfo(
-        dlsiteId: String
-    ): DlsiteWorkInfo {
-        // 不用jsoup来请求是因为后续要对http请求统一管理,增加功能
-        // TODO cache
-        val request = httpGetRequest(
-            URI("https://www.dlsite.com/home/work/=/product_id/$dlsiteId.html"),
-            mapOf("Cookie" to "locale=$locale; adultchecked=1")
-        )
-        val body = httpClient.send(request, HttpResponse.BodyHandlers.ofString()).body()
-        return parseWorkInfo(body, dlsiteId)
+    private fun requestWork(
+        request: WorkRequest
+    ): DlsiteWorkInfo? {
+        if (request.dlsiteId != null) {
+            return fromDlsiteId(request.dlsiteId)
+        }
+        if (request.keyword == null) {
+            throw IllegalArgumentException("dlsiteId and keyword can't be null at the same time")
+        }
+        return fromKeyword(request.keyword)
     }
 
-    fun parseWorkInfo(
-        body: String,
-        dlsiteId: String
-    ): DlsiteWorkInfo {
-        val document = Jsoup.parse(body)
-        val workOutline = document.getElementById("work_outline")?.select("tbody tr")
-            ?.associateBy(
-                { it.firstElementChild()?.text()?.trim() },
-                { it.lastElementChild()?.text()?.trim() }
-            )
-            ?: return DlsiteWorkInfo(
-                dlsiteId,
-                document.getElementById("work_name")?.ownText(),
-            )
-        val keys = localizationMapping[locale] ?: localizationMapping.getValue(ZH_CN)
+    private fun fromKeyword(keyword: String): DlsiteWorkInfo? {
+        val items = dlistClient.searchWork(keyword, locale)
+        if (items.isEmpty()) {
+            log.info("No work found for keyword: {}", keyword)
+            return null
+        }
+        // 后续需要对搜索结果进行处理，先观察
+        return fromDlsiteId(items.first().dlsiteId)
+    }
 
-        val releaseDate = kotlin.runCatching {
-            LocalDate.parse(workOutline[keys[0]], chineseDateTimeFormatter)
-        }.getOrNull()
-        // 感觉命名用不上 暂定
-        // val scenario = workOutline[keys[2]]?.split("/")?.map { it.trim() }
-        // val illustration = workOutline[keys[3]]?.split("/")?.map { it.trim() }
-        // val voiceActor = workOutline[keys[4]]?.split("/")?.map { it.trim() }
-
-        return DlsiteWorkInfo(
-            dlsiteId,
-            document.getElementById("work_name")?.ownText(),
-            releaseDate?.year,
-            releaseDate?.monthValue,
-            releaseDate?.dayOfMonth,
-            workOutline[keys[1]],
-            productFormat = workOutline[keys[6]],
-            author = workOutline[keys[7]],
-            maker = document.select("#work_maker .maker_name").text().trim()
-        )
+    private fun fromDlsiteId(dlsiteId: String): DlsiteWorkInfo {
+        return dlistClient.getWorkInfo(dlsiteId, locale)
     }
 
     override fun support(sourceItem: SourceItem): Boolean {
-        return getDlsiteId(sourceItem) != null
+        if (idOnly.not()) {
+            return true
+        }
+        return parseDlsiteId(sourceItem) != null
     }
 
     companion object {
 
-        private val idRegexes = arrayOf(
-            Regex("RJ\\d+"),
-            Regex("VJ\\d+"),
-        )
-        private val chineseDateTimeFormatter = DateTimeFormatter.ofPattern("yyyy年MM月dd日")
-
-        private fun getDlsiteId(item: SourceItem): String? {
-            val link = item.link.toString()
-            return link.find(*idRegexes)
+        private val log = LoggerFactory.getLogger(DlsiteVariableProvider::class.java)
+        private fun parseDlsiteId(item: SourceItem): String? {
+            return DlsiteClient.parseDlsiteId(item.link.toString())
         }
-
-        private const val ZH_CN = "zh-cn"
-
-        private val localizationMapping: Map<String, List<String>> = mapOf(
-            ZH_CN to listOf(
-                "贩卖日", "系列名", "剧情", "插画", "声优", "音乐", "作品类型", "作者", "社团名"
-            ),
-            "ja-jp" to listOf(
-                "販売日", "シリーズ名", "シナリオ", "イラスト", "声優", "音楽", "作品形式", "作者", "サークル名"
-            ),
-
-            // TODO more language
-        )
     }
+
+    private data class WorkRequest(
+        val dlsiteId: String? = null,
+        val keyword: String? = null
+    )
+
 }
-
-
