@@ -18,5 +18,5 @@ object SeasonVariableProviderSupplier : ComponentSupplier<SeasonVariableProvider
         )
     }
 
-    override fun autoCreateDefault(): Boolean = true
+    override fun supportNoArgs(): Boolean = true
 }

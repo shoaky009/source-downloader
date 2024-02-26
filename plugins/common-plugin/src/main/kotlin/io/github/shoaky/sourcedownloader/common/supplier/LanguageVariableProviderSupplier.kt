@@ -18,5 +18,5 @@ object LanguageVariableProviderSupplier : ComponentSupplier<LanguageVariableProv
         )
     }
 
-    override fun autoCreateDefault(): Boolean = true
+    override fun supportNoArgs(): Boolean = true
 }

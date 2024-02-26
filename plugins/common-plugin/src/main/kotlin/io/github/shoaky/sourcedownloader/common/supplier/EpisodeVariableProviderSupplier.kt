@@ -18,5 +18,5 @@ object EpisodeVariableProviderSupplier : ComponentSupplier<EpisodeVariableProvid
         )
     }
 
-    override fun autoCreateDefault(): Boolean = true
+    override fun supportNoArgs(): Boolean = true
 }

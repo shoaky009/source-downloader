@@ -18,5 +18,5 @@ object AnimeFileFilterSupplier : ComponentSupplier<AnimeFileFilter> {
         )
     }
 
-    override fun autoCreateDefault(): Boolean = true
+    override fun supportNoArgs(): Boolean = true
 }

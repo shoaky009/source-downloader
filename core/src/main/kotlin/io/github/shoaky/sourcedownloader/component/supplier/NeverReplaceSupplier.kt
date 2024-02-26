@@ -12,7 +12,7 @@ object NeverReplaceSupplier : ComponentSupplier<NeverReplace> {
         return NeverReplace
     }
 
-    override fun autoCreateDefault(): Boolean = true
+    override fun supportNoArgs(): Boolean = true
 
     override fun supplyTypes(): List<ComponentType> {
         return listOf(

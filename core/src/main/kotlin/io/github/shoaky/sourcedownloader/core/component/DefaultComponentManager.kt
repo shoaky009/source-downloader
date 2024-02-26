@@ -38,10 +38,12 @@ class DefaultComponentManager(
         val supplier = getSupplier(targetComponentType)
         val supplyTypes = supplier.supplyTypes()
         val typesWithProp = supplyTypes.associateBy({ it }) {
-            if (supplier.autoCreateDefault()) {
+            val config = findConfig(it.topType, it.typeName, targetName)
+            if (config == null && supplier.supportNoArgs()) {
                 Properties.empty
             } else {
-                val values = findConfig(it.topType, it.typeName, targetName).props
+                val values = config?.props
+                    ?: throw ComponentException.missing("No component config found for $type:${it.typeName}:$targetName")
                 Properties.fromMap(values)
             }
         }
@@ -108,7 +110,7 @@ class DefaultComponentManager(
         typesWithProp: Map<ComponentType, Properties>
     ): Pair<ComponentType, Properties> {
         val entries = typesWithProp.entries
-        if (supplier.autoCreateDefault()) {
+        if (supplier.supportNoArgs()) {
             return entries.first().toPair()
         }
         return entries.firstOrNull { it.value.rawValues.isNotEmpty() }?.toPair() ?: entries.first().toPair()
@@ -156,11 +158,11 @@ class DefaultComponentManager(
         return type.keys
     }
 
-    private fun findConfig(type: ComponentTopType, typeName: String, name: String): ComponentConfig {
+    private fun findConfig(type: ComponentTopType, typeName: String, name: String): ComponentConfig? {
         val config = configStorages.firstNotNullOfOrNull {
-            runCatching { it.getComponentConfig(type, typeName, name) }.getOrDefault(null)
+            it.findComponentConfig(type, typeName, name)
         }
-        return config ?: throw ComponentException.missing("No component config found for $type:$typeName:$name")
+        return config
     }
 
     private val _componentDescriptions by lazy {

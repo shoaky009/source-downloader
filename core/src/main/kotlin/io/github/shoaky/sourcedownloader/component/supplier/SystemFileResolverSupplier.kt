@@ -28,5 +28,5 @@ object SystemFileResolverSupplier : ComponentSupplier<SystemFileResolver> {
         )
     }
 
-    override fun autoCreateDefault(): Boolean = true
+    override fun supportNoArgs(): Boolean = true
 }

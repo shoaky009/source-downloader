@@ -16,6 +16,6 @@ object TouchItemDirectorySupplier : ComponentSupplier<TouchItemDirectory> {
         return listOf(ComponentType.listener("touch-item-directory"))
     }
 
-    override fun autoCreateDefault(): Boolean = true
+    override fun supportNoArgs(): Boolean = true
 
 }

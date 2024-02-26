@@ -18,5 +18,5 @@ object AnitomVariableProviderSupplier : ComponentSupplier<AnitomVariableProvider
         )
     }
 
-    override fun autoCreateDefault(): Boolean = true
+    override fun supportNoArgs(): Boolean = true
 }

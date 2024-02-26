@@ -16,5 +16,5 @@ object TorrentFileResolverSupplier : ComponentSupplier<TorrentFileResolver> {
         return listOf(ComponentType.fileResolver("torrent"))
     }
 
-    override fun autoCreateDefault(): Boolean = true
+    override fun supportNoArgs(): Boolean = true
 }

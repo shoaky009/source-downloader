@@ -22,8 +22,8 @@ interface ComponentSupplier<R : SdComponent> {
     fun rules(): List<ComponentRule> = emptyList()
 
     /**
-     * only no args constructor
-     * @return true if component can be auto created, otherwise false
+     * If component is not defined in storage, can it be apply with [Properties.empty]
+     * @return true if component can be apply [Properties.empty], otherwise false
      */
-    fun autoCreateDefault(): Boolean = false
+    fun supportNoArgs(): Boolean = false
 }

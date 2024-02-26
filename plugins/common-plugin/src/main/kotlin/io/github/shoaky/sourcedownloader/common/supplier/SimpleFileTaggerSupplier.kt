@@ -21,6 +21,6 @@ internal object SimpleFileTaggerSupplier : ComponentSupplier<SimpleFileTagger> {
         )
     }
 
-    override fun autoCreateDefault(): Boolean = true
+    override fun supportNoArgs(): Boolean = true
 
 }

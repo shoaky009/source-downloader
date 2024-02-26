@@ -20,7 +20,7 @@ object NoneDownloaderSupplier : ComponentSupplier<NoneDownloader> {
         )
     }
 
-    override fun autoCreateDefault(): Boolean {
+    override fun supportNoArgs(): Boolean {
         return true
     }
 }

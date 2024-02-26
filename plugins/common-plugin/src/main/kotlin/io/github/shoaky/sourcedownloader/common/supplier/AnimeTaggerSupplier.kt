@@ -18,7 +18,7 @@ object AnimeTaggerSupplier : ComponentSupplier<AnimeTagger> {
         )
     }
 
-    override fun autoCreateDefault(): Boolean {
+    override fun supportNoArgs(): Boolean {
         return true
     }
 }

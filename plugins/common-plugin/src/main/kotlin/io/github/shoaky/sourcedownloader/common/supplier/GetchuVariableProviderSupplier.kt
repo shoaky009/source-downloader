@@ -17,4 +17,6 @@ object GetchuVariableProviderSupplier : ComponentSupplier<GetchuVariableProvider
             ComponentType.variableProvider("getchu")
         )
     }
+
+    override fun supportNoArgs(): Boolean = true
 }

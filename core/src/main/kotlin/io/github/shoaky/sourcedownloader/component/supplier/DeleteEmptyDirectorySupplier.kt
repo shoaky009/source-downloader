@@ -18,5 +18,5 @@ object DeleteEmptyDirectorySupplier : ComponentSupplier<DeleteEmptyDirectory> {
         )
     }
 
-    override fun autoCreateDefault(): Boolean = true
+    override fun supportNoArgs(): Boolean = true
 }

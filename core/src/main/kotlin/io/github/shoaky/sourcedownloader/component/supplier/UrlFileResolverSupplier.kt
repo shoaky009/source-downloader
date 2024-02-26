@@ -16,5 +16,5 @@ object UrlFileResolverSupplier : ComponentSupplier<UrlFileResolver> {
         return listOf(ComponentType.fileResolver("url"))
     }
 
-    override fun autoCreateDefault(): Boolean = true
+    override fun supportNoArgs(): Boolean = true
 }

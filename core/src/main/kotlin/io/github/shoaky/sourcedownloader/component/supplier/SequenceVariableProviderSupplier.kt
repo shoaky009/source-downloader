@@ -18,5 +18,5 @@ object SequenceVariableProviderSupplier : ComponentSupplier<SequenceVariableProv
         )
     }
 
-    override fun autoCreateDefault(): Boolean = true
+    override fun supportNoArgs(): Boolean = true
 }

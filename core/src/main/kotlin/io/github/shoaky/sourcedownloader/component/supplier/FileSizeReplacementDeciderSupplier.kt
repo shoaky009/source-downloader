@@ -18,5 +18,5 @@ object FileSizeReplacementDeciderSupplier : ComponentSupplier<FileSizeReplacemen
         )
     }
 
-    override fun autoCreateDefault(): Boolean = true
+    override fun supportNoArgs(): Boolean = true
 }
