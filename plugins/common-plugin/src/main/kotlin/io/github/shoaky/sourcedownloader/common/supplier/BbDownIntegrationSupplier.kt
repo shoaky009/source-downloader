@@ -15,7 +15,7 @@ object BbDownIntegrationSupplier : ComponentSupplier<BbDownIntegration> {
 
     override fun apply(context: CoreContext, props: Properties): BbDownIntegration {
         return BbDownIntegration(
-            props.get("downloadPath"),
+            props.get("download-path"),
             BbDownClient(props.get("endpoint")),
             props.getOrDefault("options", BbDownOptions())
         )

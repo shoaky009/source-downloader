@@ -13,7 +13,7 @@ class ProcessingException(
 
     companion object {
 
-        fun skippable(message: String): Throwable {
+        fun skip(message: String): Throwable {
             return ProcessingException(message, true)
         }
 

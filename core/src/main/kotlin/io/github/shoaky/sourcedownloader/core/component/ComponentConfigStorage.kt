@@ -1,7 +1,7 @@
 package io.github.shoaky.sourcedownloader.core.component
 
-import io.github.shoaky.sourcedownloader.sdk.component.ComponentException
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentTopType
+import io.github.shoaky.sourcedownloader.throwComponentException
 
 interface ComponentConfigStorage {
 
@@ -12,7 +12,10 @@ interface ComponentConfigStorage {
 
     fun getComponentConfig(type: ComponentTopType, typeName: String, name: String): ComponentConfig {
         return findComponentConfig(type, typeName, name)
-            ?: throw ComponentException.missing("No component config found for $type:$typeName:$name")
+            ?: throwComponentException(
+                "No component config found for $type:$typeName:$name",
+                ComponentFailureType.DEFINITION_NOT_FOUND
+            )
     }
 
     fun findComponentConfig(type: ComponentTopType, typeName: String, name: String): ComponentConfig? {

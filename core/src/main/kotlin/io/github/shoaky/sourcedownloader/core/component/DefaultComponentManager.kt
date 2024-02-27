@@ -7,10 +7,12 @@ import io.github.shoaky.sourcedownloader.core.ObjectWrapperContainer
 import io.github.shoaky.sourcedownloader.core.processor.SourceProcessor
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.component.*
+import io.github.shoaky.sourcedownloader.throwComponentException
 import io.github.shoaky.sourcedownloader.util.Events
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.DisposableBean
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.reflect.jvm.jvmName
 
 class DefaultComponentManager(
     private val objectContainer: ObjectWrapperContainer,
@@ -43,7 +45,10 @@ class DefaultComponentManager(
                 Properties.empty
             } else {
                 val values = config?.props
-                    ?: throw ComponentException.missing("No component config found for $type:${it.typeName}:$targetName")
+                    ?: throwComponentException(
+                        "No component config found for ${it.topType}:${it.typeName}:$targetName",
+                        ComponentFailureType.DEFINITION_NOT_FOUND
+                    )
                 Properties.fromMap(values)
             }
         }
@@ -62,7 +67,7 @@ class DefaultComponentManager(
             val component = try {
                 supplier.apply(context, props)
             } catch (e: ComponentException) {
-                throw ComponentException.other("Create component $primaryTypeBeanName failed cause by ${e.message}")
+                throw ComponentException.other("Component $primaryTypeBeanName failed cause by ${e.message}")
             }
             val wrapper = ComponentWrapper(
                 primaryType,
@@ -134,7 +139,10 @@ class DefaultComponentManager(
 
     override fun getSupplier(type: ComponentType): ComponentSupplier<*> {
         return componentSuppliers[type]
-            ?: throw ComponentException.unsupported("Supplier不存在, 组件类型:${type.topTypeClass.simpleName}:${type.typeName}")
+            ?: throwComponentException(
+                "组件${type.topTypeClass.simpleName}:${type.typeName} Supplier未注册进应用中",
+                ComponentFailureType.SUPPLIER_NOT_FOUND
+            )
     }
 
     override fun getSuppliers(): List<ComponentSupplier<*>> {
@@ -146,7 +154,11 @@ class DefaultComponentManager(
             val types = componentSupplier.supplyTypes()
             for (type in types) {
                 if (this.componentSuppliers.containsKey(type)) {
-                    throw ComponentException.supplierExists("组件类型已存在:${type}")
+                    val name = componentSupplier::class.jvmName
+                    throwComponentException(
+                        "组件类型已存在:$type Supplier:$name, 请移除插件或通知插件开发者调整类型名称",
+                        ComponentFailureType.TYPE_DUPLICATED
+                    )
                 }
                 this.componentSuppliers[type] = componentSupplier
             }
@@ -165,6 +177,7 @@ class DefaultComponentManager(
         return config
     }
 
+    // 后面要调整
     private val _componentDescriptions by lazy {
         val descriptor = DescriptionLoader.load()
         val descriptionMapping = descriptor.component.associateBy { it.id }
@@ -218,7 +231,7 @@ class DefaultComponentManager(
             RuleDescriptor(
                 if (rule.isAllow) "允许" else "禁止",
                 rule.type.lowerHyphenName(),
-                rule.value.simpleName!!
+                rule.value.jvmName
             )
         }
 

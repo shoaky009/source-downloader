@@ -44,6 +44,6 @@ object ForeignSourceSupplier : ComponentSupplier<ForeignSource> {
             }
 
         }
-        throw ComponentException.unsupported("Unknown remote type: $type")
+        throw ComponentException("Unknown source type: $type", "unknown-type")
     }
 }

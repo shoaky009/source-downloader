@@ -1,12 +1,13 @@
 package io.github.shoaky.sourcedownloader.api
 
 import io.github.shoaky.sourcedownloader.core.*
+import io.github.shoaky.sourcedownloader.core.component.ComponentFailureType
 import io.github.shoaky.sourcedownloader.core.component.ConfigOperator
 import io.github.shoaky.sourcedownloader.core.file.FileContentStatus
 import io.github.shoaky.sourcedownloader.core.processor.DryRunOptions
 import io.github.shoaky.sourcedownloader.core.processor.ProcessorManager
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
-import io.github.shoaky.sourcedownloader.sdk.component.ComponentException
+import io.github.shoaky.sourcedownloader.throwComponentException
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import java.time.LocalDateTime
@@ -58,7 +59,10 @@ private class ProcessorController(
     fun create(@RequestBody processorConfig: ProcessorConfig) {
         val processorName = processorConfig.name
         if (processorManager.exists(processorName)) {
-            throw ComponentException.processorExists("Processor $processorName already exists")
+            throwComponentException(
+                "Processor $processorName already exists",
+                ComponentFailureType.PROCESSOR_ALREADY_EXISTS
+            )
         }
         configOperator.save(processorName, processorConfig)
         processorManager.createProcessor(processorConfig)

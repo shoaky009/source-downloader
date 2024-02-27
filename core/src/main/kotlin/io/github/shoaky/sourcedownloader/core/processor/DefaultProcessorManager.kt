@@ -10,6 +10,7 @@ import io.github.shoaky.sourcedownloader.core.expression.sourceFileDefs
 import io.github.shoaky.sourcedownloader.core.expression.sourceItemDefs
 import io.github.shoaky.sourcedownloader.core.file.CorePathPattern
 import io.github.shoaky.sourcedownloader.sdk.component.*
+import io.github.shoaky.sourcedownloader.throwComponentException
 import io.github.shoaky.sourcedownloader.util.addToCollection
 
 class DefaultProcessorManager(
@@ -28,7 +29,10 @@ class DefaultProcessorManager(
         val processorBeanName = processorBeanName(config.name)
         val processorName = config.name
         if (container.contains(processorBeanName)) {
-            throw ComponentException.processorExists("Processor $processorName already exists")
+            throwComponentException(
+                "Processor $processorName already exists",
+                ComponentFailureType.PROCESSOR_ALREADY_EXISTS
+            )
         }
 
         val source = componentManager.getComponent(
@@ -104,7 +108,7 @@ class DefaultProcessorManager(
         return if (container.contains(processorBeanName)) {
             container.get(processorBeanName, processorTypeRef)
         } else {
-            throw ComponentException.processorMissing("Processor $name not found")
+            throwComponentException("Processor $name not found", ComponentFailureType.PROCESSOR_NOT_FOUND)
         }
     }
 
@@ -161,25 +165,25 @@ class DefaultProcessorManager(
         return container.getObjectsOfType(processorTypeRef).values.toList()
     }
 
-    override fun destroyProcessor(processorName: String) {
-        val processorBeanName = processorBeanName(processorName)
+    override fun destroyProcessor(name: String) {
+        val processorBeanName = processorBeanName(name)
         if (container.contains(processorBeanName).not()) {
-            throw ComponentException.processorMissing("Processor '$processorName' not exists")
+            throwComponentException("Processor $name not found", ComponentFailureType.PROCESSOR_NOT_FOUND)
         }
 
-        log.info("Processor:'$processorName' destroying")
+        log.info("Processor:'$name' destroying")
         val processor = container.get(processorBeanName, processorTypeRef).get()
         val safeTask = processor.safeTask()
         componentManager.getAllTrigger().forEach {
             val removed = it.removeTask(safeTask)
             if (removed) {
-                log.info("Processor:'$processorName' removed from trigger:'${it::class.simpleName}'")
+                log.info("Processor:'$name' removed from trigger:'${it::class.simpleName}'")
             }
         }
         processor.close()
         container.remove(processorBeanName)
         componentManager.getAllComponent().forEach {
-            it.removeRef(processorName)
+            it.removeRef(name)
         }
     }
 

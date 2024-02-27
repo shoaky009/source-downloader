@@ -11,7 +11,7 @@ object BilibiliSourceSupplier : ComponentSupplier<BilibiliSource> {
 
     override fun apply(context: CoreContext, props: Properties): BilibiliSource {
         val cookie = props.getOrNull<String>("cookie")
-        val favorites = props.getOrDefault<List<Long>>("favorites", emptyList())
+        val favorites = props.get<List<Long>>("favorites")
         return BilibiliSource(BilibiliClient(sessionCookie = cookie), favorites)
     }
 

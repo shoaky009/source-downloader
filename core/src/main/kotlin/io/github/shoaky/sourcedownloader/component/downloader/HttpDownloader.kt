@@ -67,7 +67,7 @@ class HttpDownloader(
                 val response = client.send(request, bodyHandler)
                 val statusCode = HttpStatus.valueOf(response.statusCode())
                 if (statusCode == HttpStatus.NOT_FOUND) {
-                    throw ProcessingException.skippable("Download failed: $path, uri:${file.downloadUri} status code: ${response.statusCode()}")
+                    throw ProcessingException.skip("Download failed: $path, uri:${file.downloadUri} status code: ${response.statusCode()}")
                 }
                 if (statusCode.isError) {
                     throw IllegalStateException("Download failed: $path, status code: ${response.statusCode()}")

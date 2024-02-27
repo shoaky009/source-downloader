@@ -2,11 +2,13 @@ package io.github.shoaky.sourcedownloader.core
 
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
+import io.github.shoaky.sourcedownloader.core.component.ComponentFailureType
 import io.github.shoaky.sourcedownloader.core.component.ComponentWrapper
 import io.github.shoaky.sourcedownloader.core.component.ObjectWrapper
 import io.github.shoaky.sourcedownloader.core.component.ProcessorWrapper
 import io.github.shoaky.sourcedownloader.sdk.SourcePointer
 import io.github.shoaky.sourcedownloader.sdk.component.*
+import io.github.shoaky.sourcedownloader.throwComponentException
 import org.springframework.beans.BeansException
 import org.springframework.beans.factory.support.DefaultListableBeanFactory
 import org.springframework.core.ResolvableType
@@ -68,7 +70,7 @@ class SpringObjectWrapperContainer(
             applicationContext.getBean(name) as? W
                 ?: throw IllegalArgumentException("Bean $name cannot be cast to ${type.type}")
         } catch (e: BeansException) {
-            throw ComponentException.missing("No bean named $name available")
+            throwComponentException("No bean named $name available", ComponentFailureType.INSTANCE_NOT_FOUND)
         }
     }
 

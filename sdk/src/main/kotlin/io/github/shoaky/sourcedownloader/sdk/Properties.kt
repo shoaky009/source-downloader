@@ -17,7 +17,7 @@ class Properties private constructor(
         try {
             return Jackson.convert(any, jacksonTypeRef())
         } catch (e: Exception) {
-            throw ComponentException.props("属性${key}解析异常: value:$any", e)
+            throw ComponentException.props("属性${key}解析异常: $any", e)
         }
     }
 
@@ -26,7 +26,7 @@ class Properties private constructor(
         try {
             return Jackson.convert(any, jacksonTypeRef())
         } catch (e: Exception) {
-            throw ComponentException.props("属性${key}解析异常: value:$any", e)
+            throw ComponentException.props("属性${key}解析异常: $any", e)
         }
     }
 

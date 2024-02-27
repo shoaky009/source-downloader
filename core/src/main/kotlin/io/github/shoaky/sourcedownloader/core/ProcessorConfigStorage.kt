@@ -1,6 +1,7 @@
 package io.github.shoaky.sourcedownloader.core
 
-import io.github.shoaky.sourcedownloader.sdk.component.ComponentException
+import io.github.shoaky.sourcedownloader.core.component.ComponentFailureType
+import io.github.shoaky.sourcedownloader.throwComponentException
 
 interface ProcessorConfigStorage {
 
@@ -8,6 +9,6 @@ interface ProcessorConfigStorage {
 
     fun getProcessorConfig(name: String): ProcessorConfig {
         return getAllProcessorConfig().firstOrNull { it.name == name }
-            ?: throw ComponentException.processorMissing("No processor config found for $name")
+            ?: throwComponentException("No processor config found for $name", ComponentFailureType.PROCESSOR_NOT_FOUND)
     }
 }
