@@ -14,6 +14,8 @@ ENV SOURCE_DOWNLOADER_DATA_LOCATION=/app/data/
 ENV SOURCE_DOWNLOADER_PLUGIN_LOCATION=/app/plugins/
 
 RUN mkdir -p /app/data /app/plugins /app/lib
+# install tcpdump and dig for debug
+RUN apk update && apk add tcpdump bind-tools curl
 
 WORKDIR /app
 
