@@ -75,7 +75,10 @@ interface Source<SP : SourcePointer> : SdComponent {
 
     fun defaultPointer(): SP
 
-    @Deprecated("为了能够传递HttpHeader临时瞎定义的后面要改", ReplaceWith("none"))
+    /**
+     * will be passed to [DownloadOptions.headers]
+     * @return the header for the item
+     */
     fun headers(sourceItem: SourceItem): Map<String, String> = emptyMap()
 }
 

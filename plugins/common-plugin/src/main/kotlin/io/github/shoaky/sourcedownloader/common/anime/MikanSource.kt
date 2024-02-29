@@ -7,7 +7,7 @@ import io.github.shoaky.sourcedownloader.common.rss.parseTime
 import io.github.shoaky.sourcedownloader.sdk.*
 import io.github.shoaky.sourcedownloader.sdk.component.Source
 import io.github.shoaky.sourcedownloader.sdk.util.ExpandIterator
-import io.github.shoaky.sourcedownloader.sdk.util.RequestResult
+import io.github.shoaky.sourcedownloader.sdk.util.IterationResult
 import io.github.shoaky.sourcedownloader.sdk.util.queryMap
 import org.slf4j.LoggerFactory
 import java.net.URI
@@ -58,7 +58,7 @@ class MikanSource(
             val fansubRss = mikanClient.getEpisodePageInfo(item.link.toURL()).fansubRss
             if (fansubRss == null) {
                 log.debug("FansubRss is null:{}", item)
-                return@ExpandIterator RequestResult(emptyList(), true)
+                return@ExpandIterator IterationResult(emptyList(), true)
             }
 
             val fansubQuery = URI(fansubRss).queryMap()
@@ -89,7 +89,7 @@ class MikanSource(
             if (log.isDebugEnabled) {
                 log.debug("Fetch fansub items:{}", result)
             }
-            RequestResult(result, true)
+            IterationResult(result, true)
         }.asIterable()
     }
 

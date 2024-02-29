@@ -8,7 +8,7 @@ import io.github.shoaky.sourcedownloader.sdk.PointedItem
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.Source
 import io.github.shoaky.sourcedownloader.sdk.util.ExpandIterator
-import io.github.shoaky.sourcedownloader.sdk.util.RequestResult
+import io.github.shoaky.sourcedownloader.sdk.util.IterationResult
 import java.net.URI
 import java.time.Instant
 import java.time.ZoneId
@@ -44,7 +44,7 @@ class BilibiliSource(
             val media = medias.filter { it.attr == 0 }.map {
                 fromMedia(favoriteId, it, data.hasMore.not() && last == it)
             }
-            RequestResult(media, data.hasMore.not() || (buttonTouched && media.isEmpty()))
+            IterationResult(media, data.hasMore.not() || (buttonTouched && media.isEmpty()))
         }.asIterable()
     }
 

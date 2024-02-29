@@ -4,7 +4,7 @@ import io.github.shoaky.sourcedownloader.sdk.ItemPointer
 import io.github.shoaky.sourcedownloader.sdk.PointedItem
 import io.github.shoaky.sourcedownloader.sdk.SourcePointer
 import io.github.shoaky.sourcedownloader.sdk.util.ExpandIterator
-import io.github.shoaky.sourcedownloader.sdk.util.RequestResult
+import io.github.shoaky.sourcedownloader.sdk.util.IterationResult
 
 /**
  * A template source that fetches items.
@@ -27,7 +27,7 @@ abstract class ExpandSource<T, SP : SourcePointer> : Source<SP> {
 
     abstract fun targets(pointer: SP): List<T>
 
-    abstract fun requestItems(ctx: FetchContext<SP>, target: T): RequestResult<PointedItem<ItemPointer>>
+    abstract fun requestItems(ctx: FetchContext<SP>, target: T): IterationResult<PointedItem<ItemPointer>>
 
 }
 

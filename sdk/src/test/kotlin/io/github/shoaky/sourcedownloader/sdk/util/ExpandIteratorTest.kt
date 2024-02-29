@@ -15,7 +15,7 @@ class ExpandIteratorTest {
             val start = (it - 1) * 10 + 1
             val end = it * 10
             val intRange = start..end
-            RequestResult(intRange.toList(), true)
+            IterationResult(intRange.toList(), true)
         }.toList()
 
         assertEquals(10, result.size)
@@ -29,7 +29,7 @@ class ExpandIteratorTest {
             val start = (it - 1) * 10 + 1
             val end = it * 10
             val intRange = start..end
-            RequestResult(intRange.toList(), true)
+            IterationResult(intRange.toList(), true)
         }.toList()
 
         // 为什么是20而不是15，因为LimitedExpandIterator的实现是先获取到所有的数据，然后再进行limit的限制
@@ -44,7 +44,7 @@ class ExpandIteratorTest {
             val start = (it - 1) * 10 + 1
             val end = it * 10
             val intRange = start..end
-            RequestResult(intRange.toList(), true)
+            IterationResult(intRange.toList(), true)
         }.toList()
         assertContentEquals((1..30).toList(), result)
     }
@@ -58,7 +58,7 @@ class ExpandIteratorTest {
             val start = (number - 1) * 10 + 1
             val end = number * 10
             val intRange = start..end
-            RequestResult(intRange.toList(), number != 1)
+            IterationResult(intRange.toList(), number != 1)
         }.toList()
         assertContentEquals((1..30).toList(), result)
     }

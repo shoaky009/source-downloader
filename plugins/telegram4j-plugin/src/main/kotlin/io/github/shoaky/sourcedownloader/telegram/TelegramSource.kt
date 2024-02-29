@@ -4,7 +4,7 @@ import io.github.shoaky.sourcedownloader.sdk.PointedItem
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.Source
 import io.github.shoaky.sourcedownloader.sdk.util.ExpandIterator
-import io.github.shoaky.sourcedownloader.sdk.util.RequestResult
+import io.github.shoaky.sourcedownloader.sdk.util.IterationResult
 import telegram4j.tl.*
 import java.net.URI
 import java.time.Duration
@@ -32,7 +32,7 @@ class TelegramSource(
             val beginDate = chatMapping[chatPointer.chatId]?.beginDate
             val messages = messageFetcher.fetchMessages(chatPointer, limit, timeout)
             if (messages.isEmpty()) {
-                return@ExpandIterator RequestResult(emptyList(), true)
+                return@ExpandIterator IterationResult(emptyList(), true)
             }
 
             val chat = telegramClient.getChatMinById(ChatPointer(chatPointer.chatId).createId())
@@ -42,7 +42,7 @@ class TelegramSource(
                 PointedItem(sourceItem, chatPointer.copy(fromMessageId = message.id()))
             }.filter { beginDate == null || beginDate <= it.sourceItem.datetime.toLocalDate() }
             chatPointer.fromMessageId = messages.last().id()
-            RequestResult(items)
+            IterationResult(items)
         }.asIterable()
     }
 

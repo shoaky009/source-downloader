@@ -8,7 +8,7 @@ import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.ExpandSource
 import io.github.shoaky.sourcedownloader.sdk.component.FetchContext
 import io.github.shoaky.sourcedownloader.sdk.component.ItemFileResolver
-import io.github.shoaky.sourcedownloader.sdk.util.RequestResult
+import io.github.shoaky.sourcedownloader.sdk.util.IterationResult
 import org.slf4j.LoggerFactory
 import java.time.YearMonth
 import java.time.temporal.ChronoUnit
@@ -22,7 +22,10 @@ class PatreonIntegration(
         return client.execute(PledgeRequest()).body().campaignIds()
     }
 
-    override fun requestItems(ctx: FetchContext<PatreonPointer>, target: Long): RequestResult<PointedItem<ItemPointer>> {
+    override fun requestItems(
+        ctx: FetchContext<PatreonPointer>,
+        target: Long
+    ): IterationResult<PointedItem<ItemPointer>> {
         val yearMonthsKey = "$target-YearMonths"
         val yearMonths = ctx.loadAttr(yearMonthsKey) {
             val postTags = client.execute(PostTagRequest(target)).body()
@@ -59,7 +62,7 @@ class PatreonIntegration(
         if (terminated) {
             ctx.attrs.remove(yearMonthsKey)
         }
-        return RequestResult(items, terminated)
+        return IterationResult(items, terminated)
     }
 
     private fun findNextYearMonth(doneYearMonth: YearMonth?, yearMonths: List<YearMonth>): YearMonth {

@@ -7,7 +7,7 @@ import io.github.shoaky.sourcedownloader.sdk.*
 import io.github.shoaky.sourcedownloader.sdk.component.ItemFileResolver
 import io.github.shoaky.sourcedownloader.sdk.component.Source
 import io.github.shoaky.sourcedownloader.sdk.util.ExpandIterator
-import io.github.shoaky.sourcedownloader.sdk.util.RequestResult
+import io.github.shoaky.sourcedownloader.sdk.util.IterationResult
 import io.github.shoaky.sourcedownloader.sdk.util.flatten
 import io.github.shoaky.sourcedownloader.sdk.util.http.httpClient
 import org.slf4j.LoggerFactory
@@ -48,7 +48,7 @@ class PixivIntegration(
                     val sourceItem = createSourceItem(it)
                     PointedItem(sourceItem, IllustrationPointer(it.id, it.userId))
                 }
-            RequestResult(items, items.isEmpty())
+            IterationResult(items, items.isEmpty())
         }.asIterable()
     }
 

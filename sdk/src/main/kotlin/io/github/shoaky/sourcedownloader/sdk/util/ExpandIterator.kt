@@ -12,7 +12,7 @@ package io.github.shoaky.sourcedownloader.sdk.util
 class ExpandIterator<T, R>(
     private val targets: List<T>,
     private val limit: Int,
-    private val transform: (T) -> RequestResult<R>,
+    private val transform: (T) -> IterationResult<R>,
 ) : Iterator<R?> {
 
     private var targetIndex = 0
@@ -63,7 +63,7 @@ class ExpandIterator<T, R>(
 /**
  * @param terminated if the target is terminated, goes to next target
  */
-data class RequestResult<R>(
+data class IterationResult<R>(
     val items: List<R>,
     val terminated: Boolean = false,
 )
