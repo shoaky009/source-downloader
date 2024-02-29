@@ -35,34 +35,39 @@ class DefaultProcessorManager(
             )
         }
 
-        val source = componentManager.getComponent(
+        val sourceW = componentManager.getComponent(
             ComponentTopType.SOURCE,
             config.source,
             sourceTypeRef,
-        ).getAndMarkRef(processorName)
+        )
+        val source = sourceW.getAndMarkRef(processorName)
 
-        val downloader = componentManager.getComponent(
+        val downloaderW = componentManager.getComponent(
             ComponentTopType.DOWNLOADER,
             config.downloader,
             downloaderTypeRef,
-        ).getAndMarkRef(processorName)
+        )
+        val downloader = downloaderW.getAndMarkRef(processorName)
 
-        val mover = componentManager.getComponent(
+        val moverW = componentManager.getComponent(
             ComponentTopType.FILE_MOVER,
             config.fileMover,
             fileMoverTypeRef,
-        ).getAndMarkRef(processorName)
+        )
+        val mover = moverW.getAndMarkRef(processorName)
 
-        val resolver = componentManager.getComponent(
+        val resolverW = componentManager.getComponent(
             ComponentTopType.ITEM_FILE_RESOLVER,
             config.itemFileResolver,
             fileResolverTypeRef,
-        ).getAndMarkRef(processorName)
+        )
+        val resolver = resolverW.getAndMarkRef(processorName)
 
         val checkTypes = mutableListOf(
             config.source.getComponentType(Source::class),
             config.downloader.getComponentType(Downloader::class),
             config.fileMover.getComponentType(FileMover::class),
+            config.itemFileResolver.getComponentType(ItemFileResolver::class),
         )
         checkTypes.addAll(
             config.options.variableProviders.map {
@@ -70,10 +75,14 @@ class DefaultProcessorManager(
             }
         )
 
-        val cps = mutableListOf(source, downloader, mover, resolver)
-        // cps.addAll(providers)
+        val componentToCheck = mapOf(
+            ComponentTopType.SOURCE to sourceW,
+            ComponentTopType.DOWNLOADER to downloaderW,
+            ComponentTopType.FILE_MOVER to moverW,
+            ComponentTopType.ITEM_FILE_RESOLVER to resolverW,
+        )
         checkTypes.forEach {
-            check(it, cps, config)
+            check(it, componentToCheck)
         }
 
         val processor = SourceProcessor(
@@ -123,39 +132,30 @@ class DefaultProcessorManager(
         return "Processor:$name"
     }
 
-    // TODO 重构这一校验，目标通过组件的描述对象
-    // TODO 第二个参数应该给组件的描述对象
-    private fun check(componentType: ComponentType, components: List<SdComponent>, config: ProcessorConfig) {
-        val supplier = componentManager.getSupplier(componentType)
+    private fun check(
+        subjectType: ComponentType,
+        componentToCheck: Map<ComponentTopType, ComponentWrapper<out SdComponent>>,
+    ) {
+        val supplier = componentManager.getSupplier(subjectType)
         val compatibilities = supplier.rules().groupBy { it.type }
 
-        val componentTypeMapping = components.groupBy {
-            ComponentTopType.fromClass(it::class)
-        }.flatMap { (key, value) ->
-            key.map { it to value }
-        }.groupBy({ it.first }, { it.second })
-            .mapValues { it.value.flatten().distinct() }
-
-        for (rules in compatibilities) {
-            val typeComponents = componentTypeMapping[rules.key] ?: emptyList()
-            if (typeComponents.isEmpty()) {
+        for ((type, rules) in compatibilities) {
+            val wrapper = componentToCheck[type]
+            if (wrapper == null || wrapper.type.typeName == "composite") {
                 continue
             }
-            var exception: Exception? = null
-            val allow = rules.value.any { rule ->
-                components.map {
-                    try {
-                        rule.verify(it)
-                        return@map true
-                    } catch (ex: ComponentException) {
-                        exception = ex
-                        return@map false
-                    }
-                }.any()
-            }
-            if (allow.not()) {
-                exception?.let {
-                    throw ComponentException.compatibility("Processor:${config.name} ${it.message}")
+            rules.forEach { rule ->
+                try {
+                    rule.verify(wrapper.component)
+                } catch (ex: ComponentException) {
+                    val curr = rule.type.lowerHyphenName()
+                    val subject = subjectType.topType.lowerHyphenName()
+                    val message = """
+                        来自'$subject'与'$curr'的组件适配性问题
+                        组件${curr}:${wrapper.type} 与 ${subject}:${subjectType.typeName} 不兼容
+                        ${ex.message}
+                    """.trimIndent()
+                    throw ComponentException.compatibility(message)
                 }
             }
         }

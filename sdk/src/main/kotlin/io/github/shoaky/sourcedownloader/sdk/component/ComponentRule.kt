@@ -26,12 +26,11 @@ data class ComponentRule internal constructor(
         val componentClasses = component::class.componentSuperClasses()
         if (isAllow) {
             if (componentClasses.contains(value).not()) {
-                val classes = componentClasses.map { it.simpleName }.joinToString(",")
-                throw ComponentException.compatibility("组件类型不匹配, 期望:${value.simpleName}, 实际:$classes")
+                throw ComponentException.compatibility("组件${type.lowerHyphenName()}不匹配, 期望:${value.simpleName}, 实际:${component::class.simpleName}")
             }
         } else {
             if (componentClasses.contains(value)) {
-                throw ComponentException.compatibility("组件类型不匹配, ${value.simpleName}不允许和${component::class.simpleName}组合")
+                throw ComponentException.compatibility("组件${type.lowerHyphenName()}不匹配, ${value.simpleName}不允许和${component::class.simpleName}组合")
             }
         }
     }
