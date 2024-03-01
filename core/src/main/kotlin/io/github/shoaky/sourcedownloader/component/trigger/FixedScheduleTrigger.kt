@@ -34,11 +34,11 @@ class FixedScheduleTrigger(
 
     private fun timerTask() = timerTask {
         tasks.forEach { task ->
-            kotlin.runCatching {
-                task.run()
-            }.onFailure {
-                log.error("任务处理发生异常:{}", task, it)
-            }
+            Thread.ofVirtual().name("fixed-schedule-$interval")
+                .start(task)
+                .setUncaughtExceptionHandler { _, e ->
+                    log.error("任务处理发生异常:{}", task, e)
+                }
         }
     }
 
