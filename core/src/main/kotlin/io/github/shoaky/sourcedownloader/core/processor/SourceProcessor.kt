@@ -511,8 +511,8 @@ class SourceProcessor(
         processingStorage.saveTargetPaths(processingTargetPaths)
     }
 
-    fun safeTask(): Runnable {
-        return safeRunner
+    fun safeTask(): ProcessTask {
+        return ProcessTask(name, safeRunner, options.taskGroup)
     }
 
     private fun createDownloadTask(content: CoreItemContent, replaceFiles: List<CoreFileContent>): DownloadTask {

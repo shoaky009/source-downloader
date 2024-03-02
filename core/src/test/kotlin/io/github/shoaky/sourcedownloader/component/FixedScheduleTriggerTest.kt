@@ -2,10 +2,12 @@ package io.github.shoaky.sourcedownloader.component
 
 import io.github.shoaky.sourcedownloader.component.supplier.FixedScheduleTriggerSupplier
 import io.github.shoaky.sourcedownloader.sdk.CoreContext
+import io.github.shoaky.sourcedownloader.sdk.ProcessTask
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import org.junit.jupiter.api.Test
 
 class FixedScheduleTriggerTest {
+
     @Test
     fun should_run_after_started() {
         val trigger = FixedScheduleTriggerSupplier.apply(
@@ -21,7 +23,7 @@ class FixedScheduleTriggerTest {
             run = true
             times = times.inc()
         }
-        trigger.addTask(task)
+        trigger.addTask(ProcessTask("test", task))
         trigger.start()
         Thread.sleep(10)
         assert(run)
@@ -42,7 +44,7 @@ class FixedScheduleTriggerTest {
             run = true
             times = times.inc()
         }
-        trigger.addTask(task)
+        trigger.addTask(ProcessTask("test", task))
         trigger.start()
 
         Thread.sleep(100L)

@@ -30,7 +30,7 @@ interface Trigger : SdComponent, AutoCloseable {
     /**
      * @param task the task to be executed
      */
-    fun addTask(task: Runnable)
+    fun addTask(task: ProcessTask)
 
     /**
      * Start the trigger
@@ -60,7 +60,7 @@ interface Trigger : SdComponent, AutoCloseable {
     /**
      * Remove the task from the trigger
      */
-    fun removeTask(task: Runnable): Boolean
+    fun removeTask(task: ProcessTask): Boolean
 }
 
 /**
@@ -80,6 +80,13 @@ interface Source<SP : SourcePointer> : SdComponent {
      * @return the header for the item
      */
     fun headers(sourceItem: SourceItem): Map<String, String> = emptyMap()
+
+    /**
+     * 当有限流控制需要分组处理
+     */
+    fun group(): String? {
+        return null
+    }
 }
 
 interface Downloader : SdComponent {

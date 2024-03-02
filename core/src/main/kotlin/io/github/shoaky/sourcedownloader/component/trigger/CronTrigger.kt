@@ -12,7 +12,7 @@ class CronTrigger(
 
     override fun start() {
         taskScheduler.initialize()
-        tasks.forEach {
+        getSourceGroupingTasks().forEach {
             taskScheduler.schedule(
                 it, trigger
             )

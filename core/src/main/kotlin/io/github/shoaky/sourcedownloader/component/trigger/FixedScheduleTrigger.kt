@@ -23,7 +23,7 @@ class FixedScheduleTrigger(
     override fun start() {
         timer.scheduleAtFixedRate(timerTask(), interval.toMillis(), interval.toMillis())
         if (onStartRunTasks) {
-            tasks.forEach {
+            getSourceGroupingTasks().forEach {
                 Thread.ofVirtual().name("onstart-up-$interval")
                     .start {
                         it.run()
@@ -35,7 +35,7 @@ class FixedScheduleTrigger(
     private fun timerTask() = timerTask {
         tasks.forEach { task ->
             Thread.ofVirtual().name("fixed-schedule-$interval")
-                .start(task)
+                .start(task.runnable)
                 .setUncaughtExceptionHandler { _, e ->
                     log.error("任务处理发生异常:{}", task, e)
                 }

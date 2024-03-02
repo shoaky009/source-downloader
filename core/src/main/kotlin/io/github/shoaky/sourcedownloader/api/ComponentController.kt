@@ -32,9 +32,9 @@ private class ComponentController(
         type: ComponentTopType?, typeName: String?, name: String?,
     ): List<ComponentInfo> {
         return componentManager.getAllComponent()
-            .filter { name matchesNullOrEqual it.name }
-            .filter { type matchesNullOrEqual it.type.topType }
-            .filter { typeName matchesNullOrEqual it.type.typeName }
+            .filter { it.name matchesNullOrEqual name }
+            .filter { it.type.topType matchesNullOrEqual type }
+            .filter { it.type.typeName matchesNullOrEqual typeName }
             .map { wrapper ->
                 ComponentInfo(
                     wrapper.type.topType,

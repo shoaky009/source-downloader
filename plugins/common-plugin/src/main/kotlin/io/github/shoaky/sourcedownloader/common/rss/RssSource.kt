@@ -64,6 +64,10 @@ class RssSource(
             .toList()
     }
 
+    override fun group(): String? {
+        return URI(url).host
+    }
+
     companion object {
 
         private val defaultEnclosure = Enclosure().apply {

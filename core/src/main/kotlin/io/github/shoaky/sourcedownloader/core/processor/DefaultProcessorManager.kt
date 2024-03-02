@@ -94,7 +94,7 @@ class DefaultProcessorManager(
             mover,
             config.savePath,
             processingStorage,
-            createOptions(config),
+            createOptions(config, source.group()),
         )
 
         val processorWrapper = ProcessorWrapper(config.name, processor)
@@ -191,7 +191,10 @@ class DefaultProcessorManager(
         return container.getObjectsOfType(processorTypeRef).keys
     }
 
-    private fun createOptions(config: ProcessorConfig): ProcessorOptions {
+    private fun createOptions(
+        config: ProcessorConfig,
+        group: String?
+    ): ProcessorOptions {
         val options = config.options
         checkOptions(options)
         val sourceItemFilter = mutableListOf<SourceItemFilter>()
@@ -334,7 +337,9 @@ class DefaultProcessorManager(
             fileExistsDetector,
             options.channelBufferSize,
             options.recordMinimized,
-            options.parallelism
+            options.parallelism,
+            options.retryBackoffMills,
+            options.taskGroup ?: group ?: config.source.typeName()
         )
     }
 

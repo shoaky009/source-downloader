@@ -83,7 +83,9 @@ data class ProcessorConfig(
         val manualSources: List<ComponentId> = emptyList(),
         val channelBufferSize: Int = 20,
         val recordMinimized: Boolean = false,
-        val parallelism: Int = 1
+        val parallelism: Int = 1,
+        val retryBackoffMills: Long = 5000L,
+        val taskGroup: String? = null
     )
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
