@@ -1,6 +1,6 @@
 package io.github.shoaky.sourcedownloader.sdk
 
-class ProcessTask(
+class ProcessorTask(
     val processName: String,
     val runnable: Runnable,
     /**
@@ -11,7 +11,7 @@ class ProcessTask(
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is ProcessTask) return false
+        if (other !is ProcessorTask) return false
 
         if (processName != other.processName) return false
 

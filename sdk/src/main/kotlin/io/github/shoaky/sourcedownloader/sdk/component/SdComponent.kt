@@ -30,7 +30,7 @@ interface Trigger : SdComponent, AutoCloseable {
     /**
      * @param task the task to be executed
      */
-    fun addTask(task: ProcessTask)
+    fun addTask(task: ProcessorTask)
 
     /**
      * Start the trigger
@@ -60,7 +60,7 @@ interface Trigger : SdComponent, AutoCloseable {
     /**
      * Remove the task from the trigger
      */
-    fun removeTask(task: ProcessTask): Boolean
+    fun removeTask(task: ProcessorTask): Boolean
 }
 
 /**

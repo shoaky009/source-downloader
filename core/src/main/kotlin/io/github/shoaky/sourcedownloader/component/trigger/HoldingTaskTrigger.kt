@@ -1,22 +1,22 @@
 package io.github.shoaky.sourcedownloader.component.trigger
 
-import io.github.shoaky.sourcedownloader.sdk.ProcessTask
+import io.github.shoaky.sourcedownloader.sdk.ProcessorTask
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentStateful
 import io.github.shoaky.sourcedownloader.sdk.component.Trigger
 import org.slf4j.LoggerFactory
 
 abstract class HoldingTaskTrigger : Trigger, ComponentStateful {
 
-    protected val tasks: MutableList<ProcessTask> = mutableListOf()
+    protected val tasks: MutableList<ProcessorTask> = mutableListOf()
 
-    override fun addTask(task: ProcessTask) {
+    override fun addTask(task: ProcessorTask) {
         if (tasks.contains(task)) {
             return
         }
         tasks.add(task)
     }
 
-    override fun removeTask(task: ProcessTask): Boolean {
+    override fun removeTask(task: ProcessorTask): Boolean {
         return tasks.remove(task)
     }
 

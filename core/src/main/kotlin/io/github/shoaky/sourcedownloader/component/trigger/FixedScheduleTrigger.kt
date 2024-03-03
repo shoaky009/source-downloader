@@ -13,7 +13,7 @@ class FixedScheduleTrigger(
     private val onStartRunTasks: Boolean = false,
 ) : HoldingTaskTrigger() {
 
-    private val timer = Timer("fixed-schedule-trigger:$interval")
+    private val timer = Timer("fixed-schedule:$interval")
 
     override fun stop() {
         timer.cancel()
@@ -33,9 +33,9 @@ class FixedScheduleTrigger(
     }
 
     private fun timerTask() = timerTask {
-        tasks.forEach { task ->
+        getSourceGroupingTasks().forEach { task ->
             Thread.ofVirtual().name("fixed-schedule-$interval")
-                .start(task.runnable)
+                .start(task)
                 .setUncaughtExceptionHandler { _, e ->
                     log.error("任务处理发生异常:{}", task, e)
                 }
