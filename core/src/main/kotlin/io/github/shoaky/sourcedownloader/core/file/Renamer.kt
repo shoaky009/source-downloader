@@ -1,7 +1,7 @@
 package io.github.shoaky.sourcedownloader.core.file
 
-import io.github.shoaky.sourcedownloader.core.VariableReplacer
 import io.github.shoaky.sourcedownloader.sdk.*
+import io.github.shoaky.sourcedownloader.sdk.component.VariableReplacer
 import org.slf4j.LoggerFactory
 import java.nio.file.Path
 import java.util.regex.Matcher

@@ -11,7 +11,7 @@ class MappedFileTagger(
     private val mapping: Map<String, String>
 ) : FileTagger {
 
-    override fun tag(fileContent: SourceFile): String? {
-        return mapping[fileContent.path.name]
+    override fun tag(sourceFile: SourceFile): String? {
+        return mapping[sourceFile.path.name]
     }
 }

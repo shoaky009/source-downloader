@@ -2,8 +2,8 @@
 
 package io.github.shoaky.sourcedownloader.core.processor
 
-import io.github.shoaky.sourcedownloader.core.RegexVariableReplacer
-import io.github.shoaky.sourcedownloader.core.WindowsPathReplacer
+import io.github.shoaky.sourcedownloader.component.replacer.RegexVariableReplacer
+import io.github.shoaky.sourcedownloader.component.replacer.WindowsPathReplacer
 import io.github.shoaky.sourcedownloader.core.file.CorePathPattern
 import io.github.shoaky.sourcedownloader.core.file.RawFileContent
 import io.github.shoaky.sourcedownloader.core.file.Renamer

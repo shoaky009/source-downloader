@@ -272,7 +272,7 @@ interface FileTagger : SdComponent {
     /**
      * @return the tag of the file, null if no tag
      */
-    fun tag(fileContent: SourceFile): String?
+    fun tag(sourceFile: SourceFile): String?
 }
 
 /**
@@ -300,6 +300,12 @@ interface FileExistsDetector : SdComponent {
      * @return Key is the path to be detected, Value is the path that is considered to exist
      */
     fun exists(fileMover: FileMover, content: ItemContent): Map<Path, Path?>
+
+}
+
+interface VariableReplacer : SdComponent {
+
+    fun replace(key: String, value: String): String
 
 }
 

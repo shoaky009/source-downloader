@@ -8,7 +8,7 @@ class ForeignFileTagger(
     private val client: ForeignStateClient,
 ) : FileTagger {
 
-    override fun tag(fileContent: SourceFile): String? {
+    override fun tag(sourceFile: SourceFile): String? {
         TODO("Not yet implemented")
     }
 }

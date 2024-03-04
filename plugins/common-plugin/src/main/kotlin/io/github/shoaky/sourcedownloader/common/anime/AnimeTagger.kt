@@ -15,8 +15,8 @@ object AnimeTagger : FileTagger {
 
     private val sp = listOf("特别篇")
 
-    override fun tag(fileContent: SourceFile): String? {
-        val filename = fileContent.path.nameWithoutExtension
+    override fun tag(sourceFile: SourceFile): String? {
+        val filename = sourceFile.path.nameWithoutExtension
         val isSp = sp.any {
             filename.contains(it)
         }

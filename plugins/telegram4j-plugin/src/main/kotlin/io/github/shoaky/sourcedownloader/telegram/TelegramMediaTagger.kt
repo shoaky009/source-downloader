@@ -8,8 +8,8 @@ import io.github.shoaky.sourcedownloader.sdk.component.FileTagger
  */
 object TelegramMediaTagger : FileTagger {
 
-    override fun tag(fileContent: SourceFile): String? {
-        return fileContent.attrs[TelegramSource.MEDIA_TYPE_ATTR]?.toString()
+    override fun tag(sourceFile: SourceFile): String? {
+        return sourceFile.attrs[TelegramSource.MEDIA_TYPE_ATTR]?.toString()
     }
 
 }

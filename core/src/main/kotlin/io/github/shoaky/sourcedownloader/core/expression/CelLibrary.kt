@@ -5,7 +5,6 @@ import org.projectnessie.cel.Library
 import org.projectnessie.cel.ProgramOption
 import org.projectnessie.cel.checker.Decls
 import org.projectnessie.cel.common.types.BoolT
-import org.projectnessie.cel.common.types.StringT
 import org.projectnessie.cel.interpreter.functions.Overload
 
 class CelLibrary : Library {
@@ -31,16 +30,6 @@ class CelLibrary : Library {
                     ),
                     Decls.Bool
                 )
-            ),
-            Decls.newFunction(
-                TO_STRING,
-                Decls.newInstanceOverload(
-                    "to_string",
-                    listOf(
-                        Decls.Any
-                    ),
-                    Decls.String
-                )
             )
         )
         return listOf(options)
@@ -65,15 +54,6 @@ class CelLibrary : Library {
                     val contains = containsAny(l, r, b)
                     if (contains) BoolT.True else BoolT.False
                 },
-            ),
-            Overload.overload(
-                TO_STRING,
-                null,
-                {
-                    StringT.stringOf(it.value().toString())
-                },
-                null,
-                null
             )
         )
 
@@ -83,7 +63,6 @@ class CelLibrary : Library {
     companion object {
 
         private const val CONTAINS_ANY = "containsAny"
-        private const val TO_STRING = "toString"
 
         fun containsAny(source: List<String>, target: List<String>, ignoreCase: Boolean = false): Boolean {
             if (ignoreCase) {

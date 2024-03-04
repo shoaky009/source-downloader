@@ -60,7 +60,8 @@ internal class CommonPlugin : Plugin {
             WebdavMoverSupplier,
             PixivIntegrationSupplier,
             KeywordVariableProviderSupplier,
-            BilibiliSourceSupplier
+            BilibiliSourceSupplier,
+            EmbyImageTaggerSupplier
         )
     }
 }

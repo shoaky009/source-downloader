@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer
+import io.github.shoaky.sourcedownloader.component.replacer.RegexVariableReplacer
 import io.github.shoaky.sourcedownloader.core.component.ComponentId
 import io.github.shoaky.sourcedownloader.core.component.ListenerConfig
 import io.github.shoaky.sourcedownloader.core.file.CorePathPattern
@@ -13,6 +14,7 @@ import io.github.shoaky.sourcedownloader.core.file.VariableErrorStrategy
 import io.github.shoaky.sourcedownloader.core.processor.VariableConflictStrategy
 import io.github.shoaky.sourcedownloader.sdk.DownloadOptions
 import io.github.shoaky.sourcedownloader.sdk.PathPattern
+import io.github.shoaky.sourcedownloader.sdk.component.VariableReplacer
 import java.nio.file.Path
 import java.time.Duration
 
@@ -67,7 +69,9 @@ data class ProcessorConfig(
         val variableNameReplace: Map<String, String> = emptyMap(),
         val fileTaggers: List<ComponentId> = emptyList(),
         @JsonDeserialize(contentAs = RegexVariableReplacer::class)
-        val variableReplacers: List<VariableReplacer> = emptyList(),
+        val regexVariableReplacers: List<VariableReplacer> = emptyList(),
+        val variableReplacers: List<VariableReplacerConfig> = emptyList(),
+        val supportWindowsPlatformPath: Boolean = true,
         val fileReplacementDecider: ComponentId = ComponentId("never"),
         val fileExistsDetector: ComponentId? = null,
         val fetchLimit: Int = 50,
@@ -111,4 +115,6 @@ data class ProcessorConfig(
         val itemExpressionExclusions: List<String>? = null,
         val itemExpressionInclusions: List<String>? = null,
     )
+
+
 }

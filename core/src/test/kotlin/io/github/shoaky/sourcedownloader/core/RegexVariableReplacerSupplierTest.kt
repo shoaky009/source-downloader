@@ -1,9 +1,10 @@
 package io.github.shoaky.sourcedownloader.core
 
+import io.github.shoaky.sourcedownloader.component.replacer.RegexVariableReplacer
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
-class RegexVariableReplacerTest {
+class RegexVariableReplacerSupplierTest {
 
     @Test
     fun test() {

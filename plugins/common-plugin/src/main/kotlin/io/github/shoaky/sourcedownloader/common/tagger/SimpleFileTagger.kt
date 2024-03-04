@@ -25,8 +25,8 @@ class SimpleFileTagger(
         this.putAll(externalMapping)
     }
 
-    override fun tag(fileContent: SourceFile): String? {
-        val name = fileContent.path.name
+    override fun tag(sourceFile: SourceFile): String? {
+        val name = sourceFile.path.name
         if (name.lastIndexOf(".") < 0) {
             return null
         }

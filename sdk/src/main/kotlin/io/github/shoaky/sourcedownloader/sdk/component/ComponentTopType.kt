@@ -41,6 +41,10 @@ enum class ComponentTopType(
         FileExistsDetector::class,
         listOf("file-exists-detector", "exists-detector", "fileExistsDetector", "existsDetector")
     ),
+    VARIABLE_REPLACER(
+        VariableReplacer::class,
+        listOf("variable-replacer", "variableReplacer")
+    ),
     MANUAL_SOURCE(
         ManualSource::class,
         listOf("manual-source")

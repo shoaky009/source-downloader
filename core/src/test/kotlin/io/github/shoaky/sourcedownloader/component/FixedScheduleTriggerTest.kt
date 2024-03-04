@@ -49,7 +49,7 @@ class FixedScheduleTriggerTest {
 
         Thread.sleep(100L)
         assert(run.not())
-        Thread.sleep(910L)
+        Thread.sleep(1000L)
         assert(run)
     }
 }

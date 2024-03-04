@@ -68,7 +68,7 @@ private class MultiCp : TorrentDownloader, FileTagger {
         throw NotImplementedError()
     }
 
-    override fun tag(fileContent: SourceFile): String? {
+    override fun tag(sourceFile: SourceFile): String? {
         throw NotImplementedError()
     }
 

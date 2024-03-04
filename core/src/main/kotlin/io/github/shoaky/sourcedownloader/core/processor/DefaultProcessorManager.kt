@@ -2,6 +2,7 @@ package io.github.shoaky.sourcedownloader.core.processor
 
 import io.github.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
 import io.github.shoaky.sourcedownloader.component.*
+import io.github.shoaky.sourcedownloader.component.replacer.WindowsPathReplacer
 import io.github.shoaky.sourcedownloader.core.*
 import io.github.shoaky.sourcedownloader.core.component.*
 import io.github.shoaky.sourcedownloader.core.expression.CelCompiledExpressionFactory
@@ -300,13 +301,25 @@ class DefaultProcessorManager(
             componentManager.getComponent(
                 ComponentTopType.FILE_EXISTS_DETECTOR,
                 it,
-                fileExistsDetectorRef,
+                fileExistsDetectorTypeRef,
             ).getAndMarkRef(config.name)
         } ?: SimpleFileExistsDetector
 
-        val variableReplacers: MutableList<VariableReplacer> = mutableListOf(
-            *options.variableReplacers.toTypedArray(), WindowsPathReplacer
-        )
+        val cpReplacers = options.variableReplacers.map {
+            val cp = componentManager.getComponent(
+                ComponentTopType.VARIABLE_REPLACER,
+                it.id,
+                variableReplacerTypeRef,
+            ).getAndMarkRef(config.name)
+            KeyFilterVariableReplacer(cp, it.keys)
+        }
+        val replacers = buildSet {
+            this.addAll(cpReplacers)
+            this.addAll(options.regexVariableReplacers)
+            if (options.supportWindowsPlatformPath) {
+                this.add(WindowsPathReplacer)
+            }
+        }.toList()
         val fileGrouping = applyFileGrouping(options, config)
         val itemGrouping = applyItemGrouping(options, config)
         return ProcessorOptions(
@@ -318,7 +331,7 @@ class DefaultProcessorManager(
             itemContentFilters,
             fileContentFilters,
             taggers,
-            variableReplacers,
+            replacers,
             fileReplacementDecider,
             itemGrouping,
             fileGrouping,
