@@ -23,7 +23,7 @@ object FullWidthReplacer : VariableReplacer {
             val code = char.code
             when {
                 others.containsKey(char) -> stringBuilder.append(others[char])
-                code in alCodeRange -> stringBuilder.append(code - AL_CODE_OFFSET)
+                code in alCodeRange -> stringBuilder.append((code - AL_CODE_OFFSET).toChar())
                 else -> stringBuilder.append(char)
             }
         }
