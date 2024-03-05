@@ -720,6 +720,7 @@ class SourceProcessor(
                             ct
                         }.onFailure {
                             log.error("Processor:'$name'处理失败, item:$pointed", it)
+                            semaphore.release()
                             onItemError(pointed.sourceItem, it)
                             if (it is ProcessingException && it.skip) {
                                 log.error("Processor:'$name'处理失败, item:$pointed, 被组件定义为可跳过的异常")
@@ -729,7 +730,6 @@ class SourceProcessor(
                             if (options.itemErrorContinue.not()) {
                                 log.warn("Processor:'$name'处理失败, item:$pointed, 退出本次触发处理, 如果未能解决该处理器将无法继续处理后续Item")
                                 secondaryFileMover.release(pointed.sourceItem)
-                                semaphore.release()
                                 processScope.cancel()
                                 return@launch
                             }

@@ -154,7 +154,7 @@ private class ProcessorController(
      * 手动触发Processor
      * @param processorName Processor名称
      */
-    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ResponseStatus(HttpStatus.ACCEPTED)
     @GetMapping("/{processorName}/trigger")
     fun trigger(@PathVariable processorName: String) {
         val sourceProcessor = processorManager.getProcessor(processorName)
@@ -164,8 +164,8 @@ private class ProcessorController(
     /**
      * 手动提交Items到Processor(experimental)
      */
-    @PostMapping("/{processorName}/items")
     @ResponseStatus(HttpStatus.ACCEPTED)
+    @PostMapping("/{processorName}/items")
     suspend fun postItems(@PathVariable processorName: String, @RequestBody items: List<SourceItem>) {
         val processor = processorManager.getProcessor(processorName).get()
         processor.run(items)

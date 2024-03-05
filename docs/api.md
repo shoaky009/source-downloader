@@ -382,7 +382,7 @@ GET /api/processor/{processorName}/trigger
 
 > 返回示例
 
-> 204 Response
+> 202 Response
 
 ```bash
 curl -X GET "http://localhost:8080/api/processor/mikan-bangumi/trigger"
