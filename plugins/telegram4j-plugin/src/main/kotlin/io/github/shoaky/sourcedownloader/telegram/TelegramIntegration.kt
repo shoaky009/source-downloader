@@ -22,6 +22,7 @@ import telegram4j.mtproto.RpcException
 import telegram4j.mtproto.file.FilePart
 import telegram4j.mtproto.file.FileReferenceId
 import telegram4j.tl.ImmutableInputMessageID
+import telegram4j.tl.mtproto.RpcError
 import java.nio.channels.FileChannel
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
@@ -170,10 +171,28 @@ class TelegramIntegration(
                 val error = it.error
                 if (monitoredChannel.isDone().not() && retryErrorCodes.contains(error.errorCode())) {
                     log.warn("Error downloading file: $fileDownloadPath, error:{}, retrying", error)
+                    val delay = getDelay(it.error)
                     return@onErrorResume createFilePartStream(fileReferenceId, monitoredChannel, fileDownloadPath)
+                        .delaySubscription(delay)
                 }
                 Flux.error(it)
             }
+    }
+
+    private fun getDelay(error: RpcError): Duration {
+        if (error.errorCode() != FLOOD_WAIT_CODE) {
+            return Duration.ofSeconds(DEFAULT_INTERVAL_SEC)
+        }
+        if (error.errorMessage().startsWith("FLOOD_WAIT_")) {
+            val seconds = try {
+                error.errorMessage().substringAfter("FLOOD_WAIT_").toLong() + 3
+            } catch (e: NumberFormatException) {
+                log.error("Error parsing FLOOD_WAIT error message: ${error.errorMessage()}", e)
+                DEFAULT_INTERVAL_SEC
+            }
+            return Duration.ofSeconds(seconds)
+        }
+        return Duration.ofSeconds(DEFAULT_INTERVAL_SEC)
     }
 
     private fun determineFileRefId(document: Document): FileReferenceId {
@@ -249,6 +268,7 @@ class TelegramIntegration(
         private const val TIMEOUT_CODE = -503
         private const val FLOOD_WAIT_CODE = 420
         private const val MAX_FILE_PART_SIZE = 1024 * 1024
+        private const val DEFAULT_INTERVAL_SEC = 5L
         private val retryErrorCodes = setOf(
             TIMEOUT_CODE,
             FLOOD_WAIT_CODE
