@@ -657,7 +657,6 @@ class SourceProcessor(
     }
 
     private data class ItemSelectedOptions(
-        val item: PointedItem<ItemPointer>,
         val filters: List<SourceItemFilter>,
         val variableProviders: List<VariableProvider>,
         val filenamePattern: CorePathPattern?,
@@ -675,6 +674,7 @@ class SourceProcessor(
 
         protected val processLock: Lock = if (options.parallelism > 1) ReentrantLock(true) else NoLock
 
+        @OptIn(InternalCoroutinesApi::class)
         protected suspend fun processItems() {
             secondaryFileMover.releaseAll()
             val context = CoreProcessContext(name, processingStorage, info0())
@@ -694,20 +694,25 @@ class SourceProcessor(
             val processJob = processScope.launch process@{
                 for (pointed in itemIterable) {
                     semaphore.acquire()
-                    if (itemSet.contains(pointed.sourceItem)) {
-                        log.info("Processor:'{}' source given duplicate item:{}", name, pointed.sourceItem)
+                    if (this.coroutineContext.job.isCancelled) {
+                        break
+                    }
+
+                    val sourceItem = pointed.sourceItem
+                    if (itemSet.contains(sourceItem)) {
+                        log.info("Processor:'{}' source given duplicate item:{}", name, sourceItem)
                         semaphore.release()
                         continue
                     }
 
                     log.trace("Processor:'{}' launch item:{}", name, pointed)
-                    itemSet.add(pointed.sourceItem)
+                    itemSet.add(sourceItem)
                     launch {
                         log.trace("Processor:'{}' start process item:{}", name, pointed)
                         val itemOptions = selectItemOptions(pointed)
                         val filtered = filterItem(itemOptions, pointed)
                         if (filtered) {
-                            itemSet.remove(pointed.sourceItem)
+                            itemSet.remove(sourceItem)
                             stat.incFilterCounting()
                             semaphore.release()
                             return@launch
@@ -720,7 +725,6 @@ class SourceProcessor(
                             ct
                         }.onFailure {
                             log.error("Processor:'$name'处理失败, item:$pointed", it)
-                            semaphore.release()
                             onItemError(pointed.sourceItem, it)
                             if (it is ProcessingException && it.skip) {
                                 log.error("Processor:'$name'处理失败, item:$pointed, 被组件定义为可跳过的异常")
@@ -729,16 +733,13 @@ class SourceProcessor(
 
                             if (options.itemErrorContinue.not()) {
                                 log.warn("Processor:'$name'处理失败, item:$pointed, 退出本次触发处理, 如果未能解决该处理器将无法继续处理后续Item")
-                                secondaryFileMover.release(pointed.sourceItem)
-                                processScope.cancel()
+                                processScope.cancel(CancellationException("由于Item:${sourceItem}处理失败，退出本次触发处理"))
+                                semaphore.release()
                                 return@launch
                             }
                         }.getOrElse {
-                            ProcessingContent(
-                                name, CoreItemContent(
-                                    pointed.sourceItem, emptyList(), MapPatternVariables()
-                                )
-                            ).copy(status = FAILURE, failureReason = it.message)
+                            ProcessingContent(name, CoreItemContent(sourceItem, emptyList(), MapPatternVariables()))
+                                .copy(status = FAILURE, failureReason = it.message)
                         }
 
                         try {
@@ -746,7 +747,7 @@ class SourceProcessor(
                             log.trace("Processor:'{}' finished process item:{}", name, pointed)
                             releasePaths(processingContent)
                         } finally {
-                            itemSet.remove(pointed.sourceItem)
+                            itemSet.remove(sourceItem)
                             semaphore.release()
                         }
                         if (filteredStatuses.contains(processingContent.status)) {
@@ -763,7 +764,8 @@ class SourceProcessor(
 
             secondaryFileMover.releaseAll()
             if (processJob.isCancelled) {
-                log.info("Processor:'{}' process job cancelled", name)
+                val ex = processJob.getCancellationException()
+                log.info("Processor:'{}' process job cancelled, message:{}", name, ex.message)
             }
 
             stat.stopWatch.stop()
@@ -819,7 +821,6 @@ class SourceProcessor(
             val itemFilters = itemOption?.sourceItemFilters ?: this.selectItemFilters()
             val itemVariableProviders = itemOption?.variableProviders ?: options.variableProviders
             return ItemSelectedOptions(
-                item,
                 itemFilters,
                 itemVariableProviders,
                 itemOption?.filenamePattern,

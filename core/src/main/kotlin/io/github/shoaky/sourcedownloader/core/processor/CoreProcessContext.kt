@@ -31,6 +31,7 @@ class CoreProcessContext(
         return hasError
     }
 
+    @Synchronized
     fun touch(content: ProcessingContent) {
         sourceItems.add(content.itemContent.sourceItem)
         if (hasError.not() && content.status == ProcessingContent.Status.FAILURE) {

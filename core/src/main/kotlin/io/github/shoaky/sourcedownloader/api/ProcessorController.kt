@@ -186,6 +186,12 @@ private class ProcessorController(
         return state
     }
 
+    @PutMapping("/{processorName}/pointer")
+    fun modifyPointer(@PathVariable processorName: String, jsonPath: String) {
+        val processor = processorManager.getProcessor(processorName).get()
+
+    }
+
     // @ResponseStatus(HttpStatus.NO_CONTENT)
     // @PostMapping("/{processorName}/enable")
     fun enableProcessor(@PathVariable processorName: String) {

@@ -270,7 +270,7 @@ class SourceProcessorTest : InitializingBean {
         val sourceFiles = contents.getValue(testItemTitle).itemContent.sourceFiles
         val targetPaths = sourceFiles.map { it.targetPath() }
         val anyTargetPaths = processingStorage.targetPathExists(targetPaths).any { it }
-        val hasErrorItem = processingStorage.query(ProcessingQuery("DownloadErrorCase"))
+        val hasErrorItem = processingStorage.query(ProcessingQuery(processorName))
             .any { it.itemContent.sourceItem.title == testItemTitle }
         assert(hasErrorItem.not())
         assert(anyTargetPaths.not())
