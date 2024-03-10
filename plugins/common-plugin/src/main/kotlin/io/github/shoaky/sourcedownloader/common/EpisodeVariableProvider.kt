@@ -1,6 +1,9 @@
 package io.github.shoaky.sourcedownloader.common
 
-import io.github.shoaky.sourcedownloader.sdk.*
+import io.github.shoaky.sourcedownloader.sdk.MapPatternVariables
+import io.github.shoaky.sourcedownloader.sdk.PatternVariables
+import io.github.shoaky.sourcedownloader.sdk.SourceFile
+import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.VariableProvider
 import io.github.shoaky.sourcedownloader.sdk.util.TextClear
 import org.apache.commons.lang3.math.NumberUtils
@@ -15,19 +18,17 @@ object EpisodeVariableProvider : VariableProvider {
     private val log = LoggerFactory.getLogger(EpisodeVariableProvider::class.java)
 
     private val parserChain: List<ValueParser> = listOf(
-        RegexValueParser(Regex("第(\\d+(?:\\.\\d)?)话")),
-        RegexValueParser(Regex("第(\\d+(?:\\.\\d)?)集")),
-        RegexValueParser(Regex("第(\\d+(?:\\.\\d)?)話")),
-        RegexValueParser(Regex("(\\d+(?:\\.\\d)?)話")),
-        RegexValueParser(Regex("(\\d+(?:\\.\\d)?)话")),
+        RegexValueParser(Regex("第(\\d+(?:\\.\\d)?)[话話集巻]")),
+        RegexValueParser(Regex("(\\d+(?:\\.\\d)?)[話话]")),
         RegexValueParser("EP(\\d+)".toRegex(RegexOption.IGNORE_CASE)),
         RegexValueParser("S(\\d+)E(\\d+)".toRegex(RegexOption.IGNORE_CASE)),
         RegexValueParser("E(\\d+)".toRegex()),
         RegexValueParser("Episode (\\d+)".toRegex()),
-        CommonEpisodeValueParser,
+        WordEpisodeValueParser,
         // 连续数字只出现过一次的
         RegexValueParser("^\\D*?(\\d+)\\D*?\$".toRegex()),
         RegexValueParser("#(\\d+)".toRegex()),
+        CommonEpisodeValueParser,
     )
 
     private val textClear = TextClear(
@@ -36,7 +37,7 @@ object EpisodeVariableProvider : VariableProvider {
             Regex("(1920x1080|3840x2160)", RegexOption.IGNORE_CASE) to "",
             Regex("x(?:264|265)", RegexOption.IGNORE_CASE) to "",
             Regex("flacx2|ma10p|hi10p|yuv420p10|10bit|hevc10|aacx2|flac|4k|_", RegexOption.IGNORE_CASE) to "",
-            Regex("\\b[A-Fa-f0-9]{8}\\b", RegexOption.IGNORE_CASE) to "",
+            Regex("\\b[A-Fa-f0-9]{8}\\b|\\w+-\\d+|(\\d){5,}", RegexOption.IGNORE_CASE) to "",
             Regex("v\\d+") to "",
             Regex("FIN", RegexOption.IGNORE_CASE) to ""
         )
@@ -141,5 +142,42 @@ private object CommonEpisodeValueParser : ValueParser {
             res = res.replace(key, value)
         }
         return res
+    }
+}
+
+private object WordEpisodeValueParser : ValueParser {
+
+    private val wordChain = listOf(
+        Regex("第([一二三四五六七八九十])[话話集巻]"),
+        Regex("([一二三四五六七八九十])[话話]"),
+        Regex("其\\w[壱弐参肆伍陸漆捌玖拾]"),
+    )
+
+    private val wordNumberMapping = mapOf(
+        "一" to 1,
+        "二" to 2,
+        "三" to 3,
+        "四" to 4,
+        "五" to 5,
+        "六" to 6,
+        "七" to 7,
+        "八" to 8,
+        "九" to 9,
+        "十" to 10,
+        "壱" to 1,
+        "弐" to 2,
+        "参" to 3,
+        "肆" to 4,
+        "伍" to 5,
+        "陸" to 6,
+        "漆" to 7,
+        "捌" to 8,
+        "玖" to 9,
+        "拾" to 10,
+    )
+
+    override fun parse(value: String): Number? {
+        val matchedValue = wordChain.firstNotNullOfOrNull { it.find(value)?.groupValues?.lastOrNull() } ?: return null
+        return wordNumberMapping[matchedValue]
     }
 }
