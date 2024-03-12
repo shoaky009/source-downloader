@@ -151,6 +151,7 @@ interface VariableProvider : SdComponent {
      */
     fun support(sourceItem: SourceItem): Boolean
 
+    fun reprocess(text: String): String = throw UnsupportedOperationException()
 }
 
 /**

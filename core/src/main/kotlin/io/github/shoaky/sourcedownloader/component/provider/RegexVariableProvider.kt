@@ -29,6 +29,12 @@ class RegexVariableProvider(
         }
     }
 
+    override fun reprocess(text: String): String {
+        return regexes.fold(text) { acc, regexVariable ->
+            regexVariable.regex.find(acc)?.value ?: acc
+        }
+    }
+
     override fun support(sourceItem: SourceItem): Boolean {
         return true
     }

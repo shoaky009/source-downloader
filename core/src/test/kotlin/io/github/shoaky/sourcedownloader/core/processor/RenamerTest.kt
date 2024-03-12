@@ -2,6 +2,8 @@
 
 package io.github.shoaky.sourcedownloader.core.processor
 
+import io.github.shoaky.sourcedownloader.component.provider.RegexVariable
+import io.github.shoaky.sourcedownloader.component.provider.RegexVariableProvider
 import io.github.shoaky.sourcedownloader.component.replacer.RegexVariableReplacer
 import io.github.shoaky.sourcedownloader.component.replacer.WindowsPathReplacer
 import io.github.shoaky.sourcedownloader.core.file.CorePathPattern
@@ -465,6 +467,40 @@ class RenamerTest {
         )
         val content3 = renamer.createFileContent(sourceItem(), file3, MapPatternVariables())
         assertEquals(sourceSavePath.resolve(Path("wp-test", "1.mp3")), content3.targetPath())
+    }
+
+    @Test
+    fun process() {
+        // 先将custom按正则输出到custom_name，再将custom_name按正则输出到custom
+        val renamer = Renamer(
+            variableProcessChain = mapOf(
+                "custom" to VariableProcessChain(
+                    listOf(
+                        RegexVariableProvider(
+                            listOf(RegexVariable("custom", "\\[.*]".toRegex()))
+                        )
+                    ),
+                    "custom_name"
+                ),
+                "custom_name" to VariableProcessChain(
+                    listOf(
+                        RegexVariableProvider(
+                            listOf(RegexVariable("custom", "\\[.*]".toRegex()))
+                        )
+                    ),
+                    "custom"
+                )
+            )
+        )
+
+        val c = renamer.createFileContent(
+            sourceItem("aaaa ddd [1234]"),
+            createRawFileContent(
+                filenamePattern = CorePathPattern("{custom}"),
+            ),
+            MapPatternVariables().also { it.addVariable("custom", "aaaa ddd [1234]") }
+        )
+        assertEquals("[1234].txt", c.targetFilename)
     }
 
     companion object {

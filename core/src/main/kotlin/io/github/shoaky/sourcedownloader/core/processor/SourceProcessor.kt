@@ -83,6 +83,7 @@ class SourceProcessor(
     private val renamer: Renamer = Renamer(
         options.variableErrorStrategy,
         options.variableReplacers,
+        options.variableProcessChain
     )
     private val safeRunner by lazy {
         ProcessorSafeRunner(this)

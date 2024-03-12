@@ -29,6 +29,7 @@ dependencies {
     implementation(enforcedPlatform(libs.cel.bom))
     implementation(libs.bundles.cel)
     implementation(libs.bundles.exposed)
+    implementation(libs.json.path)
 
     resolveBuildInPlugins()
     implementation("org.springframework.boot:spring-boot-starter-actuator")

@@ -89,7 +89,8 @@ data class ProcessorConfig(
         val recordMinimized: Boolean = false,
         val parallelism: Int = 1,
         val retryBackoffMills: Long = 5000L,
-        val taskGroup: String? = null
+        val taskGroup: String? = null,
+        val variableProcess: Map<String, VariableProcessConfig> = emptyMap(),
     )
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -116,5 +117,10 @@ data class ProcessorConfig(
         val itemExpressionInclusions: List<String>? = null,
     )
 
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
+    data class VariableProcessConfig(
+        val chain: List<ComponentId> = emptyList(),
+        val output: String
+    )
 
 }

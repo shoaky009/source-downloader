@@ -41,7 +41,8 @@ data class ProcessorOptions(
     val recordMinimized: Boolean = false,
     val parallelism: Int = 1,
     val retryBackoffMills: Long = 5000L,
-    val taskGroup: String? = null
+    val taskGroup: String? = null,
+    val variableProcessChain: Map<String, VariableProcessChain> = emptyMap(),
 ) {
 
     fun matchFileOption(sourceFile: SourceFile): FileOption? {
@@ -55,6 +56,18 @@ data class ProcessorOptions(
             if (it.key.match(item)) it else null
         }?.value
 
+    }
+}
+
+data class VariableProcessChain(
+    val chain: List<VariableProvider>,
+    val output: String
+) {
+
+    fun process(value: String): String {
+        return chain.fold(value) { acc, provider ->
+            provider.reprocess(acc)
+        }
     }
 }
 

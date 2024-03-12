@@ -79,6 +79,13 @@ object EpisodeVariableProvider : VariableProvider {
         }
         return str.padStart(length, '0')
     }
+
+    override fun reprocess(text: String): String {
+        val episode = parserChain.firstNotNullOfOrNull {
+            it.parse(text)
+        }
+        return padNumber(episode) ?: text
+    }
 }
 
 private interface ValueParser {

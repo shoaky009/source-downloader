@@ -1,5 +1,8 @@
 package io.github.shoaky.sourcedownloader.core.file
 
+import com.jayway.jsonpath.JsonPath
+import com.jayway.jsonpath.PathNotFoundException
+import io.github.shoaky.sourcedownloader.core.processor.VariableProcessChain
 import io.github.shoaky.sourcedownloader.sdk.*
 import io.github.shoaky.sourcedownloader.sdk.component.VariableReplacer
 import org.slf4j.LoggerFactory
@@ -13,6 +16,7 @@ import kotlin.io.path.nameWithoutExtension
 class Renamer(
     private val variableErrorStrategy: VariableErrorStrategy = VariableErrorStrategy.STAY,
     private val variableReplacers: List<VariableReplacer> = emptyList(),
+    private val variableProcessChain: Map<String, VariableProcessChain> = emptyMap()
 ) {
 
     fun createFileContent(
@@ -20,7 +24,7 @@ class Renamer(
         rawFile: RawFileContent,
         group: PatternVariables,
     ): CoreFileContent {
-        val ctx = RenameContext(sourceItem, rawFile, group, variableReplacers)
+        val ctx = RenameContext(sourceItem, rawFile, group, variableReplacers, variableProcessChain)
         val dirResult = saveDirectoryPath(ctx)
         val filenameResult = targetFilename(ctx)
         val errors = mutableListOf<String>()
@@ -156,6 +160,7 @@ class Renamer(
         val file: RawFileContent,
         val sharedVariables: PatternVariables,
         val variableReplacers: List<VariableReplacer>,
+        val variableProcessChain: Map<String, VariableProcessChain>,
     ) {
 
         val variables: Map<String, Any> by lazy {
@@ -176,6 +181,17 @@ class Renamer(
                 file.sourceFile.attrs.mapValues { it.value.toString() }.replaceVariables(),
                 file.getPathOriginalLayout().joinToString("/") { it.replaceVariable("file.originalLayout") }
             )
+
+            val doc = JsonPath.parse(vars)
+            variableProcessChain.entries.forEach { (targetKey, process) ->
+                val value = try {
+                    doc.read<String>("$.$targetKey")
+                } catch (e: PathNotFoundException) {
+                    return@forEach
+                }
+                vars[process.output] = process.process(value)
+            }
+            log.debug("Rename variables:{}", vars)
             vars
         }
 

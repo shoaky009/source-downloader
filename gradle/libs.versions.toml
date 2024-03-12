@@ -22,6 +22,7 @@ protobuf = "3.25.2"
 dokka = "1.9.10"
 springdocs = "2.3.0"
 therapi-javadoc = "0.15.0"
+json-path = "2.9.0"
 
 [libraries]
 spring-boot-dependencies = { module = "org.springframework.boot:spring-boot-dependencies", version.ref = "spring-boot" }
@@ -51,6 +52,7 @@ protobuf = { module = "com.google.protobuf:protobuf-java", version.ref = "protob
 springdocs-openapi-starter-webmvc-api = { module = "org.springdoc:springdoc-openapi-starter-webmvc-api", version.ref = "springdocs" }
 therapi-runtime-javadoc = { module = "com.github.therapi:therapi-runtime-javadoc", version.ref = "therapi-javadoc" }
 therapi-javadoc-scribe = { module = "com.github.therapi:therapi-runtime-javadoc-scribe", version.ref = "therapi-javadoc" }
+json-path = { module = "com.jayway.jsonpath:json-path", version.ref = "json-path" }
 
 [bundles]
 cel = ["cel-tools", "cel-jackson"]
