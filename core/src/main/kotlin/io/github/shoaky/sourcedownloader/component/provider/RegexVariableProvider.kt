@@ -29,7 +29,7 @@ class RegexVariableProvider(
         }
     }
 
-    override fun reprocess(text: String): String {
+    override fun extractFrom(text: String): String {
         return regexes.fold(text) { acc, regexVariable ->
             regexVariable.regex.find(acc)?.value ?: acc
         }

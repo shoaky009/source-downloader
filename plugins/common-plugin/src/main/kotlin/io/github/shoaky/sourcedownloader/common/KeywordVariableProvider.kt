@@ -34,6 +34,16 @@ class KeywordVariableProvider(
 
     override fun itemSharedVariables(sourceItem: SourceItem): PatternVariables {
         val title = sourceItem.title
+        val matchedWord = matchWord(title)
+        return matchedWord?.let {
+            val word = it.alias ?: it.value
+            MapPatternVariables(
+                mapOf("keyword" to word)
+            )
+        } ?: PatternVariables.EMPTY
+    }
+
+    private fun matchWord(title: String): Word? {
         val matchedWord = words.firstOrNull { word ->
             if (word.matchTitleMode == 1) {
                 return@firstOrNull title.contains(word.value, ignoreCase = true)
@@ -44,18 +54,16 @@ class KeywordVariableProvider(
             regex.find(title) != null
         }
         log.info("Keyword $matchedWord match: $title")
-
-        val variables = matchedWord?.let {
-            val word = it.alias ?: it.value
-            MapPatternVariables(
-                mapOf("keyword" to word)
-            )
-        } ?: PatternVariables.EMPTY
-        return variables
+        return matchedWord
     }
 
     override fun support(sourceItem: SourceItem): Boolean {
         return true
+    }
+
+    override fun extractFrom(text: String): String? {
+        val w = matchWord(text)
+        return w?.alias ?: w?.value
     }
 
     companion object {

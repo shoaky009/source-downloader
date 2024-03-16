@@ -80,7 +80,7 @@ object EpisodeVariableProvider : VariableProvider {
         return str.padStart(length, '0')
     }
 
-    override fun reprocess(text: String): String {
+    override fun extractFrom(text: String): String {
         val episode = parserChain.firstNotNullOfOrNull {
             it.parse(text)
         }

@@ -151,7 +151,13 @@ interface VariableProvider : SdComponent {
      */
     fun support(sourceItem: SourceItem): Boolean
 
-    fun reprocess(text: String): String = throw UnsupportedOperationException()
+    /**
+     * @param text to extract
+     * @return the extracted value
+     */
+    fun extractFrom(text: String): String? {
+        return null
+    }
 }
 
 /**

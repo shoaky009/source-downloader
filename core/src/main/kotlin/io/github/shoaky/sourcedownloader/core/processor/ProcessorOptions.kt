@@ -66,7 +66,7 @@ data class VariableProcessChain(
 
     fun process(value: String): String {
         return chain.fold(value) { acc, provider ->
-            provider.reprocess(acc)
+            provider.extractFrom(acc) ?: acc
         }
     }
 }

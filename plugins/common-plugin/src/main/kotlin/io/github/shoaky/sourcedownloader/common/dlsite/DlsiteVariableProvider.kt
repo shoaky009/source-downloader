@@ -80,6 +80,16 @@ class DlsiteVariableProvider(
         return parseDlsiteId(sourceItem) != null
     }
 
+    override fun extractFrom(text: String): String? {
+        val dlsiteId = DlsiteClient.parseDlsiteId(text)
+        if (dlsiteId == null && idOnly) {
+            return null
+        }
+
+        return cache.get(WorkRequest(dlsiteId = dlsiteId)).getOrNull()?.title
+            ?: cache.get(WorkRequest(keyword = text)).getOrNull()?.title
+    }
+
     companion object {
 
         private val log = LoggerFactory.getLogger(DlsiteVariableProvider::class.java)

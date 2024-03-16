@@ -122,7 +122,7 @@ class Renamer(
     ): PathPattern.ParseResult {
         val pattern = pathPattern.pattern
         val expressions = pathPattern.expressions
-        val matcher = variablePatternRegex.matcher(pattern)
+        val matcher = expressionPatternRegex.matcher(pattern)
 
         if (log.isDebugEnabled) {
             log.debug("Rename variables:{}", variables)
@@ -150,7 +150,7 @@ class Renamer(
     companion object {
 
         private const val UNRESOLVED = "unresolved"
-        private val variablePatternRegex: Pattern = Pattern.compile("\\{(.+?)}|:\\{(.+?)}")
+        private val expressionPatternRegex: Pattern = Pattern.compile("\\{(.+?)}|:\\{(.+?)}")
         private val log = LoggerFactory.getLogger(RenameContext::class.java)
 
     }
@@ -182,14 +182,17 @@ class Renamer(
                 file.getPathOriginalLayout().joinToString("/") { it.replaceVariable("file.originalLayout") }
             )
 
-            val doc = JsonPath.parse(vars)
-            variableProcessChain.entries.forEach { (targetKey, process) ->
-                val value = try {
-                    doc.read<String>("$.$targetKey")
-                } catch (e: PathNotFoundException) {
-                    return@forEach
+            if (variableProcessChain.isNotEmpty()) {
+                val doc = JsonPath.parse(vars)
+                variableProcessChain.entries.forEach { (targetKey, process) ->
+                    val value = try {
+                        doc.read<String>("$.$targetKey")
+                    } catch (e: PathNotFoundException) {
+                        return@forEach
+                    }
+                    log.debug("Process variable '{}' with value '{}'", targetKey, value)
+                    vars[process.output] = process.process(value)
                 }
-                vars[process.output] = process.process(value)
             }
             log.debug("Rename variables:{}", vars)
             vars

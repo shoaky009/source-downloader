@@ -9,7 +9,8 @@ import io.github.shoaky.sourcedownloader.external.anilist.Search
 import io.github.shoaky.sourcedownloader.external.anilist.Title
 import io.github.shoaky.sourcedownloader.external.bangumi.BgmTvApiClient
 import io.github.shoaky.sourcedownloader.external.bangumi.SearchSubjectV0Request
-import io.github.shoaky.sourcedownloader.sdk.*
+import io.github.shoaky.sourcedownloader.sdk.PatternVariables
+import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.VariableProvider
 import io.github.shoaky.sourcedownloader.sdk.util.TextClear
 import org.slf4j.LoggerFactory
@@ -148,6 +149,10 @@ class AnimeVariableProvider(
         return text.codePoints().anyMatch {
             unicode.contains(Character.UnicodeScript.of(it))
         }
+    }
+
+    override fun extractFrom(text: String): String? {
+        return searchCache.get(text).nativeName
     }
 
     companion object {
