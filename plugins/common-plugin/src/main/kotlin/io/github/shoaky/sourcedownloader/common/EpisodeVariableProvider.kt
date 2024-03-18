@@ -53,8 +53,11 @@ object EpisodeVariableProvider : VariableProvider {
         return sourceFiles.map { file ->
             val string = textClear.input(file.path.nameWithoutExtension)
             val episode = parserChain.firstNotNullOfOrNull {
-                log.debug("Parser {}", it)
-                it.parse(string)
+                val value = it.parse(string)
+                if (value != null) {
+                    log.debug("Parser:{} extract:{} episode:{}", it, string, value)
+                }
+                value
             }
 
             val vars = MapPatternVariables()
@@ -110,7 +113,7 @@ private class RegexValueParser(
     }
 }
 
-private object CommonEpisodeValueParser : ValueParser {
+private data object CommonEpisodeValueParser : ValueParser {
 
     private val pattern = Regex("(\\[?[^\\[\\]]*]?)")
 
@@ -150,9 +153,10 @@ private object CommonEpisodeValueParser : ValueParser {
         }
         return res
     }
+
 }
 
-private object WordEpisodeValueParser : ValueParser {
+private data object WordEpisodeValueParser : ValueParser {
 
     private val wordChain = listOf(
         Regex("第([一二三四五六七八九十])[话話集巻]"),
@@ -187,4 +191,5 @@ private object WordEpisodeValueParser : ValueParser {
         val matchedValue = wordChain.firstNotNullOfOrNull { it.find(value)?.groupValues?.lastOrNull() } ?: return null
         return wordNumberMapping[matchedValue]
     }
+
 }

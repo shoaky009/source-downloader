@@ -6,16 +6,24 @@ import java.nio.channels.SeekableByteChannel
 import java.text.NumberFormat
 import java.time.Duration
 import java.time.Instant
+import java.util.concurrent.atomic.AtomicInteger
 
 class ProgressiveChannel(
     private val totalSize: Long,
-    private val ch: SeekableByteChannel
+    private val ch: SeekableByteChannel,
 ) : ByteChannel by ch {
 
     private val startTime = Instant.now()
+    private val writeTimes = AtomicInteger(0)
 
     override fun write(src: ByteBuffer): Int {
-        return ch.write(src)
+        val w = ch.write(src)
+        writeTimes.incrementAndGet()
+        return w
+    }
+
+    fun writeTimes(): Int {
+        return writeTimes.get()
     }
 
     fun formatProgress(): String {

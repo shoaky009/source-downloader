@@ -39,7 +39,7 @@ import kotlin.jvm.optionals.getOrNull
  */
 class TelegramIntegration(
     wrapper: TelegramClientWrapper,
-    private val downloadPath: Path
+    private val downloadPath: Path,
 ) : ItemFileResolver, Downloader, ComponentStateful, AutoCloseable {
 
     private val client = wrapper.client
@@ -117,7 +117,7 @@ class TelegramIntegration(
                 tempDownloadPath,
                 StandardOpenOption.WRITE,
                 StandardOpenOption.CREATE,
-            )
+            ),
         )
 
         // 先刷新再占用，防止网络请求失败
@@ -143,6 +143,12 @@ class TelegramIntegration(
             }
             .doOnError {
                 log.error("Error downloading file:$fileDownloadPath", it)
+                log.info(
+                    "localFileSize:{} vs channelPos:{}, channelWriteTimes:{}",
+                    tempDownloadPath.fileSize(),
+                    monitoredChannel.getDownloadedBytes(),
+                    monitoredChannel.writeTimes()
+                )
             }
             .onErrorMap {
                 wrapRetryableExceptionIfNeeded(it)
@@ -164,6 +170,8 @@ class TelegramIntegration(
         monitoredChannel: ProgressiveChannel,
         fileDownloadPath: Path
     ): Flux<FilePart> {
+        val offset = monitoredChannel.getDownloadedBytes()
+        log.info("Create file part stream for file: {}, offset:{}", fileDownloadPath, offset)
         return client.downloadFile(fileReferenceId, monitoredChannel.getDownloadedBytes(), MAX_FILE_PART_SIZE, true)
             .publishOn(Schedulers.fromExecutor(Executors.newVirtualThreadPerTaskExecutor()))
             .timeout(Duration.ofMinutes(3))
