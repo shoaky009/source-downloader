@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory
  * 从SourceItem.title中提取和清洗标题给anilist或bgmtv进行搜索获取对应元数据，
  * 会自动根据title中的语言来决定用哪个网站进行搜索
  */
+@Deprecated("需要拆分")
 class AnimeVariableProvider(
     private val bgmTvApiClient: BgmTvApiClient,
     private val anilistClient: AnilistClient,
@@ -102,49 +103,6 @@ class AnimeVariableProvider(
         )
     }
 
-    // TODO 重构为chain
-    fun extractTitle(sourceItem: SourceItem): String {
-        val text = textClear.input(sourceItem.title)
-        val removedBucket = text.replace(bracketsRegex, "").trim()
-        if (removedBucket.length > 12) {
-            val sp = listOf("/", "|").firstOrNull {
-                removedBucket.contains(it)
-            }
-
-            if (sp == null) {
-                val blanksRegex = "\\s{2,}".toRegex()
-                val matchResult = blanksRegex.find(removedBucket)
-                if (matchResult != null) {
-                    return removedBucket.substring(0, matchResult.range.first)
-                }
-            }
-
-            if (sp == null) {
-                return removedBucket
-            }
-
-            // 优先选择日语，最后是中文尽可能用anilist搜索
-            val title = removedBucket.split(sp)
-                .map { TitleScore(it) }
-                .maxBy { it.score }.title
-
-            return AnitomyJ.parse(title)
-                .firstOrNull { it.category == Element.ElementCategory.kElementAnimeTitle }?.value
-                ?: title
-        }
-        if (removedBucket.isNotBlank()) {
-            return removedBucket
-        }
-        val matches = bracketsRegex.findAll(text).toList()
-        if (matches.size == 1) {
-            return matches[0].value.removePrefix("[").removeSuffix("]")
-        }
-        if (matches.size > 1) {
-            return matches[1].value.removePrefix("[").removeSuffix("]")
-        }
-        return text
-    }
-
     private fun hasLanguage(text: String, vararg unicode: Character.UnicodeScript): Boolean {
         return text.codePoints().anyMatch {
             unicode.contains(Character.UnicodeScript.of(it))
@@ -170,6 +128,49 @@ class AnimeVariableProvider(
             )
         )
         private val bracketsRegex = Regex("\\[.*?]")
+
+        // TODO 重构为chain
+        fun extractTitle(sourceItem: SourceItem): String {
+            val text = textClear.input(sourceItem.title)
+            val removedBucket = text.replace(bracketsRegex, "").trim()
+            if (removedBucket.length > 12) {
+                val sp = listOf("/", "|").firstOrNull {
+                    removedBucket.contains(it)
+                }
+
+                if (sp == null) {
+                    val blanksRegex = "\\s{2,}".toRegex()
+                    val matchResult = blanksRegex.find(removedBucket)
+                    if (matchResult != null) {
+                        return removedBucket.substring(0, matchResult.range.first)
+                    }
+                }
+
+                if (sp == null) {
+                    return removedBucket
+                }
+
+                // 优先选择日语，最后是中文尽可能用anilist搜索
+                val title = removedBucket.split(sp)
+                    .map { TitleScore(it) }
+                    .maxBy { it.score }.title
+
+                return AnitomyJ.parse(title)
+                    .firstOrNull { it.category == Element.ElementCategory.kElementAnimeTitle }?.value
+                    ?: title
+            }
+            if (removedBucket.isNotBlank()) {
+                return removedBucket
+            }
+            val matches = bracketsRegex.findAll(text).toList()
+            if (matches.size == 1) {
+                return matches[0].value.removePrefix("[").removeSuffix("]")
+            }
+            if (matches.size > 1) {
+                return matches[1].value.removePrefix("[").removeSuffix("]")
+            }
+            return text
+        }
     }
 
 }

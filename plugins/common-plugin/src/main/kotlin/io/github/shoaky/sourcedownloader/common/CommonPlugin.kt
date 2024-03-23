@@ -25,7 +25,8 @@ internal class CommonPlugin : Plugin {
             QbittorrentDownloaderSupplier(pluginContext.getInstanceManager()),
             AnimeVariableProviderSupplier(pluginContext),
             MikanVariableProviderSupplier(pluginContext),
-            MikanSourceSupplier(pluginContext)
+            MikanSourceSupplier(pluginContext),
+            BgmTvVariableProviderSupplier(pluginContext)
         )
     }
 

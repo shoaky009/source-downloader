@@ -10,7 +10,7 @@ import io.github.shoaky.sourcedownloader.sdk.http.HttpMethod
 class SearchSubjectV0Request(
     val keyword: String,
     type: Int = 2,
-    nsfw: Boolean = false,
+    nsfw: Boolean = true,
 ) : BangumiRequest<SearchSubjectV0Body>() {
 
     val filter = mapOf(
