@@ -9,10 +9,12 @@ import io.github.shoaky.sourcedownloader.external.anilist.Search
 import io.github.shoaky.sourcedownloader.external.anilist.Title
 import io.github.shoaky.sourcedownloader.external.bangumi.BgmTvApiClient
 import io.github.shoaky.sourcedownloader.external.bangumi.SearchSubjectV0Request
+import io.github.shoaky.sourcedownloader.external.bangumi.SubjectV0Item
 import io.github.shoaky.sourcedownloader.sdk.PatternVariables
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.VariableProvider
 import io.github.shoaky.sourcedownloader.sdk.util.TextClear
+import me.xdrop.fuzzywuzzy.FuzzySearch
 import org.slf4j.LoggerFactory
 
 /**
@@ -68,14 +70,17 @@ class AnimeVariableProvider(
                 anilistResult.native
             )
         }
+
+        val request = SearchSubjectV0Request(anilistResult?.native ?: title)
         val body = bgmTvApiClient.execute(
-            SearchSubjectV0Request(anilistResult?.native ?: title)
+            request
         ).body()
-        val subjectItem = body.data.firstOrNull()
-        if (subjectItem == null) {
+
+        if (body.data.isEmpty()) {
             log.warn("bgmtv searching anime: $title no result")
             return Anime()
         }
+        val subjectItem = body.data.getHighestScoreSubjectItem(request.keyword)
 
         if (anilistResult != null) {
             return Anime(
@@ -101,6 +106,19 @@ class AnimeVariableProvider(
             romajiName = media?.title?.romaji,
             nativeName = subjectItem.name
         )
+    }
+
+    private fun List<SubjectV0Item>.getHighestScoreSubjectItem(keyword: String): SubjectV0Item {
+        val hasJp = hasLanguage(keyword, Character.UnicodeScript.HIRAGANA, Character.UnicodeScript.KATAKANA)
+        val hasChinese = hasLanguage(keyword, Character.UnicodeScript.HAN)
+        val choices = if (hasJp || hasChinese.not()) {
+            this.map { it.name }
+        } else {
+            this.map { it.nameCn }
+        }
+        val result = FuzzySearch.extractOne(keyword, choices)
+        log.debug("Get highest score subject item: {} -- {}", this[result.index], keyword)
+        return this[result.index]
     }
 
     private fun hasLanguage(text: String, vararg unicode: Character.UnicodeScript): Boolean {

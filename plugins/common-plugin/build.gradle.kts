@@ -15,4 +15,5 @@ dependencies {
     implementation(libs.bundles.bt)
     implementation(libs.tika.core)
     implementation(libs.jsoup)
+    implementation(libs.fuzzywuzzy)
 }
