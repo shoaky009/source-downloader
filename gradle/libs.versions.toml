@@ -23,6 +23,7 @@ dokka = "1.9.10"
 springdocs = "2.3.0"
 therapi-javadoc = "0.15.0"
 json-path = "2.9.0"
+fuzzywuzzy = "1.4.0"
 
 [libraries]
 spring-boot-dependencies = { module = "org.springframework.boot:spring-boot-dependencies", version.ref = "spring-boot" }
@@ -53,6 +54,7 @@ springdocs-openapi-starter-webmvc-api = { module = "org.springdoc:springdoc-open
 therapi-runtime-javadoc = { module = "com.github.therapi:therapi-runtime-javadoc", version.ref = "therapi-javadoc" }
 therapi-javadoc-scribe = { module = "com.github.therapi:therapi-runtime-javadoc-scribe", version.ref = "therapi-javadoc" }
 json-path = { module = "com.jayway.jsonpath:json-path", version.ref = "json-path" }
+fuzzywuzzy = { module = "me.xdrop:fuzzywuzzy", version.ref = "fuzzywuzzy" }
 
 [bundles]
 cel = ["cel-tools", "cel-jackson"]
