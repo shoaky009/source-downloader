@@ -27,7 +27,8 @@ class AnimeVariableProviderTest {
         println(sharedVariables.variables())
     }
 
-    @Test
+    // TODO MOCK
+    // @Test
     fun extract_title() {
         val provider = AnimeVariableProvider(
             BgmTvApiClient(),

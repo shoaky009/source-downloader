@@ -2,6 +2,7 @@ package io.github.shoaky.sourcedownloader.component
 
 import io.github.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
 import io.github.shoaky.sourcedownloader.sdk.ItemContent
+import io.github.shoaky.sourcedownloader.sdk.ProcessContext
 import io.github.shoaky.sourcedownloader.sdk.component.ProcessListener
 import org.springframework.util.StreamUtils
 
@@ -13,7 +14,7 @@ class RunCommand(
     private val withSubjectSummary: Boolean = false
 ) : ProcessListener {
 
-    override fun onItemSuccess(itemContent: ItemContent) {
+    override fun onItemSuccess(context: ProcessContext, itemContent: ItemContent) {
         val process = run(itemContent)
         if (process.waitFor() != 0) {
             val result = StreamUtils.copyToString(process.inputStream, Charsets.UTF_8)

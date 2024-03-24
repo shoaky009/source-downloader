@@ -6,6 +6,7 @@ import io.github.shoaky.sourcedownloader.core.file.CoreItemContent
 import io.github.shoaky.sourcedownloader.core.file.CorePathPattern
 import io.github.shoaky.sourcedownloader.sdk.CoreContext
 import io.github.shoaky.sourcedownloader.sdk.MapPatternVariables
+import io.github.shoaky.sourcedownloader.sdk.ProcessContext
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sourceItem
 import io.github.shoaky.sourcedownloader.testResourcePath
@@ -44,7 +45,7 @@ class DeleteEmptyDirectoryTest {
             ),
             MapPatternVariables()
         )
-        cp.onItemSuccess(sc)
+        cp.onItemSuccess(ProcessContext.empty, sc)
         assert(itemDownloadPath.notExists())
     }
 
@@ -67,7 +68,7 @@ class DeleteEmptyDirectoryTest {
             ),
             MapPatternVariables()
         )
-        cp.onItemSuccess(sc)
+        cp.onItemSuccess(ProcessContext.empty, sc)
         assert(itemDownloadPath.exists())
     }
 

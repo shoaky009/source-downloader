@@ -1,6 +1,7 @@
 package io.github.shoaky.sourcedownloader.component
 
 import io.github.shoaky.sourcedownloader.sdk.ItemContent
+import io.github.shoaky.sourcedownloader.sdk.ProcessContext
 import io.github.shoaky.sourcedownloader.sdk.component.ProcessListener
 import kotlin.io.path.*
 
@@ -10,7 +11,7 @@ import kotlin.io.path.*
 object DeleteEmptyDirectory : ProcessListener {
 
     @OptIn(ExperimentalPathApi::class)
-    override fun onItemSuccess(itemContent: ItemContent) {
+    override fun onItemSuccess(context: ProcessContext, itemContent: ItemContent) {
         itemContent.sourceFiles.firstOrNull()?.run {
             val directoryPath = this.fileDownloadRootDirectory()
             if (directoryPath != null && directoryPath.walk(PathWalkOption.INCLUDE_DIRECTORIES)

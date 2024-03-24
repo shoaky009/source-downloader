@@ -5,13 +5,12 @@ import com.jayway.jsonpath.JsonPath
 import com.sun.net.httpserver.HttpServer
 import io.github.shoaky.sourcedownloader.component.supplier.SendHttpRequestSupplier
 import io.github.shoaky.sourcedownloader.core.file.CoreItemContent
-import io.github.shoaky.sourcedownloader.sdk.CoreContext
-import io.github.shoaky.sourcedownloader.sdk.MapPatternVariables
-import io.github.shoaky.sourcedownloader.sdk.Properties
+import io.github.shoaky.sourcedownloader.sdk.*
 import io.github.shoaky.sourcedownloader.sourceItem
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Test
 import java.net.InetSocketAddress
+import kotlin.io.path.Path
 import kotlin.test.assertEquals
 
 class SendHttpRequestTest {
@@ -41,6 +40,7 @@ class SendHttpRequestTest {
         )
 
         apply.onItemSuccess(
+            ProcessContext.empty,
             CoreItemContent(
                 sourceItem("test"),
                 listOf(),
@@ -72,6 +72,9 @@ class SendHttpRequestTest {
         )
 
         apply.onItemSuccess(
+            FixedProcessContext(
+                ProcessorInfo("test", Path(""), Path(""))
+            ),
             CoreItemContent(
                 sourceItem("test"),
                 listOf(),
@@ -79,7 +82,7 @@ class SendHttpRequestTest {
             )
         )
 
-        assertEquals("test", jsonPath?.read("$.sourceItem.title"))
+        assertEquals("test", jsonPath?.read("$.content.sourceItem.title"))
     }
 
     @Test
@@ -108,6 +111,9 @@ class SendHttpRequestTest {
         )
 
         apply.onItemSuccess(
+            FixedProcessContext(
+                ProcessorInfo("test", Path(""), Path(""))
+            ),
             CoreItemContent(
                 sourceItem("test"),
                 listOf(),

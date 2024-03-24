@@ -473,6 +473,7 @@ class SourceProcessor(
             return
         }
 
+        val context = CoreProcessContext(name, processingStorage, info0())
         itemContent.updateFileStatus(fileMover, fileExistsDetector)
         val success = runCatching {
             val moved = moveFiles(itemContent)
@@ -481,12 +482,12 @@ class SourceProcessor(
         }.onFailure {
             log.error("重命名出错, id:{} item:{}", pc.id, pc.itemContent.sourceItem, it)
             invokeListeners {
-                this.onItemError(itemContent.sourceItem, it)
+                this.onItemError(context, itemContent.sourceItem, it)
             }
         }.onSuccess {
             if (it) {
                 invokeListeners(inProcess = false) {
-                    this.onItemSuccess(itemContent)
+                    this.onItemSuccess(context, itemContent)
                 }
             }
         }.getOrDefault(false)
@@ -670,7 +671,8 @@ class SourceProcessor(
             source::class,
             sourceState.lastPointer.values
         ),
-        private val customIterable: Iterable<PointedItem<ItemPointer>>? = null
+        private val customIterable: Iterable<PointedItem<ItemPointer>>? = null,
+        val context: CoreProcessContext = CoreProcessContext(name, processingStorage, info0())
     ) {
 
         protected val processLock: Lock = if (options.parallelism > 1) ReentrantLock(true) else NoLock
@@ -678,7 +680,6 @@ class SourceProcessor(
         @OptIn(InternalCoroutinesApi::class)
         protected suspend fun processItems() {
             secondaryFileMover.releaseAll()
-            val context = CoreProcessContext(name, processingStorage, info0())
             val stat = context.stat
             stat.stopWatch.start("fetchItems")
             val itemIterable = customIterable ?: retry.execute<Iterable<PointedItem<ItemPointer>>, IOException> {
@@ -1001,7 +1002,7 @@ class SourceProcessor(
 
         override fun onItemSuccess(item: PointedItem<ItemPointer>, processingContent: ProcessingContent) {
             invokeListeners {
-                this.onItemSuccess(processingContent.itemContent)
+                this.onItemSuccess(context, processingContent.itemContent)
             }
 
             processLock.lock {
@@ -1018,7 +1019,7 @@ class SourceProcessor(
 
         override fun onItemError(item: SourceItem, throwable: Throwable) {
             invokeListeners {
-                this.onItemError(item, throwable)
+                this.onItemError(context, item, throwable)
             }
         }
 

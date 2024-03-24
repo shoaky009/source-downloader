@@ -10,12 +10,12 @@ class ForeignProcessListener(
     private val client: ForeignStateClient,
 ) : ProcessListener {
 
-    override fun onItemError(sourceItem: SourceItem, throwable: Throwable) {
-        super.onItemError(sourceItem, throwable)
+    override fun onItemError(context: ProcessContext, sourceItem: SourceItem, throwable: Throwable) {
+        super.onItemError(context, sourceItem, throwable)
     }
 
-    override fun onItemSuccess(itemContent: ItemContent) {
-        super.onItemSuccess(itemContent)
+    override fun onItemSuccess(context: ProcessContext, itemContent: ItemContent) {
+        super.onItemSuccess(context, itemContent)
     }
 
     override fun onProcessCompleted(processContext: ProcessContext) {

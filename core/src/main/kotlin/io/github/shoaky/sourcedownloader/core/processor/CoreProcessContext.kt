@@ -10,13 +10,16 @@ import io.github.shoaky.sourcedownloader.sdk.SourceItem
 class CoreProcessContext(
     private val processName: String,
     private val processingStorage: ProcessingStorage,
-    override val processor: ProcessorInfo,
+    private val processor: ProcessorInfo,
 ) : ProcessContext {
 
     val stat: ProcessStat = ProcessStat(processName)
 
     private val sourceItems: MutableList<SourceItem> = mutableListOf()
     private var hasError: Boolean = false
+    override fun processor(): ProcessorInfo {
+        return processor
+    }
 
     override fun processedItems(): List<SourceItem> {
         return sourceItems

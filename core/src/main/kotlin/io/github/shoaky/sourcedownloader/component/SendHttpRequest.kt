@@ -24,19 +24,17 @@ class SendHttpRequest(
     private val config: HttpRequestConfig
 ) : ProcessListener {
 
-    override fun onItemSuccess(itemContent: ItemContent) {
-        val uriComponents = UriComponentsBuilder.fromHttpUrl(config.url)
-            .encode().build().expand(
+    override fun onItemSuccess(context: ProcessContext, itemContent: ItemContent) {
+        val uriComponents = UriComponentsBuilder.fromHttpUrl(config.url).encode().build().expand(
                 mapOf("summary" to itemContent.summaryContent())
             )
 
         val headers = mutableMapOf<String, String>()
         headers.putAll(config.headers)
-        val bodyPublishers = buildBodyPublisher(itemContent, headers)
+        val bodyPublishers = buildBodyPublisher(context, itemContent, headers)
 
         val uri = uriComponents.toUri()
-        val request = HttpRequest.newBuilder(uri)
-            .method(config.method.name(), bodyPublishers)
+        val request = HttpRequest.newBuilder(uri).method(config.method.name(), bodyPublishers)
 
         headers.forEach(request::setHeader)
         val response = httpClient.send(request.build(), BodyHandlers.discarding())
@@ -48,21 +46,16 @@ class SendHttpRequest(
     override fun onProcessCompleted(processContext: ProcessContext) {
         val processedItems = processContext.processedItems()
         val size = processedItems.size
-        val uriComponents = UriComponentsBuilder.fromHttpUrl(config.url)
-            .encode().build().expand(
+        val uriComponents = UriComponentsBuilder.fromHttpUrl(config.url).encode().build().expand(
                 mapOf("summary" to "Processed $size items")
             )
 
-        val contents = processedItems.map {
-            processContext.getItemContent(it)
-        }
         val headers = mutableMapOf<String, String>()
         headers.putAll(config.headers)
-        val bodyPublishers = buildBodyPublisher(contents, headers)
+        val bodyPublishers = buildBodyPublisher(processContext, headers)
 
         val uri = uriComponents.toUri()
-        val request = HttpRequest.newBuilder(uri)
-            .method(config.method.name(), bodyPublishers)
+        val request = HttpRequest.newBuilder(uri).method(config.method.name(), bodyPublishers)
 
         headers.forEach(request::setHeader)
         val response = httpClient.send(request.build(), BodyHandlers.discarding())
@@ -76,30 +69,39 @@ class SendHttpRequest(
     }
 
     private fun buildBodyPublisher(
-        content: ItemContent,
-        headers: MutableMap<String, String>
+        context: ProcessContext, content: ItemContent, headers: MutableMap<String, String>
     ): HttpRequest.BodyPublisher {
         return if (config.body.isNullOrBlank().not()) {
             val body = config.body?.replace("{summary}", content.summaryContent())
             BodyPublishers.ofString(body)
         } else if (config.withContentBody) {
             headers[HttpHeaders.CONTENT_TYPE] = MediaType.APPLICATION_JSON_VALUE
-            BodyPublishers.ofString(Jackson.toJsonString(content))
+            BodyPublishers.ofString(
+                Jackson.toJsonString(
+                    mapOf("content" to content, "processor" to context.processor())
+                )
+            )
         } else {
             BodyPublishers.noBody()
         }
     }
 
     private fun buildBodyPublisher(
-        contents: List<ItemContent>,
-        headers: MutableMap<String, String>
+        context: ProcessContext, headers: MutableMap<String, String>
     ): HttpRequest.BodyPublisher {
+        val contents = context.processedItems().map {
+            context.getItemContent(it)
+        }
         return if (config.body.isNullOrBlank().not()) {
             val body = config.body?.replace("{summary}", "Processed ${contents.size} items")
             BodyPublishers.ofString(body)
         } else if (config.withContentBody) {
             headers[HttpHeaders.CONTENT_TYPE] = MediaType.APPLICATION_JSON_VALUE
-            BodyPublishers.ofString(Jackson.toJsonString(contents))
+            BodyPublishers.ofString(
+                Jackson.toJsonString(
+                    mapOf("contents" to contents, "processor" to context.processor())
+                )
+            )
         } else {
             BodyPublishers.noBody()
         }
@@ -107,12 +109,10 @@ class SendHttpRequest(
 
     data class HttpRequestConfig(
         val url: String,
-        @JsonSerialize(using = ToStringSerializer::class)
-        val method: HttpMethod = HttpMethod.POST,
+        @JsonSerialize(using = ToStringSerializer::class) val method: HttpMethod = HttpMethod.POST,
         val headers: Map<String, String> = emptyMap(),
         val body: String? = null,
-        @JsonAlias("with-content-body")
-        val withContentBody: Boolean = false
+        @JsonAlias("with-content-body") val withContentBody: Boolean = false
     )
 
 }

@@ -241,12 +241,12 @@ interface ProcessListener : SdComponent {
      * @param sourceItem the item
      * @param throwable the throwable
      */
-    fun onItemError(sourceItem: SourceItem, throwable: Throwable) {}
+    fun onItemError(context: ProcessContext, sourceItem: SourceItem, throwable: Throwable) {}
 
     /**
      * Invoked when the item is processed successfully, which means the item has been downloaded and renamed.
      */
-    fun onItemSuccess(itemContent: ItemContent) {}
+    fun onItemSuccess(context: ProcessContext, itemContent: ItemContent) {}
 
     /**
      * Invoked when the process is completed
