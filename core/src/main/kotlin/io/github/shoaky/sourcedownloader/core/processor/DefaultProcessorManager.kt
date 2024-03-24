@@ -383,6 +383,7 @@ class DefaultProcessorManager(
         val fileGrouping = mutableMapOf<SourceFilePartition, FileOption>()
         val expressionFactory = options.expression.factory
         for (fileOption in options.fileGrouping) {
+            var addFlag = false
             val fileContentFilters = mutableListOf<FileContentFilter>()
             if (fileOption.fileExpressionExclusions != null || fileOption.fileExpressionInclusions != null) {
                 fileContentFilters.add(
@@ -392,6 +393,7 @@ class DefaultProcessorManager(
                         expressionFactory
                     )
                 )
+                addFlag = true
             }
 
             val filters = fileOption.fileContentFilters?.map {
@@ -400,8 +402,11 @@ class DefaultProcessorManager(
                     it,
                     fileContentFilterTypeRef,
                 ).getAndMarkRef(config.name)
-            } ?: emptyList()
-            fileContentFilters.addAll(filters)
+            }
+            if (filters != null) {
+                fileContentFilters.addAll(filters)
+                addFlag = true
+            }
 
             val matcher = if (fileOption.tags.isNotEmpty()) {
                 TagSourceFilePartition(fileOption.tags)
@@ -420,7 +425,7 @@ class DefaultProcessorManager(
             fileGrouping[matcher] = FileOption(
                 fileOption.savePathPattern?.let { CorePathPattern(it, expressionFactory) },
                 fileOption.filenamePattern?.let { CorePathPattern(it, expressionFactory) },
-                fileContentFilters
+                fileContentFilters.takeIf { addFlag }
             )
         }
         return fileGrouping
