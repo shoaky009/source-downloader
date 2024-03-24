@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ser.std.ToStringSerializer
 import io.github.shoaky.sourcedownloader.component.replacer.RegexVariableReplacer
 import io.github.shoaky.sourcedownloader.core.component.ComponentId
 import io.github.shoaky.sourcedownloader.core.component.ListenerConfig
+import io.github.shoaky.sourcedownloader.core.expression.ExpressionType
 import io.github.shoaky.sourcedownloader.core.file.CorePathPattern
 import io.github.shoaky.sourcedownloader.core.file.VariableErrorStrategy
 import io.github.shoaky.sourcedownloader.core.processor.VariableConflictStrategy
@@ -44,10 +45,8 @@ data class ProcessorConfig(
         val fileContentFilters: List<ComponentId> = emptyList(),
         @JsonAlias("content-filters")
         val itemContentFilters: List<ComponentId> = emptyList(),
-        @JsonDeserialize(`as` = CorePathPattern::class)
-        val savePathPattern: PathPattern = CorePathPattern.origin,
-        @JsonDeserialize(`as` = CorePathPattern::class)
-        val filenamePattern: PathPattern = CorePathPattern.origin,
+        val savePathPattern: String = CorePathPattern.origin.pattern,
+        val filenamePattern: String = CorePathPattern.origin.pattern,
         // 为了兼容
         @JsonAlias("run-after-completion")
         val processListeners: List<ListenerConfig> = emptyList(),
@@ -91,14 +90,15 @@ data class ProcessorConfig(
         val retryBackoffMills: Long = 5000L,
         val taskGroup: String? = null,
         val variableProcess: Map<String, VariableProcessConfig> = emptyMap(),
+        val expression: ExpressionType = ExpressionType.CEL
     )
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     data class FileGroupingConfig(
         val tags: Set<String> = emptySet(),
         val expressionMatching: String? = null,
-        val filenamePattern: CorePathPattern? = null,
-        val savePathPattern: CorePathPattern? = null,
+        val filenamePattern: String? = null,
+        val savePathPattern: String? = null,
         val fileContentFilters: List<ComponentId>? = null,
         val fileExpressionExclusions: List<String>? = null,
         val fileExpressionInclusions: List<String>? = null,
@@ -109,8 +109,8 @@ data class ProcessorConfig(
     data class ItemGroupingConfig(
         val tags: Set<String> = emptySet(),
         val expressionMatching: String? = null,
-        val filenamePattern: CorePathPattern? = null,
-        val savePathPattern: CorePathPattern? = null,
+        val filenamePattern: String? = null,
+        val savePathPattern: String? = null,
         val variableProviders: List<ComponentId>? = null,
         val sourceItemFilters: List<ComponentId>? = null,
         val itemExpressionExclusions: List<String>? = null,

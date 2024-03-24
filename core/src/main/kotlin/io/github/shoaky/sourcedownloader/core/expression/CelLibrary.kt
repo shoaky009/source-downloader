@@ -64,7 +64,8 @@ class CelLibrary : Library {
 
         private const val CONTAINS_ANY = "containsAny"
 
-        fun containsAny(source: List<String>, target: List<String>, ignoreCase: Boolean = false): Boolean {
+        @JvmStatic
+        fun containsAny(source: Collection<String>, target: Collection<String>, ignoreCase: Boolean = false): Boolean {
             if (ignoreCase) {
                 val set = target.map { it.lowercase() }.toSet()
                 return source.any { it.lowercase() in set }

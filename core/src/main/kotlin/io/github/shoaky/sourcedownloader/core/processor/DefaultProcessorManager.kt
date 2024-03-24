@@ -5,8 +5,6 @@ import io.github.shoaky.sourcedownloader.component.*
 import io.github.shoaky.sourcedownloader.component.replacer.WindowsPathReplacer
 import io.github.shoaky.sourcedownloader.core.*
 import io.github.shoaky.sourcedownloader.core.component.*
-import io.github.shoaky.sourcedownloader.core.expression.CelCompiledExpressionFactory
-import io.github.shoaky.sourcedownloader.core.expression.CompiledExpressionFactory
 import io.github.shoaky.sourcedownloader.core.expression.sourceFileDefs
 import io.github.shoaky.sourcedownloader.core.expression.sourceItemDefs
 import io.github.shoaky.sourcedownloader.core.file.CorePathPattern
@@ -18,7 +16,6 @@ class DefaultProcessorManager(
     private val processingStorage: ProcessingStorage,
     private val componentManager: ComponentManager,
     private val container: ObjectWrapperContainer,
-    private val expressionFactory: CompiledExpressionFactory = CelCompiledExpressionFactory
 ) : ProcessorManager {
 
     override fun createProcessor(config: ProcessorConfig) {
@@ -198,6 +195,7 @@ class DefaultProcessorManager(
     ): ProcessorOptions {
         val options = config.options
         checkOptions(options)
+        val expressionFactory = options.expression.factory
         val sourceItemFilter = mutableListOf<SourceItemFilter>()
         if (options.saveProcessingContent) {
             sourceItemFilter.add(SourceHashingItemFilter(config.name, processingStorage))
@@ -206,7 +204,8 @@ class DefaultProcessorManager(
             sourceItemFilter.add(
                 ExpressionItemFilter(
                     options.itemExpressionExclusions,
-                    options.itemExpressionInclusions
+                    options.itemExpressionInclusions,
+                    expressionFactory
                 )
             )
         }
@@ -225,7 +224,8 @@ class DefaultProcessorManager(
             itemContentFilters.add(
                 ExpressionItemContentFilter(
                     options.contentExpressionExclusions,
-                    options.contentExpressionInclusions
+                    options.contentExpressionInclusions,
+                    expressionFactory
                 )
             )
         }
@@ -244,7 +244,8 @@ class DefaultProcessorManager(
             fileContentFilters.add(
                 ExpressionFileFilter(
                     options.fileExpressionExclusions,
-                    options.fileExpressionInclusions
+                    options.fileExpressionInclusions,
+                    expressionFactory
                 )
             )
         }
@@ -333,9 +334,10 @@ class DefaultProcessorManager(
             }
             VariableProcessChain(chain, cfg.output)
         }
+
         return ProcessorOptions(
-            CorePathPattern(options.savePathPattern.pattern),
-            CorePathPattern(options.filenamePattern.pattern),
+            CorePathPattern(options.savePathPattern, expressionFactory),
+            CorePathPattern(options.filenamePattern, expressionFactory),
             providers,
             listeners,
             sourceItemFilter,
@@ -379,13 +381,15 @@ class DefaultProcessorManager(
         config: ProcessorConfig
     ): Map<SourceFilePartition, FileOption> {
         val fileGrouping = mutableMapOf<SourceFilePartition, FileOption>()
+        val expressionFactory = options.expression.factory
         for (fileOption in options.fileGrouping) {
             val fileContentFilters = mutableListOf<FileContentFilter>()
             if (fileOption.fileExpressionExclusions != null || fileOption.fileExpressionInclusions != null) {
                 fileContentFilters.add(
                     ExpressionFileFilter(
                         fileOption.fileExpressionExclusions ?: emptyList(),
-                        fileOption.fileExpressionInclusions ?: emptyList()
+                        fileOption.fileExpressionInclusions ?: emptyList(),
+                        expressionFactory
                     )
                 )
             }
@@ -411,9 +415,11 @@ class DefaultProcessorManager(
             } else {
                 throw ComponentException.other("fileGrouping must have tags or expressionMatching")
             }
+
+
             fileGrouping[matcher] = FileOption(
-                fileOption.savePathPattern,
-                fileOption.filenamePattern,
+                fileOption.savePathPattern?.let { CorePathPattern(it, expressionFactory) },
+                fileOption.filenamePattern?.let { CorePathPattern(it, expressionFactory) },
                 fileContentFilters
             )
         }
@@ -425,6 +431,7 @@ class DefaultProcessorManager(
         config: ProcessorConfig
     ): Map<SourceItemPartition, ItemOption> {
         val fileGrouping = mutableMapOf<SourceItemPartition, ItemOption>()
+        val expressionFactory = options.expression.factory
         for (itemOption in options.itemGrouping) {
             val expressionFilters =
                 if (itemOption.itemExpressionInclusions != null || itemOption.itemExpressionExclusions != null) {
@@ -465,8 +472,8 @@ class DefaultProcessorManager(
 
             if (expressionFilters != null || sourceItemFilters != null) {
                 fileGrouping[matcher] = ItemOption(
-                    itemOption.savePathPattern,
-                    itemOption.filenamePattern,
+                    itemOption.savePathPattern?.let { CorePathPattern(it, expressionFactory) },
+                    itemOption.filenamePattern?.let { CorePathPattern(it, expressionFactory) },
                     buildList {
                         // 内置
                         add(SourceHashingItemFilter(config.name, processingStorage))
@@ -477,8 +484,8 @@ class DefaultProcessorManager(
                 )
             } else {
                 fileGrouping[matcher] = ItemOption(
-                    itemOption.savePathPattern,
-                    itemOption.filenamePattern,
+                    itemOption.savePathPattern?.let { CorePathPattern(it, expressionFactory) },
+                    itemOption.filenamePattern?.let { CorePathPattern(it, expressionFactory) },
                     null,
                     providers
                 )

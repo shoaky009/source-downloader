@@ -62,7 +62,7 @@ class DefaultComponentManager(
             val context = DefaultCoreContext(
                 this,
                 type,
-                id.toString()
+                id.toString(),
             )
             val component = try {
                 supplier.apply(context, props)

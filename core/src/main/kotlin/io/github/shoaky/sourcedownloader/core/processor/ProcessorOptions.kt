@@ -12,8 +12,8 @@ import io.github.shoaky.sourcedownloader.sdk.component.*
 import java.time.Duration
 
 data class ProcessorOptions(
-    val savePathPattern: PathPattern = CorePathPattern.origin,
-    val filenamePattern: PathPattern = CorePathPattern.origin,
+    val savePathPattern: CorePathPattern = CorePathPattern.origin,
+    val filenamePattern: CorePathPattern = CorePathPattern.origin,
     val variableProviders: List<VariableProvider> = emptyList(),
     val processListeners: Map<ListenerMode, List<ProcessListener>> = emptyMap(),
     val sourceItemFilters: List<SourceItemFilter> = emptyList(),

@@ -64,8 +64,8 @@ class SourceProcessor(
     private val directDownloader = DirectDownloader(downloader)
     private val downloadPath = downloader.defaultDownloadPath().toAbsolutePath()
     private val sourceSavePath: Path = sourceSavePath.toAbsolutePath()
-    private val filenamePattern = options.filenamePattern as CorePathPattern
-    private val savePathPattern = options.savePathPattern as CorePathPattern
+    private val filenamePattern = options.filenamePattern
+    private val savePathPattern = options.savePathPattern
     private var renameTaskFuture: ScheduledFuture<*>? = null
     private val sourceItemFilters: List<SourceItemFilter> = options.sourceItemFilters
     private val itemContentFilters: List<ItemContentFilter> = options.itemContentFilters

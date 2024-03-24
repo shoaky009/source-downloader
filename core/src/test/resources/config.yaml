@@ -346,4 +346,20 @@ processors:
       filename-pattern: "1"
       file-replacement-decider: "always"
       file-exists-detector: "media-type"
-#      parallelism: 1
+  - name: "SpelCase"
+    source: "fixed:normal-case"
+    item-file-resolver: "fixed:normal-case"
+    downloader: "mock"
+    file-mover: "general"
+    save-path: "src/test/resources/target/SpelCase"
+    options:
+      save-path-pattern: "{item.title}"
+      expression: SPEL
+      file-grouping:
+        - expression-matching: "file.name.contains('test1')"
+          save-path-pattern: "{item.title}"
+          filename-pattern: "{file.name}_GROUPING"
+      item-expression-exclusions:
+        - "item.title == 'test2'"
+      file-expression-exclusions:
+        - "file.name == 'test3.jpg'"

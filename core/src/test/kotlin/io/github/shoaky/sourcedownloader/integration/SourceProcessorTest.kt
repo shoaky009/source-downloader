@@ -224,17 +224,6 @@ class SourceProcessorTest : InitializingBean {
         assertEquals(2, op2.offset)
     }
 
-    // @Test
-    // 未实现
-    fun record_minimized() {
-        val processorName = "RecordMinimizedCase"
-        val processor = processorManager.getProcessor(processorName).get()
-        processor.run()
-
-        val contents = processingStorage.query(ProcessingQuery(processorName))
-        assert(contents.isEmpty())
-    }
-
     @Test
     fun media_type() {
         val processorName = "MediaTypeExistCase"
@@ -317,6 +306,19 @@ class SourceProcessorTest : InitializingBean {
             else -> throw RuntimeException("Should not entry here")
         }
 
+    }
+
+    @Test
+    fun spel_case() {
+        val processorName = "SpelCase"
+        val processor = processorManager.getProcessor(processorName).get()
+
+        val contents = processor.dryRun().associateBy({ it.itemContent.sourceItem.title }) { it.itemContent }
+        assertEquals(2, contents.size)
+
+        assert( contents.getValue("test1").sourceFiles.first.targetFilename.contains("GROUPING"))
+        assertEquals(1, contents.getValue("test-dir").sourceFiles.size)
+        assertEquals("test4.jpg", contents.getValue("test-dir").sourceFiles.first.targetFilename)
     }
 
     // 待测试场景

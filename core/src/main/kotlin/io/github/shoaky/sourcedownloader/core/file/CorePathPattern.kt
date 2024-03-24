@@ -13,16 +13,20 @@ import java.util.regex.Pattern
 data class CorePathPattern(
     @get:JsonValue
     override val pattern: String,
+    private val expressionFactory: CompiledExpressionFactory = CelCompiledExpressionFactory
 ) : PathPattern {
 
-    val expressions: List<CompiledExpression<String>> by lazy {
+    val expressions: List<CompiledExpression<String>> = run {
         val matcher = variablePatternRegex.matcher(pattern)
         val expressions = mutableListOf<CompiledExpression<String>>()
         while (matcher.find()) {
             val raw = matcher.group()
             val parsed = parseRaw(raw)
-            val expression = expressionFactory.create(parsed, String::class.java, defs(parsed)) as CelCompiledExpression
-            expression.optional = isOptional(raw)
+            val expression = expressionFactory.create(parsed, String::class.java, defs(parsed))
+            // 后面调整
+            if (expression is CelCompiledExpression) {
+                expression.optional = isOptional(raw)
+            }
             expressions.add(expression)
         }
         expressions
@@ -107,7 +111,6 @@ data class CorePathPattern(
          */
         private val variablePatternRegex: Pattern = Pattern.compile("\\{(.+?)}|:\\{(.+?)}")
         val origin = CorePathPattern("")
-        private val expressionFactory: CompiledExpressionFactory = CelCompiledExpressionFactory
         private const val OPTIONAL_EXPRESSION_PREFIX = ":"
 
     }

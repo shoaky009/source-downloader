@@ -1,6 +1,7 @@
 package io.github.shoaky.sourcedownloader.component
 
 import io.github.shoaky.sourcedownloader.component.supplier.ExpressionItemFilterSupplier
+import io.github.shoaky.sourcedownloader.core.expression.CelCompiledExpressionFactory
 import io.github.shoaky.sourcedownloader.core.file.CoreFileContent
 import io.github.shoaky.sourcedownloader.core.file.CorePathPattern
 import io.github.shoaky.sourcedownloader.sdk.MapPatternVariables
@@ -16,7 +17,8 @@ class ExpressionItemFilterTest {
     fun test_simple_exclusions() {
         val sourceItem = sourceItem("test1234")
         val filter = ExpressionItemFilterSupplier.expressions(
-            listOf("item.title == 'test1234'")
+            listOf("item.title == 'test1234'"),
+            factory = CelCompiledExpressionFactory
         )
         assertEquals(false, filter.test(sourceItem))
         assertEquals(true, filter.test(sourceItem.copy("11111")))
@@ -26,7 +28,8 @@ class ExpressionItemFilterTest {
     fun test_simple_inclusions() {
         val sourceItem = sourceItem("test1234")
         val filter = ExpressionItemFilterSupplier.expressions(
-            inclusions = listOf("item.title == 'test1234'")
+            inclusions = listOf("item.title == 'test1234'"),
+            factory = CelCompiledExpressionFactory
         )
         assertEquals(true, filter.test(sourceItem))
         assertEquals(false, filter.test(sourceItem.copy("11111")))
@@ -44,6 +47,7 @@ class ExpressionItemFilterTest {
                 "item.datetime > timestamp('2023-03-30T00:00:00Z') && item.datetime < timestamp('2130-03-31T00:00:00Z')",
                 "item.title.matches('Test')"
             ),
+            factory = CelCompiledExpressionFactory,
         )
         assertEquals(true, filter.test(sourceItem))
         assertEquals(false, filter.test(sourceItem.copy("1wsaqazfff")))
@@ -56,6 +60,7 @@ class ExpressionItemFilterTest {
             exclusions = listOf(
                 "item.title.matches('720(?i)P')"
             ),
+            factory = CelCompiledExpressionFactory,
         )
         assertEquals(false, filter.test(sourceItem))
     }
