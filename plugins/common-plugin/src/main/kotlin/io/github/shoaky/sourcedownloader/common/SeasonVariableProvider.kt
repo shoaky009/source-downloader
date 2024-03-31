@@ -13,7 +13,8 @@ object SeasonVariableProvider : VariableProvider {
         listOf(
             SpSeasonParser,
             GeneralSeasonParser,
-            LastStringSeasonParser
+            LastStringSeasonParser,
+            ContainsSeasonKeyword
         ),
         true
     )
