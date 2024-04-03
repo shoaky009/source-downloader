@@ -130,20 +130,23 @@ private data object CommonEpisodeValueParser : ValueParser {
         Regex("\\[(?!\\d+])[^\\[\\]]*?(.*?)]") to "",
     )
 
+    private val resolutionNumber = setOf(480, 720, 1080, 2160)
+
     override fun parse(value: String): Number? {
         val replace = pattern.replace(replace(value)) { "${it.value.trim()} " }
-        val episode = replace.split(" ")
+        val episodes = replace.split(" ")
             .filter { it.isNotBlank() }
-            .map { it.removePrefix("[").removeSuffix("]") }
-            .lastOrNull { NumberUtils.isParsable(it) && it.length > 1 }
-            ?.let {
-                if (it.contains(".")) {
-                    it.toFloat()
-                } else {
-                    it.toInt()
+            .mapNotNull {
+                val raw = it.removePrefix("[").removeSuffix("]")
+                if (NumberUtils.isParsable(raw) && raw.length > 1) {
+                    return@mapNotNull Candidate(
+                        raw,
+                        it.startsWith("[") && it.endsWith("]")
+                    )
                 }
+                null
             }
-        return episode
+        return episodes.maxOrNull()?.toNumber()
     }
 
     private fun replace(filename: String): String {
@@ -154,6 +157,35 @@ private data object CommonEpisodeValueParser : ValueParser {
         return res
     }
 
+    private data class Candidate(
+        val numberString: String,
+        val bracketSurround: Boolean,
+    ) : Comparable<Candidate> {
+
+        fun toNumber(): Number {
+            return if (numberString.contains(".")) {
+                numberString.toFloat()
+            } else {
+                numberString.toInt()
+            }
+        }
+
+        fun getScore(): Int {
+            var score = 0
+            if (bracketSurround) {
+                score += 2
+            }
+            val number = toNumber()
+            if (resolutionNumber.contains(number)) {
+                score -= 1
+            }
+            return score
+        }
+
+        override fun compareTo(other: Candidate): Int {
+            return this.getScore().compareTo(other.getScore())
+        }
+    }
 }
 
 private data object WordEpisodeValueParser : ValueParser {
