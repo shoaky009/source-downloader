@@ -43,7 +43,6 @@ class UrlDownloader(
     }
 
     override fun cancel(sourceItem: SourceItem, files: List<SourceFile>) {
-        TODO("Not yet implemented")
     }
 
 }

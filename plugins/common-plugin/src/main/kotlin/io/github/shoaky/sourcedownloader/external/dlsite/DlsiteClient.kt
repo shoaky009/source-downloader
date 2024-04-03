@@ -83,7 +83,6 @@ class DlsiteClient {
             "ja-jp" to listOf(
                 "販売日", "シリーズ名", "シナリオ", "イラスト", "声優", "音楽", "作品形式", "作者", "サークル名"
             ),
-            // TODO more language
         )
         private const val ZH_CN = "zh-cn"
         fun parseDlsiteId(text: String): String? {

@@ -13,7 +13,6 @@ import java.io.InputStream
 import java.nio.file.Path
 import kotlin.reflect.KClass
 
-// TODO 支持kebab-case和camelCase
 object Jackson {
 
     private val objectMapper: ObjectMapper = ObjectMapper()
