@@ -501,6 +501,9 @@ class RenamerTest {
             MapPatternVariables().also { it.addVariable("custom", "aaaa ddd [1234]") }
         )
         assertEquals("[1234].txt", c.targetFilename)
+        val processed = c.processedVariables?.variables() ?: emptyMap()
+        assertEquals("[1234]", processed["custom"])
+        assertEquals("[1234]", processed["custom_name"])
     }
 
     companion object {

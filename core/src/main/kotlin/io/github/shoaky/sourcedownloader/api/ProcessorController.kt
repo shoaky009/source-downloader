@@ -136,6 +136,7 @@ private class ProcessorController(
                         file.fileDownloadPath.toString(),
                         file.targetPath().toString(),
                         file.patternVariables.variables(),
+                        file.processedVariables?.variables().takeIf { it?.isNotEmpty() == true },
                         file.tags,
                         file.status,
                         file.errors.takeIf { it.isNotEmpty() }?.joinToString(", ")
@@ -273,6 +274,7 @@ private data class FileResult(
      * 私有命名变量
      */
     val variables: Map<String, Any>,
+    val processedVariables: Map<String, Any>?,
     /**
      * 文件标签
      */

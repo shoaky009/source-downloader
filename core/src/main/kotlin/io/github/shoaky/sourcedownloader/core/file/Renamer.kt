@@ -33,9 +33,14 @@ class Renamer(
 
         if (filenameResult.result.success().not() && variableErrorStrategy == VariableErrorStrategy.STAY) {
             val fileDownloadPath = rawFile.fileDownloadPath
-            return rawFile.createContent(fileDownloadPath.parent, fileDownloadPath.name, errors)
+            return rawFile.createContent(
+                fileDownloadPath.parent,
+                fileDownloadPath.name,
+                errors,
+                ctx.getProcessedVariables()
+            )
         }
-        return rawFile.createContent(dirResult.value, filenameResult.value, errors)
+        return rawFile.createContent(dirResult.value, filenameResult.value, errors, ctx.getProcessedVariables())
     }
 
     private fun targetFilename(ctx: RenameContext): ResultWrapper<String> {
@@ -44,7 +49,7 @@ class Renamer(
         if (filenamePattern == CorePathPattern.origin) {
             return ResultWrapper.fromFilename(fileDownloadPath.name)
         }
-        val parse = parse(ctx.variables, filenamePattern)
+        val parse = parse(ctx.allVariables, filenamePattern)
         val success = parse.success()
         if (success) {
             val targetFilename = parse.path
@@ -82,10 +87,10 @@ class Renamer(
         val fileSavePathPattern = file.savePathPattern
         val sourceSavePath = file.sourceSavePath
         val fileDownloadPath = file.fileDownloadPath
-        val parse = parse(ctx.variables, fileSavePathPattern)
+        val parse = parse(ctx.allVariables, fileSavePathPattern)
         if (parse.success()) {
             if (VariableErrorStrategy.TO_UNRESOLVED == variableErrorStrategy) {
-                val success = parse(ctx.variables, file.filenamePattern).success()
+                val success = parse(ctx.allVariables, file.filenamePattern).success()
                 if (success.not()) {
                     return ResultWrapper(sourceSavePath.resolve(parse.path).resolve(UNRESOLVED), parse)
                 }
@@ -162,8 +167,9 @@ class Renamer(
         val variableReplacers: List<VariableReplacer>,
         val variableProcessChain: Map<String, VariableProcessChain>,
     ) {
+        private val processedVariables: MutableMap<String, String> = mutableMapOf()
 
-        val variables: Map<String, Any> by lazy {
+        val allVariables: Map<String, Any> = run {
             val vars = mutableMapOf<String, Any>()
             vars.putAll(sharedVariables.variables().replaceVariables())
             // 文件变量的优先
@@ -191,11 +197,17 @@ class Renamer(
                         return@forEach
                     }
                     log.debug("Process variable '{}' with value '{}'", targetKey, value)
-                    vars[process.output] = process.process(value)
+                    val processed = process.process(value)
+                    processedVariables[process.output] = processed
+                    vars[process.output] = processed
                 }
             }
             log.debug("Rename variables:{}", vars)
             vars
+        }
+
+        fun getProcessedVariables(): Map<String, String> {
+            return processedVariables
         }
 
         private fun String.replaceVariable(name: String): String {
@@ -273,7 +285,12 @@ data class RawFileContent(
             }
     }
 
-    fun createContent(targetSavePath: Path, filename: String, errors: List<String>): CoreFileContent {
+    fun createContent(
+        targetSavePath: Path,
+        filename: String,
+        errors: List<String>,
+        processedVariables: Map<String, String>
+    ): CoreFileContent {
         return CoreFileContent(
             fileDownloadPath,
             sourceSavePath,
@@ -287,7 +304,8 @@ data class RawFileContent(
             sourceFile.tags,
             sourceFile.downloadUri,
             errors,
-            data = sourceFile.data
+            data = sourceFile.data,
+            processedVariables = MapPatternVariables(processedVariables)
         )
     }
 }
