@@ -7,18 +7,25 @@ import org.slf4j.LoggerFactory
 import java.net.URI
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
+import java.time.Duration
 
+@Suppress("UnstableApiUsage")
 class AnilistClient(
     private val endpoint: URI = URI("https://graphql.anilist.co"),
-    private val autoLimit: Boolean = false
 ) : HookedApiClient() {
 
     fun <R : BaseRequest<T>, T : Any> execute(request: R): HttpResponse<T> {
-        if (autoLimit) {
-            // 随便写 后面再优化
-            limiter.acquire()
+        val response = super.execute(endpoint, request)
+        limiter.acquire()
+        log.debug("Rate limit remaining: {}", response.headers().firstValueAsLong("x-ratelimit-remaining").orElse(-1))
+        if (response.statusCode() == 429) {
+            val retryAfter = response.headers().firstValueAsLong("retry-after").orElse(5L)
+            val reset = response.headers().firstValueAsLong("x-ratelimit-reset")
+            log.warn("Rate limit exceeded, Waiting for $retryAfter seconds, reset at $reset")
+            Thread.sleep(Duration.ofSeconds(retryAfter))
+            return execute(request)
         }
-        return super.execute(endpoint, request)
+        return response
     }
 
     override fun <R : BaseRequest<T>, T : Any> beforeRequest(requestBuilder: HttpRequest.Builder, request: R) {
@@ -28,7 +35,9 @@ class AnilistClient(
     }
 
     companion object {
+
+        private val limiter: RateLimiter = RateLimiter.create(0.7)
         private val log = LoggerFactory.getLogger(AnilistClient::class.java)
-        private val limiter: RateLimiter = RateLimiter.create(1.0)
     }
+
 }

@@ -21,7 +21,7 @@ class AnimeVariableProviderSupplier(
 
         return AnimeVariableProvider(
             bgmTvApiClient,
-            AnilistClient(autoLimit = props.getOrDefault("auto-limit", false)),
+            AnilistClient(),
             props.getOrDefault("prefer-bgm-tv", false),
         )
     }
