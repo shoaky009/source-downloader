@@ -33,7 +33,7 @@ object AnimeFileFilter : FileContentFilter {
     // LOGO
     private val normalRegexes = listOf(
         Regex(
-            "preview|fonts|nced|ncop|font|audio commentary",
+            "preview|fonts|nced|ncop|font|audio commentary|trailer",
             RegexOption.IGNORE_CASE
         ),
         Regex("Info(\\d+)|ed(\\d+)|op(\\d+)|event(\\d+)", RegexOption.IGNORE_CASE),
