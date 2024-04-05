@@ -32,7 +32,7 @@ processors:
         animeTitle: title
         episodeNumberAlt: episode
         romajiName: title
-      variable-replacers:
+      regex-variable-replacers:
         - regex: "(?i)^BDRIP$"
           replacement: BD
       file-taggers:

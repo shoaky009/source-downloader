@@ -317,9 +317,7 @@ class SourceProcessor(
         val itemVariables = variableProvider.itemVariables(sourceItem)
         val fileContents = resolvedFiles.groupBy {
             options.matchFileOption(it)
-        }.flatMap { entry ->
-            val fileOption = entry.key
-            val files = entry.value
+        }.flatMap { (fileOption, files) ->
             val fileVariables = variableProvider.fileVariables(sourceItem, itemVariables, files)
             checkFileVariables(files, fileVariables)
             files.mapIndexed { index, file ->
