@@ -8,9 +8,7 @@ class CelLibraryTest {
     @Test
     fun given_containsAny_when_listContainsAny_then_returnTrue() {
         val res = CelLibrary.containsAny(
-            listOf(
-                "xxx 720p"
-            ), listOf("720P"), true
+            listOf("720p"), listOf("720P"), true
         )
         assertEquals(true, res)
     }

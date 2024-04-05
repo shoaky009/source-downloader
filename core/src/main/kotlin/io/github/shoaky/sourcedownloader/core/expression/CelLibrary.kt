@@ -66,15 +66,11 @@ class CelLibrary : Library {
 
         @JvmStatic
         fun containsAny(source: Collection<String>, target: Collection<String>, ignoreCase: Boolean = false): Boolean {
-            // user string contains any target string
-            source.forEach { s ->
-                target.forEach { t ->
-                    if (s.contains(t, ignoreCase)) {
-                        return true
-                    }
-                }
+            if (ignoreCase) {
+                val set = target.map { it.lowercase() }.toSet()
+                return source.any { it.lowercase() in set }
             }
-            return false
+            return source.any { it in target }
         }
     }
 }
