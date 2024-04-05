@@ -5,7 +5,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import io.github.shoaky.sourcedownloader.sdk.http.HttpMethod
 
 class SearchSubjectRequest(
-    keyword: String,
+    val keyword: String,
     val type: Int = 2,
     val responseGroup: String = "small"
 ) : BangumiRequest<SearchSubjectBody>() {

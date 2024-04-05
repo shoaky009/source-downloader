@@ -8,8 +8,8 @@ import io.github.shoaky.sourcedownloader.external.anilist.AnilistClient
 import io.github.shoaky.sourcedownloader.external.anilist.Search
 import io.github.shoaky.sourcedownloader.external.anilist.Title
 import io.github.shoaky.sourcedownloader.external.bangumi.BgmTvApiClient
-import io.github.shoaky.sourcedownloader.external.bangumi.SearchSubjectV0Request
-import io.github.shoaky.sourcedownloader.external.bangumi.SubjectV0Item
+import io.github.shoaky.sourcedownloader.external.bangumi.SearchSubjectRequest
+import io.github.shoaky.sourcedownloader.external.bangumi.SubjectItem
 import io.github.shoaky.sourcedownloader.sdk.PatternVariables
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.VariableProvider
@@ -71,16 +71,16 @@ class AnimeVariableProvider(
             )
         }
 
-        val request = SearchSubjectV0Request(anilistResult?.native ?: title)
+        val request = SearchSubjectRequest(anilistResult?.native ?: title)
         val body = bgmTvApiClient.execute(
             request
         ).body()
 
-        if (body.data.isEmpty()) {
+        if (body.list.isEmpty()) {
             log.warn("bgmtv searching anime: $title no result")
             return Anime()
         }
-        val subjectItem = body.data.getHighestScoreSubjectItem(request.keyword)
+        val subjectItem = body.list.getHighestScoreSubjectItem(request.keyword)
 
         if (anilistResult != null) {
             return Anime(
@@ -108,7 +108,7 @@ class AnimeVariableProvider(
         )
     }
 
-    private fun List<SubjectV0Item>.getHighestScoreSubjectItem(keyword: String): SubjectV0Item {
+    private fun List<SubjectItem>.getHighestScoreSubjectItem(keyword: String): SubjectItem {
         val hasJp = hasLanguage(keyword, Character.UnicodeScript.HIRAGANA, Character.UnicodeScript.KATAKANA)
         val hasChinese = hasLanguage(keyword, Character.UnicodeScript.HAN)
         val choices = if (hasJp || hasChinese.not()) {
