@@ -12,7 +12,7 @@ class IncludingTargetPathsFileMover(
     private val storage: ProcessingStorage,
 ) : FileMover by fileMover {
 
-    private val preoccupiedTargetPaths: PatriciaTrie<Value> = PatriciaTrie<Value>()
+    private val preoccupiedTargetPaths: PatriciaTrie<ItemPath> = PatriciaTrie<ItemPath>()
 
     override fun exists(paths: List<Path>): List<Boolean> {
         val exists = fileMover.exists(paths)
@@ -47,7 +47,7 @@ class IncludingTargetPathsFileMover(
         }
         synchronized(preoccupiedTargetPaths) {
             preoccupiedTargetPaths.putAll(
-                paths.map { it.toString() to Value(sourceItem, it) }
+                paths.map { it.toString() to ItemPath(sourceItem, it) }
             )
         }
 
@@ -83,8 +83,9 @@ class IncludingTargetPathsFileMover(
         }
     }
 
-    private data class Value(
+    private data class ItemPath(
         val sourceItem: SourceItem,
+        // 通过prefix查找时获取对应的路径
         val path: Path,
     )
 

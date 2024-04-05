@@ -7,12 +7,12 @@ import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import java.nio.file.Path
 
 class TargetPathRelationSupport(
-    sourceItem: SourceItem,
+    currentItem: SourceItem,
     files: List<CoreFileContent>,
     processingStorage: ProcessingStorage
 ) {
 
-    private val currentItemHashing: String = sourceItem.hashing()
+    private val currentItemHashing: String = currentItem.hashing()
 
     private val targetPaths = processingStorage.findTargetPaths(
         files.mapNotNull { it.existTargetPath }

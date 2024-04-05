@@ -204,82 +204,19 @@ class SourceProcessor(
         )
     }
 
-    private fun identifyFilesToReplace(itemContent: CoreItemContent): List<CoreFileContent> {
-        if (fileReplacementDecider == NeverReplace) {
-            return emptyList()
-        }
-
-        val existsContentFiles = itemContent.sourceFiles
-            .filter { it.status == FileContentStatus.TARGET_EXISTS && it.existTargetPath != null }
-        val support = TargetPathRelationSupport(
-            itemContent.sourceItem,
-            existsContentFiles,
-            processingStorage
-        )
-        val existTargets = existsContentFiles.mapNotNull { it.existTargetPath }
-        val filesToCheck = fileMover.exists(existTargets).zip(existsContentFiles)
-        val discardedItems = mutableMapOf<String, Boolean>()
-        val replaceFiles = filesToCheck
-            .map { (physicalExists, fileContent) ->
-                val existTargetPath =
-                    fileContent.existTargetPath ?: throw IllegalStateException("ExistTargetPath is null")
-                // 预防真实路径还不存在的情况，在(target_path_record)中提前占用的文件
-                val existingFile = if (physicalExists) {
-                    existTargetPath.let {
-                        fileMover.pathMetadata(it)
-                    }
-                } else {
-                    SourceFile(existTargetPath)
-                }
-
-                val before = support.getBeforeContent(existingFile.path)
-                val replace = fileReplacementDecider.isReplace(
-                    itemContent.copy(
-                        sourceFiles = listOf(fileContent)
-                    ),
-                    before?.itemContent,
-                    existingFile
-                )
-                if (replace) {
-                    // 这里没有维护被替换Item的数据
-                    cancelSubmittedProcessing(before, fileContent, discardedItems)
-                }
-                fileContent to replace
-            }.filter { it.second }
-            .map { it.first }
-            .onEach {
-                it.status = FileContentStatus.READY_REPLACE
-            }
-        return replaceFiles
-    }
-
-    private fun cancelSubmittedProcessing(
-        before: ProcessingContent?,
+    private fun cancelItem(
+        sourceItem: SourceItem,
         existsFile: CoreFileContent,
         discardedItems: MutableMap<String, Boolean>
     ) {
-        log.info(
-            "Processor:'{}' cancel before processing, existsFile:{}, discardedItems:{}",
-            name,
-            existsFile,
-            discardedItems
-        )
-
-        // TODO 虽然计算出已存在，但并行模式ProcessingContent可能还未入库，需要一个ProcessContext来获取冲突的ItemContent
-        if (before == null || before.status != WAITING_TO_RENAME) {
-            log.info("Processor:'{}' before task is null or not waiting to rename, existsFile:{}", name, existsFile)
-            return
-        }
-        val files = existsFile.let {
+        val file = existsFile.let {
             SourceFile(it.fileDownloadPath, it.attrs, it.fileUri)
         }
-        // drop before task
-        val beforeItem = before.itemContent.sourceItem
-        val hashing = beforeItem.hashing()
+        val hashing = sourceItem.hashing()
         discardedItems.computeIfAbsent(hashing) {
-            log.info("Processor:'{}' drop before id:{} task:{}", name, before.id, beforeItem)
+            log.info("Processor:'{}' cancel item:{}", name, sourceItem)
             // cancel整个item不太合理，需要以文件的纬度按需取消
-            downloader.cancel(beforeItem, listOf(files))
+            downloader.cancel(sourceItem, listOf(file))
             true
         }
     }
@@ -717,7 +654,6 @@ class SourceProcessor(
                             semaphore.release()
                             return@launch
                         }
-
                         val processingContent = runCatching {
                             val ct = processWithRetry(pointed, itemOptions)
                             context.touch(ct)
@@ -733,7 +669,9 @@ class SourceProcessor(
 
                             if (options.itemErrorContinue.not()) {
                                 log.warn("Processor:'$name'处理失败, item:$pointed, 退出本次触发处理, 如果未能解决该处理器将无法继续处理后续Item")
-                                processScope.cancel(CancellationException("由于Item:${sourceItem}处理失败，退出本次触发处理"))
+                                processScope.cancel(
+                                    CancellationException("由于Item:${sourceItem}处理失败，退出本次触发处理", null)
+                                )
                                 semaphore.release()
                                 return@launch
                             }
@@ -770,9 +708,6 @@ class SourceProcessor(
 
             stat.stopWatch.stop()
             onProcessCompleted(context)
-            if (stat.hasChange()) {
-                log.info("Processor:{}", stat)
-            }
         }
 
         private suspend fun processWithRetry(
@@ -805,14 +740,16 @@ class SourceProcessor(
         }
 
         private fun releasePaths(processingContent: ProcessingContent) {
+            val sourceItem = processingContent.itemContent.sourceItem
+            context.removeItemPaths(sourceItem)
             val paths = processingContent.itemContent.downloadableFiles().map {
                 it.targetPath()
             }
             if (paths.isEmpty()) {
                 // 提前占用了但是处理时失败需要释放该Item下的路径
-                secondaryFileMover.release(processingContent.itemContent.sourceItem)
+                secondaryFileMover.release(sourceItem)
             } else {
-                secondaryFileMover.release(processingContent.itemContent.sourceItem, paths)
+                secondaryFileMover.release(sourceItem, paths)
             }
         }
 
@@ -852,6 +789,7 @@ class SourceProcessor(
                 }
                 // 在处理完后释放
                 secondaryFileMover.preoccupiedTargetPath(sourceItem, downloadableTargetPaths)
+                context.addItemPaths(sourceItem, downloadableTargetPaths)
             }
 
             val replaceFiles = identifyFilesToReplace(itemContent)
@@ -884,6 +822,65 @@ class SourceProcessor(
             }
 
             return processingContent
+        }
+
+        private fun identifyFilesToReplace(currentItem: CoreItemContent): List<CoreFileContent> {
+            if (fileReplacementDecider == NeverReplace) {
+                return emptyList()
+            }
+
+            val existsContentFiles = currentItem.sourceFiles
+                .filter { it.status == FileContentStatus.TARGET_EXISTS && it.existTargetPath != null }
+            val support = TargetPathRelationSupport(
+                currentItem.sourceItem,
+                existsContentFiles,
+                processingStorage
+            )
+            val existTargets = existsContentFiles.mapNotNull { it.existTargetPath }
+            val filesToCheck = fileMover.exists(existTargets).zip(existsContentFiles)
+            val discardedItems = mutableMapOf<String, Boolean>()
+            val replaceFiles = filesToCheck
+                .map { (physicalExists, fileContent) ->
+                    // 正常情况下不会出现existTargetPath为null的情况
+                    val existTargetPath = fileContent.existTargetPath
+                        ?: throw IllegalStateException("ExistTargetPath is null")
+                    // 预防真实路径还不存在的情况，在(target_path_record)中提前占用的文件
+                    val existingFile = if (physicalExists) {
+                        existTargetPath.let {
+                            fileMover.pathMetadata(it)
+                        }
+                    } else {
+                        SourceFile(existTargetPath)
+                    }
+
+                    val physicalBeforeItem = support.getBeforeContent(existingFile.path)
+                    val replace = fileReplacementDecider.isReplace(
+                        currentItem.copy(
+                            sourceFiles = listOf(fileContent)
+                        ),
+                        physicalBeforeItem?.itemContent,
+                        existingFile
+                    )
+                    if (replace) {
+                        if (physicalBeforeItem != null && physicalBeforeItem.status != WAITING_TO_RENAME) {
+                            // 这里没有维护physicalBeforeItem的数据, 有需要时再更新
+                            log.info("Processor:'{}' cancel physical item:{}", name, physicalBeforeItem)
+                            cancelItem(physicalBeforeItem.itemContent.sourceItem, fileContent, discardedItems)
+                        }
+                        context.findItems(existTargetPath)
+                            .filter { it != currentItem.sourceItem }
+                            .forEach {
+                                log.info("Processor:'{}' cancel processing item:{}", name, it)
+                                cancelItem(it, fileContent, discardedItems)
+                            }
+                    }
+                    fileContent to replace
+                }.filter { it.second }
+                .map { it.first }
+                .onEach {
+                    it.status = FileContentStatus.READY_REPLACE
+                }
+            return replaceFiles
         }
 
         open fun selectUpdateStatusMover(): FileMover {
