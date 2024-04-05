@@ -61,10 +61,10 @@ class MikanVariableProviderTest {
             LocalDateTime.now(), "application/x-bittorrent",
             URI("https://mikanani.me/Download/20221214/324b70bd8a170bcf13d7f5bdf9d3e8df4065f682.torrent")
         )
-        val sharedVariables = variableProvider.itemSharedVariables(sourceItem)
+        val sharedVariables = variableProvider.itemVariables(sourceItem)
         val sourceFile =
             SourceFile(Path("[ANi] 前進吧！登山少女  Next Summit（僅限港澳台地區） - 11 [1080P][Bilibili][WEB-DL][AAC AVC][CHT CHS].mp4"))
-        val sourceFiles = variableProvider.itemFileVariables(sourceItem, sharedVariables, listOf(sourceFile))
+        val sourceFiles = variableProvider.fileVariables(sourceItem, sharedVariables, listOf(sourceFile))
         assertEquals(1, sourceFiles.size)
 
         val bangumiInfo = sharedVariables as BangumiInfo
@@ -80,10 +80,10 @@ class MikanVariableProviderTest {
             LocalDateTime.now(), "application/x-bittorrent",
             URI("https://mikanani.me/Download/20221214/324b70bd8a170bcf13d7f5bdf9d3e8df4065f682.torrent")
         )
-        val sharedVariables = variableProvider.itemSharedVariables(sourceItem)
+        val sharedVariables = variableProvider.itemVariables(sourceItem)
 
         val sourceFiles =
-            variableProvider.itemFileVariables(
+            variableProvider.fileVariables(
                 sourceItem,
                 sharedVariables,
                 listOf(SourceFile(Path("[ANi] 前進吧！登山少女  Next Summit（僅限港澳台地區） - 11 [1080P][Bilibili][WEB-DL][AAC AVC][CHT CHS].mp4")))

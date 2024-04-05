@@ -18,7 +18,7 @@ class AnimeVariableProviderTest {
             AnilistClient(),
             true
         )
-        val sharedVariables = provider.itemSharedVariables(
+        val sharedVariables = provider.itemVariables(
             sourceItem(
                 "约会大作战"
             )

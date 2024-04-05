@@ -20,7 +20,7 @@ class GetchuVariableProvider(
             }
         })
 
-    override fun itemSharedVariables(sourceItem: SourceItem): PatternVariables {
+    override fun itemVariables(sourceItem: SourceItem): PatternVariables {
         val isbn = findIsbn(sourceItem)
         if (isbn != null) {
             val item = this.cache.get(RequestKey(isbn)).getOrNull()

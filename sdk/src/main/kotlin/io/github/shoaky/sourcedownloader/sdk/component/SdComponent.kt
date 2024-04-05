@@ -136,11 +136,11 @@ interface VariableProvider : SdComponent {
     /**
      * @return the variables for the item
      */
-    fun itemSharedVariables(sourceItem: SourceItem): PatternVariables
+    fun itemVariables(sourceItem: SourceItem): PatternVariables
 
-    fun itemFileVariables(
+    fun fileVariables(
         sourceItem: SourceItem,
-        sharedVariables: PatternVariables,
+        itemVariables: PatternVariables,
         sourceFiles: List<SourceFile>,
     ): List<PatternVariables> {
         return sourceFiles.map { PatternVariables.EMPTY }

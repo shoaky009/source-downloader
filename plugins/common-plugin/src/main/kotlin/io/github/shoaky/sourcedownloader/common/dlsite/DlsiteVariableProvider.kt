@@ -28,7 +28,7 @@ class DlsiteVariableProvider(
             }
         })
 
-    override fun itemSharedVariables(sourceItem: SourceItem): PatternVariables {
+    override fun itemVariables(sourceItem: SourceItem): PatternVariables {
         val dlsiteId = parseDlsiteId(sourceItem)
         if (dlsiteId == null && idOnly) {
             return PatternVariables.EMPTY

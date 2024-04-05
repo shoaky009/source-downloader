@@ -32,7 +32,7 @@ class KeywordVariableProvider(
         Word(word, mode.toIntOrNull() ?: 0, alias)
     }.toSet()
 
-    override fun itemSharedVariables(sourceItem: SourceItem): PatternVariables {
+    override fun itemVariables(sourceItem: SourceItem): PatternVariables {
         val title = sourceItem.title
         val matchedWord = matchWord(title)
         return matchedWord?.let {

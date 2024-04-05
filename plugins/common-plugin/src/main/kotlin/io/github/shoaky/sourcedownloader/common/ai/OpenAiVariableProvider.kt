@@ -19,13 +19,13 @@ class OpenAiVariableProvider(
     private val systemRole: ChatMessage
 ) : VariableProvider {
 
-    override fun itemSharedVariables(sourceItem: SourceItem): PatternVariables {
+    override fun itemVariables(sourceItem: SourceItem): PatternVariables {
         return PatternVariables.EMPTY
     }
 
-    override fun itemFileVariables(
+    override fun fileVariables(
         sourceItem: SourceItem,
-        sharedVariables: PatternVariables,
+        itemVariables: PatternVariables,
         sourceFiles: List<SourceFile>,
     ): List<PatternVariables> {
         return sourceFiles.map { file ->

@@ -9,7 +9,7 @@ class RegexVariableProvider(
     private val regexes: List<RegexVariable>
 ) : VariableProvider {
 
-    override fun itemSharedVariables(sourceItem: SourceItem): PatternVariables {
+    override fun itemVariables(sourceItem: SourceItem): PatternVariables {
         val variables = regexes.mapNotNull { regexVariable ->
             val find = regexVariable.regex.find(resolveField(sourceItem, regexVariable))
             find?.let { regexVariable.name to it.value }

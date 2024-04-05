@@ -314,13 +314,13 @@ class SourceProcessor(
             options.variableConflictStrategy,
             options.variableNameReplace
         )
-        val sharedPatternVariables = variableProvider.itemSharedVariables(sourceItem)
+        val itemVariables = variableProvider.itemVariables(sourceItem)
         val fileContents = resolvedFiles.groupBy {
             options.matchFileOption(it)
         }.flatMap { entry ->
             val fileOption = entry.key
             val files = entry.value
-            val fileVariables = variableProvider.itemFileVariables(sourceItem, sharedPatternVariables, files)
+            val fileVariables = variableProvider.fileVariables(sourceItem, itemVariables, files)
             checkFileVariables(files, fileVariables)
             files.mapIndexed { index, file ->
                 val rawFileContent = RawFileContent(
@@ -331,7 +331,7 @@ class SourceProcessor(
                     fileOption?.filenamePattern ?: itemOptions.filenamePattern ?: filenamePattern,
                     file
                 )
-                val fileContent = renamer.createFileContent(sourceItem, rawFileContent, sharedPatternVariables)
+                val fileContent = renamer.createFileContent(sourceItem, rawFileContent, itemVariables)
                 fileContent to fileOption
             }
         }.filter { (fileContent, fileOption) ->
@@ -342,7 +342,7 @@ class SourceProcessor(
             }
             filter
         }.map { it.first }
-        return CoreItemContent(sourceItem, fileContents, MapPatternVariables(sharedPatternVariables))
+        return CoreItemContent(sourceItem, fileContents, MapPatternVariables(itemVariables))
     }
 
     private fun checkFileVariables(files: List<SourceFile>, fileVariables: List<PatternVariables>) {

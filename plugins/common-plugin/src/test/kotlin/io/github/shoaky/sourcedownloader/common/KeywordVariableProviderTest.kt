@@ -12,10 +12,10 @@ class KeywordVariableProviderTest {
             listOf("1111")
         )
 
-        val group1 = provider.itemSharedVariables(sourceItem("(1111)zxcvbnm"))
+        val group1 = provider.itemVariables(sourceItem("(1111)zxcvbnm"))
         assertEquals(group1.variables()["keyword"], "1111")
 
-        val group2 = provider.itemSharedVariables(sourceItem("[1111]zxcvbnm"))
+        val group2 = provider.itemVariables(sourceItem("[1111]zxcvbnm"))
         assertEquals(group2.variables()["keyword"], "1111")
     }
 
@@ -25,7 +25,7 @@ class KeywordVariableProviderTest {
             listOf("1111")
         )
 
-        val group2 = provider.itemSharedVariables(sourceItem("1111zxcvbnm"))
+        val group2 = provider.itemVariables(sourceItem("1111zxcvbnm"))
         assert(group2.variables().contains("1111").not())
     }
 
@@ -34,7 +34,7 @@ class KeywordVariableProviderTest {
         val provider = KeywordVariableProvider(
             listOf("2222|1")
         )
-        val group2 = provider.itemSharedVariables(sourceItem("2222zxcvbnm"))
+        val group2 = provider.itemVariables(sourceItem("2222zxcvbnm"))
         assertEquals(group2.variables()["keyword"], "2222")
     }
 
@@ -43,7 +43,7 @@ class KeywordVariableProviderTest {
         val provider = KeywordVariableProvider(
             listOf("2222|1|abc222")
         )
-        val group2 = provider.itemSharedVariables(sourceItem("2222zxcvbnm"))
+        val group2 = provider.itemVariables(sourceItem("2222zxcvbnm"))
         assertEquals(group2.variables()["keyword"], "abc222")
     }
 }

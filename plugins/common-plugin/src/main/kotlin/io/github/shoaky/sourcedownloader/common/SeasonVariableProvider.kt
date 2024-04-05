@@ -19,11 +19,11 @@ object SeasonVariableProvider : VariableProvider {
         true
     )
 
-    override fun itemSharedVariables(sourceItem: SourceItem): PatternVariables = PatternVariables.EMPTY
+    override fun itemVariables(sourceItem: SourceItem): PatternVariables = PatternVariables.EMPTY
 
-    override fun itemFileVariables(
+    override fun fileVariables(
         sourceItem: SourceItem,
-        sharedVariables: PatternVariables,
+        itemVariables: PatternVariables,
         sourceFiles: List<SourceFile>,
     ): List<PatternVariables> {
         // 顺序filename, parent, title

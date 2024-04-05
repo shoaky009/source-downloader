@@ -20,8 +20,8 @@ class SeasonVariableProviderTest {
             }
             .forEach { (expect, name, path) ->
                 val item = sourceItem(title = name)
-                val sharedVariables = provider.itemSharedVariables(item)
-                val sourceFiles = provider.itemFileVariables(
+                val sharedVariables = provider.itemVariables(item)
+                val sourceFiles = provider.fileVariables(
                     item,
                     sharedVariables,
                     listOf(SourceFile(Path(path)))

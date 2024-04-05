@@ -26,9 +26,9 @@ class EpisodeVariableProviderTest {
                 Pair(split[0], split[1])
             }
             .forEach { (episode, name) ->
-                val group = provider.itemSharedVariables(item)
+                val group = provider.itemVariables(item)
                 val sf = SourceFile(Path(name))
-                val file = provider.itemFileVariables(item, group, listOf(sf)).first()
+                val file = provider.fileVariables(item, group, listOf(sf)).first()
                 assertEquals(episode, file.variables()["episode"])
             }
     }

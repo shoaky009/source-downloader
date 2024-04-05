@@ -35,7 +35,7 @@ class AnimeVariableProvider(
             }
         })
 
-    override fun itemSharedVariables(sourceItem: SourceItem): PatternVariables {
+    override fun itemVariables(sourceItem: SourceItem): PatternVariables {
         return create(sourceItem)
     }
 

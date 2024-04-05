@@ -16,7 +16,7 @@ class VariableProvidersAggregation(
 
     private val groups = providers.associateBy({ it }, {
         NameReplacePatternVariables(
-            it.itemSharedVariables(sourceItem),
+            it.itemVariables(sourceItem),
             variableNameReplace
         )
     })
@@ -30,17 +30,17 @@ class VariableProvidersAggregation(
         }
     }
 
-    override fun itemSharedVariables(sourceItem: SourceItem): PatternVariables {
-        return strategyGroup.itemSharedVariables(sourceItem)
+    override fun itemVariables(sourceItem: SourceItem): PatternVariables {
+        return strategyGroup.itemVariables(sourceItem)
 
     }
 
-    override fun itemFileVariables(
+    override fun fileVariables(
         sourceItem: SourceItem,
-        sharedVariables: PatternVariables,
+        itemVariables: PatternVariables,
         sourceFiles: List<SourceFile>,
     ): List<PatternVariables> {
-        return strategyGroup.itemFileVariables(sourceItem, sharedVariables, sourceFiles)
+        return strategyGroup.fileVariables(sourceItem, itemVariables, sourceFiles)
     }
 
     override val accuracy: Int
@@ -64,17 +64,17 @@ private abstract class AggregationItemGroup(
     private val variableNameReplace: Map<String, String>,
 ) : VariableProvider {
 
-    override fun itemSharedVariables(sourceItem: SourceItem): PatternVariables {
+    override fun itemVariables(sourceItem: SourceItem): PatternVariables {
         return aggrSharedPatternVariables(groups)
     }
 
-    override fun itemFileVariables(
+    override fun fileVariables(
         sourceItem: SourceItem,
-        sharedVariables: PatternVariables,
+        itemVariables: PatternVariables,
         sourceFiles: List<SourceFile>,
     ): List<PatternVariables> {
         val map = groups.mapValues { (p, v) ->
-            p.itemFileVariables(sourceItem, v, sourceFiles).map {
+            p.fileVariables(sourceItem, v, sourceFiles).map {
                 NameReplacePatternVariables(it, variableNameReplace)
             }
         }

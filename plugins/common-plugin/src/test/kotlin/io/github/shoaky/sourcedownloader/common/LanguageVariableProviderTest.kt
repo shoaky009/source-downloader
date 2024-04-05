@@ -19,9 +19,9 @@ class LanguageVariableProviderTest {
         )
 
         val item = sourceItem()
-        val group = provider.itemSharedVariables(item)
+        val group = provider.itemVariables(item)
 
-        val sourceFiles = provider.itemFileVariables(
+        val sourceFiles = provider.fileVariables(
             item, group, listOf(
                 SourceFile(Path("dsadsad.chs.ass")),
                 SourceFile(Path("dsadsad[CHS].ass")),

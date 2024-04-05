@@ -8,11 +8,11 @@ import io.github.shoaky.sourcedownloader.sdk.component.VariableProvider
  */
 object SequenceVariableProvider : VariableProvider {
 
-    override fun itemSharedVariables(sourceItem: SourceItem): PatternVariables = PatternVariables.EMPTY
+    override fun itemVariables(sourceItem: SourceItem): PatternVariables = PatternVariables.EMPTY
 
-    override fun itemFileVariables(
+    override fun fileVariables(
         sourceItem: SourceItem,
-        sharedVariables: PatternVariables,
+        itemVariables: PatternVariables,
         sourceFiles: List<SourceFile>,
     ): List<PatternVariables> {
         val length = sourceFiles.size.toString().length

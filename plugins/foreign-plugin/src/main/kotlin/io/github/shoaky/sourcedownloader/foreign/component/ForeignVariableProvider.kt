@@ -25,7 +25,7 @@ open class ForeignVariableProvider(
     override val accuracy: Int
         get() = remoteAccuracy
 
-    override fun itemSharedVariables(sourceItem: SourceItem): PatternVariables {
+    override fun itemVariables(sourceItem: SourceItem): PatternVariables {
         TODO()
     }
 

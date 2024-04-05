@@ -12,7 +12,7 @@ class RegexVariableProviderTest {
             listOf(RegexVariable("date", Regex("\\d+年\\d+月号.*")))
         )
 
-        val group = provider.itemSharedVariables(sourceItem("dsadsa 2021年11月号 [IX]"))
+        val group = provider.itemVariables(sourceItem("dsadsa 2021年11月号 [IX]"))
         assertEquals("2021年11月号 [IX]", group.variables()["date"])
     }
 }

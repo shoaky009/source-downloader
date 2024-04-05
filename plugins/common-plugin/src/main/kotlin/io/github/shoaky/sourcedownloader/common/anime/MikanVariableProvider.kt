@@ -61,7 +61,7 @@ class MikanVariableProvider(
         throw ComponentException.processing("获取Bangumi Subject失败")
     }
 
-    override fun itemSharedVariables(sourceItem: SourceItem): PatternVariables {
+    override fun itemVariables(sourceItem: SourceItem): PatternVariables {
         val pageInfo = mikanClient.getEpisodePageInfo(sourceItem.link.toURL())
         if (pageInfo.mikanHref == null) {
             log.warn("mikanHref is null, link:{}", sourceItem.link)
@@ -97,19 +97,19 @@ class MikanVariableProvider(
         )
     }
 
-    override fun itemFileVariables(
+    override fun fileVariables(
         sourceItem: SourceItem,
-        sharedVariables: PatternVariables,
+        itemVariables: PatternVariables,
         sourceFiles: List<SourceFile>
     ): List<PatternVariables> {
         return sourceFiles.map {
-            if (sharedVariables !is BangumiInfo) {
+            if (itemVariables !is BangumiInfo) {
                 return@map PatternVariables.EMPTY
             }
 
             val variables = buildMap {
-                if (sharedVariables.season != null) {
-                    put("season", sharedVariables.season)
+                if (itemVariables.season != null) {
+                    put("season", itemVariables.season)
                 }
             }
             MapPatternVariables(variables)
