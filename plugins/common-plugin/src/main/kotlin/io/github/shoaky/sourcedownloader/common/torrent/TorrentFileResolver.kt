@@ -41,7 +41,12 @@ object TorrentFileResolver : ItemFileResolver {
             // 试运行，这个不太稳
             getTorrentFromMagnet(pureMagnet)
         } else {
-            metadataService.fromUrl(downloadUri.toURL())
+            try {
+                metadataService.fromUrl(downloadUri.toURL())
+            } catch (e: IllegalStateException) {
+                log.warn("downloadUri:$downloadUri return an incorrect torrent, returning empty files", e)
+                return emptyList()
+            }
         }
 
         if (torrent.files.size == 1) {
