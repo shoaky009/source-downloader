@@ -12,7 +12,9 @@ internal object DlsiteVariableProviderSupplier : ComponentSupplier<DlsiteVariabl
     override fun apply(context: CoreContext, props: Properties): DlsiteVariableProvider {
         return DlsiteVariableProvider(
             DlsiteClient(),
-            props.getOrDefault("locale", "zh-cn")
+            props.getOrDefault("locale", "ja-jp"),
+            props.getOrDefault("idOnly", false),
+            workTypeCategories = props.getOrDefault("workTypeCategories", emptyList())
         )
     }
 

@@ -3,6 +3,7 @@ package io.github.shoaky.sourcedownloader.external.dlsite
 import io.github.shoaky.sourcedownloader.sdk.util.find
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
+import java.net.URLEncoder
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -24,7 +25,7 @@ class DlsiteClient {
             ?: (document.select("link[rel=canonical]").attr("href").find(*idRegexes)
                 ?: throw IllegalArgumentException("Can't find dlsiteId in document element 'link[rel=canonical]'"))
 
-        val locale = document.tagName("lang") ?: ZH_CN
+        val locale = document.root().children().attr("lang") ?: JA_JP
         val workOutline = document.getElementById("work_outline")?.select("tbody tr")
             ?.associateBy(
                 { it.firstElementChild()?.text()?.trim() },
@@ -35,9 +36,9 @@ class DlsiteClient {
                 document.getElementById("work_name")?.ownText(),
             )
 
-        val keys = localizationMapping[locale] ?: localizationMapping.getValue(ZH_CN)
+        val keys = localizationMapping[locale] ?: localizationMapping.getValue(JA_JP)
         val releaseDate = kotlin.runCatching {
-            LocalDate.parse(workOutline[keys[0]], chineseDateTimeFormatter)
+            workOutline[keys[0]]?.let { LocalDate.parse(it, chineseDateTimeFormatter) }
         }.getOrNull()
 
         return DlsiteWorkInfo(
@@ -54,9 +55,23 @@ class DlsiteClient {
         )
     }
 
-    fun searchWork(keyword: String, locale: String): List<SearchWork> {
+    fun searchWork(
+        keyword: String,
+        locale: String = "ja-jp",
+        workTypeCategories: List<String> = emptyList()
+    ): List<SearchWork> {
+        var url =
+            "https://www.dlsite.com/maniax/fsr/=/language/jp/keyword/${URLEncoder.encode(keyword, Charsets.UTF_8)}"
+        if (workTypeCategories.isNotEmpty()) {
+            val conditions = workTypeCategories.mapIndexed { idx, category ->
+                val encoded = URLEncoder.encode("work_type_category[$idx]", Charsets.UTF_8)
+                "$encoded/$category"
+            }.joinToString("/", "/")
+            url += conditions
+        }
+
         val document = Jsoup
-            .connect("https://www.dlsite.com/maniax/fsr/=/language/jp/keyword/$keyword")
+            .connect(url)
             .cookie("locale", locale)
             .cookie("adultchecked", "1")
             .get()
@@ -76,15 +91,16 @@ class DlsiteClient {
             Regex("VJ\\d+"),
         )
         private val chineseDateTimeFormatter = DateTimeFormatter.ofPattern("yyyy年MM月dd日")
+        private const val ZH_CN = "zh-cn"
+        private const val JA_JP = "ja-jp"
         private val localizationMapping: Map<String, List<String>> = mapOf(
-            "zh-cn" to listOf(
+            ZH_CN to listOf(
                 "贩卖日", "系列名", "剧情", "插画", "声优", "音乐", "作品类型", "作者", "社团名"
             ),
-            "ja-jp" to listOf(
+            JA_JP to listOf(
                 "販売日", "シリーズ名", "シナリオ", "イラスト", "声優", "音楽", "作品形式", "作者", "サークル名"
             ),
         )
-        private const val ZH_CN = "zh-cn"
         fun parseDlsiteId(text: String): String? {
             return text.find(*idRegexes)
         }

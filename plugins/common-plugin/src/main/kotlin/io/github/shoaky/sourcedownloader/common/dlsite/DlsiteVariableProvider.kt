@@ -16,8 +16,9 @@ import kotlin.jvm.optionals.getOrNull
  */
 class DlsiteVariableProvider(
     private val dlistClient: DlsiteClient = DlsiteClient(),
-    private val locale: String = "zh-cn",
-    private val idOnly: Boolean = true,
+    private val locale: String = "ja-jp",
+    private val idOnly: Boolean = false,
+    private val workTypeCategories: List<String> = emptyList()
 ) : VariableProvider {
 
     private val cache = CacheBuilder.newBuilder().maximumSize(500).build(
@@ -60,7 +61,7 @@ class DlsiteVariableProvider(
     }
 
     private fun fromKeyword(keyword: String): DlsiteWorkInfo? {
-        val items = dlistClient.searchWork(keyword, locale)
+        val items = dlistClient.searchWork(keyword, locale, workTypeCategories)
         if (items.isEmpty()) {
             log.info("No work found for keyword: {}", keyword)
             return null
@@ -85,9 +86,10 @@ class DlsiteVariableProvider(
         if (dlsiteId == null && idOnly) {
             return null
         }
-
-        return cache.get(WorkRequest(dlsiteId = dlsiteId)).getOrNull()?.title
-            ?: cache.get(WorkRequest(keyword = text)).getOrNull()?.title
+        if (dlsiteId != null) {
+            return cache.get(WorkRequest(dlsiteId = dlsiteId)).getOrNull()?.title
+        }
+        return cache.get(WorkRequest(keyword = text)).getOrNull()?.title
     }
 
     companion object {
