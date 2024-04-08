@@ -134,7 +134,8 @@ interface VariableProvider : SdComponent {
     val accuracy: Int get() = 1
 
     /**
-     * @return the variables for the item
+     *
+     * @return the variables for the item, if the provider does not support the item, return [PatternVariables.EMPTY]
      */
     fun itemVariables(sourceItem: SourceItem): PatternVariables
 
@@ -145,11 +146,6 @@ interface VariableProvider : SdComponent {
     ): List<PatternVariables> {
         return sourceFiles.map { PatternVariables.EMPTY }
     }
-
-    /**
-     * @return true if the provider can provide variables for the item
-     */
-    fun support(sourceItem: SourceItem): Boolean
 
     /**
      * @param text to extract

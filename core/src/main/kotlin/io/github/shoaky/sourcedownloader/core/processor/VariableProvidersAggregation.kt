@@ -46,7 +46,6 @@ class VariableProvidersAggregation(
     override val accuracy: Int
         get() = strategyGroup.accuracy
 
-    override fun support(sourceItem: SourceItem): Boolean = true
 }
 
 class NameReplacePatternVariables(
@@ -84,8 +83,6 @@ private abstract class AggregationItemGroup(
         return mergeFiles(providerFiles)
 
     }
-
-    override fun support(sourceItem: SourceItem): Boolean = true
 
     protected abstract fun aggrSharedPatternVariables(groups: Map<VariableProvider, PatternVariables>): PatternVariables
 

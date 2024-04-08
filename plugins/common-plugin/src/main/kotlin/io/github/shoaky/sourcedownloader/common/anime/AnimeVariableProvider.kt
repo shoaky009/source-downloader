@@ -39,8 +39,6 @@ class AnimeVariableProvider(
         return create(sourceItem)
     }
 
-    override fun support(sourceItem: SourceItem): Boolean = true
-
     private fun create(sourceItem: SourceItem): Anime {
         val title = extractTitle(sourceItem)
         return searchCache.get(title)

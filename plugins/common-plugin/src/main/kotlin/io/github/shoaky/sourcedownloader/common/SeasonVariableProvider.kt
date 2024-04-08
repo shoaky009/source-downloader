@@ -1,7 +1,9 @@
 package io.github.shoaky.sourcedownloader.common
 
 import io.github.shoaky.sourcedownloader.external.season.*
-import io.github.shoaky.sourcedownloader.sdk.*
+import io.github.shoaky.sourcedownloader.sdk.PatternVariables
+import io.github.shoaky.sourcedownloader.sdk.SourceFile
+import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.VariableProvider
 
 /**
@@ -37,7 +39,6 @@ object SeasonVariableProvider : VariableProvider {
         }
     }
 
-    override fun support(sourceItem: SourceItem): Boolean = true
     override val accuracy: Int = 2
 
 }

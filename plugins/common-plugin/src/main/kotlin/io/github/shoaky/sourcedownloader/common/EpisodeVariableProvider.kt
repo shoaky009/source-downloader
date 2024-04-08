@@ -68,8 +68,6 @@ object EpisodeVariableProvider : VariableProvider {
         }
     }
 
-    override fun support(sourceItem: SourceItem): Boolean = true
-
     override val accuracy: Int = 3
 
     private fun padNumber(number: Number?, length: Int = 2): String? {

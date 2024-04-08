@@ -34,10 +34,6 @@ class RegexVariableProvider(
             regexVariable.regex.find(acc)?.value ?: acc
         }
     }
-
-    override fun support(sourceItem: SourceItem): Boolean {
-        return true
-    }
 }
 
 data class RegexVariable(

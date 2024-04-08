@@ -75,10 +75,6 @@ class GetchuVariableProvider(
             }
     }
 
-    override fun support(sourceItem: SourceItem): Boolean {
-        return true
-    }
-
     companion object {
 
         private val isbnRegex = Regex("[a-zA-Z]+-[a-zA-Z0-9]+")

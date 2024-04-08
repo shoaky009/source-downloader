@@ -247,7 +247,7 @@ class SourceProcessor(
 
         val variableProvider = VariableProvidersAggregation(
             sourceItem,
-            itemOptions.variableProviders.filter { it.support(sourceItem) }.toList(),
+            itemOptions.variableProviders.toList(),
             options.variableConflictStrategy,
             options.variableNameReplace
         )

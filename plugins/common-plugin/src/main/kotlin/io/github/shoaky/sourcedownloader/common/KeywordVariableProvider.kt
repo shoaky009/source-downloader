@@ -57,10 +57,6 @@ class KeywordVariableProvider(
         return matchedWord
     }
 
-    override fun support(sourceItem: SourceItem): Boolean {
-        return true
-    }
-
     override fun extractFrom(text: String): String? {
         val w = matchWord(text)
         return w?.alias ?: w?.value

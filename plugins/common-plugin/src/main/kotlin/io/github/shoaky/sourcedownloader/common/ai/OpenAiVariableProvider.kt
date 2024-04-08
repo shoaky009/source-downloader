@@ -4,7 +4,10 @@ import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import io.github.shoaky.sourcedownloader.external.openai.ChatCompletion
 import io.github.shoaky.sourcedownloader.external.openai.ChatMessage
 import io.github.shoaky.sourcedownloader.external.openai.OpenAiClient
-import io.github.shoaky.sourcedownloader.sdk.*
+import io.github.shoaky.sourcedownloader.sdk.MapPatternVariables
+import io.github.shoaky.sourcedownloader.sdk.PatternVariables
+import io.github.shoaky.sourcedownloader.sdk.SourceFile
+import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.VariableProvider
 import io.github.shoaky.sourcedownloader.sdk.util.Jackson
 import java.net.URI
@@ -39,8 +42,6 @@ class OpenAiVariableProvider(
             MapPatternVariables(variables)
         }
     }
-
-    override fun support(sourceItem: SourceItem): Boolean = true
 
     data class OpenAiConfig(
         val apiKeys: List<String>,

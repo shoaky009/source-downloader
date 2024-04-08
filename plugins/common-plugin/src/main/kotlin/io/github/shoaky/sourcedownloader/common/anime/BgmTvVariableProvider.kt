@@ -39,10 +39,6 @@ class BgmTvVariableProvider(
         return searchCache.get(title)
     }
 
-    override fun support(sourceItem: SourceItem): Boolean {
-        return true
-    }
-
     override fun extractFrom(text: String): String? {
         return searchCache.get(text).nativeName
     }

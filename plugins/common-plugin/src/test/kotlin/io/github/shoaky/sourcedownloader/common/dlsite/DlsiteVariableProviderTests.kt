@@ -4,6 +4,7 @@ import io.github.shoaky.sourcedownloader.common.supplier.DlsiteVariableProviderS
 import io.github.shoaky.sourcedownloader.external.dlsite.DlsiteClient
 import io.github.shoaky.sourcedownloader.external.dlsite.DlsiteWorkInfo
 import io.github.shoaky.sourcedownloader.sdk.CoreContext
+import io.github.shoaky.sourcedownloader.sdk.PatternVariables
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import org.jsoup.Jsoup
@@ -29,8 +30,18 @@ class DlsiteVariableProviderTests {
 
     @Test
     fun test_support() {
-        assert(provider.support(sourceItem))
-        assert(provider.support(sourceItem.copy("", URI("https://baidu.com"))).not())
+        val prop = Properties.fromJson(
+            """
+            {
+                "onlyExtractId": true
+            }
+        """.trimIndent()
+        )
+        val p = DlsiteVariableProviderSupplier.apply(CoreContext.empty, prop)
+        assertEquals(
+            PatternVariables.EMPTY,
+            p.itemVariables(sourceItem.copy("", URI("https://baidu.com")))
+        )
     }
 
     @Test

@@ -1,6 +1,9 @@
 package io.github.shoaky.sourcedownloader.common
 
-import io.github.shoaky.sourcedownloader.sdk.*
+import io.github.shoaky.sourcedownloader.sdk.MapPatternVariables
+import io.github.shoaky.sourcedownloader.sdk.PatternVariables
+import io.github.shoaky.sourcedownloader.sdk.SourceFile
+import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.VariableProvider
 import io.github.shoaky.sourcedownloader.sdk.util.replaces
 import kotlin.io.path.nameWithoutExtension
@@ -36,7 +39,5 @@ object LanguageVariableProvider : VariableProvider {
             MapPatternVariables(mapOf("language" to language))
         }
     }
-
-    override fun support(sourceItem: SourceItem): Boolean = true
 
 }

@@ -2,7 +2,10 @@ package io.github.shoaky.sourcedownloader.common.anitom
 
 import com.dgtlrepublic.anitomyj.AnitomyJ
 import com.google.common.base.CaseFormat
-import io.github.shoaky.sourcedownloader.sdk.*
+import io.github.shoaky.sourcedownloader.sdk.MapPatternVariables
+import io.github.shoaky.sourcedownloader.sdk.PatternVariables
+import io.github.shoaky.sourcedownloader.sdk.SourceFile
+import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.VariableProvider
 import kotlin.io.path.name
 
@@ -30,6 +33,5 @@ class AnitomVariableProvider : VariableProvider {
         }
     }
 
-    override fun support(sourceItem: SourceItem): Boolean = true
 }
 

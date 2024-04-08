@@ -1,6 +1,9 @@
 package io.github.shoaky.sourcedownloader.core.processor
 
-import io.github.shoaky.sourcedownloader.sdk.*
+import io.github.shoaky.sourcedownloader.sdk.MapPatternVariables
+import io.github.shoaky.sourcedownloader.sdk.PatternVariables
+import io.github.shoaky.sourcedownloader.sdk.SourceFile
+import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.VariableProvider
 import io.github.shoaky.sourcedownloader.sourceItem
 import org.junit.jupiter.api.Test
@@ -341,7 +344,5 @@ private class CustomProvider(
     ): List<PatternVariables> {
         return fileVariables
     }
-
-    override fun support(sourceItem: SourceItem): Boolean = true
 
 }

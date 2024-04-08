@@ -62,6 +62,10 @@ class MikanVariableProvider(
     }
 
     override fun itemVariables(sourceItem: SourceItem): PatternVariables {
+        if (sourceItem.link.host.contains("mikan").not()) {
+            return PatternVariables.EMPTY
+        }
+
         val pageInfo = mikanClient.getEpisodePageInfo(sourceItem.link.toURL())
         if (pageInfo.mikanHref == null) {
             log.warn("mikanHref is null, link:{}", sourceItem.link)
@@ -114,10 +118,6 @@ class MikanVariableProvider(
             }
             MapPatternVariables(variables)
         }
-    }
-
-    override fun support(sourceItem: SourceItem): Boolean {
-        return sourceItem.link.host.contains("mikan")
     }
 
 }

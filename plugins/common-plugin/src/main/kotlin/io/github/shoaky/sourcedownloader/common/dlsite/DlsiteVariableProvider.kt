@@ -17,7 +17,7 @@ import kotlin.jvm.optionals.getOrNull
 class DlsiteVariableProvider(
     private val dlistClient: DlsiteClient = DlsiteClient(),
     private val locale: String = "ja-jp",
-    private val idOnly: Boolean = false,
+    private val onlyExtractId: Boolean = false,
     private val workTypeCategories: List<String> = emptyList()
 ) : VariableProvider {
 
@@ -31,7 +31,7 @@ class DlsiteVariableProvider(
 
     override fun itemVariables(sourceItem: SourceItem): PatternVariables {
         val dlsiteId = parseDlsiteId(sourceItem)
-        if (dlsiteId == null && idOnly) {
+        if (onlyExtractId && dlsiteId == null) {
             return PatternVariables.EMPTY
         }
         if (dlsiteId != null) {
@@ -74,16 +74,9 @@ class DlsiteVariableProvider(
         return dlistClient.getWorkInfo(dlsiteId, locale)
     }
 
-    override fun support(sourceItem: SourceItem): Boolean {
-        if (idOnly.not()) {
-            return true
-        }
-        return parseDlsiteId(sourceItem) != null
-    }
-
     override fun extractFrom(text: String): String? {
         val dlsiteId = DlsiteClient.parseDlsiteId(text)
-        if (dlsiteId == null && idOnly) {
+        if (dlsiteId == null && onlyExtractId) {
             return null
         }
         if (dlsiteId != null) {

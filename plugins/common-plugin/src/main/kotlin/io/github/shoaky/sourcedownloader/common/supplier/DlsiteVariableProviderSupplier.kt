@@ -13,7 +13,7 @@ internal object DlsiteVariableProviderSupplier : ComponentSupplier<DlsiteVariabl
         return DlsiteVariableProvider(
             DlsiteClient(),
             props.getOrDefault("locale", "ja-jp"),
-            props.getOrDefault("idOnly", false),
+            props.getOrDefault("onlyExtractId", false),
             workTypeCategories = props.getOrDefault("workTypeCategories", emptyList())
         )
     }

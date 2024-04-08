@@ -29,13 +29,5 @@ open class ForeignVariableProvider(
         TODO()
     }
 
-    override fun support(sourceItem: SourceItem): Boolean {
-        val postState = client.postState(
-            paths.accuracy,
-            emptyMap<String, Any>(),
-            jacksonTypeRef<JsonNode>()
-        )
-        return postState.get("result").booleanValue()
-    }
 }
 
