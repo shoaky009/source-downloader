@@ -708,6 +708,9 @@ class SourceProcessor(
 
             stat.stopWatch.stop()
             onProcessCompleted(context)
+            if (stat.hasChange()) {
+                log.info("Processor:{}", stat)
+            }
         }
 
         private suspend fun processWithRetry(
@@ -861,11 +864,14 @@ class SourceProcessor(
                         physicalBeforeItem?.itemContent,
                         existingFile
                     )
-                    if (replace) {
-                        if (physicalBeforeItem != null && physicalBeforeItem.status != WAITING_TO_RENAME) {
-                            // 这里没有维护physicalBeforeItem的数据, 有需要时再更新
+                    if (replace && physicalBeforeItem != null) {
+                        // 只取消正在下载阶段的
+                        if (physicalBeforeItem.status == WAITING_TO_RENAME) {
                             log.info("Processor:'{}' cancel physical item:{}", name, physicalBeforeItem)
                             cancelItem(physicalBeforeItem.itemContent.sourceItem, fileContent, discardedItems)
+                            processingStorage.save(
+                                physicalBeforeItem.copy(status = CANCELLED, modifyTime = LocalDateTime.now())
+                            )
                         }
                         context.findItems(existTargetPath)
                             .filter { it != currentItem.sourceItem }
@@ -875,8 +881,8 @@ class SourceProcessor(
                             }
                     }
                     fileContent to replace
-                }.filter { it.second }
-                .map { it.first }
+                }.filter { (_, replace) -> replace }
+                .map { (fc, _) -> fc }
                 .onEach {
                     it.status = FileContentStatus.READY_REPLACE
                 }

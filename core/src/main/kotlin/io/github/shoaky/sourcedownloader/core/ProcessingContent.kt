@@ -63,7 +63,12 @@ data class ProcessingContent(
         /**
          * 处理失败
          */
-        FAILURE(8)
+        FAILURE(8),
+
+        /**
+         * 取消
+         */
+        CANCELLED(9)
         ;
 
         override fun getValue(): Int {
