@@ -47,7 +47,7 @@ components:
       props:
         content:
           - item:
-              title: "test-replace"
+              title: "test-replace1"
               link: "file://test1"
               date: "2022-01-01T00:00:00"
               contentType: "file"
@@ -55,7 +55,7 @@ components:
             files:
               - path: "test-replace1.jpg"
           - item:
-              title: "test-replace"
+              title: "test-replace2"
               link: "file://test2"
               date: "2022-01-01T00:00:00"
               contentType: "file"
@@ -268,7 +268,6 @@ processors:
     options:
       variable-providers:
         - "sequence"
-      save-path-pattern: "{item.title}"
       filename-pattern: "{sequence}"
       file-replacement-decider: "always"
     enabled: true
@@ -281,7 +280,6 @@ processors:
     options:
       variable-providers:
         - "sequence"
-      save-path-pattern: "{item.title}"
       filename-pattern: "{sequence}"
       file-replacement-decider: "always"
     enabled: true
@@ -363,3 +361,14 @@ processors:
         - "item.title == 'test2'"
       file-expression-exclusions:
         - "file.name == 'test3.jpg'"
+  - name: "ParallelismReplaceCase"
+    source: "fixed:replace-case"
+    item-file-resolver: "fixed:replace-case"
+    downloader: "mock"
+    file-mover: "general"
+    save-path: "src/test/resources/target/ParallelismReplaceCase"
+    options:
+      save-path-pattern: "1"
+      filename-pattern: "1"
+      parallelism: 5
+      file-replacement-decider: "idk-replace-decider"

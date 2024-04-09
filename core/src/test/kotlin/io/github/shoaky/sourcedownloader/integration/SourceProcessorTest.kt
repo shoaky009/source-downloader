@@ -1,7 +1,6 @@
 package io.github.shoaky.sourcedownloader.integration
 
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
-import io.github.shoaky.sourcedownloader.SourceDownloaderApplication
 import io.github.shoaky.sourcedownloader.component.source.FixedSource
 import io.github.shoaky.sourcedownloader.core.ProcessingContent
 import io.github.shoaky.sourcedownloader.core.ProcessingStorage
@@ -19,7 +18,6 @@ import io.github.shoaky.sourcedownloader.sdk.util.Jackson
 import io.github.shoaky.sourcedownloader.testResourcePath
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.InitializingBean
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
@@ -29,7 +27,7 @@ import kotlin.test.assertEquals
 @SpringBootTest
 @ActiveProfiles("integration-test")
 @OptIn(ExperimentalPathApi::class)
-class SourceProcessorTest : InitializingBean {
+class SourceProcessorTest {
 
     @Autowired
     lateinit var processingStorage: ProcessingStorage
@@ -39,9 +37,6 @@ class SourceProcessorTest : InitializingBean {
 
     @Autowired
     lateinit var componentManager: ComponentManager
-
-    @Autowired
-    lateinit var application: SourceDownloaderApplication
 
     @Test
     fun normal() {
@@ -170,15 +165,14 @@ class SourceProcessorTest : InitializingBean {
         processor.run()
         processor.runRename()
         val contents = processingStorage.query(ProcessingQuery(processorName))
-            .associateBy { it.itemHash }
-        println(Jackson.toJsonString(contents))
+            .associateBy { it.itemContent.sourceItem.title }
         // 如果实现了对被替换文件的状态更新，这里需要断言REPLACED
         assertEquals(
-            FileContentStatus.NORMAL, contents.getValue("a8d643ef958afca3ac59d5193e085381")
+            FileContentStatus.NORMAL, contents.getValue("test-replace1")
                 .itemContent.sourceFiles.first().status
         )
         assertEquals(
-            FileContentStatus.REPLACE, contents.getValue("ca26c76c94a3b2d8886143317fcf7b26")
+            FileContentStatus.REPLACE, contents.getValue("test-replace2")
                 .itemContent.sourceFiles.first().status
         )
     }
@@ -190,15 +184,14 @@ class SourceProcessorTest : InitializingBean {
 
         processor.run()
         val contents = processingStorage.query(ProcessingQuery(processorName))
-            .associateBy { it.itemHash }
-        println(Jackson.toJsonString(contents))
+            .associateBy { it.itemContent.sourceItem.title }
         // 如果实现了对被替换文件的状态更新，这里需要断言REPLACED
         assertEquals(
-            FileContentStatus.NORMAL, contents.getValue("a8d643ef958afca3ac59d5193e085381")
+            FileContentStatus.NORMAL, contents.getValue("test-replace1")
                 .itemContent.sourceFiles.first().status
         )
         assertEquals(
-            FileContentStatus.REPLACE, contents.getValue("ca26c76c94a3b2d8886143317fcf7b26")
+            FileContentStatus.REPLACE, contents.getValue("test-replace2")
                 .itemContent.sourceFiles.first().status
         )
     }
@@ -286,7 +279,6 @@ class SourceProcessorTest : InitializingBean {
 
         val contents = processingStorage.query(ProcessingQuery("ReplaceFileCancelSubmittedItem"))
             .associateBy { it.itemContent.sourceItem.title }
-        println(Jackson.toJsonString(contents))
         val test2 = contents.getValue("test2").itemContent.sourceFiles.first()
         val test1 = contents.getValue("test1").itemContent.sourceFiles.first()
         val selfPath = savePath.resolve(processorName)
@@ -316,9 +308,32 @@ class SourceProcessorTest : InitializingBean {
         val contents = processor.dryRun().associateBy({ it.itemContent.sourceItem.title }) { it.itemContent }
         assertEquals(2, contents.size)
 
-        assert( contents.getValue("test1").sourceFiles.first.targetFilename.contains("GROUPING"))
+        assert(contents.getValue("test1").sourceFiles.first().targetFilename.contains("GROUPING"))
         assertEquals(1, contents.getValue("test-dir").sourceFiles.size)
-        assertEquals("test4.jpg", contents.getValue("test-dir").sourceFiles.first.targetFilename)
+        assertEquals("test4.jpg", contents.getValue("test-dir").sourceFiles.first().targetFilename)
+    }
+
+    @Test
+    fun parallelism_replace_case() {
+        val processorName = "ParallelismReplaceCase"
+        val processor = processorManager.getProcessor(processorName).get()
+        processor.run()
+
+        val contents = processingStorage.query(ProcessingQuery(processorName))
+            .associateBy { it.itemContent.sourceItem.title }
+        println(Jackson.toJsonString(contents))
+
+        val fileContent1 = contents.getValue("test-replace1").itemContent.sourceFiles.first()
+        val fileContent2 = contents.getValue("test-replace2").itemContent.sourceFiles.first()
+        // test-replace2先完成
+        if (fileContent2.status == FileContentStatus.NORMAL) {
+            assertEquals(FileContentStatus.TARGET_EXISTS, fileContent1.status)
+        }
+        // test-replace1先执行
+        if (fileContent2.status == FileContentStatus.READY_REPLACE) {
+            assertEquals(FileContentStatus.REPLACED, fileContent1.status)
+        }
+        assert(fileContent2.status in listOf(FileContentStatus.NORMAL, FileContentStatus.READY_REPLACE))
     }
 
     // 待测试场景
@@ -346,8 +361,4 @@ class SourceProcessorTest : InitializingBean {
         }
     }
 
-    override fun afterPropertiesSet() {
-        // componentManager.registerSupplier(TestDirErrorDownloaderSupplier)
-        // application.createProcessors()
-    }
 }

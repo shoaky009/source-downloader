@@ -304,42 +304,6 @@ class SourceProcessor(
         }
     }
 
-    /**
-     * @return Download or not, [ProcessingContent.Status]
-     */
-    private fun probeContentStatus(
-        sc: CoreItemContent,
-        replaceFiles: List<CoreFileContent>
-    ): Pair<Boolean, ProcessingContent.Status> {
-        val files = sc.sourceFiles
-        if (files.isEmpty()) {
-            return false to NO_FILES
-        }
-
-        // 返回true是因为需要做后续的处理
-        if (replaceFiles.isNotEmpty()) {
-            return true to WAITING_TO_RENAME
-        }
-
-        // 预防这一批次的Item有相同的目标，并且是AsyncDownloader的情况下会重复下载
-        if (files.all { it.status == FileContentStatus.TARGET_EXISTS }) {
-            log.info("Item files already exists:{}, files:{}", sc.sourceItem, sc.sourceFiles.map { it.targetPath() })
-            return false to TARGET_ALREADY_EXISTS
-        }
-
-        // SystemFileSource下载不需要做任何事情，因为本身就已经存在了
-        if (downloader is SystemFileSource) {
-            return true to WAITING_TO_RENAME
-        }
-        val allExists = fileMover.exists(files.map { it.fileDownloadPath }).all { it }
-        return if (allExists) {
-            // 这里待定，有些下载器重复提交不会有问题
-            (downloader is AsyncDownloader) to WAITING_TO_RENAME
-        } else {
-            true to WAITING_TO_RENAME
-        }
-    }
-
     fun runRename(): Int {
         val asyncDownloader = downloader as? AsyncDownloader
         if (asyncDownloader == null) {
@@ -781,6 +745,7 @@ class SourceProcessor(
             }
 
             val mover = this.selectUpdateStatusMover()
+            var replaceFiles: List<CoreFileContent> = emptyList()
             processLock.lock {
                 itemContent.updateFileStatus(mover, fileExistsDetector)
                 val downloadableTargetPaths = itemContent.downloadableFiles().map { it.targetPath() }
@@ -791,11 +756,12 @@ class SourceProcessor(
                     log.debug("Processor:'{}' item:{} file status:{}", name, sourceItem.title, filesStatus)
                 }
                 // 在处理完后释放
-                secondaryFileMover.preoccupiedTargetPath(sourceItem, downloadableTargetPaths)
-                context.addItemPaths(sourceItem, downloadableTargetPaths)
+                val targetPaths = downloadableTargetPaths + replaceFiles.map { it.targetPath() }
+                secondaryFileMover.preoccupiedTargetPath(sourceItem, targetPaths)
+                replaceFiles = identifyFilesToReplace(itemContent)
+                context.addItemPaths(itemContent, targetPaths)
             }
 
-            val replaceFiles = identifyFilesToReplace(itemContent)
             val (shouldDownload, contentStatus) = probeContentStatus(itemContent, replaceFiles)
             log.trace(
                 "Processor:'{}' item:{}, shouldDownload: {}, contentStatus:{}",
@@ -864,21 +830,27 @@ class SourceProcessor(
                         physicalBeforeItem?.itemContent,
                         existingFile
                     )
-                    if (replace && physicalBeforeItem != null) {
+                    if (replace) {
                         // 只取消正在下载阶段的
-                        if (physicalBeforeItem.status == WAITING_TO_RENAME) {
-                            log.info("Processor:'{}' cancel physical item:{}", name, physicalBeforeItem)
-                            cancelItem(physicalBeforeItem.itemContent.sourceItem, fileContent, discardedItems)
-                            processingStorage.save(
-                                physicalBeforeItem.copy(status = CANCELLED, modifyTime = LocalDateTime.now())
-                            )
-                        }
-                        context.findItems(existTargetPath)
-                            .filter { it != currentItem.sourceItem }
-                            .forEach {
-                                log.info("Processor:'{}' cancel processing item:{}", name, it)
-                                cancelItem(it, fileContent, discardedItems)
+                        if (physicalBeforeItem != null) {
+                            if (physicalBeforeItem.status == WAITING_TO_RENAME) {
+                                log.info("Processor:'{}' cancel physical item:{}", name, physicalBeforeItem)
+                                cancelItem(physicalBeforeItem.itemContent.sourceItem, fileContent, discardedItems)
+                                processingStorage.save(
+                                    physicalBeforeItem.copy(status = CANCELLED, modifyTime = LocalDateTime.now())
+                                )
                             }
+                        } else {
+                            context.findItems(existTargetPath)
+                                .filter { it.sourceItem != currentItem.sourceItem }
+                                .forEach { content ->
+                                    log.info("Processor:'{}' cancel processing item:{}", name, content.sourceItem)
+                                    fileContent.status = FileContentStatus.REPLACED
+                                    content.sourceFiles.filter { it.targetPath() == existTargetPath }
+                                        .onEach { it.status = FileContentStatus.REPLACED }
+                                    cancelItem(content.sourceItem, fileContent, discardedItems)
+                                }
+                        }
                     }
                     fileContent to replace
                 }.filter { (_, replace) -> replace }
@@ -887,6 +859,45 @@ class SourceProcessor(
                     it.status = FileContentStatus.READY_REPLACE
                 }
             return replaceFiles
+        }
+
+        /**
+         * @return Download or not, [ProcessingContent.Status]
+         */
+        private fun probeContentStatus(
+            sc: CoreItemContent,
+            replaceFiles: List<CoreFileContent>
+        ): Pair<Boolean, ProcessingContent.Status> {
+            val files = sc.sourceFiles
+            if (files.isEmpty()) {
+                return false to NO_FILES
+            }
+
+            // 返回true是因为需要做后续的处理
+            if (replaceFiles.isNotEmpty()) {
+                return true to WAITING_TO_RENAME
+            }
+
+            // 预防这一批次的Item有相同的目标，并且是AsyncDownloader的情况下会重复下载
+            if (files.all { it.status == FileContentStatus.TARGET_EXISTS }) {
+                log.info(
+                    "Item files already exists:{}, files:{}",
+                    sc.sourceItem,
+                    sc.sourceFiles.map { it.targetPath() })
+                return false to TARGET_ALREADY_EXISTS
+            }
+
+            // SystemFileSource下载不需要做任何事情，因为本身就已经存在了
+            if (downloader is SystemFileSource) {
+                return true to WAITING_TO_RENAME
+            }
+            val allExists = fileMover.exists(files.map { it.fileDownloadPath }).all { it }
+            return if (allExists) {
+                // 这里待定，有些下载器重复提交不会有问题
+                (downloader is AsyncDownloader) to WAITING_TO_RENAME
+            } else {
+                true to WAITING_TO_RENAME
+            }
         }
 
         open fun selectUpdateStatusMover(): FileMover {

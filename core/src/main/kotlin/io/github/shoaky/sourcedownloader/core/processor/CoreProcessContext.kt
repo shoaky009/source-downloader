@@ -4,6 +4,7 @@ import com.google.common.collect.ArrayListMultimap
 import com.google.common.collect.Multimap
 import io.github.shoaky.sourcedownloader.core.ProcessingContent
 import io.github.shoaky.sourcedownloader.core.ProcessingStorage
+import io.github.shoaky.sourcedownloader.core.file.CoreItemContent
 import io.github.shoaky.sourcedownloader.sdk.ItemContent
 import io.github.shoaky.sourcedownloader.sdk.ProcessContext
 import io.github.shoaky.sourcedownloader.sdk.ProcessorInfo
@@ -17,7 +18,7 @@ class CoreProcessContext(
 ) : ProcessContext {
 
     val stat: ProcessStat = ProcessStat(processName)
-    private val currentProcessItemPathsMapping: Multimap<SourceItem, Path> = ArrayListMultimap.create()
+    private val currentProcessItemPathsMapping: Multimap<CoreItemContent, Path> = ArrayListMultimap.create()
     private val processedItems: MutableList<SourceItem> = mutableListOf()
     private var hasError: Boolean = false
     override fun processor(): ProcessorInfo {
@@ -46,8 +47,9 @@ class CoreProcessContext(
     }
 
     @Synchronized
-    fun addItemPaths(sourceItem: SourceItem, paths: Collection<Path>) {
-        currentProcessItemPathsMapping.putAll(sourceItem, paths)
+    fun addItemPaths(sourceItem: CoreItemContent, paths: Collection<Path>) {
+        val p = currentProcessItemPathsMapping[sourceItem]
+        p.addAll(paths)
     }
 
     @Synchronized
@@ -56,7 +58,7 @@ class CoreProcessContext(
     }
 
     @Synchronized
-    fun findItems(path: Path): List<SourceItem> {
+    fun findItems(path: Path): List<CoreItemContent> {
         return currentProcessItemPathsMapping.entries()
             .filter { it.value == path }
             .map { it.key }
