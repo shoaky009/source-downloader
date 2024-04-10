@@ -52,8 +52,8 @@ interface TorrentDownloader : AsyncDownloader, FileMover {
                 val exists = torrentFiles.contains(sourceFile.targetPath())
                 if (exists) {
                     log.info("Torrent file is same as target file $existTargetPath, skip")
+                    continue
                 }
-                continue
             }
 
             val backupPath = existTargetPath.resolveSibling("${existTargetPath.name}.bak")
