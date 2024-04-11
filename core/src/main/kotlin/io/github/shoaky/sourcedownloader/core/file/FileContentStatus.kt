@@ -62,6 +62,6 @@ enum class FileContentStatus : FileStatus {
     companion object {
 
         private val warningStatuses = EnumSet.of(VARIABLE_ERROR, TARGET_EXISTS, FILE_CONFLICT)
-        private val successStatuses = EnumSet.of(NORMAL, REPLACED)
+        private val successStatuses = EnumSet.of(NORMAL, REPLACED, REPLACE)
     }
 }

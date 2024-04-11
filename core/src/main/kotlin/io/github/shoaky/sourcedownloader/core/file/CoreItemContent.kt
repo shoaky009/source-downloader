@@ -99,10 +99,10 @@ data class CoreItemContent(
         val hasWarning = sourceFiles.any { it.status.isWarning() }
         if (hasWarning) {
             val statusGrouping = sourceFiles.groupingBy { it.status }.eachCount()
-            return """
-                ${sourceItem.title}内的${sourceFiles.size}个文件处理完成
-                ${statusGrouping.map { "${it.key.status()}:${it.value}个" }.joinToString("\n")}
-            """.trim()
+            val statusSummary = statusGrouping.map { "${it.key.status()}:${it.value}个" }.joinToString(",")
+            return StringBuilder()
+                .append("${sourceItem.title}内的${sourceFiles.size}个文件处理完成 ")
+                .append(statusSummary).toString()
         }
         return "${sourceItem.title}内的${sourceFiles.size}个文件处理完成"
     }
