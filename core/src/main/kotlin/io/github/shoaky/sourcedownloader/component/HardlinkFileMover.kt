@@ -13,7 +13,7 @@ import kotlin.io.path.isSymbolicLink
 object HardlinkFileMover : FileMover {
 
     override fun move(itemContent: ItemContent): Boolean {
-        itemContent.sourceFiles.forEach {
+        itemContent.fileContents.forEach {
             val targetFilePath = it.targetPath()
             Files.createLink(targetFilePath, it.fileDownloadPath)
         }
@@ -21,7 +21,7 @@ object HardlinkFileMover : FileMover {
     }
 
     override fun replace(itemContent: ItemContent): Boolean {
-        itemContent.sourceFiles.forEach {
+        itemContent.fileContents.forEach {
             val targetFilePath = it.targetPath()
             if (targetFilePath.isSymbolicLink().not()) {
                 log.warn("target file is not symbolic link: $targetFilePath will not be replaced")

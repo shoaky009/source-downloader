@@ -10,7 +10,7 @@ import kotlin.io.path.moveTo
 object GeneralFileMover : FileMover {
 
     override fun move(itemContent: ItemContent): Boolean {
-        itemContent.sourceFiles
+        itemContent.fileContents
             .forEach {
                 it.fileDownloadPath.moveTo(it.targetPath())
             }

@@ -24,7 +24,7 @@ open class WebdavFileMover(
         }
 
         val webdavPath = webdavClient.webdavPath
-        return itemContent.sourceFiles.map {
+        return itemContent.fileContents.map {
             val src = it.fileDownloadPath.toString()
             val dst = it.targetPath().toString()
             val moveFile = MoveFile("$webdavPath$src", "$webdavPath$dst")
@@ -34,7 +34,7 @@ open class WebdavFileMover(
 
     private fun uploadFile(itemContent: ItemContent): Boolean {
         val webdavPath = webdavClient.webdavPath
-        return itemContent.sourceFiles.map {
+        return itemContent.fileContents.map {
             val target = it.targetPath().toString()
             val uploadFile = UploadFile("$webdavPath$target", it.fileDownloadPath)
             val resp = webdavClient.execute(uploadFile)

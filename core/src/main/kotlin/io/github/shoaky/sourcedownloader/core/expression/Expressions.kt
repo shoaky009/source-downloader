@@ -124,8 +124,8 @@ data class ItemContentVariables(
         itemContent.sourceItem.contentType,
         itemContent.sourceItem.tags.toList(),
         itemContent.sourceItem.attrs,
-        itemContent.sharedPatternVariables.variables(),
-        itemContent.sourceFiles.map { FileContentVariables(it) }
+        itemContent.itemVariables.variables(),
+        itemContent.fileContents.map { FileContentVariables(it) }
     )
 }
 

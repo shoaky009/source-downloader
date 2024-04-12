@@ -11,7 +11,7 @@ import java.nio.file.Path
 object SimpleFileExistsDetector : FileExistsDetector {
 
     override fun exists(fileMover: FileMover, content: ItemContent): Map<Path, Path?> {
-        val paths = content.sourceFiles.map { it.targetPath() }
+        val paths = content.fileContents.map { it.targetPath() }
         val exists = fileMover.exists(paths)
         return paths.zip(exists).associate { (path, exist) ->
             path to if (exist) path else null

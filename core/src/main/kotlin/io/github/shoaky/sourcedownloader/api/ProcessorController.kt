@@ -131,7 +131,7 @@ private class ProcessorController(
         val sourceProcessor = processorManager.getProcessor(processorName)
         return sourceProcessor.get().dryRun(options ?: DryRunOptions())
             .map { pc ->
-                val fileResult = pc.itemContent.sourceFiles.map { file ->
+                val fileResult = pc.itemContent.fileContents.map { file ->
                     FileResult(
                         file.fileDownloadPath.toString(),
                         file.targetPath().toString(),
@@ -143,7 +143,7 @@ private class ProcessorController(
                     )
                 }
                 val itemContent = pc.itemContent
-                val variables = itemContent.sharedPatternVariables.variables()
+                val variables = itemContent.itemVariables.variables()
                 DryRunResult(
                     itemContent.sourceItem, variables,
                     fileResult, pc.status
@@ -187,7 +187,7 @@ private class ProcessorController(
         return state
     }
 
-    @PutMapping("/{processorName}/pointer")
+    // @PutMapping("/{processorName}/pointer")
     fun modifyPointer(@PathVariable processorName: String, jsonPath: String) {
         val processor = processorManager.getProcessor(processorName).get()
 

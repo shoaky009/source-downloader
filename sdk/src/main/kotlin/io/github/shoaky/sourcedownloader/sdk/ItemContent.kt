@@ -3,8 +3,8 @@ package io.github.shoaky.sourcedownloader.sdk
 interface ItemContent {
 
     val sourceItem: SourceItem
-    val sourceFiles: List<FileContent>
-    val sharedPatternVariables: PatternVariables
+    val fileContents: List<FileContent>
+    val itemVariables: PatternVariables
 
     fun summaryContent(): String
 }

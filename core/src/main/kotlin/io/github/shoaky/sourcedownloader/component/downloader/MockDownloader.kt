@@ -44,7 +44,7 @@ class MockDownloader(
     }
 
     override fun move(itemContent: ItemContent): Boolean {
-        itemContent.sourceFiles
+        itemContent.fileContents
             .forEach {
                 it.fileDownloadPath.moveTo(it.targetPath())
             }
@@ -52,7 +52,7 @@ class MockDownloader(
     }
 
     override fun replace(itemContent: ItemContent): Boolean {
-        itemContent.sourceFiles
+        itemContent.fileContents
             .forEach {
                 it.fileDownloadPath.moveTo(it.targetPath(), true)
             }

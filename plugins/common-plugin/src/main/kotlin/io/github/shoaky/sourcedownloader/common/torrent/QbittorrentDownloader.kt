@@ -142,7 +142,7 @@ class QbittorrentDownloader(
 
     override fun move(itemContent: ItemContent): Boolean {
         val torrentHash = getInfoHash(itemContent.sourceItem)
-        val sourceFiles = itemContent.sourceFiles
+        val sourceFiles = itemContent.fileContents
 
         val firstFile = sourceFiles.first()
         val saveItemFileRootDirectory = firstFile.fileSaveRootDirectory()

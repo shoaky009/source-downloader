@@ -13,9 +13,9 @@ import java.nio.file.Path
 object FileDirectoryExistsDetector : FileExistsDetector {
 
     override fun exists(fileMover: FileMover, content: ItemContent): Map<Path, Path?> {
-        val dirs = content.sourceFiles.mapNotNull { it.fileSaveRootDirectory() }.distinct()
+        val dirs = content.fileContents.mapNotNull { it.fileSaveRootDirectory() }.distinct()
         val exists = dirs.zip(fileMover.exists(dirs)).toMap()
-        return content.sourceFiles.associate {
+        return content.fileContents.associate {
             val dir = it.fileSaveRootDirectory()
             it.targetPath() to if (exists[dir] == true) dir else null
         }

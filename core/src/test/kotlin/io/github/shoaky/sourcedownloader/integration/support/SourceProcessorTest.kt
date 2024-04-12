@@ -8,7 +8,7 @@ import kotlin.io.path.nameWithoutExtension
 object Item2ReplaceDecider : FileReplacementDecider {
 
     override fun isReplace(current: ItemContent, before: ItemContent?, existingFile: SourceFile): Boolean {
-        return current.sourceFiles.any { it.fileDownloadPath.nameWithoutExtension == "test-replace2" }
+        return current.fileContents.any { it.fileDownloadPath.nameWithoutExtension == "test-replace2" }
     }
 
 }

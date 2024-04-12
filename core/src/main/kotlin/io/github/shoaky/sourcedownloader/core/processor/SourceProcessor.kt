@@ -324,7 +324,7 @@ class SourceProcessor(
                         modifyTime = LocalDateTime.now(),
                     )
                 )
-                val targetPaths = pc.itemContent.sourceFiles.map { it.targetPath().toString() }
+                val targetPaths = pc.itemContent.fileContents.map { it.targetPath().toString() }
                 val hashing = pc.itemContent.sourceItem.hashing()
                 processingStorage.deleteTargetPaths(targetPaths, hashing)
             }.onFailure {
@@ -356,7 +356,7 @@ class SourceProcessor(
 
     private fun processRenameTask(pc: ProcessingContent) {
         val itemContent = pc.itemContent
-        val sourceFiles = itemContent.sourceFiles
+        val sourceFiles = itemContent.fileContents
 
         if (sourceFiles.all { it.status != FileContentStatus.READY_REPLACE } &&
             // 是否有必要判断实时的?
@@ -463,7 +463,7 @@ class SourceProcessor(
             }
         }
         return fileMover.move(
-            content.copy(sourceFiles = movableFiles)
+            content.copy(fileContents = movableFiles)
         )
     }
 
@@ -473,7 +473,7 @@ class SourceProcessor(
         }
 
         val replaceableFiles =
-            itemContent.sourceFiles.filter { it.status == FileContentStatus.READY_REPLACE }
+            itemContent.fileContents.filter { it.status == FileContentStatus.READY_REPLACE }
 
         if (replaceableFiles.isEmpty()) {
             return true
@@ -483,9 +483,9 @@ class SourceProcessor(
             name, itemContent.sourceItem.title, replaceableFiles.map { it.targetPath() }
         )
 
-        val replaced = fileMover.replace(itemContent.copy(sourceFiles = replaceableFiles))
+        val replaced = fileMover.replace(itemContent.copy(fileContents = replaceableFiles))
         if (replaced) {
-            itemContent.sourceFiles.filter { it.status == FileContentStatus.READY_REPLACE }
+            itemContent.fileContents.filter { it.status == FileContentStatus.READY_REPLACE }
                 .onEach { it.status = FileContentStatus.REPLACE }
         }
         return replaced
@@ -798,7 +798,7 @@ class SourceProcessor(
                 return emptyList()
             }
 
-            val existsContentFiles = currentItem.sourceFiles
+            val existsContentFiles = currentItem.fileContents
                 .filter { it.status == FileContentStatus.TARGET_EXISTS && it.existTargetPath != null }
             val support = TargetPathRelationSupport(
                 currentItem.sourceItem,
@@ -825,7 +825,7 @@ class SourceProcessor(
                     val physicalBeforeItem = support.getBeforeContent(existingFile.path)
                     val replace = fileReplacementDecider.isReplace(
                         currentItem.copy(
-                            sourceFiles = listOf(fileContent)
+                            fileContents = listOf(fileContent)
                         ),
                         physicalBeforeItem?.itemContent,
                         existingFile
@@ -846,7 +846,7 @@ class SourceProcessor(
                                 .forEach { content ->
                                     log.info("Processor:'{}' cancel processing item:{}", name, content.sourceItem)
                                     fileContent.status = FileContentStatus.REPLACED
-                                    content.sourceFiles.filter { it.targetPath() == existTargetPath }
+                                    content.fileContents.filter { it.targetPath() == existTargetPath }
                                         .onEach { it.status = FileContentStatus.REPLACED }
                                     cancelItem(content.sourceItem, fileContent, discardedItems)
                                 }
@@ -868,7 +868,7 @@ class SourceProcessor(
             sc: CoreItemContent,
             replaceFiles: List<CoreFileContent>
         ): Pair<Boolean, ProcessingContent.Status> {
-            val files = sc.sourceFiles
+            val files = sc.fileContents
             if (files.isEmpty()) {
                 return false to NO_FILES
             }
@@ -883,7 +883,7 @@ class SourceProcessor(
                 log.info(
                     "Item files already exists:{}, files:{}",
                     sc.sourceItem,
-                    sc.sourceFiles.map { it.targetPath() })
+                    sc.fileContents.map { it.targetPath() })
                 return false to TARGET_ALREADY_EXISTS
             }
 
@@ -999,7 +999,7 @@ class SourceProcessor(
                 processingStorage.save(processingContent)
             }
 
-            val warningFiles = processingContent.itemContent.sourceFiles.filter { it.status.isWarning() }
+            val warningFiles = processingContent.itemContent.fileContents.filter { it.status.isWarning() }
             if (warningFiles.isNotEmpty()) {
                 log.warn(
                     "Processor:'{}' has warning status, item:{} files:{}",

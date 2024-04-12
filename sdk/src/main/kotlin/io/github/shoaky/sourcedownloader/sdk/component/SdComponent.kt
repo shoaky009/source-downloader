@@ -186,7 +186,7 @@ interface FileMover : SdComponent {
      */
     fun replace(itemContent: ItemContent): Boolean {
         var result = true
-        itemContent.sourceFiles.forEach {
+        itemContent.fileContents.forEach {
             // TODO existTargetPath标明是否实际存在的还是提前占用的
             val existTargetPath = it.existTargetPath ?: throw IllegalStateException("existTargetPath is null")
             val backupPath = existTargetPath.resolveSibling("${existTargetPath.name}.bak")
@@ -284,8 +284,8 @@ interface FileTagger : SdComponent {
 interface FileReplacementDecider : SdComponent {
 
     /**
-     * @param current the current [ItemContent], the [ItemContent.sourceFiles] always has one [FileContent] element
-     * @param before the [ItemContent] before the current one, the [ItemContent.sourceFiles] also may empty
+     * @param current the current [ItemContent], the [ItemContent.fileContents] always has one [FileContent] element
+     * @param before the [ItemContent] before the current one, the [ItemContent.fileContents] also may empty
      * @param existingFile the existing file, [SourceFile.downloadUri] and [SourceFile.data] are always null,
      * [SourceFile.attrs] contains the file metadata 'size' 'lastModifiedTime' 'creationTime'.
      * @return true if the current [ItemContent] should replace

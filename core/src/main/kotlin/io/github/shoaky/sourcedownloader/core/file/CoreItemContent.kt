@@ -1,5 +1,6 @@
 package io.github.shoaky.sourcedownloader.core.file
 
+import com.fasterxml.jackson.annotation.JsonAlias
 import io.github.shoaky.sourcedownloader.component.SimpleFileExistsDetector
 import io.github.shoaky.sourcedownloader.sdk.ItemContent
 import io.github.shoaky.sourcedownloader.sdk.MapPatternVariables
@@ -12,8 +13,10 @@ import kotlin.io.path.name
 
 data class CoreItemContent(
     override val sourceItem: SourceItem,
-    override val sourceFiles: List<CoreFileContent>,
-    override val sharedPatternVariables: MapPatternVariables
+    @JsonAlias("sourceFiles")
+    override val fileContents: List<CoreFileContent>,
+    @JsonAlias("sharedPatternVariables")
+    override val itemVariables: MapPatternVariables
 ) : ItemContent {
 
     private var updated: Boolean = false
@@ -23,7 +26,7 @@ data class CoreItemContent(
             return
         }
 
-        val undetectedFiles = sourceFiles.filter { it.status == FileContentStatus.UNDETECTED }
+        val undetectedFiles = fileContents.filter { it.status == FileContentStatus.UNDETECTED }
 
         // Key 是当前处理的路径, Value是认为存在的路径
         val existsMapping: Map<Path, Path?> by lazy {
@@ -51,7 +54,7 @@ data class CoreItemContent(
             log.debug("Item:{}, existsMapping: {}", sourceItem.title, existsMapping)
         }
 
-        val conflicts = sourceFiles.map { it.targetPath() }.groupingBy { it }.eachCount()
+        val conflicts = fileContents.map { it.targetPath() }.groupingBy { it }.eachCount()
             .filter { it.value > 1 }.keys
         for (sourceFile in undetectedFiles) {
             // 校验顺序不可换
@@ -80,31 +83,31 @@ data class CoreItemContent(
         if (updated.not()) {
             throw IllegalStateException("Please update file status first")
         }
-        return sourceFiles.filter { it.status == FileContentStatus.NORMAL && it.fileDownloadPath != it.targetPath() }
+        return fileContents.filter { it.status == FileContentStatus.NORMAL && it.fileDownloadPath != it.targetPath() }
     }
 
     fun downloadableFiles(): List<CoreFileContent> {
         if (updated.not()) {
             throw IllegalStateException("Please update file status first")
         }
-        return sourceFiles.filter { it.status != FileContentStatus.TARGET_EXISTS && it.status != FileContentStatus.DOWNLOADED }
+        return fileContents.filter { it.status != FileContentStatus.TARGET_EXISTS && it.status != FileContentStatus.DOWNLOADED }
     }
 
     override fun summaryContent(): String {
-        if (sourceFiles.size == 1 && sourceFiles.first().status.isSuccessful()) {
-            val name = sourceFiles.first().targetPath().name
+        if (fileContents.size == 1 && fileContents.first().status.isSuccessful()) {
+            val name = fileContents.first().targetPath().name
             return "$name 处理完成"
         }
 
-        val hasWarning = sourceFiles.any { it.status.isWarning() }
+        val hasWarning = fileContents.any { it.status.isWarning() }
         if (hasWarning) {
-            val statusGrouping = sourceFiles.groupingBy { it.status }.eachCount()
+            val statusGrouping = fileContents.groupingBy { it.status }.eachCount()
             val statusSummary = statusGrouping.map { "${it.key.status()}:${it.value}个" }.joinToString(",")
             return StringBuilder()
-                .append("${sourceItem.title}内的${sourceFiles.size}个文件处理完成 ")
+                .append("${sourceItem.title}内的${fileContents.size}个文件处理完成 ")
                 .append(statusSummary).toString()
         }
-        return "${sourceItem.title}内的${sourceFiles.size}个文件处理完成"
+        return "${sourceItem.title}内的${fileContents.size}个文件处理完成"
     }
 
     companion object {

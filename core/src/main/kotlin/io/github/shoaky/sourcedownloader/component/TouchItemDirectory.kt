@@ -15,7 +15,7 @@ object TouchItemDirectory : ProcessListener {
 
     override fun onItemSuccess(context: ProcessContext, itemContent: ItemContent) {
         val filetime = FileTime.fromMillis(System.currentTimeMillis())
-        itemContent.sourceFiles
+        itemContent.fileContents
             .filter { it.fileSaveRootDirectory()?.exists() ?: false }
             .groupBy { it.fileSaveRootDirectory() }
             .mapNotNull { it.key }

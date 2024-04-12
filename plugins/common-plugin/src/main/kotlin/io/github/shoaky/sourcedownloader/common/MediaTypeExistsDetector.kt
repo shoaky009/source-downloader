@@ -21,7 +21,7 @@ object MediaTypeExistsDetector : FileExistsDetector {
     private val tika = Tika()
 
     override fun exists(fileMover: FileMover, content: ItemContent): Map<Path, Path?> {
-        val savePaths = content.sourceFiles.groupBy { it.saveDirectoryPath() }
+        val savePaths = content.fileContents.groupBy { it.saveDirectoryPath() }
 
         val result = mutableMapOf<Path, Path?>()
         for (entry in savePaths) {

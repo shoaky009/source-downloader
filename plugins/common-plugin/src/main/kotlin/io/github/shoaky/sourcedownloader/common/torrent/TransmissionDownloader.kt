@@ -81,7 +81,7 @@ class TransmissionDownloader(
         // https://github.com/transmission/transmission/issues/3216
         // NOTE 目前Transmission的API无法完全满足命名种子内部的文件，重命名参数不能包含文件夹
         val torrentHash = getInfoHashV1(itemContent.sourceItem)
-        val sourceFiles = itemContent.sourceFiles
+        val sourceFiles = itemContent.fileContents
 
         val grouping = sourceFiles.groupBy { it.targetPath().parent }
         if (grouping.size > 1) {

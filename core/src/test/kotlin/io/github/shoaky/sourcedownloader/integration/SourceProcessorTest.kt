@@ -79,10 +79,10 @@ class SourceProcessorTest {
 
         downloadedFile.deleteIfExists()
         targetFile.deleteIfExists()
-        assertEquals(FileContentStatus.NORMAL, records.getValue("test1").itemContent.sourceFiles.first().status)
-        assertEquals(FileContentStatus.NORMAL, records.getValue("test2").itemContent.sourceFiles.first().status)
+        assertEquals(FileContentStatus.NORMAL, records.getValue("test1").itemContent.fileContents.first().status)
+        assertEquals(FileContentStatus.NORMAL, records.getValue("test2").itemContent.fileContents.first().status)
         val sourceFile =
-            records.getValue("test-dir").itemContent.sourceFiles.first { it.fileDownloadPath.name == "test3.jpg" }
+            records.getValue("test-dir").itemContent.fileContents.first { it.fileDownloadPath.name == "test3.jpg" }
         assertEquals(FileContentStatus.TARGET_EXISTS, sourceFile.status)
     }
 
@@ -93,8 +93,8 @@ class SourceProcessorTest {
         processor.run()
         val records = processingStorage.query(ProcessingQuery("FileStatusCase2")).sortedBy { it.id }
         val record = records.first { it.itemContent.sourceItem.title == "test-dir" }
-        assertEquals(FileContentStatus.FILE_CONFLICT, record.itemContent.sourceFiles[0].status)
-        assertEquals(FileContentStatus.FILE_CONFLICT, record.itemContent.sourceFiles[1].status)
+        assertEquals(FileContentStatus.FILE_CONFLICT, record.itemContent.fileContents[0].status)
+        assertEquals(FileContentStatus.FILE_CONFLICT, record.itemContent.fileContents[1].status)
     }
 
     @Test
@@ -151,7 +151,7 @@ class SourceProcessorTest {
 
         assert(selfPath.resolve(Path("test1", "1.jpg")).exists())
         assert(selfPath.resolve(Path("test2", "1.jpg")).exists())
-        contents.getValue("test-dir").itemContent.sourceFiles.forEach {
+        contents.getValue("test-dir").itemContent.fileContents.forEach {
             assertEquals(FileContentStatus.FILE_CONFLICT, it.status)
             assertEquals("1.jpg", it.targetFilename)
         }
@@ -169,11 +169,11 @@ class SourceProcessorTest {
         // 如果实现了对被替换文件的状态更新，这里需要断言REPLACED
         assertEquals(
             FileContentStatus.NORMAL, contents.getValue("test-replace1")
-                .itemContent.sourceFiles.first().status
+                .itemContent.fileContents.first().status
         )
         assertEquals(
             FileContentStatus.REPLACE, contents.getValue("test-replace2")
-                .itemContent.sourceFiles.first().status
+                .itemContent.fileContents.first().status
         )
     }
 
@@ -188,11 +188,11 @@ class SourceProcessorTest {
         // 如果实现了对被替换文件的状态更新，这里需要断言REPLACED
         assertEquals(
             FileContentStatus.NORMAL, contents.getValue("test-replace1")
-                .itemContent.sourceFiles.first().status
+                .itemContent.fileContents.first().status
         )
         assertEquals(
             FileContentStatus.REPLACE, contents.getValue("test-replace2")
-                .itemContent.sourceFiles.first().status
+                .itemContent.fileContents.first().status
         )
     }
 
@@ -234,9 +234,9 @@ class SourceProcessorTest {
         val processor = processorManager.getProcessor(processorName).get()
         val contents = processor.dryRun()
             .associateBy { it.itemContent.sourceItem.title }
-        val item1 = contents.getValue("test1").itemContent.sourceFiles.first()
-        val item2 = contents.getValue("test2").itemContent.sourceFiles.first()
-        val item3 = contents.getValue("test-dir").itemContent.sourceFiles.first()
+        val item1 = contents.getValue("test1").itemContent.fileContents.first()
+        val item2 = contents.getValue("test2").itemContent.fileContents.first()
+        val item3 = contents.getValue("test-dir").itemContent.fileContents.first()
         assertEquals("test1_ITEM_GROUPING_1.jpg", item1.targetFilename)
         assertEquals("test2_FILE_GROUPING.jpg", item2.targetFilename)
         assertEquals("test3.jpg", item3.targetFilename)
@@ -249,7 +249,7 @@ class SourceProcessorTest {
         val processor = processorManager.getProcessor(processorName).get()
         val contents = processor.dryRun().associateBy { it.itemContent.sourceItem.title }
         processor.run()
-        val sourceFiles = contents.getValue(testItemTitle).itemContent.sourceFiles
+        val sourceFiles = contents.getValue(testItemTitle).itemContent.fileContents
         val targetPaths = sourceFiles.map { it.targetPath() }
         val anyTargetPaths = processingStorage.targetPathExists(targetPaths).any { it }
         val hasErrorItem = processingStorage.query(ProcessingQuery(processorName))
@@ -279,8 +279,8 @@ class SourceProcessorTest {
 
         val contents = processingStorage.query(ProcessingQuery("ReplaceFileCancelSubmittedItem"))
             .associateBy { it.itemContent.sourceItem.title }
-        val test2 = contents.getValue("test2").itemContent.sourceFiles.first()
-        val test1 = contents.getValue("test1").itemContent.sourceFiles.first()
+        val test2 = contents.getValue("test2").itemContent.fileContents.first()
+        val test1 = contents.getValue("test1").itemContent.fileContents.first()
         val selfPath = savePath.resolve(processorName)
         when (test2.status) {
             FileContentStatus.REPLACE -> {
@@ -308,9 +308,9 @@ class SourceProcessorTest {
         val contents = processor.dryRun().associateBy({ it.itemContent.sourceItem.title }) { it.itemContent }
         assertEquals(2, contents.size)
 
-        assert(contents.getValue("test1").sourceFiles.first().targetFilename.contains("GROUPING"))
-        assertEquals(1, contents.getValue("test-dir").sourceFiles.size)
-        assertEquals("test4.jpg", contents.getValue("test-dir").sourceFiles.first().targetFilename)
+        assert(contents.getValue("test1").fileContents.first().targetFilename.contains("GROUPING"))
+        assertEquals(1, contents.getValue("test-dir").fileContents.size)
+        assertEquals("test4.jpg", contents.getValue("test-dir").fileContents.first().targetFilename)
     }
 
     @Test
@@ -323,8 +323,8 @@ class SourceProcessorTest {
             .associateBy { it.itemContent.sourceItem.title }
         println(Jackson.toJsonString(contents))
 
-        val fileContent1 = contents.getValue("test-replace1").itemContent.sourceFiles.first()
-        val fileContent2 = contents.getValue("test-replace2").itemContent.sourceFiles.first()
+        val fileContent1 = contents.getValue("test-replace1").itemContent.fileContents.first()
+        val fileContent2 = contents.getValue("test-replace2").itemContent.fileContents.first()
         // test-replace2先完成
         if (fileContent2.status == FileContentStatus.NORMAL) {
             assertEquals(FileContentStatus.TARGET_EXISTS, fileContent1.status)

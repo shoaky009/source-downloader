@@ -12,7 +12,7 @@ object DeleteEmptyDirectory : ProcessListener {
 
     @OptIn(ExperimentalPathApi::class)
     override fun onItemSuccess(context: ProcessContext, itemContent: ItemContent) {
-        itemContent.sourceFiles.firstOrNull()?.run {
+        itemContent.fileContents.firstOrNull()?.run {
             val directoryPath = this.fileDownloadRootDirectory()
             if (directoryPath != null && directoryPath.walk(PathWalkOption.INCLUDE_DIRECTORIES)
                     .all { it.isDirectory() }

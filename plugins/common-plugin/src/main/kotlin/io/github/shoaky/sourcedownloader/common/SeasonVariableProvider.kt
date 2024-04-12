@@ -16,7 +16,8 @@ object SeasonVariableProvider : VariableProvider {
             SpSeasonParser,
             GeneralSeasonParser,
             LastStringSeasonParser,
-            ContainsSeasonKeyword
+            ContainsSeasonKeyword,
+            ExtractTitleSeasonParser
         ),
         true
     )
@@ -30,8 +31,9 @@ object SeasonVariableProvider : VariableProvider {
     ): List<PatternVariables> {
         // 顺序filename, parent, title
         return sourceFiles.map { file ->
+            val filepath = file.path.toString()
             val seasonNumber = seasonSupport.input(
-                ParseValue(file.path.toString()),
+                ParseValue(filepath),
                 ParseValue(sourceItem.title),
             )
             val season = seasonNumber.toString().padStart(2, '0')
