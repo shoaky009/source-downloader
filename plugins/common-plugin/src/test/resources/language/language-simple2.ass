@@ -1,0 +1,33 @@
+﻿[Script Info]
+Title: [Oshi_no_Ko][01]
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Default,方正兰亭圆_GBK_准,50,&H00FFFFFF,&H00FFFFFF,&H00193768,&H00FFFFFF,-1,0,0,0,100,100,0,0,1,2,0,2,10,10,13,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,1:18:39.76,1:18:42.03,Default,,0,0,0,,我有一件事想請你幫忙
+Dialogue: 0,1:18:42.43,1:18:43.14,Default,,0,0,0,,什麼事?
+Dialogue: 0,1:18:43.96,1:18:45.69,Default,,0,0,0,,你想不想培養我?
+Dialogue: 0,1:18:53.18,1:18:55.57,Default,,0,0,0,,你還要花多久  露比?
+Dialogue: 0,1:18:55.83,1:18:58.95,Default,,0,0,0,,再等我一下啦  哥哥
+Dialogue: 0,1:18:59.08,1:19:02.01,Default,,0,0,0,,這套校服雖然可愛  但太複雜了
+Dialogue: 0,1:19:02.67,1:19:04.24,Default,,0,0,0,,不過確實很可愛
+Dialogue: 0,1:19:04.48,1:19:06.89,Default,,0,0,0,,別第一天就遲到啊
+Dialogue: 0,1:19:08.63,1:19:10.07,Default,,0,0,0,,裙襬是不是太短了?
+Dialogue: 0,1:19:10.42,1:19:13.28,Default,,0,0,0,,哥哥你一直都這麼老氣橫秋的
+Dialogue: 0,1:19:14.33,1:19:15.26,Default,,0,0,0,,對了
+Dialogue: 0,1:19:16.36,1:19:18.32,Default,,0,0,0,,媽媽  我們出發了
+Dialogue: 0,1:19:25.05,1:19:27.60,Default,,0,0,0,,我們的序章就此結束
+Dialogue: 0,1:19:28.05,1:19:30.23,Default,,0,0,0,,新的故事現在拉開帷幕
+Dialogue: 0,1:19:31.54,1:19:37.21,Default,,0,0,0,,而我將開始屬於我的復仇劇
+Dialogue: 0,1:21:11.70,1:21:12.84,Default,,0,0,0,,拍到了嗎
+Dialogue: 0,1:21:13.78,1:21:17.30,Default,,0,0,0,,嗯  我覺得應該留下這樣的一段影像
+Dialogue: 0,1:21:28.32,1:21:29.84,Default,,0,0,0,,等你們長大了
+Dialogue: 0,1:21:30.02,1:21:33.38,Default,,0,0,0,,我就能跟你們一邊喝著小酒一邊看了
+Dialogue: 0,1:21:33.87,1:21:37.61,Default,,0,0,0,,到了那個年紀  我應該也不是偶像了
+Dialogue: 0,1:21:38.68,1:21:41.90,Default,,0,0,0,,不過到時候你們可能是偶像了
+Dialogue: 0,1:21:42.26,1:21:45.02,Default,,0,0,0,,你們是我的孩子  所以不無可能
+Dialogue: 0,1:21:48.39,1:21:52.31,Default,,0,0,0,,無論如何  你們一定要健康長大
+Dialogue: 0,1:21:53.49,1:21:56.75,Default,,0,0,0,,這是我作為母親唯一的心願了

@@ -9,7 +9,8 @@ import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
 object LanguageVariableProviderSupplier : ComponentSupplier<LanguageVariableProvider> {
 
     override fun apply(context: CoreContext, props: Properties): LanguageVariableProvider {
-        return LanguageVariableProvider
+        val readContent = props.getOrDefault("read-content", false)
+        return LanguageVariableProvider(readContent)
     }
 
     override fun supplyTypes(): List<ComponentType> {

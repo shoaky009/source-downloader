@@ -44,6 +44,7 @@ anitomyJ = { module = "com.dgtlrepublic:anitomyJ", version.ref = "anitomyJ" }
 bt-core = { module = "com.github.atomashpolskiy:bt-core", version.ref = "atomashpolskiy-bt" }
 bt-dht = { module = "com.github.atomashpolskiy:bt-dht", version.ref = "atomashpolskiy-bt" }
 tika-core = { module = "org.apache.tika:tika-core", version.ref = "tika" }
+tika-langdetect-optimaize = { module = "org.apache.tika:tika-langdetect-optimaize", version.ref = "tika" }
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
 exposed-java-time = { module = "org.jetbrains.exposed:exposed-java-time", version.ref = "exposed" }
 exposed-json = { module = "org.jetbrains.exposed:exposed-json", version.ref = "exposed" }

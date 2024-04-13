@@ -14,6 +14,7 @@ dependencies {
     implementation(libs.anitomyJ)
     implementation(libs.bundles.bt)
     implementation(libs.tika.core)
+    implementation(libs.tika.langdetect.optimaize)
     implementation(libs.jsoup)
     implementation(libs.fuzzywuzzy)
 }
