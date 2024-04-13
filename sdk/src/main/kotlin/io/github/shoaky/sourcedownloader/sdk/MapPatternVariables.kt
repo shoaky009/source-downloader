@@ -1,5 +1,9 @@
 package io.github.shoaky.sourcedownloader.sdk
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter
+import com.fasterxml.jackson.annotation.JsonAnySetter
+import com.fasterxml.jackson.annotation.JsonIgnore
+
 class MapPatternVariables() : PatternVariables {
     constructor(variables: Map<String, String>) : this() {
         this.variables.putAll(variables)
@@ -9,6 +13,7 @@ class MapPatternVariables() : PatternVariables {
         this.variables.putAll(variables.variables())
     }
 
+    @JsonAnyGetter
     private val variables: MutableMap<String, String> = mutableMapOf()
 
     override fun variables(): Map<String, String> {
@@ -19,10 +24,23 @@ class MapPatternVariables() : PatternVariables {
         variables[name] = value
     }
 
+    @JsonAnySetter
+    fun addVariable(name: String, value: Any) {
+        // 兼容旧版本
+        if (name == "variables" && value is Map<*, *>) {
+            val map = value.map { it.key.toString() to it.value.toString() }.toMap()
+            variables.putAll(map)
+            return
+        } else {
+            variables[name] = value.toString()
+        }
+    }
+
     fun addVariables(variables: PatternVariables) {
         this.variables.putAll(variables.variables())
     }
 
+    @JsonIgnore
     fun getVariables(): Map<String, String> {
         return variables
     }
