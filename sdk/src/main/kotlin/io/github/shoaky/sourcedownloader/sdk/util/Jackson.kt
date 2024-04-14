@@ -59,6 +59,10 @@ object Jackson {
         return objectMapper.convertValue(data, type)
     }
 
+    inline fun <reified T : Any> convert(data: Any): T {
+        return convert(data, jacksonTypeRef<T>())
+    }
+
     fun toByteArray(data: Any): ByteArray {
         return objectMapper.writeValueAsBytes(data)
     }

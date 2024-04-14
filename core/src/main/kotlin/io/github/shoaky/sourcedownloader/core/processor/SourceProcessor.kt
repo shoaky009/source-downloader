@@ -1,5 +1,6 @@
 package io.github.shoaky.sourcedownloader.core.processor
 
+import com.fasterxml.jackson.databind.JsonNode
 import io.github.shoaky.sourcedownloader.component.NeverReplace
 import io.github.shoaky.sourcedownloader.component.downloader.NoneDownloader
 import io.github.shoaky.sourcedownloader.component.source.SystemFileSource
@@ -13,6 +14,7 @@ import io.github.shoaky.sourcedownloader.core.file.*
 import io.github.shoaky.sourcedownloader.sdk.*
 import io.github.shoaky.sourcedownloader.sdk.component.*
 import io.github.shoaky.sourcedownloader.sdk.util.Jackson
+import io.github.shoaky.sourcedownloader.util.JsonComparator
 import io.github.shoaky.sourcedownloader.util.LoggingStageRetryListener
 import io.github.shoaky.sourcedownloader.util.NoLock
 import io.github.shoaky.sourcedownloader.util.lock
@@ -1060,9 +1062,14 @@ class SourceProcessor(
                 val lastP = ProcessorSourceState.resolvePointer(source::class, sourceState.lastPointer.values)
                 val currP = ProcessorSourceState.resolvePointer(source::class, currentSourceState.lastPointer.values)
                 if (currP != lastP) {
-                    log.info(
-                        "Processor:'$name' update pointer:${currentSourceState.formatPointerString()}"
-                    )
+                    try {
+                        val before = Jackson.convert<JsonNode>(sourceState.lastPointer.values)
+                        val current = Jackson.convert<JsonNode>(currentSourceState.lastPointer.values)
+                        val difference = JsonComparator.findDifference(before, current)
+                        log.info("Processor:'{}' sourcePointer changed:{}", name, difference)
+                    } catch (e: Exception) {
+                        log.warn("Processor:'{}' sourcePointer find diff error", name, e)
+                    }
                 }
                 val save = processingStorage.save(currentSourceState)
                 sourceState.id = save.id
