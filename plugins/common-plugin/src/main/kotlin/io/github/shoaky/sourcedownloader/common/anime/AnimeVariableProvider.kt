@@ -138,7 +138,8 @@ class AnimeVariableProvider(
                 Regex("[(【（]") to "[",
                 Regex("[)】）]") to "]",
                 Regex("[。，～]") to " ",
-                Regex("[~！～\\-+]") to "",
+                Regex("[~！～+]") to "",
+                Regex(" - ") to " ",
                 Regex("Special|SP|TV|S01|Season 1|Season 01|BDBOX|BD-BOX") to "",
                 Regex("S(\\d+)") to "Season $1",
             )

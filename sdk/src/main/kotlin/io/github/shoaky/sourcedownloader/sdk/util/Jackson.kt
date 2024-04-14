@@ -13,6 +13,7 @@ import java.io.InputStream
 import java.nio.file.Path
 import kotlin.reflect.KClass
 
+@Suppress("unused")
 object Jackson {
 
     private val objectMapper: ObjectMapper = ObjectMapper()
