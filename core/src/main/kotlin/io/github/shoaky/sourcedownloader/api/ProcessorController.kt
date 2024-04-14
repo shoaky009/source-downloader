@@ -163,6 +163,17 @@ private class ProcessorController(
     }
 
     /**
+     * 手动触发重命名
+     * @param processorName Processor名称
+     */
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    @GetMapping("/{processorName}/rename")
+    fun rename(@PathVariable processorName: String) {
+        val sourceProcessor = processorManager.getProcessor(processorName)
+        sourceProcessor.processor.runRename()
+    }
+
+    /**
      * 手动提交Items到Processor(experimental)
      */
     @ResponseStatus(HttpStatus.ACCEPTED)
