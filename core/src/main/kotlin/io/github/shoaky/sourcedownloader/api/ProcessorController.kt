@@ -258,7 +258,7 @@ private data class DryRunResult(
     /**
      * 共享命名变量
      */
-    val sharedVariables: Map<String, Any>,
+    val itemVariables: Map<String, Any>,
     /**
      * 文件处理结果
      */
