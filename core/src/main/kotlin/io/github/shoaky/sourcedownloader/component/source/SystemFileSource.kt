@@ -62,7 +62,7 @@ class SystemFileSource(
         val url = it.toUri()
         val type = if (it.isDirectory()) "directory" else "file"
         return SourceItem(
-            it.nameWithoutExtension, url, creationTime, type, url,
+            it.name, url, creationTime, type, url,
             mapOf("size" to it.fileSize())
         )
     }
