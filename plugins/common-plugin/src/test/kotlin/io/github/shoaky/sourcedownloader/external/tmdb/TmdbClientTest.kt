@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test
 @Disabled
 class TmdbClientTest {
 
-    private val client = TmdbClient(TmdbClient.DEFAULT_TOKEN)
+    private val client = TmdbClient.default
 
     @Test
     fun search_tv_show() {

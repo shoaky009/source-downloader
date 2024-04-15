@@ -21,7 +21,7 @@ import java.net.URI
 class MikanVariableProvider(
     private val mikanClient: MikanClient = MikanClient(null),
     private val bgmTvClient: BgmTvApiClient = BgmTvApiClient(),
-    tmdbClient: TmdbClient = TmdbClient(TmdbClient.DEFAULT_TOKEN)
+    tmdbClient: TmdbClient = TmdbClient.default
 ) : VariableProvider {
 
     override val accuracy: Int = 3

@@ -35,7 +35,7 @@ class SeasonSupport(
     }
 
     private fun replaceValueIfNecessary(subject: ParseValue): ParseValue {
-        if (subject.cleanValue) {
+        if (subject.preprocessValue) {
             val output = clear.input(subject.value).trim()
             if (output != subject.value) {
                 return subject.copy(value = output)
@@ -83,12 +83,10 @@ class SeasonSupport(
     companion object {
 
         private val log = LoggerFactory.getLogger(SeasonSupport::class.java)
+
+        // 预留暂时没用
         private val clear = TextClear(
-            mapOf(
-                // Regex("\\(") to "[",
-                // Regex("\\)") to "]",
-                // Regex("\\[.*?]") to "",
-            )
+            mapOf()
         )
 
     }
@@ -110,7 +108,7 @@ data class ParseValue(
     val value: String,
     val chainIndexes: List<Int> = emptyList(),
     val anyResult: Boolean = true,
-    val cleanValue: Boolean = true,
+    val preprocessValue: Boolean = true,
 ) {
 
     fun chain(parsers: List<SeasonParser>): List<SeasonParser> {

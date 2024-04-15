@@ -24,6 +24,8 @@ class TmdbClient(
     }
 
     companion object {
-        const val DEFAULT_TOKEN = "7d82a6a830d5f4458f42929f73878195"
+
+        private const val DEFAULT_TOKEN = "7d82a6a830d5f4458f42929f73878195"
+        val default = TmdbClient(DEFAULT_TOKEN)
     }
 }

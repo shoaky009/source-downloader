@@ -1,6 +1,7 @@
 package io.github.shoaky.sourcedownloader.common
 
 import io.github.shoaky.sourcedownloader.external.season.*
+import io.github.shoaky.sourcedownloader.external.tmdb.TmdbClient
 import io.github.shoaky.sourcedownloader.sdk.PatternVariables
 import io.github.shoaky.sourcedownloader.sdk.SourceFile
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
@@ -11,7 +12,7 @@ import io.github.shoaky.sourcedownloader.sdk.component.VariableProvider
  */
 object SeasonVariableProvider : VariableProvider {
 
-    private val seasonSupport = SeasonSupport(
+    private val normalChain = SeasonSupport(
         listOf(
             SpSeasonParser,
             GeneralSeasonParser,
@@ -22,7 +23,17 @@ object SeasonVariableProvider : VariableProvider {
         true
     )
 
-    override fun itemVariables(sourceItem: SourceItem): PatternVariables = PatternVariables.EMPTY
+    private val extractChain = SeasonSupport(
+        listOf(
+            SpSeasonParser,
+            GeneralSeasonParser,
+            LastStringSeasonParser,
+            ContainsSeasonKeyword,
+            ExtractTitleSeasonParser,
+            TmdbSeasonParser(TmdbClient.default, true)
+        ),
+        false
+    )
 
     override fun fileVariables(
         sourceItem: SourceItem,
@@ -32,7 +43,7 @@ object SeasonVariableProvider : VariableProvider {
         // 顺序filename, parent, title
         return sourceFiles.map { file ->
             val filepath = file.path.toString()
-            val seasonNumber = seasonSupport.input(
+            val seasonNumber = normalChain.input(
                 ParseValue(filepath),
                 ParseValue(sourceItem.title),
             )
@@ -40,6 +51,14 @@ object SeasonVariableProvider : VariableProvider {
             Season(season)
         }
     }
+
+    override fun extractFrom(text: String): String? {
+        return extractChain.input(
+            ParseValue(text, preprocessValue = false)
+        )?.toString()?.padStart(2, '0')
+    }
+
+    override fun itemVariables(sourceItem: SourceItem): PatternVariables = PatternVariables.EMPTY
 
     override val accuracy: Int = 2
 

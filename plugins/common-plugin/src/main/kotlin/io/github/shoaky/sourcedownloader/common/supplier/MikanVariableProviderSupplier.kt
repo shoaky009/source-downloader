@@ -30,7 +30,7 @@ class MikanVariableProviderSupplier(
         val tmdbClient = props.getOrNull<String>("tmdb-client")
             ?.let {
                 pluginContext.loadInstance(it, TmdbClient::class.java)
-            } ?: TmdbClient(TmdbClient.DEFAULT_TOKEN)
+            } ?: TmdbClient.default
         return MikanVariableProvider(
             mikanClient,
             bgmtvClient,
