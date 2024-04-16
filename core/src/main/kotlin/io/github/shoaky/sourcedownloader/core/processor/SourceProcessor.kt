@@ -1060,11 +1060,11 @@ class SourceProcessor(
                 )
 
                 val lastP = ProcessorSourceState.resolvePointer(source::class, sourceState.lastPointer.values)
-                val currP = ProcessorSourceState.resolvePointer(source::class, currentSourceState.lastPointer.values)
+                val currP = sourcePointer
                 if (currP != lastP) {
                     try {
-                        val before = Jackson.convert<JsonNode>(sourceState.lastPointer.values)
-                        val current = Jackson.convert<JsonNode>(currentSourceState.lastPointer.values)
+                        val before = Jackson.convert<JsonNode>(lastP)
+                        val current = Jackson.convert<JsonNode>(currP)
                         val difference = JsonComparator.findDifference(before, current)
                         log.info("Processor:'{}' sourcePointer changed:{}", name, difference)
                     } catch (e: Exception) {
