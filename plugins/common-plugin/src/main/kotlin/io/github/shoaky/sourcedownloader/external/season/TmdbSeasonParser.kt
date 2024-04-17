@@ -2,10 +2,12 @@ package io.github.shoaky.sourcedownloader.external.season
 
 import com.google.common.cache.CacheBuilder
 import com.google.common.cache.CacheLoader
+import com.optimaize.langdetect.LanguageDetectorBuilder
+import com.optimaize.langdetect.ngram.NgramExtractors
+import com.optimaize.langdetect.profiles.LanguageProfileReader
 import io.github.shoaky.sourcedownloader.external.tmdb.GetTvShow
 import io.github.shoaky.sourcedownloader.external.tmdb.SearchTvShow
 import io.github.shoaky.sourcedownloader.external.tmdb.TmdbClient
-import org.apache.tika.langdetect.optimaize.OptimaizeLangDetector
 import org.slf4j.LoggerFactory
 
 /**
@@ -42,10 +44,8 @@ class TmdbSeasonParser(
                 if (autoDetectLang.not()) {
                     return language ?: "ja-jp"
                 }
-                val detect = languageDetector.detect(content)
-                if (detect.isUnknown) {
-                    return language ?: "ja-jp"
-                }
+                val detect = languageDetector.detect(content).orNull() ?: return "ja-jp"
+                log.debug("detect language:{} ,text:{}", detect.language, content)
                 return detect.language
             }
         })
@@ -62,9 +62,10 @@ class TmdbSeasonParser(
 
     companion object {
 
-        private val languageDetector = OptimaizeLangDetector().loadModels(
-            setOf("zh-cn", "zh-tw", "ja-jp")
-        )
+        private val languageDetector = LanguageDetectorBuilder.create(NgramExtractors.standard())
+            .withProfiles(LanguageProfileReader().read(listOf("zh-CN", "zh-TW", "ja")))
+            .minimalConfidence(0.4)
+            .build()
         private val log = LoggerFactory.getLogger(TmdbSeasonParser::class.java)
     }
 }

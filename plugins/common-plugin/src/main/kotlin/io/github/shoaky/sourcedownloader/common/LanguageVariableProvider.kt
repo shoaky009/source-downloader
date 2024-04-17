@@ -1,12 +1,14 @@
 package io.github.shoaky.sourcedownloader.common
 
+import com.optimaize.langdetect.LanguageDetectorBuilder
+import com.optimaize.langdetect.ngram.NgramExtractors
+import com.optimaize.langdetect.profiles.LanguageProfileReader
 import io.github.shoaky.sourcedownloader.sdk.MapPatternVariables
 import io.github.shoaky.sourcedownloader.sdk.PatternVariables
 import io.github.shoaky.sourcedownloader.sdk.SourceFile
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.VariableProvider
 import io.github.shoaky.sourcedownloader.sdk.util.replaces
-import org.apache.tika.langdetect.optimaize.OptimaizeLangDetector
 import kotlin.io.path.extension
 import kotlin.io.path.nameWithoutExtension
 import kotlin.io.path.notExists
@@ -42,16 +44,6 @@ class LanguageVariableProvider(
         }
     }
 
-    private val languageDetector = OptimaizeLangDetector().loadModels(
-        setOf("zh-CN", "zh-TW", "zh-HK", "zh-SG")
-    )
-    private val iso6391mapping: Map<String, String> = mapOf(
-        "zh-CN" to "zh-CHS",
-        "zh-TW" to "zh-CHT",
-        "zh-HK" to "zh-CHT",
-        "zh-SG" to "zh-CHT",
-    )
-
     private fun fromFile(file: SourceFile): PatternVariables {
         if (file.path.notExists()) {
             return PatternVariables.EMPTY
@@ -70,8 +62,8 @@ class LanguageVariableProvider(
         }
         val result = languageDetector.detect(
             collected.joinToString()
-        )
-        val language = iso6391mapping[result.language] ?: return PatternVariables.EMPTY
+        ).orNull() ?: return PatternVariables.EMPTY
+        val language = iso6391mapping[result.toString()] ?: return PatternVariables.EMPTY
         return MapPatternVariables(mapOf("language" to language))
     }
 
@@ -105,7 +97,18 @@ class LanguageVariableProvider(
         private val NUMBER_REGEX: Regex = "(\\d+)".toRegex()
         private val SRT_TIME_REGEX: Regex = "(\\d{2}:\\d{2}:\\d{2},\\d{3}).*(\\d{2}:\\d{2}:\\d{2},\\d{3})".toRegex()
         private const val DEFAULT_COLLECT_LINES = 10
-    }
 
+        private val iso6391mapping: Map<String, String> = mapOf(
+            "zh-CN" to "zh-CHS",
+            "zh-TW" to "zh-CHT",
+            "zh-HK" to "zh-CHT",
+            "zh-SG" to "zh-CHT",
+        )
+
+        // 后面需要跟着对象实例，暂时先偷懒写死有需要再说
+        private val languageDetector = LanguageDetectorBuilder.create(NgramExtractors.standard())
+            .withProfiles(LanguageProfileReader().read(listOf("zh-CN", "zh-TW", "ja")))
+            .build()
+    }
 
 }
