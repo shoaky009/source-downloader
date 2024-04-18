@@ -178,6 +178,15 @@ private data object CommonEpisodeValueParser : ValueParser {
             if (resolutionNumber.contains(number)) {
                 score -= 1
             }
+            if (numberString.length == 3) {
+                score -= 2
+            }
+            if (numberString.length == 4) {
+                score -= 3
+            }
+            if (numberString.length > 4) {
+                score -= Int.MAX_VALUE
+            }
             return score
         }
 
