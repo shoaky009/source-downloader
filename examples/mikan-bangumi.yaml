@@ -6,6 +6,7 @@ instances:
       token: xxxxx
   - name: bgmtv-client
     props:
+      # token生成地址https://next.bgm.tv/demo/access-token
       token: xxxx
 
 components:

@@ -427,7 +427,6 @@ GET /api/processing-content/{id}
         "sourceSavePath": "string",
         "downloadPath": "string",
         "patternVariables": {
-          "variables": {}
         },
         "fileSavePathPattern": "string",
         "filenamePattern": "string",
@@ -445,16 +444,14 @@ GET /api/processing-content/{id}
         "status": "string"
       }
     ],
-    "sharedPatternVariables": {
-      "variables": {
-        "name": "string",
-        "nameCn": "string",
-        "mikanTitle": "string",
-        "date": "string",
-        "year": "string",
-        "month": "string",
-        "season": "string"
-      }
+    "itemVariables": {
+      "name": "string",
+      "nameCn": "string",
+      "mikanTitle": "string",
+      "date": "string",
+      "year": "string",
+      "month": "string",
+      "season": "string"
     }
   },
   "renameTimes": 0,
@@ -531,10 +528,8 @@ GET /api/processing-content
             "sourceSavePath": "/mnt/bangumi",
             "downloadPath": "/downloads",
             "patternVariables": {
-              "variables": {
-                "season": "01",
-                "episode": "07"
-              }
+              "season": "01",
+              "episode": "07"
             },
             "fileSavePathPattern": "{name}/Season {season}/",
             "filenamePattern": "{nameCn} - S{season}E{episode}",
@@ -548,16 +543,14 @@ GET /api/processing-content
             "status": "NORMAL"
           }
         ],
-        "sharedPatternVariables": {
-          "variables": {
-            "name": "メタリックルージュ",
-            "nameCn": "金属口红",
-            "mikanTitle": "金属胭脂",
-            "date": "2024-01-10",
-            "year": "2024",
-            "month": "1",
-            "season": "01"
-          }
+        "itemVariables": {
+          "name": "メタリックルージュ",
+          "nameCn": "金属口红",
+          "mikanTitle": "金属胭脂",
+          "date": "2024-01-10",
+          "year": "2024",
+          "month": "1",
+          "season": "01"
         }
       },
       "renameTimes": 1,

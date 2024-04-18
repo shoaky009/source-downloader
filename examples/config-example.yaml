@@ -153,9 +153,21 @@ processors:
         seasonNumber: season
       #替换变量值
       variable-replacers:
+        # 对应组件引用
+        - id: full-width
+          # 选择替换的变量名
+          keys: [ "variable_name1" ]
+      #正则变量替换
+      regex-variable-replacers:
         - regex: "(?i)^BDRIP$"
           replacement: BD
       #每次从Source获取SourceItem的条数，具体看Source实现不能保证一定是其设定的条数
       fetch-limit: 50
       #替换文件的策略组件
       file-replacement-decider: never
+      #可重试异常重试间隔
+      retry-backoff-mills: 5000
+      #并行处理数
+      parallelism: 1
+      #item处理失败后是否继续处理后续item，并行数大于1时不一定能保证
+      item-error-continue: false
