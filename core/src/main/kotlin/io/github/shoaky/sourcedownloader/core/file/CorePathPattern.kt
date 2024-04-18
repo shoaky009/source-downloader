@@ -16,7 +16,7 @@ data class CorePathPattern(
     private val expressionFactory: CompiledExpressionFactory = CelCompiledExpressionFactory
 ) : PathPattern {
 
-    val expressions: List<CompiledExpression<String>> = run {
+    val expressions: List<CompiledExpression<String>> by lazy {
         val matcher = variablePatternRegex.matcher(pattern)
         val expressions = mutableListOf<CompiledExpression<String>>()
         while (matcher.find()) {
