@@ -1,7 +1,6 @@
 package io.github.shoaky.sourcedownloader
 
 import io.github.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
-import io.github.shoaky.sourcedownloader.component.supplier.*
 import io.github.shoaky.sourcedownloader.config.SourceDownloaderProperties
 import io.github.shoaky.sourcedownloader.core.PluginManager
 import io.github.shoaky.sourcedownloader.core.ProcessorConfigStorage
@@ -141,39 +140,6 @@ class SourceDownloaderApplication(
     companion object {
 
         internal val log = LoggerFactory.getLogger(SourceDownloaderApplication::class.java)
-
-        /**
-         * TODO 后面去掉兼容，AOT时用
-         */
-        private fun getObjectSuppliers0(): Array<ComponentSupplier<*>> {
-            return arrayOf(
-                AlwaysReplaceSupplier,
-                DeleteEmptyDirectorySupplier,
-                ExpressionFileFilterSupplier,
-                ExpressionItemContentFilterSupplier,
-                ExpressionItemFilterSupplier,
-                FileSizeReplacementDeciderSupplier,
-                FixedScheduleTriggerSupplier,
-                FixedSourceSupplier,
-                GeneralFileMoverSupplier,
-                HardlinkFileMoverSupplier,
-                ItemDirectoryExistsDetectorSupplier,
-                MappedFileTaggerSupplier,
-                MockDownloaderSupplier,
-                NeverReplaceSupplier,
-                NoneDownloaderSupplier,
-                RunCommandSupplier,
-                SendHttpRequestSupplier,
-                SequenceVariableProviderSupplier,
-                SystemFileResolverSupplier,
-                SystemFileSourceSupplier,
-                TouchItemDirectorySupplier,
-                UriSourceSupplier,
-                UrlDownloaderSupplier,
-                UrlFileResolverSupplier,
-                HttpDownloaderSupplier
-            )
-        }
 
         @JvmStatic
         fun main(args: Array<String>) {
