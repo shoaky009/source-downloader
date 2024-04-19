@@ -5,14 +5,19 @@ import com.google.common.net.MediaType
 import com.google.common.net.UrlEscapers
 import io.github.shoaky.sourcedownloader.sdk.util.Jackson
 import io.github.shoaky.sourcedownloader.sdk.util.appendPrefix
+import io.github.shoaky.sourcedownloader.sdk.util.http.BodyMappingException
 import io.github.shoaky.sourcedownloader.sdk.util.http.httpClient
 import org.slf4j.LoggerFactory
 import java.net.URI
 import java.net.URLEncoder
 import java.net.http.HttpClient
+import java.net.http.HttpHeaders
 import java.net.http.HttpRequest
 import java.net.http.HttpRequest.BodyPublishers
 import java.net.http.HttpResponse
+import java.util.*
+import javax.net.ssl.SSLSession
+import kotlin.jvm.optionals.getOrNull
 
 typealias GHttpHeaders = com.google.common.net.HttpHeaders
 
@@ -54,7 +59,8 @@ abstract class HookedApiClient(
 
         val httpResponse = try {
             client.send(httpRequest, request.bodyHandler())
-        } catch (e: Exception) {
+        } catch (e: BodyMappingException) {
+            afterRequest(EmptyHttpResponse(e.statusCode, e.headers, httpRequest), request)
             throw e
         }
         if (log.isDebugEnabled) {
@@ -134,6 +140,46 @@ abstract class HookedApiClient(
             mutableMapOf<K, V>().apply {
                 for ((k, v) in this@filterNotNullValues) if (v != null) put(k, v)
             }
+    }
+
+    private class EmptyHttpResponse<T>(
+        val statusCode: Int,
+        val headers: HttpHeaders,
+        val request: HttpRequest,
+    ) : HttpResponse<T> {
+
+        override fun statusCode(): Int {
+            return statusCode
+        }
+
+        override fun request(): HttpRequest {
+            return request
+        }
+
+        override fun previousResponse(): Optional<HttpResponse<T>> {
+            return Optional.empty()
+        }
+
+        override fun headers(): HttpHeaders {
+            return headers
+        }
+
+        override fun body(): T? {
+            return null
+        }
+
+        override fun sslSession(): Optional<SSLSession> {
+            return Optional.empty()
+        }
+
+        override fun uri(): URI {
+            return request.uri()
+        }
+
+        override fun version(): HttpClient.Version? {
+            return request.version().getOrNull()
+        }
+
     }
 
 }

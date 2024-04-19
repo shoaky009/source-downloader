@@ -1,8 +1,10 @@
 package io.github.shoaky.sourcedownloader.sdk.util.http
 
 import com.fasterxml.jackson.core.type.TypeReference
+import java.net.http.HttpResponse
 
 data class MappingInfo<T : Any>(
+    val responseInfo: HttpResponse.ResponseInfo,
     val type: TypeReference<T>,
     val subtype: String,
     val bytes: ByteArray

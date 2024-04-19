@@ -30,15 +30,26 @@ class CommonBodyHandler<T : Any>(
             // if type is BodyWrapper
             if (type.type == BodyWrapper::class.java) {
                 type as TypeReference<BodyWrapper>
-                val rp = MappingInfo(type, mediaType.subtype(), inputStream.readAllBytes())
+                val rp = MappingInfo(responseInfo, type, mediaType.subtype(), inputStream.readAllBytes())
                 return@mapping BodyWrapperMapper().mapping(rp) as T
             }
 
             val subtype = mediaType.subtype()
             for (entry in bodyMapperSuppliers) {
                 if (subtype == entry.key) {
-                    val rp = MappingInfo(type, subtype, inputStream.readAllBytes())
-                    return@mapping entry.value.get().mapping(rp)
+                    val rp = MappingInfo(responseInfo, type, subtype, inputStream.readAllBytes())
+
+                    try {
+                        return@mapping entry.value.get().mapping(rp)
+                    } catch (e: Exception) {
+                        val body = String(rp.bytes, Charsets.UTF_8)
+                        throw BodyMappingException(
+                            body,
+                            responseInfo.statusCode(),
+                            responseInfo.headers(),
+                            "Failed to mapping body:$body, statusCode:${responseInfo.statusCode()}, message:${e.message}"
+                        )
+                    }
                 }
             }
 
