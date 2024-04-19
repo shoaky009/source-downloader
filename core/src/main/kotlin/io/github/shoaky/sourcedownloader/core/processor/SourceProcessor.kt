@@ -1122,7 +1122,7 @@ class SourceProcessor(
     ) {
 
         override fun postProcessingContent(processingContent: ProcessingContent): ProcessingContent {
-            return processingContent.copy(id = content.id, processorName = name)
+            return processingContent.copy(id = content.id, processorName = name, renameTimes = 0)
         }
 
         override fun onItemCompleted(processingContent: ProcessingContent) {
