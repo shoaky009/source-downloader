@@ -14,7 +14,6 @@ import io.github.shoaky.sourcedownloader.core.file.CorePathPattern
 import io.github.shoaky.sourcedownloader.core.file.VariableErrorStrategy
 import io.github.shoaky.sourcedownloader.core.processor.VariableConflictStrategy
 import io.github.shoaky.sourcedownloader.sdk.DownloadOptions
-import io.github.shoaky.sourcedownloader.sdk.PathPattern
 import io.github.shoaky.sourcedownloader.sdk.component.VariableReplacer
 import java.nio.file.Path
 import java.time.Duration
@@ -32,7 +31,9 @@ data class ProcessorConfig(
     @JsonSerialize(using = ToStringSerializer::class)
     val savePath: Path,
     val options: Options = Options(),
-    val enabled: Boolean = true
+    val enabled: Boolean = true,
+    val category: String? = null,
+    val tags: Set<String> = emptySet(),
 ) {
 
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
@@ -78,8 +79,6 @@ data class ProcessorConfig(
          * 从Source获取Items后，更新pointer的模式，true:处理完这一批更新一次，false:处理完一个更新一次
          */
         val pointerBatchMode: Boolean = true,
-        val category: String? = null,
-        val tags: Set<String> = emptySet(),
         val itemErrorContinue: Boolean = false,
         val fileGrouping: List<FileGroupingConfig> = emptyList(),
         val itemGrouping: List<ItemGroupingConfig> = emptyList(),

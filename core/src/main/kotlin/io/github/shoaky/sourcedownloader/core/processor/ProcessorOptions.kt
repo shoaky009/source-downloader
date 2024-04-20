@@ -5,7 +5,6 @@ import io.github.shoaky.sourcedownloader.component.SimpleFileExistsDetector
 import io.github.shoaky.sourcedownloader.core.file.CorePathPattern
 import io.github.shoaky.sourcedownloader.core.file.VariableErrorStrategy
 import io.github.shoaky.sourcedownloader.sdk.DownloadOptions
-import io.github.shoaky.sourcedownloader.sdk.PathPattern
 import io.github.shoaky.sourcedownloader.sdk.SourceFile
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.*
@@ -33,8 +32,6 @@ data class ProcessorOptions(
     val variableNameReplace: Map<String, String> = emptyMap(),
     val fetchLimit: Int = 50,
     val pointerBatchMode: Boolean = true,
-    val category: String? = null,
-    val tags: Set<String> = emptySet(),
     val itemErrorContinue: Boolean = false,
     val fileExistsDetector: FileExistsDetector = SimpleFileExistsDetector,
     val channelBufferSize: Int = 20,

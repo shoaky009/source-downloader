@@ -92,6 +92,8 @@ class DefaultProcessorManager(
             mover,
             config.savePath,
             processingStorage,
+            config.category,
+            config.tags,
             createOptions(config, source.group()),
         )
 
@@ -357,8 +359,6 @@ class DefaultProcessorManager(
             options.variableNameReplace,
             options.fetchLimit,
             options.pointerBatchMode,
-            options.category,
-            options.tags,
             options.itemErrorContinue,
             fileExistsDetector,
             options.channelBufferSize,

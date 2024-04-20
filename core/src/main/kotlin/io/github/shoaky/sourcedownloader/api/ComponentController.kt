@@ -31,26 +31,35 @@ private class ComponentController(
     fun queryComponents(
         type: ComponentTopType?, typeName: String?, name: String?,
     ): List<ComponentInfo> {
-        return componentManager.getAllComponent()
-            .filter { it.name matchesNullOrEqual name }
-            .filter { it.type.topType matchesNullOrEqual type }
-            .filter { it.type.typeName matchesNullOrEqual typeName }
-            .map { wrapper ->
-                ComponentInfo(
-                    wrapper.type.topType,
-                    wrapper.type.typeName,
-                    wrapper.name,
-                    wrapper.props.rawValues,
-                    if (wrapper.primary) wrapper.component.let { it as? ComponentStateful }?.stateDetail() else null,
-                    wrapper.primary
-                )
+        val instances = componentManager.getAllComponent().associateBy {
+            it.type
+        }
+
+        return configOperator.getAllComponentConfig()
+            .filter { ComponentTopType.fromName(it.key) matchesNullOrEqual type }
+            .flatMap { (topType, configs) ->
+                val t = ComponentTopType.fromName(topType) ?: return@flatMap emptyList()
+                configs
+                    .filter { it.type matchesNullOrEqual typeName }
+                    .filter { it.name matchesNullOrEqual name }
+                    .map { config ->
+                        val wrapper = instances[ComponentType.of(t, config.type)]
+                        ComponentInfo(
+                            t,
+                            config.type,
+                            config.name,
+                            config.props,
+                            wrapper?.get()?.let { it as? ComponentStateful }?.stateDetail(),
+                            wrapper?.primary ?: true,
+                            wrapper != null,
+                            wrapper?.getRefs()
+                        )
+                    }
             }
     }
 
     /**
      * 创建Component
-     * @param type Component类型
-     * @param config Component配置
      */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -131,7 +140,9 @@ private data class ComponentInfo(
     val props: Map<String, Any>,
     // val detail: ComponentDetail,
     val stateDetail: Any? = null,
-    val primary: Boolean
+    val primary: Boolean,
+    val running: Boolean,
+    val refs: Set<String>?
 )
 
 private data class ComponentCreateBody(

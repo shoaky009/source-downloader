@@ -60,6 +60,8 @@ class SourceProcessor(
     private val fileMover: FileMover,
     sourceSavePath: Path,
     private val processingStorage: ProcessingStorage,
+    private val category: String?,
+    private val tags: Set<String>,
     private val options: ProcessorOptions = ProcessorOptions(),
 ) : Runnable, AutoCloseable {
 
@@ -96,6 +98,7 @@ class SourceProcessor(
     }
     private val itemChannel = Channel<Process>(options.channelBufferSize)
     private val processorCoroutineScope = CoroutineScope(Dispatchers.Default)
+    private var lastTriggerTime: Long? = null
 
     init {
         scheduleRenameTask()
@@ -132,7 +135,12 @@ class SourceProcessor(
     }
 
     override fun run() {
+        lastTriggerTime = System.currentTimeMillis()
         NormalProcess().run()
+    }
+
+    fun getLastTriggerTime(): Long? {
+        return lastTriggerTime
     }
 
     fun dryRun(options: DryRunOptions = DryRunOptions()): List<ProcessingContent> {
@@ -200,8 +208,8 @@ class SourceProcessor(
             name,
             downloadPath,
             sourceSavePath,
-            options.tags.toList(),
-            options.category,
+            tags.toList(),
+            category,
             // 有空加
         )
     }

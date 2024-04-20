@@ -1,6 +1,9 @@
 package io.github.shoaky.sourcedownloader.api
 
-import io.github.shoaky.sourcedownloader.core.*
+import io.github.shoaky.sourcedownloader.core.PersistentPointer
+import io.github.shoaky.sourcedownloader.core.ProcessingContent
+import io.github.shoaky.sourcedownloader.core.ProcessingStorage
+import io.github.shoaky.sourcedownloader.core.ProcessorConfig
 import io.github.shoaky.sourcedownloader.core.component.ComponentFailureType
 import io.github.shoaky.sourcedownloader.core.component.ConfigOperator
 import io.github.shoaky.sourcedownloader.core.file.FileContentStatus
@@ -8,8 +11,11 @@ import io.github.shoaky.sourcedownloader.core.processor.DryRunOptions
 import io.github.shoaky.sourcedownloader.core.processor.ProcessorManager
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.throwComponentException
+import org.springframework.data.domain.Pageable
+import org.springframework.data.web.PageableDefault
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
+import java.time.Instant
 import java.time.LocalDateTime
 import java.util.concurrent.Executors
 
@@ -20,7 +26,6 @@ import java.util.concurrent.Executors
 @RequestMapping("/api/processor")
 private class ProcessorController(
     private val processorManager: ProcessorManager,
-    private val configStorages: List<ProcessorConfigStorage>,
     private val configOperator: ConfigOperator,
     private val processingStorage: ProcessingStorage
 ) {
@@ -34,11 +39,24 @@ private class ProcessorController(
      * @return Processor信息列表
      */
     @GetMapping
-    fun getProcessors(): List<ProcessorInfo> {
-        val processors = processorManager.getProcessors()
-        return processors.map {
-            ProcessorInfo(it.name, it.get().info())
-        }
+    fun getProcessors(
+        name: String?, @PageableDefault(size = 50, page = 0) pageable: Pageable
+    ): List<ProcessorInfo> {
+        return configOperator.getAllProcessorConfig()
+            .filter { name == null || it.name.contains(name) }
+            .drop(pageable.pageNumber * pageable.pageSize)
+            .take(pageable.pageSize)
+            .map { config ->
+                val instant = if (config.enabled) {
+                    processorManager.getProcessor(config.name).get()
+                        .getLastTriggerTime()?.let {
+                            Instant.ofEpochMilli(it)
+                        }
+                } else {
+                    null
+                }
+                ProcessorInfo(config.name, config.enabled, config.category, config.tags, instant)
+            }
     }
 
     /**
@@ -46,9 +64,8 @@ private class ProcessorController(
      * @param processorName Processor名称
      */
     @GetMapping("/{processorName}")
-    fun getConfig(@PathVariable processorName: String): ProcessorConfig? {
-        return configStorages.flatMap { it.getAllProcessorConfig() }
-            .firstOrNull { it.name == processorName }
+    fun getConfig(@PathVariable processorName: String): ProcessorConfig {
+        return configOperator.getProcessorConfig(processorName)
     }
 
     /**
@@ -77,14 +94,11 @@ private class ProcessorController(
     fun update(
         @PathVariable processorName: String,
         @RequestBody processorConfig: ProcessorConfig
-    ): ProcessorInfo {
-        processorManager.getProcessor(processorName)
-
+    ): ProcessorConfig {
+        configOperator.getProcessorConfig(processorName)
         configOperator.save(processorName, processorConfig)
-        processorManager.destroyProcessor(processorName)
-        processorManager.createProcessor(processorConfig)
-        val info = processorManager.getProcessor(processorName).get().info()
-        return ProcessorInfo(processorName, info)
+        reload(processorName)
+        return processorConfig
     }
 
     /**
@@ -244,7 +258,10 @@ private data class ProcessorState(
 
 private data class ProcessorInfo(
     val name: String,
-    val components: Map<String, Any>
+    val enabled: Boolean,
+    val category: String?,
+    val tags: Set<String>,
+    val lastTriggerTime: Instant?,
 )
 
 /**
