@@ -43,20 +43,19 @@ class PixivIntegration(
             log.trace("Followings: {}", followings.map { it.userId to it.userName })
         }
         return ExpandIterator<PixivUser, PointedItem<ItemPointer>>(followings, limit) { following ->
-            val items = getFollowingIllustration(following, pointer)
-                .map {
-                    val sourceItem = createSourceItem(it)
-                    PointedItem(sourceItem, IllustrationPointer(it.id, it.userId))
-                }
-            IterationResult(items, items.isEmpty())
+            val (items, isLatest) = getFollowingIllustration(following, pointer)
+            IterationResult(items.map {
+                val sourceItem = createSourceItem(it)
+                PointedItem(sourceItem, IllustrationPointer(it.id, it.userId))
+            }, isLatest || items.isEmpty())
         }.asIterable()
     }
 
-    private fun getFollowingIllustration(following: PixivUser, pointer: PixivPointer): List<Illustration> {
+    private fun getFollowingIllustration(following: PixivUser, pointer: PixivPointer): Pair<List<Illustration>, Boolean> {
         val lastIllustrationId = pointer.lastIllustrationRecord[following.userId] ?: 0L
         val exists = following.illusts.firstOrNull { it.id == lastIllustrationId }
         if (exists != null) {
-            return following.illusts.filter { it.id > lastIllustrationId }
+            return following.illusts.filter { it.id > lastIllustrationId } to true
         }
 
         return client.execute(GetUserAllRequest(following.userId)).body().body
@@ -71,7 +70,7 @@ class PixivIntegration(
             .flatMap {
                 val request = GetIllustrationsRequest(following.userId, it)
                 client.execute(request).body().body.values.toList()
-            }
+            } to false
     }
 
     private fun getUpdatedFollowings(pointer: PixivPointer): MutableList<PixivUser> {
