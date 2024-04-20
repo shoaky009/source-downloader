@@ -89,10 +89,11 @@ class LanguageVariableProvider(
 
         private val replaces = listOf("-", "_", "[", "]", "(", ")", ".")
         private val languages = mapOf(
-            " chs| sc| gb".toRegex(RegexOption.IGNORE_CASE) to "zh-CHS",
-            " cht| tc| big5".toRegex(RegexOption.IGNORE_CASE) to "zh-CHT",
+            " chs|[ .]sc".toRegex(RegexOption.IGNORE_CASE) to "zh-CHS",
+            " cht|[ .]tc".toRegex(RegexOption.IGNORE_CASE) to "zh-CHT",
             "jpsc".toRegex(RegexOption.IGNORE_CASE) to "zh-CHS",
-            "jptc".toRegex(RegexOption.IGNORE_CASE) to "zh-CHT",
+            " gb".toRegex(RegexOption.IGNORE_CASE) to "zh-CHS",
+            " big5".toRegex(RegexOption.IGNORE_CASE) to "zh-CHT",
         )
         private val NUMBER_REGEX: Regex = "(\\d+)".toRegex()
         private val SRT_TIME_REGEX: Regex = "(\\d{2}:\\d{2}:\\d{2},\\d{3}).*(\\d{2}:\\d{2}:\\d{2},\\d{3})".toRegex()

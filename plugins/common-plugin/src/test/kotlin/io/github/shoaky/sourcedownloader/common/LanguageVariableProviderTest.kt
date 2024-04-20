@@ -32,12 +32,14 @@ class LanguageVariableProviderTest {
                 SourceFile(Path("dsadsad[CHS].ass")),
                 SourceFile(Path("dsadsad_CHS.ass")),
                 SourceFile(Path("[Shirokoi&Airota&VCB-Studio] Non Non Biyori [06][Ma10p_1080p][x265_flac].tc.ass")),
+                SourceFile(Path("[SGS][Gundam00][05][BDRip][1920x1080][x264_FLACx2][GB_BIG5][9E442A43].sc.ass")),
+                SourceFile(Path("[SGS][Gundam00][05][BDRip][1920x1080][x264_FLACx2][GB_BIG5][9E442A43].tc.ass")),
             )
         )
         val langs = sourceFiles.map {
             it.variables()["language"].toString()
         }
-        assertContentEquals(listOf("zh-CHS", "zh-CHS", "zh-CHS", "zh-CHT"), langs)
+        assertContentEquals(listOf("zh-CHS", "zh-CHS", "zh-CHS", "zh-CHT", "zh-CHS", "zh-CHT"), langs)
     }
 
     @Test
