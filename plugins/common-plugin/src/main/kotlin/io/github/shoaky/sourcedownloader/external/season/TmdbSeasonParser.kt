@@ -3,6 +3,7 @@ package io.github.shoaky.sourcedownloader.external.season
 import com.google.common.cache.CacheBuilder
 import com.google.common.cache.CacheLoader
 import com.optimaize.langdetect.LanguageDetectorBuilder
+import com.optimaize.langdetect.i18n.LdLocale
 import com.optimaize.langdetect.ngram.NgramExtractors
 import com.optimaize.langdetect.profiles.LanguageProfileReader
 import io.github.shoaky.sourcedownloader.external.tmdb.GetTvShow
@@ -64,6 +65,11 @@ class TmdbSeasonParser(
 
         private val languageDetector = LanguageDetectorBuilder.create(NgramExtractors.standard())
             .withProfiles(LanguageProfileReader().read(listOf("zh-CN", "zh-TW", "ja")))
+            .languagePriorities(mapOf(
+                LdLocale.fromString("ja") to 10.0,
+                LdLocale.fromString("zh-CN") to .1,
+                LdLocale.fromString("zh-TW") to .3
+            ))
             .minimalConfidence(0.4)
             .build()
         private val log = LoggerFactory.getLogger(TmdbSeasonParser::class.java)
