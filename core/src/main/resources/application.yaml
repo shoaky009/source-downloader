@@ -50,6 +50,7 @@ spring:
       on-profile:
         - debug
         - development
+        - dev
   exposed:
     show-sql: true
 logging:
@@ -65,6 +66,10 @@ management:
       show-values: always
     env:
       show-values: always
+  endpoints:
+    web:
+      cors:
+        allowed-origins: "*"
 
 ---
 spring:
