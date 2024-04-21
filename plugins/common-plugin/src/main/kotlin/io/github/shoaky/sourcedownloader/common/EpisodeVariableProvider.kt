@@ -8,6 +8,7 @@ import io.github.shoaky.sourcedownloader.sdk.component.VariableProvider
 import io.github.shoaky.sourcedownloader.sdk.util.TextClear
 import org.apache.commons.lang3.math.NumberUtils
 import org.slf4j.LoggerFactory
+import kotlin.io.path.name
 import kotlin.io.path.nameWithoutExtension
 
 /**
@@ -24,6 +25,7 @@ object EpisodeVariableProvider : VariableProvider {
         RegexValueParser("S(\\d+)E(\\d+)".toRegex(RegexOption.IGNORE_CASE)),
         RegexValueParser("E(\\d+)".toRegex()),
         RegexValueParser("Episode (\\d+)".toRegex()),
+        RegexValueParser("SP(\\d+)".toRegex()),
         WordEpisodeValueParser,
         // 连续数字只出现过一次的
         RegexValueParser("^\\D*?(\\d{1,3})\\D*?\$".toRegex()),
