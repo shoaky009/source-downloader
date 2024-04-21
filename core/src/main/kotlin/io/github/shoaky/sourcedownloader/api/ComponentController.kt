@@ -32,20 +32,20 @@ private class ComponentController(
         type: ComponentTopType?, typeName: String?, name: String?,
     ): List<ComponentInfo> {
         val instances = componentManager.getAllComponent().associateBy {
-            it.type
+            it.type.instanceName(it.name)
         }
 
         return configOperator.getAllComponentConfig()
             .filter { ComponentTopType.fromName(it.key) matchesNullOrEqual type }
-            .flatMap { (topType, configs) ->
-                val t = ComponentTopType.fromName(topType) ?: return@flatMap emptyList()
+            .flatMap { (topTypeName, configs) ->
+                val topType = ComponentTopType.fromName(topTypeName) ?: return@flatMap emptyList()
                 configs
                     .filter { it.type matchesNullOrEqual typeName }
                     .filter { it.name matchesNullOrEqual name }
                     .map { config ->
-                        val wrapper = instances[ComponentType.of(t, config.type)]
+                        val wrapper = instances[config.instanceName(topType)]
                         ComponentInfo(
-                            t,
+                            topType,
                             config.type,
                             config.name,
                             config.props,
