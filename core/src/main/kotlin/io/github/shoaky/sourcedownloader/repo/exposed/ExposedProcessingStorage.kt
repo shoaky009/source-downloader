@@ -316,11 +316,7 @@ class ExposedProcessingStorage : ProcessingStorage {
             if (query.createTime.end != null) builder.andWhere { Processings.createTime lessEq query.createTime.end }
             if (maxId > 0) builder.andWhere { Processings.id less maxId }
 
-            if (builder.where == null) {
-                builder.orderBy(Processings.id, SortOrder.DESC)
-            } else {
-                builder.orderBy(Processings.createTime, SortOrder.DESC)
-            }
+            builder.orderBy(Processings.id, SortOrder.DESC)
                 .limit(limit)
                 .map {
                     ProcessingContent(
