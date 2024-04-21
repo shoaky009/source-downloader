@@ -4,6 +4,7 @@ plugins {
     id("jacoco-report-aggregation")
     alias(libs.plugins.graalvm)
     id("org.springdoc.openapi-gradle-plugin") version "1.8.0"
+    alias(libs.plugins.gradle.git.properties)
 }
 
 dependencies {

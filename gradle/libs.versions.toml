@@ -24,6 +24,7 @@ springdocs = "2.3.0"
 therapi-javadoc = "0.15.0"
 json-path = "2.9.0"
 fuzzywuzzy = "1.4.0"
+gradle-git-properties = "2.4.1"
 
 [libraries]
 spring-boot-dependencies = { module = "org.springframework.boot:spring-boot-dependencies", version.ref = "spring-boot" }
@@ -69,3 +70,4 @@ kotlin-spring = { id = "org.jetbrains.kotlin.plugin.spring", version.ref = "kotl
 graalvm = { id = "org.graalvm.buildtools.native", version.ref = "graalvm-plugin" }
 axion-release = { id = "pl.allegro.tech.build.axion-release", version.ref = "axion-release" }
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
+gradle-git-properties = { id = "com.gorylenko.gradle-git-properties", version.ref = "gradle-git-properties" }
