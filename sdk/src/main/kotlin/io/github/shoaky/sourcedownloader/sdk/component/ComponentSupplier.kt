@@ -26,4 +26,36 @@ interface ComponentSupplier<R : SdComponent> {
      * @return true if component can be apply [Properties.empty], otherwise false
      */
     fun supportNoArgs(): Boolean = false
+
+    /**
+     *
+     * @return component metadata
+     */
+    fun metadata(): ComponentMetadata? = null
+}
+
+data class ComponentMetadata(
+    val description: String? = null,
+    val properties: List<PropertyMetadata> = emptyList(),
+)
+
+data class PropertyMetadata(
+    val key: String,
+    val type: String,
+    val label: String = key,
+    val required: Boolean = false,
+    val description: String? = null,
+    val placeholder: String? = null,
+)
+
+enum class PropertyType {
+    STRING,
+    NUMBER,
+    BOOLEAN,
+    SELECT,
+    MULTI_SELECT,
+    OBJECT,
+    STRING_ARRAY,
+    INT_ARRAY,
+    MAP
 }

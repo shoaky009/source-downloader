@@ -127,12 +127,6 @@ private class ComponentController(
     }
 }
 
-private data class ComponentDetail(
-    val description: String? = null,
-    val variables: List<String> = emptyList(),
-    val rules: List<String> = emptyList()
-)
-
 private data class ComponentInfo(
     val type: ComponentTopType,
     val typeName: String,
