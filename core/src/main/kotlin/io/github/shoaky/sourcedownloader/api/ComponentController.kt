@@ -2,10 +2,7 @@ package io.github.shoaky.sourcedownloader.api
 
 import io.github.shoaky.sourcedownloader.core.component.*
 import io.github.shoaky.sourcedownloader.core.componentTypeRef
-import io.github.shoaky.sourcedownloader.sdk.component.ComponentException
-import io.github.shoaky.sourcedownloader.sdk.component.ComponentStateful
-import io.github.shoaky.sourcedownloader.sdk.component.ComponentTopType
-import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
+import io.github.shoaky.sourcedownloader.sdk.component.*
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 
@@ -31,14 +28,30 @@ private class ComponentController(
     fun queryComponents(
         type: ComponentTopType?, typeName: String?, name: String?,
     ): List<ComponentInfo> {
+        // 后面调整有点麻烦
         val instances = componentManager.getAllComponent().associateBy {
             it.type.instanceName(it.name)
         }
 
-        return configOperator.getAllComponentConfig()
-            .filter { ComponentTopType.fromName(it.key) matchesNullOrEqual type }
-            .flatMap { (topTypeName, configs) ->
-                val topType = ComponentTopType.fromName(topTypeName) ?: return@flatMap emptyList()
+        val defaults = componentManager.getSuppliers().filter { it.supportNoArgs() }
+            .map { supplier ->
+                supplier.supplyTypes().map { componentType ->
+                    componentType.topType to ComponentConfig(componentType.typeName, componentType.typeName, emptyMap())
+                }.groupBy { (t, _) -> t }.entries
+            }.flatten()
+            .groupBy({ it.key }) { entry -> entry.value.map { it.second } }
+            .mapValues { it.value.flatten() }
+
+        val declConfigs = configOperator.getAllComponentConfig().mapKeys { ComponentTopType.fromName(it.key) }
+            .mapNotNullKeys()
+
+        // merge list
+
+        val allComponents: Map<ComponentTopType, List<ComponentConfig>> = defaults + declConfigs
+
+        return allComponents
+            .filter { it.key matchesNullOrEqual type }
+            .flatMap { (topType, configs) ->
                 configs
                     .filter { it.type matchesNullOrEqual typeName }
                     .filter { it.name matchesNullOrEqual name }
@@ -49,13 +62,25 @@ private class ComponentController(
                             config.type,
                             config.name,
                             config.props,
-                            wrapper?.get()?.let { it as? ComponentStateful }?.stateDetail(),
+                            wrapper?.get()?.stateDetail(),
                             wrapper?.primary ?: true,
                             wrapper != null,
                             wrapper?.getRefs()
                         )
                     }
             }
+    }
+
+    private fun SdComponent.stateDetail(): Any? {
+        return if (this is ComponentStateful) {
+            try {
+                stateDetail()
+            } catch (e: Exception) {
+                "Failed to get state detail: ${e.message}"
+            }
+        } else {
+            null
+        }
     }
 
     /**
@@ -127,16 +152,27 @@ private class ComponentController(
     }
 }
 
+private fun <K, V> Map<K?, V>.mapNotNullKeys(): Map<K, V> {
+    val result = LinkedHashMap<K, V>()
+    for (entry in this) {
+        val key = entry.key
+        if (key != null) {
+            result[key] = entry.value
+        }
+    }
+    return result
+}
+
 private data class ComponentInfo(
     val type: ComponentTopType,
     val typeName: String,
     val name: String,
     val props: Map<String, Any>,
-    // val detail: ComponentDetail,
     val stateDetail: Any? = null,
     val primary: Boolean,
     val running: Boolean,
-    val refs: Set<String>?
+    val refs: Set<String>?,
+    val modifiable: Boolean = true,
 )
 
 private data class ComponentCreateBody(
@@ -151,4 +187,14 @@ private infix fun <T> T?.matchesNullOrEqual(any: T?): Boolean {
         return true
     }
     return this == any
+}
+
+private operator fun <K, V> Map<out K, List<V>>.plus(map: Map<out K, List<V>>): Map<K, List<V>> {
+    return LinkedHashMap(this).apply {
+        map.forEach { (k, v) ->
+            val list = getOrDefault(k, emptyList()).toMutableList()
+            list.addAll(v)
+            put(k, list)
+        }
+    }
 }
