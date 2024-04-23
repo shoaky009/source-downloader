@@ -362,7 +362,6 @@ class DefaultProcessorManager(
             options.itemErrorContinue,
             fileExistsDetector,
             options.channelBufferSize,
-            options.recordMinimized,
             options.parallelism,
             options.retryBackoffMills,
             options.taskGroup ?: group ?: config.source.typeName(),

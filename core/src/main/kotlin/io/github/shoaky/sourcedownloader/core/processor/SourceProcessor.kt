@@ -1003,7 +1003,7 @@ class SourceProcessor(
         override fun onItemCompleted(processingContent: ProcessingContent) {
             if (options.saveProcessingContent) {
                 // 后面优化
-                if (options.recordMinimized && processingContent.status == FILTERED) {
+                if (processingContent.status == FILTERED) {
                     return
                 }
                 processingStorage.save(processingContent)

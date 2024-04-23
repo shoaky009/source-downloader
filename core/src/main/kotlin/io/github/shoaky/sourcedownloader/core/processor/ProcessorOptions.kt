@@ -35,7 +35,6 @@ data class ProcessorOptions(
     val itemErrorContinue: Boolean = false,
     val fileExistsDetector: FileExistsDetector = SimpleFileExistsDetector,
     val channelBufferSize: Int = 20,
-    val recordMinimized: Boolean = false,
     val parallelism: Int = 1,
     val retryBackoffMills: Long = 5000L,
     val taskGroup: String? = null,

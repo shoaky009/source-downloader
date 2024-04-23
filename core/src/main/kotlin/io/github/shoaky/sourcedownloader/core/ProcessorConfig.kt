@@ -38,57 +38,61 @@ data class ProcessorConfig(
 
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     data class Options(
+        //文件
         @JsonAlias("variable-providers")
+        val savePathPattern: String = CorePathPattern.origin.pattern,
+        val filenamePattern: String = CorePathPattern.origin.pattern,
+        val fileTaggers: List<ComponentId> = emptyList(),
         val variableProviders: List<ComponentId> = emptyList(),
+        @JsonDeserialize(contentAs = RegexVariableReplacer::class)
+        val regexVariableReplacers: List<VariableReplacer> = emptyList(),
+        val variableReplacers: List<VariableReplacerConfig> = emptyList(),
+        val variableNameReplace: Map<String, String> = emptyMap(),
+        val variableErrorStrategy: VariableErrorStrategy = VariableErrorStrategy.STAY,
+        val variableConflictStrategy: VariableConflictStrategy = VariableConflictStrategy.SMART,
+        val fileExistsDetector: ComponentId? = null,
+        val fileReplacementDecider: ComponentId = ComponentId("never"),
+        val fileGrouping: List<FileGroupingConfig> = emptyList(),
+        val itemGrouping: List<ItemGroupingConfig> = emptyList(),
+        val supportWindowsPlatformPath: Boolean = true,
+        val variableProcess: Map<String, VariableProcessConfig> = emptyMap(),
+        //过滤
         @JsonAlias("item-filters")
         val sourceItemFilters: List<ComponentId> = emptyList(),
         @JsonAlias("file-filters")
         val fileContentFilters: List<ComponentId> = emptyList(),
         @JsonAlias("content-filters")
         val itemContentFilters: List<ComponentId> = emptyList(),
-        val savePathPattern: String = CorePathPattern.origin.pattern,
-        val filenamePattern: String = CorePathPattern.origin.pattern,
-        // 为了兼容
-        @JsonAlias("run-after-completion")
-        val processListeners: List<ListenerConfig> = emptyList(),
-        @JsonFormat(shape = JsonFormat.Shape.STRING)
-        val renameTaskInterval: Duration = Duration.ofMinutes(5),
-        val downloadOptions: DownloadOptions = DownloadOptions(),
-        val variableConflictStrategy: VariableConflictStrategy = VariableConflictStrategy.SMART,
-        val renameTimesThreshold: Int = 3,
-        val saveProcessingContent: Boolean = true,
         val itemExpressionExclusions: List<String> = emptyList(),
         val itemExpressionInclusions: List<String> = emptyList(),
         val contentExpressionExclusions: List<String> = emptyList(),
         val contentExpressionInclusions: List<String> = emptyList(),
         val fileExpressionExclusions: List<String> = emptyList(),
         val fileExpressionInclusions: List<String> = emptyList(),
-        val variableErrorStrategy: VariableErrorStrategy = VariableErrorStrategy.STAY,
-        val touchItemDirectory: Boolean = true,
-        val deleteEmptyDirectory: Boolean = true,
-        val variableNameReplace: Map<String, String> = emptyMap(),
-        val fileTaggers: List<ComponentId> = emptyList(),
-        @JsonDeserialize(contentAs = RegexVariableReplacer::class)
-        val regexVariableReplacers: List<VariableReplacer> = emptyList(),
-        val variableReplacers: List<VariableReplacerConfig> = emptyList(),
-        val supportWindowsPlatformPath: Boolean = true,
-        val fileReplacementDecider: ComponentId = ComponentId("never"),
-        val fileExistsDetector: ComponentId? = null,
+        // 处理
+        // 为了兼容
+        @JsonAlias("run-after-completion")
+        val processListeners: List<ListenerConfig> = emptyList(),
+        @JsonFormat(shape = JsonFormat.Shape.STRING)
+        val renameTaskInterval: Duration = Duration.ofMinutes(5),
+        val renameTimesThreshold: Int = 3,
+        val saveProcessingContent: Boolean = true,
         val fetchLimit: Int = 50,
         /**
          * 从Source获取Items后，更新pointer的模式，true:处理完这一批更新一次，false:处理完一个更新一次
          */
         val pointerBatchMode: Boolean = true,
         val itemErrorContinue: Boolean = false,
-        val fileGrouping: List<FileGroupingConfig> = emptyList(),
-        val itemGrouping: List<ItemGroupingConfig> = emptyList(),
-        val manualSources: List<ComponentId> = emptyList(),
-        val channelBufferSize: Int = 20,
-        val recordMinimized: Boolean = false,
+        val touchItemDirectory: Boolean = true,
+        val deleteEmptyDirectory: Boolean = true,
         val parallelism: Int = 1,
         val retryBackoffMills: Long = 5000L,
         val taskGroup: String? = null,
-        val variableProcess: Map<String, VariableProcessConfig> = emptyMap(),
+        val channelBufferSize: Int = 20,
+        //下载
+        val downloadOptions: DownloadOptions = DownloadOptions(),
+        val manualSources: List<ComponentId> = emptyList(),
+        //其他
         val expression: ExpressionType = ExpressionType.CEL
     )
 
