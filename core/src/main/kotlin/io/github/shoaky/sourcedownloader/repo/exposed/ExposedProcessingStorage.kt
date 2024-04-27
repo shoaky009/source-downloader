@@ -306,7 +306,7 @@ class ExposedProcessingStorage : ProcessingStorage {
         return transaction {
             val builder = Processings.selectAll()
             if (query.id != null) builder.andWhere { Processings.id inList query.id }
-            if (query.processorName != null) builder.andWhere { Processings.processorName eq query.processorName }
+            if (query.processorName != null) builder.andWhere { Processings.processorName inList  query.processorName }
             if (query.status != null) builder.andWhere { Processings.status inList query.status }
             if (query.itemHash != null) builder.andWhere { Processings.itemHash eq query.itemHash }
             if (query.itemTitle != null) {

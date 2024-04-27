@@ -9,7 +9,7 @@ import org.jetbrains.exposed.sql.json.extract
 import java.time.LocalDateTime
 
 data class ProcessingQuery(
-    val processorName: String? = null,
+    val processorName: List<String>? = null,
     val status: List<ProcessingContent.Status>? = null,
     val id: List<Long>? = null,
     val itemHash: String? = null,
@@ -19,7 +19,7 @@ data class ProcessingQuery(
 
     fun apply(query: Query) {
         processorName?.apply {
-            query.andWhere { Processings.processorName eq processorName }
+            query.andWhere { Processings.processorName inList processorName }
         }
         itemHash?.apply {
             query.andWhere { Processings.itemHash eq itemHash }

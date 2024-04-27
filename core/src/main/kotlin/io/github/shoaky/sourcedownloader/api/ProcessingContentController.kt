@@ -44,9 +44,6 @@ private class ProcessingContentController(
         if (query.itemTitle != null && query.processorName == null) {
             throw IllegalArgumentException("itemTitle must be used with processorName")
         }
-        if ((query.createTime.begin != null || query.createTime.end != null) && query.processorName == null) {
-            throw IllegalArgumentException("range must be used with processorName")
-        }
         val contents = storage.queryContents(query, limit, maxId)
         return Scroll(
             contents,
