@@ -11,9 +11,15 @@ import io.github.shoaky.sourcedownloader.core.processor.DryRunOptions
 import io.github.shoaky.sourcedownloader.core.processor.ProcessorManager
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.throwComponentException
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.onEach
 import org.springframework.data.domain.Pageable
 import org.springframework.data.web.PageableDefault
 import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import java.time.Instant
 import java.time.LocalDateTime
@@ -144,6 +150,19 @@ private class ProcessorController(
     ): List<ProcessingContent> {
         val sourceProcessor = processorManager.getProcessor(processorName)
         return sourceProcessor.get().dryRun(options ?: DryRunOptions())
+    }
+
+    @RequestMapping(
+        "/{processorName}/dry-run-stream",
+        method = [RequestMethod.GET, RequestMethod.POST],
+        produces = ["application/stream+json"]
+    )
+    suspend fun dryRunStream(
+        @PathVariable processorName: String,
+        @RequestBody(required = false) options: DryRunOptions?
+    ): Flow<ProcessingContent> {
+        val sourceProcessor = processorManager.getProcessor(processorName)
+        return sourceProcessor.processor.dryRunStream(options ?: DryRunOptions())
     }
 
     /**

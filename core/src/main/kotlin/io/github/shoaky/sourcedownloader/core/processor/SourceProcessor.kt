@@ -20,10 +20,7 @@ import io.github.shoaky.sourcedownloader.util.NoLock
 import io.github.shoaky.sourcedownloader.util.lock
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.retryWhen
+import kotlinx.coroutines.flow.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.retry.support.RetryTemplateBuilder
@@ -585,6 +582,7 @@ class SourceProcessor(
     ) {
 
         protected val processLock: Lock = if (options.parallelism > 1) ReentrantLock(true) else NoLock
+        protected val processScope = CoroutineScope(processDispatcher)
 
         @OptIn(InternalCoroutinesApi::class)
         protected suspend fun processItems() {
@@ -599,7 +597,6 @@ class SourceProcessor(
             stat.stopWatch.start("processItems")
 
             val semaphore = Semaphore(options.parallelism, true)
-            val processScope = CoroutineScope(processDispatcher)
             // 处理Source的迭代器返回重复的Item
             val itemSet = Collections.synchronizedSet(mutableSetOf<SourceItem>())
             val processJob = processScope.launch process@{
@@ -959,6 +956,10 @@ class SourceProcessor(
                 processItems()
             }
         }
+
+        suspend fun runAsync() {
+            processItems()
+        }
     }
 
     private fun invokeListeners(
@@ -983,6 +984,18 @@ class SourceProcessor(
                 log.error("${listener::class.simpleName}发生错误", it)
             }
         }
+    }
+
+    fun dryRunStream(options: DryRunOptions): Flow<ProcessingContent> {
+        val currentSourceState = currentSourceState()
+        val values = options.pointer ?: currentSourceState.lastPointer.values
+        val pointer = ProcessorSourceState.resolvePointer(source::class, values)
+        val process = DryRunStreamProcess(currentSourceState, pointer, options.filterProcessed)
+
+        processorCoroutineScope.launch {
+            process.runAsync()
+        }
+        return process.getStream()
     }
 
     private inner class NormalProcess : Process() {
@@ -1085,7 +1098,7 @@ class SourceProcessor(
         }
     }
 
-    private inner class DryRunProcess(
+    private open inner class DryRunProcess(
         sourceState: ProcessorSourceState,
         sourcePointer: SourcePointer,
         private val filterProcessed: Boolean
@@ -1109,6 +1122,31 @@ class SourceProcessor(
         }
 
         override fun doDownload(pc: ProcessingContent, replaceFiles: List<CoreFileContent>): Boolean = false
+    }
+
+    private inner class DryRunStreamProcess(
+        sourceState: ProcessorSourceState,
+        sourcePointer: SourcePointer,
+        filterProcessed: Boolean
+    ) : DryRunProcess(sourceState, sourcePointer, filterProcessed) {
+
+        private val resultStream: Channel<ProcessingContent> = Channel()
+
+        override fun onItemCompleted(processingContent: ProcessingContent) {
+            runBlocking {
+                resultStream.send(processingContent)
+            }
+        }
+
+        fun getStream(): Flow<ProcessingContent> {
+            return resultStream.consumeAsFlow().onCompletion {
+                processScope.cancel("DryRunStreamProcess completed")
+            }
+        }
+
+        override fun onProcessCompleted(processContext: ProcessContext) {
+            resultStream.close()
+        }
     }
 
     private inner class ManualItemProcess(items: List<SourceItem>) : Process(
