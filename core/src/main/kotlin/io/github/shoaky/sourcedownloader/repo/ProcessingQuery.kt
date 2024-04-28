@@ -17,6 +17,8 @@ data class ProcessingQuery(
     val createTime: RangeCondition<LocalDateTime> = RangeCondition()
 ) {
 
+    constructor(processorName: String?) : this(processorName?.let { listOf(it) })
+
     fun apply(query: Query) {
         processorName?.apply {
             query.andWhere { Processings.processorName inList processorName }

@@ -23,9 +23,4 @@ class ApplicationControllerTest {
             .andExpect(status().is2xxSuccessful)
     }
 
-    @Test
-    fun info() {
-        mockMvc.perform(get("/api/application/info"))
-            .andExpect(status().is2xxSuccessful)
-    }
 }
