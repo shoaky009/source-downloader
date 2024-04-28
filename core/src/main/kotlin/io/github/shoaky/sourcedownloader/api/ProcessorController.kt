@@ -141,28 +141,9 @@ private class ProcessorController(
     fun dryRun(
         @PathVariable processorName: String,
         @RequestBody(required = false) options: DryRunOptions?
-    ): List<DryRunResult> {
+    ): List<ProcessingContent> {
         val sourceProcessor = processorManager.getProcessor(processorName)
         return sourceProcessor.get().dryRun(options ?: DryRunOptions())
-            .map { pc ->
-                val fileResult = pc.itemContent.fileContents.map { file ->
-                    FileResult(
-                        file.fileDownloadPath.toString(),
-                        file.targetPath().toString(),
-                        file.patternVariables.variables(),
-                        file.processedVariables?.variables().takeIf { it?.isNotEmpty() == true },
-                        file.tags,
-                        file.status,
-                        file.errors.takeIf { it.isNotEmpty() }?.joinToString(", ")
-                    )
-                }
-                val itemContent = pc.itemContent
-                val variables = itemContent.itemVariables.variables()
-                DryRunResult(
-                    itemContent.sourceItem, variables,
-                    fileResult, pc.status
-                )
-            }
     }
 
     /**
