@@ -186,7 +186,7 @@ private class ProcessorController(
     @GetMapping("/{processorName}/state")
     fun getState(@PathVariable processorName: String): ProcessorState {
         val config = configOperator.getProcessorConfig(processorName)
-        val state = processingStorage.findProcessorSourceState(processorName, config.source.name())
+        val state = processingStorage.findProcessorSourceState(processorName, config.source.id)
             ?.let {
                 ProcessorState(it.lastPointer, it.lastActiveTime)
             } ?: ProcessorState(PersistentPointer(mutableMapOf()), null)
