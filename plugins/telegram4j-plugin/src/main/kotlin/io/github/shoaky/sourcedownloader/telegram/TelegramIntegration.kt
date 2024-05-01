@@ -65,8 +65,10 @@ class TelegramIntegration(
     }
 
     private fun resolveFromMessage(sourceItem: SourceItem): List<SourceFile> {
-        val messageId = sourceItem.requireAttr<Int>("messageId")
-        val chatId = sourceItem.requireAttr<Long>("chatId")
+        val queryMap = sourceItem.downloadUri.queryMap()
+        val chatId = queryMap["channel"]?.toLong() ?: return emptyList()
+        val messageId = queryMap["post"]?.toInt() ?: return emptyList()
+
         val messageIdPeer = listOf(ImmutableInputMessageID.of(messageId))
         val chatIdPeer = Id.ofChannel(chatId)
         val message = client.getMessages(chatIdPeer, messageIdPeer)
@@ -85,8 +87,8 @@ class TelegramIntegration(
 
     override fun submit(task: DownloadTask): Boolean {
         val queryMap = task.downloadUri().queryMap()
-        val chatId = queryMap["chatId"]?.toLong()
-        val messageId = queryMap["messageId"]?.toInt()
+        val chatId = queryMap["channel"]?.toLong()
+        val messageId = queryMap["post"]?.toInt()
         if (chatId == null || messageId == null) {
             log.error("Invalid download uri: ${task.downloadUri()}")
             return false

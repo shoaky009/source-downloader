@@ -52,10 +52,11 @@ class TelegramSource(
         chatName: String
     ): SourceItem? {
         val messageId = message.id()
-        val link = URI("telegram://?chatId=${chatPointer.chatId}&messageId=$messageId")
+        val chatId = chatPointer.parseChatId()
+        val link = URI("tg://privatepost?channel=$chatId&post=$messageId")
+        val downloadUri = URI("tg://privatepost?channel=${chatPointer.chatId}&post=$messageId")
         val messageDateTime = Instant.ofEpochSecond(message.date().toLong()).atZone(zoneId).toLocalDateTime()
         val media = message.media()
-        val chatId = chatPointer.parseChatId()
         val attrs = mutableMapOf(
             "messageId" to messageId,
             "chatId" to chatId,
@@ -67,7 +68,7 @@ class TelegramSource(
                 link,
                 messageDateTime,
                 "message",
-                link,
+                downloadUri,
                 attrs
             )
         }
@@ -79,7 +80,7 @@ class TelegramSource(
                 }
                 return SourceItem(
                     "$chatId-$messageId.jpg", link,
-                    messageDateTime, "image/jpg", link,
+                    messageDateTime, "image/jpg", downloadUri,
                     attrs = attrs
                 )
             }
@@ -96,7 +97,7 @@ class TelegramSource(
                     link,
                     messageDateTime,
                     document.mimeType(),
-                    link,
+                    downloadUri,
                     attrs
                 )
             }
