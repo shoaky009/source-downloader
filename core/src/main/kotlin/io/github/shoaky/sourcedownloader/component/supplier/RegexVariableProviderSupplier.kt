@@ -11,7 +11,8 @@ object RegexVariableProviderSupplier : ComponentSupplier<RegexVariableProvider> 
 
     override fun apply(context: CoreContext, props: Properties): RegexVariableProvider {
         val regexes = props.get<List<RegexVariable>>("regexes")
-        return RegexVariableProvider(regexes)
+        val primary = props.getOrNull<String>("primary")
+        return RegexVariableProvider(regexes, primary)
     }
 
     override fun supplyTypes(): List<ComponentType> {

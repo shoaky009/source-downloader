@@ -151,9 +151,16 @@ interface VariableProvider : SdComponent {
      * @param text to extract
      * @return the extracted value
      */
-    fun extractFrom(text: String): String? {
+    fun extractFrom(text: String): PatternVariables? {
         return null
     }
+
+    /**
+     * Returns the primary variable name, if is null in the variable provider, it will be ignored.
+     *
+     * @experimental not sure is it good?
+     */
+    fun primary(): String?
 }
 
 /**

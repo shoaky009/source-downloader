@@ -74,15 +74,19 @@ class DlsiteVariableProvider(
         return dlistClient.getWorkInfo(dlsiteId, locale)
     }
 
-    override fun extractFrom(text: String): String? {
+    override fun extractFrom(text: String): PatternVariables? {
         val dlsiteId = DlsiteClient.parseDlsiteId(text)
         if (dlsiteId == null && onlyExtractId) {
             return null
         }
         if (dlsiteId != null) {
-            return cache.get(WorkRequest(dlsiteId = dlsiteId)).getOrNull()?.title
+            return cache.get(WorkRequest(dlsiteId = dlsiteId)).getOrNull()
         }
-        return cache.get(WorkRequest(keyword = text)).getOrNull()?.title
+        return cache.get(WorkRequest(keyword = text)).getOrNull()
+    }
+
+    override fun primary(): String {
+        return "title"
     }
 
     companion object {

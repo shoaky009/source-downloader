@@ -40,6 +40,10 @@ class GetchuVariableProvider(
         return item
     }
 
+    override fun primary(): String {
+        return "title"
+    }
+
     private fun itemRequest(request: RequestKey): GetchuDetailItem? {
         if (request.isbn != null) {
             return searchIsbn(request.isbn)

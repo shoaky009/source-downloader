@@ -13,6 +13,7 @@ import io.github.shoaky.sourcedownloader.core.expression.ExpressionType
 import io.github.shoaky.sourcedownloader.core.file.CorePathPattern
 import io.github.shoaky.sourcedownloader.core.file.VariableErrorStrategy
 import io.github.shoaky.sourcedownloader.core.processor.VariableConflictStrategy
+import io.github.shoaky.sourcedownloader.core.processor.VariableProcessOutput
 import io.github.shoaky.sourcedownloader.sdk.DownloadOptions
 import io.github.shoaky.sourcedownloader.sdk.component.VariableReplacer
 import java.nio.file.Path
@@ -38,7 +39,7 @@ data class ProcessorConfig(
 
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     data class Options(
-        //文件
+        // 文件
         @JsonAlias("variable-providers")
         val savePathPattern: String = CorePathPattern.origin.pattern,
         val filenamePattern: String = CorePathPattern.origin.pattern,
@@ -55,8 +56,8 @@ data class ProcessorConfig(
         val fileGrouping: List<FileGroupingConfig> = emptyList(),
         val itemGrouping: List<ItemGroupingConfig> = emptyList(),
         val supportWindowsPlatformPath: Boolean = true,
-        val variableProcess: Map<String, VariableProcessConfig> = emptyMap(),
-        //过滤
+        val variableProcess: List<VariableProcessConfig> = emptyList(),
+        // 过滤
         @JsonAlias("item-filters")
         val sourceItemFilters: List<ComponentId> = emptyList(),
         @JsonAlias("file-filters")
@@ -89,10 +90,10 @@ data class ProcessorConfig(
         val retryBackoffMills: Long = 5000L,
         val taskGroup: String? = null,
         val channelBufferSize: Int = 20,
-        //下载
+        // 下载
         val downloadOptions: DownloadOptions = DownloadOptions(),
         val manualSources: List<ComponentId> = emptyList(),
-        //其他
+        // 其他
         val expression: ExpressionType = ExpressionType.CEL
     )
 
@@ -122,8 +123,10 @@ data class ProcessorConfig(
 
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     data class VariableProcessConfig(
+        val input: String,
         val chain: List<ComponentId> = emptyList(),
-        val output: String
+        val output: VariableProcessOutput = VariableProcessOutput(),
+        val conditionExpression: String? = null
     )
 
 }

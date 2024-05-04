@@ -29,5 +29,9 @@ open class ForeignVariableProvider(
         TODO()
     }
 
+    override fun primary(): String? {
+        TODO()
+    }
+
 }
 

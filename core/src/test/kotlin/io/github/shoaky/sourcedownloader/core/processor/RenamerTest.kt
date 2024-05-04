@@ -6,6 +6,9 @@ import io.github.shoaky.sourcedownloader.component.provider.RegexVariable
 import io.github.shoaky.sourcedownloader.component.provider.RegexVariableProvider
 import io.github.shoaky.sourcedownloader.component.replacer.RegexVariableReplacer
 import io.github.shoaky.sourcedownloader.component.replacer.WindowsPathReplacer
+import io.github.shoaky.sourcedownloader.core.expression.CelCompiledExpressionFactory
+import io.github.shoaky.sourcedownloader.core.expression.fileContentDefs
+import io.github.shoaky.sourcedownloader.core.expression.sourceFileDefs
 import io.github.shoaky.sourcedownloader.core.file.CorePathPattern
 import io.github.shoaky.sourcedownloader.core.file.RawFileContent
 import io.github.shoaky.sourcedownloader.core.file.Renamer
@@ -470,40 +473,63 @@ class RenamerTest {
     }
 
     @Test
-    fun process() {
-        // 先将custom按正则输出到custom_name，再将custom_name按正则输出到custom
+    fun test_variable_process() {
         val renamer = Renamer(
-            variableProcessChain = mapOf(
-                "custom" to VariableProcessChain(
-                    listOf(
+            variableProcessChain = listOf(
+                VariableProcessChain(
+                    input = "custom",
+                    chain = listOf(
                         RegexVariableProvider(
-                            listOf(RegexVariable("custom", "\\[.*]".toRegex()))
+                            listOf(
+                                RegexVariable("custom1", "\\[.*]".toRegex()),
+                                RegexVariable("number", "\\d+".toRegex()),
+                                RegexVariable("filter1", "\\d+".toRegex()),
+                            ),
+                            "custom1"
+                        ),
+                        RegexVariableProvider(
+                            listOf(
+                                RegexVariable("custom2", "\\d+".toRegex()),
+                            ),
+                            "custom2"
                         )
                     ),
-                    "custom_name"
-                ),
-                "custom_name" to VariableProcessChain(
-                    listOf(
-                        RegexVariableProvider(
-                            listOf(RegexVariable("custom", "\\[.*]".toRegex()))
-                        )
+                    output = VariableProcessOutput(
+                        keyMapping = mapOf("custom" to "custom_name", "number" to "numbers"),
+                        excludeKeys = setOf("filter1"),
                     ),
-                    "custom"
+                    condition = CelCompiledExpressionFactory.create("file.name == 1", Boolean::class.java, sourceFileDefs())
                 )
             )
         )
 
-        val c = renamer.createFileContent(
+        val fileContent = renamer.createFileContent(
             sourceItem("aaaa ddd [1234]"),
             createRawFileContent(
-                filenamePattern = CorePathPattern("{custom}"),
+                filenamePattern = CorePathPattern("{custom_name}"),
             ),
             MapPatternVariables().also { it.addVariable("custom", "aaaa ddd [1234]") }
         )
-        assertEquals("[1234].txt", c.targetFilename)
-        val processed = c.processedVariables?.variables() ?: emptyMap()
-        assertEquals("[1234]", processed["custom"])
-        assertEquals("[1234]", processed["custom_name"])
+        // For Chain
+        assertEquals("1234.txt", fileContent.targetFilename)
+        val processed = fileContent.processedVariables?.variables() ?: emptyMap()
+        assertEquals("1234", processed["custom_name"])
+        // For key mapping
+        assertEquals("1234", processed["numbers"])
+        // For exclude
+        assert(processed.containsKey("filter1").not())
+
+
+        // For condition
+        val content2 = renamer.createFileContent(
+            sourceItem("aaaa ddd [1234]"),
+            createRawFileContent(
+                filePath = Path("2.txt"),
+                filenamePattern = CorePathPattern("{custom_name}"),
+            ),
+            MapPatternVariables().also { it.addVariable("custom", "aaaa ddd [1234]") }
+        )
+        assertEquals("2.txt", content2.targetFilename)
     }
 
     companion object {

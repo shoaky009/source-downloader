@@ -2,6 +2,7 @@ package io.github.shoaky.sourcedownloader.core.processor
 
 import io.github.shoaky.sourcedownloader.component.NeverReplace
 import io.github.shoaky.sourcedownloader.component.SimpleFileExistsDetector
+import io.github.shoaky.sourcedownloader.core.expression.CompiledExpression
 import io.github.shoaky.sourcedownloader.core.file.CorePathPattern
 import io.github.shoaky.sourcedownloader.core.file.VariableErrorStrategy
 import io.github.shoaky.sourcedownloader.sdk.DownloadOptions
@@ -38,7 +39,7 @@ data class ProcessorOptions(
     val parallelism: Int = 1,
     val retryBackoffMills: Long = 5000L,
     val taskGroup: String? = null,
-    val variableProcessChain: Map<String, VariableProcessChain> = emptyMap(),
+    val variableProcessChain: List<VariableProcessChain> = emptyList(),
 ) {
 
     fun matchFileOption(sourceFile: SourceFile): FileOption? {
@@ -56,16 +57,44 @@ data class ProcessorOptions(
 }
 
 data class VariableProcessChain(
+    val input: String,
     val chain: List<VariableProvider>,
-    val output: String
+    val output: VariableProcessOutput,
+    val condition: CompiledExpression<Boolean>? = null
 ) {
 
-    fun process(value: String): String {
-        return chain.fold(value) { acc, provider ->
-            provider.extractFrom(acc) ?: acc
+    fun process(value: String): Map<String, String>? {
+        val tempVars = mutableMapOf<String, String>()
+        val primaries = mutableSetOf<String>()
+        val processedVar = chain.fold(value) { acc, provider ->
+            val primary = provider.primary() ?: return@fold acc
+            val vars = provider.extractFrom(acc)?.variables() ?: return@fold acc
+            tempVars.putAll(vars)
+            primaries.add(primary)
+            return@fold vars[primary] ?: acc
         }
+        if (value == processedVar) {
+            return null
+        }
+
+        val result : MutableMap<String, String> = mutableMapOf()
+        tempVars.mapNotNull { (key, value) ->
+            if (key in primaries) return@mapNotNull null
+            if (key in output.excludeKeys) return@mapNotNull null
+            if (output.includeKeys.isNotEmpty() && key !in output.includeKeys) return@mapNotNull null
+            (output.keyMapping[key] ?: key) to value
+        }.toMap(result)
+
+        result[output.keyMapping.getOrDefault(input, input)] = processedVar
+        return result
     }
 }
+
+data class VariableProcessOutput(
+    val keyMapping: Map<String, String> = emptyMap(),
+    val excludeKeys: Set<String> = emptySet(),
+    val includeKeys: Set<String> = emptySet(),
+)
 
 data class FileOption(
     val savePathPattern: CorePathPattern? = null,

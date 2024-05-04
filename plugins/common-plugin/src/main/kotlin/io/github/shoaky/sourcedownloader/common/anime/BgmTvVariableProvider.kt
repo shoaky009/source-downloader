@@ -39,8 +39,12 @@ class BgmTvVariableProvider(
         return searchCache.get(title)
     }
 
-    override fun extractFrom(text: String): String? {
-        return searchCache.get(text).nativeName
+    override fun extractFrom(text: String): PatternVariables? {
+        return searchCache.get(text)
+    }
+
+    override fun primary(): String {
+        return "nativeName"
     }
 
     companion object {

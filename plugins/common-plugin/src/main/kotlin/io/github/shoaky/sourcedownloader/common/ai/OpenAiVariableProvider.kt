@@ -19,7 +19,8 @@ import kotlin.io.path.name
 class OpenAiVariableProvider(
     private val openAiBaseUri: URI,
     private val openAiClient: OpenAiClient,
-    private val systemRole: ChatMessage
+    private val systemRole: ChatMessage,
+    private val primary: String? = null
 ) : VariableProvider {
 
     override fun itemVariables(sourceItem: SourceItem): PatternVariables {
@@ -41,6 +42,10 @@ class OpenAiVariableProvider(
             val variables = Jackson.fromJson(first.content, jacksonTypeRef<Map<String, String>>())
             MapPatternVariables(variables)
         }
+    }
+
+    override fun primary(): String? {
+        return primary
     }
 
     data class OpenAiConfig(

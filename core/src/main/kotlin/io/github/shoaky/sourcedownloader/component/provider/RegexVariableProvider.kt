@@ -6,7 +6,8 @@ import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.VariableProvider
 
 class RegexVariableProvider(
-    private val regexes: List<RegexVariable>
+    private val regexes: List<RegexVariable>,
+    private val primary: String? = null
 ) : VariableProvider {
 
     override fun itemVariables(sourceItem: SourceItem): PatternVariables {
@@ -29,10 +30,19 @@ class RegexVariableProvider(
         }
     }
 
-    override fun extractFrom(text: String): String {
-        return regexes.fold(text) { acc, regexVariable ->
-            regexVariable.regex.find(acc)?.value ?: acc
+    override fun extractFrom(text: String): PatternVariables? {
+        val variables = regexes.mapNotNull { regexVariable ->
+            val find = regexVariable.regex.find(text)
+            find?.let { regexVariable.name to it.value }
+        }.toMap()
+        if (variables.isEmpty()) {
+            return null
         }
+        return MapPatternVariables(variables)
+    }
+
+    override fun primary(): String? {
+        return primary
     }
 }
 

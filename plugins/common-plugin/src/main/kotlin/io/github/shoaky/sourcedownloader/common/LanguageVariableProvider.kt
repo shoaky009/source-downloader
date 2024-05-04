@@ -44,6 +44,10 @@ class LanguageVariableProvider(
         }
     }
 
+    override fun primary(): String {
+        return "language"
+    }
+
     private fun fromFile(file: SourceFile): PatternVariables {
         if (file.path.notExists()) {
             return PatternVariables.EMPTY

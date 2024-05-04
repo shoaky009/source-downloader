@@ -43,6 +43,10 @@ class VariableProvidersAggregation(
         return strategyGroup.fileVariables(sourceItem, itemVariables, sourceFiles)
     }
 
+    override fun primary(): String? {
+        return null
+    }
+
     override val accuracy: Int
         get() = strategyGroup.accuracy
 
@@ -113,6 +117,10 @@ private class AnyItemGroup(
         return MapPatternVariables(result)
     }
 
+    override fun primary(): String? {
+        return null
+    }
+
     private fun combine(sf1: PatternVariables, sf2: PatternVariables): PatternVariables {
         return CombineFileVariable(sf1, sf2)
     }
@@ -174,6 +182,10 @@ private class VoteItemGroup(
             MapPatternVariables(valueCounts)
         }
     }
+
+    override fun primary(): String? {
+        return null
+    }
 }
 
 private class AccuracyItemGroup(
@@ -201,6 +213,10 @@ private class AccuracyItemGroup(
                 }
             MapPatternVariables(variableMap)
         }
+    }
+
+    override fun primary(): String? {
+        return null
     }
 }
 
@@ -256,6 +272,10 @@ private class SmartItemGroup(
                 .mapValues { it.value.value }
             MapPatternVariables(result)
         }
+    }
+
+    override fun primary(): String? {
+        return null
     }
 
     private class ValueAccuracy(val value: String, val accuracy: Int) : Comparable<ValueAccuracy> {

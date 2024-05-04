@@ -40,7 +40,7 @@ class AnimeVariableProviderTest {
                 split[0] to split[1]
             }.forEach { (title, expect) ->
                 val extractTitle = provider.extractFrom(title)
-                assertEquals(expect, extractTitle)
+                assertEquals(expect, extractTitle?.variables()?.get("nativeName"))
             }
     }
 }

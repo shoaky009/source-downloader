@@ -5,6 +5,8 @@ import io.github.shoaky.sourcedownloader.component.*
 import io.github.shoaky.sourcedownloader.component.replacer.WindowsPathReplacer
 import io.github.shoaky.sourcedownloader.core.*
 import io.github.shoaky.sourcedownloader.core.component.*
+import io.github.shoaky.sourcedownloader.core.expression.CompiledExpressionFactory
+import io.github.shoaky.sourcedownloader.core.expression.fileContentDefs
 import io.github.shoaky.sourcedownloader.core.expression.sourceFileDefs
 import io.github.shoaky.sourcedownloader.core.expression.sourceItemDefs
 import io.github.shoaky.sourcedownloader.core.file.CorePathPattern
@@ -326,16 +328,7 @@ class DefaultProcessorManager(
         val fileGrouping = applyFileGrouping(options, config)
         val itemGrouping = applyItemGrouping(options, config)
 
-        val variableProcessChain = options.variableProcess.mapValues { (_, cfg) ->
-            val chain = cfg.chain.map {
-                componentManager.getComponent(
-                    ComponentTopType.VARIABLE_PROVIDER,
-                    it,
-                    variableProviderTypeRef
-                ).getAndMarkRef(config.name)
-            }
-            VariableProcessChain(chain, cfg.output)
-        }
+        val variableProcessChain = buildVariableProcessChains(options, config, expressionFactory)
 
         return ProcessorOptions(
             CorePathPattern(options.savePathPattern, expressionFactory),
@@ -367,6 +360,26 @@ class DefaultProcessorManager(
             options.taskGroup ?: group ?: config.source.typeName(),
             variableProcessChain
         )
+    }
+
+    private fun buildVariableProcessChains(
+        options: ProcessorConfig.Options,
+        config: ProcessorConfig,
+        expressionFactory: CompiledExpressionFactory
+    ): List<VariableProcessChain> {
+        return options.variableProcess.map { cfg ->
+            val chain = cfg.chain.map {
+                componentManager.getComponent(
+                    ComponentTopType.VARIABLE_PROVIDER,
+                    it,
+                    variableProviderTypeRef
+                ).getAndMarkRef(config.name)
+            }
+            val condition = cfg.conditionExpression?.let {
+                expressionFactory.create(it, Boolean::class.java, fileContentDefs())
+            }
+            VariableProcessChain(cfg.input, chain, cfg.output, condition)
+        }
     }
 
     private fun checkOptions(options: ProcessorConfig.Options) {

@@ -52,10 +52,15 @@ object SeasonVariableProvider : VariableProvider {
         }
     }
 
-    override fun extractFrom(text: String): String? {
-        return extractChain.input(
+    override fun extractFrom(text: String): PatternVariables? {
+        val season = extractChain.input(
             ParseValue(text, preprocessValue = false)
         )?.toString()?.padStart(2, '0')
+        return season?.let { Season(it) }
+    }
+
+    override fun primary(): String {
+        return "season"
     }
 
     override fun itemVariables(sourceItem: SourceItem): PatternVariables = PatternVariables.EMPTY

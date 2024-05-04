@@ -120,6 +120,10 @@ class MikanVariableProvider(
         }
     }
 
+    override fun primary(): String {
+        return "name"
+    }
+
 }
 
 fun URI.pathSegments(): List<String> {

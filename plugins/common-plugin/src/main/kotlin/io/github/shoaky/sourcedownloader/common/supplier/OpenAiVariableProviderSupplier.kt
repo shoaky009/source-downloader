@@ -15,7 +15,8 @@ object OpenAiVariableProviderSupplier : ComponentSupplier<OpenAiVariableProvider
         val client = OpenAiClient(
             config.apiKeys
         )
-        return OpenAiVariableProvider(config.apiHost, client, ChatMessage.ofSystem(config.systemRole))
+        val primary = props.getOrNull<String>("primary")
+        return OpenAiVariableProvider(config.apiHost, client, ChatMessage.ofSystem(config.systemRole), primary)
     }
 
     override fun supplyTypes(): List<ComponentType> {

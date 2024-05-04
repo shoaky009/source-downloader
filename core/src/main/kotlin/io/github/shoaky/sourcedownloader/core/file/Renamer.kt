@@ -16,7 +16,7 @@ import kotlin.io.path.nameWithoutExtension
 class Renamer(
     private val variableErrorStrategy: VariableErrorStrategy = VariableErrorStrategy.STAY,
     private val variableReplacers: List<VariableReplacer> = emptyList(),
-    private val variableProcessChain: Map<String, VariableProcessChain> = emptyMap()
+    private val variableProcessChain: List<VariableProcessChain> = emptyList()
 ) {
 
     fun createFileContent(
@@ -165,11 +165,14 @@ class Renamer(
         val file: RawFileContent,
         val sharedVariables: PatternVariables,
         val variableReplacers: List<VariableReplacer>,
-        val variableProcessChain: Map<String, VariableProcessChain>,
+        val variableProcessChain: List<VariableProcessChain>
     ) {
+
         private val processedVariables: MutableMap<String, String> = mutableMapOf()
 
-        val allVariables: Map<String, Any> = run {
+        val allVariables: Map<String, Any> = prepareVariables()
+
+        private fun prepareVariables(): Map<String, Any> {
             val vars = mutableMapOf<String, Any>()
             vars.putAll(sharedVariables.variables().replaceVariables())
             // 文件变量的优先
@@ -188,22 +191,28 @@ class Renamer(
                 file.getPathOriginalLayout().joinToString("/") { it.replaceVariable("file.originalLayout") }
             )
 
-            if (variableProcessChain.isNotEmpty()) {
-                val doc = JsonPath.parse(vars)
-                variableProcessChain.entries.forEach { (targetKey, process) ->
+            if (variableProcessChain.isEmpty()) {
+                return vars
+            }
+
+            val doc = JsonPath.parse(vars)
+            // TODO 可以提升一些性能,可以区分为Item或File,这样不用每个文件都执行一遍
+            variableProcessChain.filter { it.condition?.execute(vars) ?: true }
+                .forEach { process ->
                     val value = try {
-                        doc.read<String>("$.$targetKey")
+                        doc.read<String>("$.${process.input}")
                     } catch (e: PathNotFoundException) {
                         return@forEach
                     }
-                    log.debug("Process variable '{}' with value '{}'", targetKey, value)
+                    log.debug("Process variable '{}' with value '{}'", process.input, value)
                     val processed = process.process(value)
-                    processedVariables[process.output] = processed
-                    vars[process.output] = processed
+                    if (processed != null) {
+                        processedVariables.putAll(processed)
+                        vars.putAll(processed)
+                    }
                 }
-            }
             log.debug("Rename variables:{}", vars)
-            vars
+            return vars
         }
 
         fun getProcessedVariables(): Map<String, String> {

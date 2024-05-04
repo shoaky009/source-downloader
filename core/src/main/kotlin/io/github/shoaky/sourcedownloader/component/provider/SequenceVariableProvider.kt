@@ -27,4 +27,8 @@ object SequenceVariableProvider : VariableProvider {
         }
     }
 
+    override fun primary(): String {
+        return "sequence"
+    }
+
 }

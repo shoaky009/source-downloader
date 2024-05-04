@@ -33,5 +33,9 @@ class AnitomVariableProvider : VariableProvider {
         }
     }
 
+    override fun primary(): String {
+        return "animeTitle"
+    }
+
 }
 

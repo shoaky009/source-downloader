@@ -8,7 +8,6 @@ import io.github.shoaky.sourcedownloader.sdk.component.VariableProvider
 import io.github.shoaky.sourcedownloader.sdk.util.TextClear
 import org.apache.commons.lang3.math.NumberUtils
 import org.slf4j.LoggerFactory
-import kotlin.io.path.name
 import kotlin.io.path.nameWithoutExtension
 
 /**
@@ -84,11 +83,16 @@ object EpisodeVariableProvider : VariableProvider {
         return str.padStart(length, '0')
     }
 
-    override fun extractFrom(text: String): String {
-        val episode = parserChain.firstNotNullOfOrNull {
+    override fun extractFrom(text: String): PatternVariables? {
+        return parserChain.firstNotNullOfOrNull {
             it.parse(text)
+        }?.let {
+            MapPatternVariables(mapOf("episode" to padNumber(it).toString()))
         }
-        return padNumber(episode) ?: text
+    }
+
+    override fun primary(): String {
+        return "episode"
     }
 }
 
