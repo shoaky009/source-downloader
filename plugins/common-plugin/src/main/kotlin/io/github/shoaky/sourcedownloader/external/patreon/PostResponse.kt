@@ -13,7 +13,11 @@ class PostResponse(
     private val includedMapping = included.filter { it.contains("id") }.associateBy { "${it.get("type").asText()}_${it.get("id").asText()}" }
 
     fun postMedias(): List<Media> {
-        val mediaIds = data.mediaIds()
+        val imageOrder = data.attributes.getImageOrder()
+        val mediaIds = data.mediaIds().sortedBy {
+            val index = imageOrder.indexOf(it)
+            if (index > -1) index else Int.MAX_VALUE
+        }
         return mediaIds.mapNotNull {
             val attributes = includedMapping["media_$it"]?.get("attributes") ?: return@mapNotNull null
             val downloadUrl = if (attributes.contains("download_url")) {

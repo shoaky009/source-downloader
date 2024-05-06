@@ -14,6 +14,7 @@ import java.time.YearMonth
 import java.time.temporal.ChronoUnit
 import kotlin.io.path.Path
 
+
 class PatreonIntegration(
     private val client: PatreonClient
 ) : ExpandSource<Long, PatreonPointer>(), ItemFileResolver {
@@ -22,6 +23,9 @@ class PatreonIntegration(
         return client.execute(PledgeRequest()).body().campaignIds()
     }
 
+    /**
+     * TODO 当前迭代的实现会多请求一次最后一个item没必要
+     */
     override fun requestItems(
         ctx: FetchContext<PatreonPointer>,
         target: Long
@@ -33,14 +37,15 @@ class PatreonIntegration(
                 .map { YearMonth.parse(it.attributes.value) }.sorted()
         }
 
-        val cp = ctx.pointer.campaignPointers[target] ?: CampaignPointer(target)
-        val requestYearMonth = findNextYearMonth(cp.lastYearMonth, yearMonths)
+        val pointer = ctx.pointer.campaignPointers[target] ?: CampaignPointer(target)
+        val requestYearMonth = findNextYearMonth(pointer.lastYearMonth, yearMonths, pointer.lastOfMonth)
         val postsRequest = PostsRequest(target, month = requestYearMonth)
         val response = client.execute(postsRequest).body()
 
         // 偷懒没有处理一个月超过20条的, api太逆天了没心情写
         val fullName = response.getUser()?.attributes?.fullName
-        val items = response.data.filter { it.id > cp.lastPostId }.map { post ->
+        val posts = response.data.filter { it.id > pointer.lastPostId }
+        val items = posts.mapIndexed { index, post ->
             val sourceItem = SourceItem(
                 post.attributes.title,
                 post.attributes.url,
@@ -55,7 +60,11 @@ class PatreonIntegration(
                     }
                 }
             )
-            PointedItem(sourceItem, CampaignPointer(target, requestYearMonth, post.id))
+
+            PointedItem(
+                sourceItem,
+                CampaignPointer(target, requestYearMonth, posts.lastIndex == index, post.id)
+            )
         }
 
         val terminated = yearMonths.max() == requestYearMonth
@@ -65,7 +74,11 @@ class PatreonIntegration(
         return IterationResult(items, terminated)
     }
 
-    private fun findNextYearMonth(doneYearMonth: YearMonth?, yearMonths: List<YearMonth>): YearMonth {
+    private fun findNextYearMonth(
+        doneYearMonth: YearMonth?,
+        yearMonths: List<YearMonth>,
+        lastOfMonth: Boolean
+    ): YearMonth {
         if (doneYearMonth == null) {
             return yearMonths.first()
         }
@@ -74,10 +87,11 @@ class PatreonIntegration(
             return max
         }
 
-        return yearMonths.maxBy {
+        val nextMonth = yearMonths.maxBy {
             val until = it.until(doneYearMonth, ChronoUnit.MONTHS)
             if (until >= 0L) Long.MIN_VALUE else until
         }
+        return if (lastOfMonth) nextMonth else nextMonth.minusMonths(1)
     }
 
     override fun defaultPointer(): PatreonPointer {

@@ -3,6 +3,7 @@ package io.github.shoaky.sourcedownloader.external.patreon
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.JsonNode
+import io.github.shoaky.sourcedownloader.sdk.util.Jackson
 import java.net.URI
 import java.time.ZonedDateTime
 
@@ -45,4 +46,12 @@ data class PostAttrs(
     val thumbnail: Any? = null,
     val title: String,
     val url: URI,
-)
+    @JsonProperty("post_metadata")
+    val postMetadata: JsonNode? = null
+) {
+
+    fun getImageOrder(): List<Long> {
+        val node = postMetadata?.get("image_order") ?: emptyList()
+        return Jackson.convert(node)
+    }
+}
