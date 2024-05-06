@@ -113,7 +113,7 @@ class PatreonIntegration(
         }.toMutableList()
 
         val content = response.data.attributes.content
-        if (content.isNotBlank()) {
+        if (!content.isNullOrBlank()) {
             files.add(
                 SourceFile(
                     Path("${response.data.id}_content.html"),

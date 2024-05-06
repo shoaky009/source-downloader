@@ -24,7 +24,7 @@ data class Post(
 }
 
 data class PostAttrs(
-    val content: String,
+    val content: String? = null,
     @JsonProperty("current_user_can_view")
     val currentUserCanView: Boolean,
     val embed: Any? = null,

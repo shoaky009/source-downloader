@@ -16,7 +16,12 @@ class PostResponse(
         val mediaIds = data.mediaIds()
         return mediaIds.mapNotNull {
             val attributes = includedMapping["media_$it"]?.get("attributes") ?: return@mapNotNull null
-            val downloadUrl = attributes.required("download_url").asText()
+            val downloadUrl = if (attributes.contains("download_url")) {
+                attributes.required("download_url").asText()
+            } else {
+                attributes.required("image_urls").get("original").asText()
+            }
+
             val filename = attributes.required("file_name").asText()
             val size = attributes.get("size_bytes").asLong()
             val mimetype = attributes.get("mimetype").textValue()
