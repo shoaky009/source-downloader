@@ -2,6 +2,7 @@ package io.github.shoaky.sourcedownloader.common.anime
 
 import io.github.shoaky.sourcedownloader.sdk.SourceFile
 import io.github.shoaky.sourcedownloader.sdk.component.FileTagger
+import kotlin.io.path.name
 import kotlin.io.path.nameWithoutExtension
 
 /**
@@ -32,9 +33,33 @@ object AnimeTagger : FileTagger {
             return "oad"
         }
 
-        if (filename.contains("剧场版") || filename.contains("劇場版") || filename.contains("movie", ignoreCase = true)) {
+        if (filename.contains("剧场版") ||
+            filename.contains("劇場版") ||
+            filename.contains("movie", ignoreCase = true)
+        ) {
             return "movie"
         }
+
+        val dirs = sourceFile.path.parent ?: return null
+
+        dirs.map { it.name }.forEach {
+            if (isSpecial(it)) {
+                return "special"
+            }
+        }
         return null
+    }
+
+    private fun isSpecial(text: String): Boolean {
+        if (text.equals("SPs", ignoreCase = true)) {
+            return true
+        }
+        if (text.contains("special", true)) {
+            return true
+        }
+        if (text == "特别篇" || text == "特別篇") {
+            return true
+        }
+        return false
     }
 }
