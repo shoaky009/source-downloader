@@ -29,7 +29,7 @@ class EpisodeVariableProviderTest {
                 val group = provider.itemVariables(item)
                 val sf = SourceFile(Path(name))
                 val file = provider.fileVariables(item, group, listOf(sf)).first()
-                assertEquals(episode, file.variables().getOrDefault("episode", ""))
+                assertEquals(episode, file.variables().getOrDefault("episode", ""), "name: $name")
             }
     }
 }

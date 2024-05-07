@@ -8,6 +8,7 @@ import io.github.shoaky.sourcedownloader.sdk.component.VariableProvider
 import io.github.shoaky.sourcedownloader.sdk.util.TextClear
 import org.apache.commons.lang3.math.NumberUtils
 import org.slf4j.LoggerFactory
+import java.io.Serializable
 import kotlin.io.path.nameWithoutExtension
 
 /**
@@ -20,15 +21,14 @@ object EpisodeVariableProvider : VariableProvider {
     private val parserChain: List<ValueParser> = listOf(
         RegexValueParser(Regex("第(\\d+(?:\\.\\d)?)[话話集巻]")),
         RegexValueParser(Regex("(\\d+(?:\\.\\d)?)[話话]")),
-        RegexValueParser("EP(\\d+)".toRegex(RegexOption.IGNORE_CASE)),
+        RegexValueParser("(E|EP|Episode |Episode)(\\d+)(?![\\d-])".toRegex(RegexOption.IGNORE_CASE)),
         RegexValueParser("S(\\d+)E(\\d+)".toRegex(RegexOption.IGNORE_CASE)),
-        RegexValueParser("E(\\d+)".toRegex()),
-        RegexValueParser("Episode (\\d+)".toRegex()),
         RegexValueParser("SP(\\d+)".toRegex()),
         WordEpisodeValueParser,
         // 连续数字只出现过一次的
         RegexValueParser("^\\D*?(\\d{1,3})\\D*?\$".toRegex()),
         RegexValueParser("#(\\d+)".toRegex()),
+        RangeEpisodeValueParser,
         CommonEpisodeValueParser,
     )
 
@@ -39,7 +39,7 @@ object EpisodeVariableProvider : VariableProvider {
             Regex("x(?:264|265)", RegexOption.IGNORE_CASE) to "",
             Regex("flacx2|ma10p|hi10p|yuv420p10|10bit|hevc10|aacx2|flac|4k|_", RegexOption.IGNORE_CASE) to "",
             Regex("\\b[A-Fa-f0-9]{8}\\b|CRC32.*[0-9A-F]{8}", RegexOption.IGNORE_CASE) to "",
-            Regex("v\\d+|\\w+-\\d+|(\\d){5,}") to "",
+            Regex("v\\d+|(\\d){5,}") to "",
             Regex("FIN", RegexOption.IGNORE_CASE) to "",
             Regex("1st|2nd|3rd|[4-9]th", RegexOption.IGNORE_CASE) to ""
         )
@@ -72,7 +72,7 @@ object EpisodeVariableProvider : VariableProvider {
 
     override val accuracy: Int = 3
 
-    private fun padNumber(number: Number?, length: Int = 2): String? {
+    private fun padNumber(number: Serializable?, length: Int = 2): String? {
         val str = number?.toString() ?: return null
         if (str.contains(".")) {
             val index = str.indexOf(".")
@@ -98,7 +98,7 @@ object EpisodeVariableProvider : VariableProvider {
 
 private interface ValueParser {
 
-    fun parse(value: String): Number?
+    fun parse(value: String): Serializable?
 }
 
 private class RegexValueParser(
@@ -238,4 +238,21 @@ private data object WordEpisodeValueParser : ValueParser {
         return wordNumberMapping[matchedValue]
     }
 
+}
+
+private object RangeEpisodeValueParser : ValueParser {
+
+    private val rangeRegexes = listOf(
+        "(EP|E)(?<begin>\\d+)-(?<end>\\d+)".toRegex(RegexOption.IGNORE_CASE),
+    )
+
+    override fun parse(value: String): Serializable? {
+        for (rangeRegex in rangeRegexes) {
+            val matchResult = rangeRegex.find(value) ?: continue
+            val begin = matchResult.groups["begin"]?.value ?: continue
+            val end = matchResult.groups["end"]?.value ?: continue
+            return "$begin-$end"
+        }
+        return null
+    }
 }
