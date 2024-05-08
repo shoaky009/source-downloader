@@ -73,9 +73,6 @@ data class VariableProcessChain(
             primaries.add(primary)
             return@fold vars[primary] ?: acc
         }
-        if (value == processedVar) {
-            return null
-        }
 
         val result : MutableMap<String, String> = mutableMapOf()
         tempVars.mapNotNull { (key, value) ->

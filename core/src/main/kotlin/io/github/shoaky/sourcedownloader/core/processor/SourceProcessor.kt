@@ -259,6 +259,7 @@ class SourceProcessor(
             options.variableNameReplace
         )
         val itemVariables = variableProvider.itemVariables(sourceItem)
+        val itemRenameVariables = renamer.itemRenameVariables(sourceItem, itemVariables)
         val fileContents = resolvedFiles.groupBy {
             options.matchFileOption(it)
         }.flatMap { (fileOption, files) ->
@@ -273,7 +274,7 @@ class SourceProcessor(
                     fileOption?.filenamePattern ?: itemOptions.filenamePattern ?: filenamePattern,
                     file
                 )
-                val fileContent = renamer.createFileContent(sourceItem, rawFileContent, itemVariables)
+                val fileContent = renamer.createFileContent(rawFileContent, itemRenameVariables)
                 fileContent to fileOption
             }
         }.filter { (fileContent, fileOption) ->

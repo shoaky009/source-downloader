@@ -3,12 +3,12 @@ package io.github.shoaky.sourcedownloader.component
 import io.github.shoaky.sourcedownloader.component.supplier.GeneralFileMoverSupplier
 import io.github.shoaky.sourcedownloader.core.file.CoreItemContent
 import io.github.shoaky.sourcedownloader.core.file.CorePathPattern
+import io.github.shoaky.sourcedownloader.core.file.RenameVariables
 import io.github.shoaky.sourcedownloader.core.file.Renamer
 import io.github.shoaky.sourcedownloader.core.processor.createRawFileContent
 import io.github.shoaky.sourcedownloader.createIfNotExists
 import io.github.shoaky.sourcedownloader.sdk.CoreContext
 import io.github.shoaky.sourcedownloader.sdk.MapPatternVariables
-import io.github.shoaky.sourcedownloader.sdk.PatternVariables
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sourceItem
 import org.junit.jupiter.api.AfterAll
@@ -43,22 +43,26 @@ class GeneralFileMoverTest {
 
     @Test
     fun rename() {
-        val file1 = Renamer().createFileContent(sourceItem(), createRawFileContent(
+        val file1 = Renamer().createFileContent(
+            createRawFileContent(
             Path("1.txt"),
             savePath,
             downloadPath,
             MapPatternVariables(),
             CorePathPattern.origin,
             CorePathPattern.origin,
-        ), PatternVariables.EMPTY)
-        val file2 = Renamer().createFileContent(sourceItem(), createRawFileContent(
+            ), RenameVariables.EMPTY
+        )
+        val file2 = Renamer().createFileContent(
+            createRawFileContent(
             Path("2.txt"),
             savePath,
             downloadPath,
             MapPatternVariables(),
             CorePathPattern.origin,
             CorePathPattern.origin,
-        ), PatternVariables.EMPTY)
+            ), RenameVariables.EMPTY
+        )
         val itemContent = CoreItemContent(sourceItem(), listOf(file1, file2), MapPatternVariables())
         val result = mover.move(itemContent)
         assert(result)
