@@ -244,10 +244,9 @@ class TelegramIntegration(
     override fun stateDetail(): Any {
         return mapOf(
             "downloaded" to downloadedCounting.get(),
-            "downloading" to progresses.map {
-                val channel = it.value
+            "downloading" to progresses.map { (path, channel) ->
                 mapOf(
-                    "path" to it.key.toString(),
+                    "path" to path.toString(),
                     "totalSize" to channel.formatTotalSize(),
                     "progress" to channel.formatProgress(),
                     "rate" to channel.formatRate(),

@@ -632,12 +632,12 @@ class SourceProcessor(
                             onItemSuccess(pointed, ct)
                             ct
                         }.onFailure {
-                            log.error("Processor:'$name'处理失败, item:$pointed", it)
                             onItemError(pointed.sourceItem, it)
                             if (it is ProcessingException && it.skip) {
                                 log.error("Processor:'$name'处理失败, item:$pointed, 被组件定义为可跳过的异常")
                                 return@onFailure
                             }
+                            log.error("Processor:'$name'处理失败, item:$pointed", it)
 
                             if (options.itemErrorContinue.not()) {
                                 log.warn("Processor:'$name'处理失败, item:$pointed, 退出本次触发处理, 如果未能解决该处理器将无法继续处理后续Item")
