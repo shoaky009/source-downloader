@@ -648,8 +648,9 @@ class SourceProcessor(
                                 return@launch
                             }
                         }.getOrElse {
-                            ProcessingContent(name, CoreItemContent(sourceItem, emptyList(), MapPatternVariables()))
+                            val errorContent = ProcessingContent(name, CoreItemContent(sourceItem, emptyList(), MapPatternVariables()))
                                 .copy(status = FAILURE, failureReason = it.message)
+                            whenItemErrorReturning(errorContent, it)
                         }
 
                         try {
@@ -683,6 +684,10 @@ class SourceProcessor(
             if (stat.hasChange()) {
                 log.info("Processor:{}", stat)
             }
+        }
+
+        protected open fun whenItemErrorReturning(errorContent: ProcessingContent, throwable: Throwable): ProcessingContent {
+            return errorContent
         }
 
         private suspend fun processWithRetry(
@@ -1185,6 +1190,10 @@ class SourceProcessor(
         override fun selectUpdateStatusMover(): FileMover {
             // 重新处理只检查真实存在的文件
             return fileMover
+        }
+
+        override fun whenItemErrorReturning(errorContent: ProcessingContent, throwable: Throwable): ProcessingContent {
+            return errorContent.copy(id = content.id)
         }
     }
 

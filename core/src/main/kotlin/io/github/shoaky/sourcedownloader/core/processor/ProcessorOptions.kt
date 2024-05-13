@@ -63,7 +63,7 @@ data class VariableProcessChain(
     val condition: CompiledExpression<Boolean>? = null
 ) {
 
-    fun process(value: String): Map<String, String>? {
+    fun process(value: String): Map<String, String> {
         val tempVars = mutableMapOf<String, String>()
         val primaries = mutableSetOf<String>()
         val processedVar = chain.fold(value) { acc, provider ->
