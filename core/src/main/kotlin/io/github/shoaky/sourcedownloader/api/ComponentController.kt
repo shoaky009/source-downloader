@@ -3,7 +3,11 @@ package io.github.shoaky.sourcedownloader.api
 import io.github.shoaky.sourcedownloader.core.component.*
 import io.github.shoaky.sourcedownloader.core.componentTypeRef
 import io.github.shoaky.sourcedownloader.sdk.component.*
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.*
 import org.springframework.http.HttpStatus
+import org.springframework.http.codec.ServerSentEvent
 import org.springframework.web.bind.annotation.*
 
 /**
@@ -149,6 +153,39 @@ private class ComponentController(
         val componentType = ComponentType.of(type, typeName)
         componentManager.destroy(componentType, name)
         componentManager.getComponent(type, ComponentId("$typeName:$name"), componentTypeRef())
+    }
+
+    /**
+     * @param id Component实例名称例如`Downloader:telegram:telegram`
+     */
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @GetMapping("/state-stream")
+    suspend fun stateDetailStream(
+        @RequestParam id: MutableSet<String>,
+    ): Flow<ServerSentEvent<Any>> {
+        return tickerFlow(1000L, Unit) {
+        }.map {
+            val wrappers = componentManager.getAllComponent().filter {
+                it.type.instanceName(it.name) in id
+            }
+            wrappers.mapNotNull { wrapper ->
+                val component = wrapper.component
+                if (component !is ComponentStateful) return@mapNotNull null
+                val state = component.stateDetail()
+
+                val instanceName = wrapper.type.instanceName(wrapper.name)
+                ServerSentEvent.builder(state).event("component-state").id(instanceName).build()
+            }
+        }.flatMapConcat { it.asFlow() }
+    }
+}
+
+fun <T> tickerFlow(period: Long, initialValue: T, nextValue: suspend (T) -> T): Flow<T> = flow {
+    var value = initialValue
+    while (true) {
+        emit(value)
+        delay(period)
+        value = nextValue(value)
     }
 }
 
