@@ -1,13 +1,12 @@
 package io.github.shoaky.sourcedownloader.sdk.component
 
 import com.fasterxml.jackson.annotation.JsonValue
-import com.google.common.base.CaseFormat
 import kotlin.reflect.KClass
 import kotlin.reflect.full.isSuperclassOf
 
 enum class ComponentTopType(
     val klass: KClass<out SdComponent>,
-    val names: List<String>
+    val alias: List<String>,
 ) {
 
     TRIGGER(Trigger::class, listOf("trigger")),
@@ -17,8 +16,8 @@ enum class ComponentTopType(
         ItemFileResolver::class,
         listOf("item-file-resolver", "file-resolver", "itemFileResolver", "fileResolver")
     ),
-    VARIABLE_PROVIDER(VariableProvider::class, listOf("provider", "variable-provider", "variableProvider")),
-    FILE_MOVER(FileMover::class, listOf("mover", "file-mover", "fileMover")),
+    FILE_MOVER(FileMover::class, listOf("file-mover", "mover", "fileMover")),
+    VARIABLE_PROVIDER(VariableProvider::class, listOf("variable-provider", "provider", "variableProvider")),
     PROCESS_LISTENER(ProcessListener::class, listOf("process-listener", "listener", "run-after-completion")),
     SOURCE_ITEM_FILTER(
         SourceItemFilter::class,
@@ -52,17 +51,12 @@ enum class ComponentTopType(
     ;
 
     @JsonValue
-    fun lowerHyphenName(): String {
-        return CaseFormat.UPPER_UNDERSCORE.to(
-            CaseFormat.LOWER_HYPHEN,
-            this.name
-        )
-    }
+    val primaryName = alias.first()
 
     companion object {
 
         private val nameMapping: Map<String, ComponentTopType> = entries.flatMap {
-            it.names.map { name -> name to it }
+            it.alias.map { name -> name to it }
         }.toMap()
 
         fun fromClass(klass: KClass<out SdComponent>): List<ComponentTopType> {

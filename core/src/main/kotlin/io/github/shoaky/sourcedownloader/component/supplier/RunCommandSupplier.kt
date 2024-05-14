@@ -6,7 +6,6 @@ import io.github.shoaky.sourcedownloader.sdk.CoreContext
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
-import io.github.shoaky.sourcedownloader.sdk.component.ProcessListener
 import io.github.shoaky.sourcedownloader.sdk.util.Jackson
 
 object RunCommandSupplier : ComponentSupplier<RunCommand> {
@@ -23,7 +22,7 @@ object RunCommandSupplier : ComponentSupplier<RunCommand> {
 
     override fun supplyTypes(): List<ComponentType> {
         return listOf(
-            ComponentType("command", ProcessListener::class)
+            ComponentType.listener("command")
         )
     }
 

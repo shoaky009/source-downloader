@@ -60,7 +60,7 @@ class YamlConfigOperator(
     override fun deleteComponent(topType: ComponentTopType, type: String, name: String): Boolean {
         val config = yamlMapper.readValue(configPath.inputStream(), Config::class.java)
         val components = config.components
-        val configs = components[topType.lowerHyphenName()] ?: mutableListOf()
+        val configs = components[topType.primaryName] ?: mutableListOf()
         val removed = configs.removeIf { it.type == type && it.name == name }
         if (removed) {
             yamlMapper.writeValue(configPath.toFile(), config)

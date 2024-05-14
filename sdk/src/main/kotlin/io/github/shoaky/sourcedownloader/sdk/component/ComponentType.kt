@@ -1,75 +1,66 @@
 package io.github.shoaky.sourcedownloader.sdk.component
 
 import com.google.common.base.CaseFormat
-import kotlin.reflect.KClass
+import io.github.shoaky.sourcedownloader.sdk.component.ComponentTopType.*
 
 data class ComponentType(
+    val type: ComponentTopType,
     val typeName: String,
-    val topTypeClass: KClass<out SdComponent>
 ) {
 
     init {
-        if (topTypeClasses.contains(topTypeClass).not()) {
+        if (topTypeClasses.contains(type.klass).not()) {
             throw IllegalArgumentException("topTypeClass must be one of $topTypeClasses")
         }
-    }
-
-    val topType: ComponentTopType
-        get() = topType()
-
-    constructor(type: ComponentTopType, typeName: String) : this(typeName, type.klass)
-
-    fun topType(): ComponentTopType {
-        return ComponentTopType.fromClass(topTypeClass).first()
     }
 
     @Suppress("UNUSED")
     companion object {
 
         @JvmStatic
-        fun downloader(type: String) = ComponentType(type, Downloader::class)
+        fun downloader(typeName: String) = ComponentType(DOWNLOADER, typeName)
 
         @JvmStatic
-        fun source(type: String) = ComponentType(type, Source::class)
+        fun source(typeName: String) = ComponentType(SOURCE, typeName)
 
         @JvmStatic
-        fun fileMover(type: String) = ComponentType(type, FileMover::class)
+        fun fileMover(typeName: String) = ComponentType(FILE_MOVER, typeName)
 
         @JvmStatic
-        fun variableProvider(type: String) = ComponentType(type, VariableProvider::class)
+        fun variableProvider(typeName: String) = ComponentType(VARIABLE_PROVIDER, typeName)
 
         @JvmStatic
-        fun fileResolver(type: String) = ComponentType(type, ItemFileResolver::class)
+        fun fileResolver(typeName: String) = ComponentType(ITEM_FILE_RESOLVER, typeName)
 
         @JvmStatic
-        fun itemFilter(type: String) = ComponentType(type, SourceItemFilter::class)
+        fun itemFilter(typeName: String) = ComponentType(SOURCE_ITEM_FILTER, typeName)
 
         @JvmStatic
-        fun contentFilter(type: String) = ComponentType(type, ItemContentFilter::class)
+        fun contentFilter(typeName: String) = ComponentType(ITEM_CONTENT_FILTER, typeName)
 
         @JvmStatic
-        fun trigger(type: String) = ComponentType(type, Trigger::class)
+        fun trigger(typeName: String) = ComponentType(TRIGGER, typeName)
 
         @JvmStatic
-        fun listener(type: String) = ComponentType(type, ProcessListener::class)
+        fun listener(typeName: String) = ComponentType(PROCESS_LISTENER, typeName)
 
         @JvmStatic
-        fun fileFilter(type: String) = ComponentType(type, FileContentFilter::class)
+        fun fileFilter(typeName: String) = ComponentType(FILE_CONTENT_FILTER, typeName)
 
         @JvmStatic
-        fun fileTagger(type: String): ComponentType = ComponentType(type, FileTagger::class)
+        fun fileTagger(typeName: String): ComponentType = ComponentType(TAGGER, typeName)
 
         @JvmStatic
-        fun fileReplacementDecider(type: String): ComponentType = ComponentType(type, FileReplacementDecider::class)
+        fun fileReplacementDecider(typeName: String): ComponentType = ComponentType(FILE_REPLACEMENT_DECIDER, typeName)
 
         @JvmStatic
-        fun itemExistsDetector(type: String): ComponentType = ComponentType(type, FileExistsDetector::class)
+        fun itemExistsDetector(typeName: String): ComponentType = ComponentType(FILE_EXISTS_DETECTOR, typeName)
 
         @JvmStatic
-        fun variableReplacer(type: String): ComponentType = ComponentType(type, VariableReplacer::class)
+        fun variableReplacer(typeName: String): ComponentType = ComponentType(VARIABLE_REPLACER, typeName)
 
         @JvmStatic
-        fun manualSource(type: String): ComponentType = ComponentType(type, ManualSource::class)
+        fun manualSource(typeName: String): ComponentType = ComponentType(MANUAL_SOURCE, typeName)
 
         @JvmStatic
         fun types(): List<String> {
@@ -78,7 +69,7 @@ data class ComponentType(
 
         @JvmStatic
         fun of(topType: ComponentTopType, typeName: String): ComponentType {
-            return ComponentType(typeName, topType.klass)
+            return ComponentType(topType, typeName)
         }
 
         val topTypeClasses = SdComponent::class.sealedSubclasses
@@ -89,7 +80,7 @@ data class ComponentType(
             }
     }
 
-    fun fullName() = "${topTypeClass.simpleName}:$typeName"
+    fun fullName() = "${type.primaryName}:$typeName"
 
     fun instanceName(name: String) = "${fullName()}:${name}"
 

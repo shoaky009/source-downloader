@@ -2,21 +2,20 @@ package io.github.shoaky.sourcedownloader.core.component
 
 import com.fasterxml.jackson.annotation.JsonValue
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentException
+import io.github.shoaky.sourcedownloader.sdk.component.ComponentTopType
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
-import io.github.shoaky.sourcedownloader.sdk.component.SdComponent
-import kotlin.reflect.KClass
 
 data class ComponentId(
     @get:JsonValue
     val id: String,
 ) {
 
-    fun <T : SdComponent> getInstanceName(klass: KClass<T>): String {
-        return getComponentType(klass).instanceName(name())
+    fun getInstanceName(topType: ComponentTopType): String {
+        return getComponentType(topType).instanceName(name())
     }
 
-    fun <T : SdComponent> getComponentType(klass: KClass<T>): ComponentType {
-        return ComponentType(typeName(), klass)
+    fun getComponentType(topType: ComponentTopType): ComponentType {
+        return ComponentType(topType, typeName())
     }
 
     fun name(): String {

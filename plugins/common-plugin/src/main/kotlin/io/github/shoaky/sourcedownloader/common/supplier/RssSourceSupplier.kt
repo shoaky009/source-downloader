@@ -6,7 +6,6 @@ import io.github.shoaky.sourcedownloader.sdk.CoreContext
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
-import io.github.shoaky.sourcedownloader.sdk.component.Source
 import java.time.format.DateTimeFormatter
 import java.util.*
 
@@ -26,7 +25,7 @@ object RssSourceSupplier : ComponentSupplier<RssSource> {
 
     override fun supplyTypes(): List<ComponentType> {
         return listOf(
-            ComponentType("rss", Source::class)
+            ComponentType.source("rss")
         )
     }
 

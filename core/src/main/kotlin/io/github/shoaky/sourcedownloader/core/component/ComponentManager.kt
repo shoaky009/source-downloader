@@ -54,7 +54,7 @@ interface ComponentManager {
     }
 
     fun getAllManualSource(): List<ComponentWrapper<ManualSource>> {
-        return getAllComponent().filter { it.type.topType == ComponentTopType.MANUAL_SOURCE }
+        return getAllComponent().filter { it.type.type == ComponentTopType.MANUAL_SOURCE }
             .filterIsInstance<ComponentWrapper<ManualSource>>()
     }
 

@@ -28,7 +28,7 @@ class DefaultComponentManager(
         typeReference: TypeReference<ComponentWrapper<T>>,
     ): ComponentWrapper<T> {
 
-        val targetInstanceName = id.getInstanceName(type.klass)
+        val targetInstanceName = id.getInstanceName(type)
         if (objectContainer.contains(targetInstanceName)) {
             return objectContainer.get(targetInstanceName, typeReference)
         }
@@ -40,13 +40,13 @@ class DefaultComponentManager(
         val supplier = getSupplier(targetComponentType)
         val supplyTypes = supplier.supplyTypes()
         val typesWithProp = supplyTypes.associateBy({ it }) {
-            val config = findConfig(it.topType, it.typeName, targetName)
+            val config = findConfig(it.type, it.typeName, targetName)
             if (config == null && supplier.supportNoArgs()) {
                 Properties.empty
             } else {
                 val values = config?.props
                     ?: throwComponentException(
-                        "No component config found for ${it.topType}:${it.typeName}:$targetName",
+                        "No component config found for ${it.type}:${it.typeName}:$targetName",
                         ComponentFailureType.DEFINITION_NOT_FOUND
                     )
                 Properties.fromMap(values)
@@ -76,7 +76,7 @@ class DefaultComponentManager(
                 component
             )
             objectContainer.put(primaryTypeBeanName, wrapper)
-            log.info("Successfully created component ${type}:${id}")
+            log.info("Successfully created component $targetInstanceName")
             Events.register(wrapper)
             wrapper
         }
@@ -101,7 +101,8 @@ class DefaultComponentManager(
                     false
                 )
                 objectContainer.put(typeBeanName, componentWrapper)
-                log.info("Successfully created component ${type.topType}:${type.typeName}:${id}")
+
+                log.info("Successfully created component ${type.instanceName(id.name())}")
                 Events.register(componentWrapper)
                 componentWrapper
             }.first { it.type == targetComponentType }
@@ -140,7 +141,7 @@ class DefaultComponentManager(
     override fun getSupplier(type: ComponentType): ComponentSupplier<*> {
         return componentSuppliers[type]
             ?: throwComponentException(
-                "组件${type.topTypeClass.simpleName}:${type.typeName} Supplier未注册进应用中",
+                "组件${type.type}:${type.typeName} Supplier未注册进应用中",
                 ComponentFailureType.SUPPLIER_NOT_FOUND
             )
     }
@@ -221,7 +222,7 @@ class DefaultComponentManager(
     private fun componentTypeDescriptors(supplier: ComponentSupplier<*>) =
         supplier.supplyTypes().map { type ->
             ComponentTypeDescriptor(
-                type.topType(),
+                type.type,
                 type.typeName
             )
         }
@@ -230,7 +231,7 @@ class DefaultComponentManager(
         supplier.rules().map { rule ->
             RuleDescriptor(
                 if (rule.isAllow) "允许" else "禁止",
-                rule.type.lowerHyphenName(),
+                rule.type.primaryName,
                 rule.value.jvmName
             )
         }

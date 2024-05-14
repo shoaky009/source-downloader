@@ -19,7 +19,7 @@ interface ComponentConfigStorage {
     }
 
     fun findComponentConfig(type: ComponentTopType, typeName: String, name: String): ComponentConfig? {
-        val names = type.names
+        val names = type.alias
         return getAllComponentConfig()
             .filter { names.contains(it.key) }
             .flatMap { it.value }

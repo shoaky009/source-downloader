@@ -40,7 +40,7 @@ private class ComponentController(
         val defaults = componentManager.getSuppliers().filter { it.supportNoArgs() }
             .map { supplier ->
                 supplier.supplyTypes().map { componentType ->
-                    componentType.topType to ComponentConfig(componentType.typeName, componentType.typeName, emptyMap())
+                    componentType.type to ComponentConfig(componentType.typeName, componentType.typeName, emptyMap())
                 }.groupBy { (t, _) -> t }.entries
             }.flatten()
             .groupBy({ it.key }) { entry -> entry.value.map { it.second } }
@@ -50,7 +50,6 @@ private class ComponentController(
             .mapNotNullKeys()
 
         // merge list
-
         val allComponents: Map<ComponentTopType, List<ComponentConfig>> = defaults + declConfigs
 
         return allComponents
@@ -61,17 +60,24 @@ private class ComponentController(
                     .filter { it.name matchesNullOrEqual name }
                     .map { config ->
                         val wrapper = instances[config.instanceName(topType)]
+                        val state = if (wrapper?.primary == true) {
+                            wrapper.get().stateDetail()
+                        } else {
+                            null
+                        }
                         ComponentInfo(
                             topType,
                             config.type,
                             config.name,
                             config.props,
-                            wrapper?.get()?.stateDetail(),
+                            state,
                             wrapper?.primary ?: true,
                             wrapper != null,
                             wrapper?.getRefs()
                         )
                     }
+            }.sortedBy {
+                it.type
             }
     }
 
@@ -94,7 +100,7 @@ private class ComponentController(
     @ResponseStatus(HttpStatus.CREATED)
     fun createComponent(@RequestBody body: ComponentCreateBody) {
         configOperator.save(
-            body.type.lowerHyphenName(),
+            body.type.primaryName,
             ComponentConfig(
                 body.name,
                 body.typeName,

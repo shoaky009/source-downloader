@@ -64,14 +64,14 @@ class DefaultProcessorManager(
         val resolver = resolverW.getAndMarkRef(processorName)
 
         val checkTypes = mutableListOf(
-            config.source.getComponentType(Source::class),
-            config.downloader.getComponentType(Downloader::class),
-            config.fileMover.getComponentType(FileMover::class),
-            config.itemFileResolver.getComponentType(ItemFileResolver::class),
+            config.source.getComponentType(ComponentTopType.SOURCE),
+            config.downloader.getComponentType(ComponentTopType.DOWNLOADER),
+            config.fileMover.getComponentType(ComponentTopType.FILE_MOVER),
+            config.itemFileResolver.getComponentType(ComponentTopType.ITEM_FILE_RESOLVER),
         )
         checkTypes.addAll(
             config.options.variableProviders.map {
-                it.getComponentType(VariableProvider::class)
+                it.getComponentType(ComponentTopType.VARIABLE_PROVIDER)
             }
         )
 
@@ -150,8 +150,8 @@ class DefaultProcessorManager(
                 try {
                     rule.verify(wrapper.component)
                 } catch (ex: ComponentException) {
-                    val curr = rule.type.lowerHyphenName()
-                    val subject = subjectType.topType.lowerHyphenName()
+                    val curr = rule.type.primaryName
+                    val subject = subjectType.type.primaryName
                     val message = """
                         来自'$subject'与'$curr'的组件适配性问题
                         组件${curr}:${wrapper.type} 与 ${subject}:${subjectType.typeName} 不兼容

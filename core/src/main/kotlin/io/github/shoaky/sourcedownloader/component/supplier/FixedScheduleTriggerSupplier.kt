@@ -5,7 +5,6 @@ import io.github.shoaky.sourcedownloader.sdk.CoreContext
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
-import io.github.shoaky.sourcedownloader.sdk.component.Trigger
 import java.time.Duration
 
 object FixedScheduleTriggerSupplier : ComponentSupplier<FixedScheduleTrigger> {
@@ -17,7 +16,9 @@ object FixedScheduleTriggerSupplier : ComponentSupplier<FixedScheduleTrigger> {
     }
 
     override fun supplyTypes(): List<ComponentType> {
-        return listOf(ComponentType("fixed", Trigger::class))
+        return listOf(
+            ComponentType.trigger("fixed")
+        )
     }
 
 }

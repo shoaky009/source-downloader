@@ -5,7 +5,6 @@ import io.github.shoaky.sourcedownloader.sdk.CoreContext
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
-import io.github.shoaky.sourcedownloader.sdk.component.Source
 
 object JackettSourceSupplier : ComponentSupplier<JackettSource> {
 
@@ -15,7 +14,7 @@ object JackettSourceSupplier : ComponentSupplier<JackettSource> {
 
     override fun supplyTypes(): List<ComponentType> {
         return listOf(
-            ComponentType("jackett", Source::class)
+            ComponentType.source("jackett")
         )
     }
 

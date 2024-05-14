@@ -5,7 +5,6 @@ import io.github.shoaky.sourcedownloader.sdk.CoreContext
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
-import io.github.shoaky.sourcedownloader.sdk.component.FileMover
 
 object GeneralFileMoverSupplier : ComponentSupplier<GeneralFileMover> {
 
@@ -15,7 +14,7 @@ object GeneralFileMoverSupplier : ComponentSupplier<GeneralFileMover> {
 
     override fun supplyTypes(): List<ComponentType> {
         return listOf(
-            ComponentType("general", FileMover::class)
+            ComponentType.fileMover("general")
         )
     }
 

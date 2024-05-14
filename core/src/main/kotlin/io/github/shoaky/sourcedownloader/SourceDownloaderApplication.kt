@@ -91,7 +91,7 @@ class SourceDownloaderApplication(
             .map { it.supplyTypes() }
             .flatten()
             .distinct()
-            .groupBy({ it.topTypeClass.simpleName }, { it.typeName })
+            .groupBy({ it.type.klass.simpleName }, { it.typeName })
         log.info("Component supplier registration completed:$types")
     }
 
