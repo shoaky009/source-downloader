@@ -3,6 +3,8 @@ package io.github.shoaky.sourcedownloader.sdk
 import com.fasterxml.jackson.annotation.JsonAnyGetter
 import com.fasterxml.jackson.annotation.JsonAnySetter
 import com.fasterxml.jackson.annotation.JsonIgnore
+import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
+import io.github.shoaky.sourcedownloader.sdk.util.Jackson
 
 class MapPatternVariables() : PatternVariables {
     constructor(variables: Map<String, String>) : this() {
@@ -11,6 +13,11 @@ class MapPatternVariables() : PatternVariables {
 
     constructor(variables: PatternVariables) : this() {
         this.variables.putAll(variables.variables())
+    }
+
+    constructor(any: Any) : this() {
+        val map = Jackson.convert(any, jacksonTypeRef<Map<String, String>>())
+        this.variables.putAll(map)
     }
 
     @JsonAnyGetter
