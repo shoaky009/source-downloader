@@ -30,6 +30,8 @@ object EpisodeVariableProvider : VariableProvider {
         RegexValueParser("#(\\d+)".toRegex()),
         RangeEpisodeValueParser,
         CommonEpisodeValueParser,
+        //[01(56)]
+        RegexValueParser("\\[(\\d{2})\\(\\d{2}\\)]".toRegex()),
     )
 
     private val textClear = TextClear(
