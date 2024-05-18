@@ -18,7 +18,8 @@ class DlsiteVariableProvider(
     private val dlistClient: DlsiteClient = DlsiteClient(),
     private val locale: String = "ja-jp",
     private val onlyExtractId: Boolean = false,
-    private val workTypeCategories: List<String> = emptyList()
+    private val searchWorkTypeCategories: List<String> = emptyList(),
+    private val preferSuggest: Boolean = true,
 ) : VariableProvider {
 
     private val cache = CacheBuilder.newBuilder().maximumSize(500).build(
@@ -61,17 +62,36 @@ class DlsiteVariableProvider(
     }
 
     private fun fromKeyword(keyword: String): DlsiteWorkInfo? {
-        val items = dlistClient.searchWork(keyword, locale, workTypeCategories)
-        if (items.isEmpty()) {
-            log.info("No work found for keyword: {}", keyword)
-            return null
+        if (preferSuggest) {
+            val response = dlistClient.suggestWork(keyword, locale)
+            if (response.work.isNotEmpty()) {
+                val work = response.work.first()
+                return fromDlsiteId(work.workNo, work.workName)
+            }
         }
-        // 后续需要对搜索结果进行处理，先观察
-        return fromDlsiteId(items.first().dlsiteId)
+        val items = dlistClient.searchWork(keyword, locale, searchWorkTypeCategories)
+        if (items.isNotEmpty()) {
+            // 后续需要对搜索结果进行处理，先观察
+            return fromDlsiteId(items.first().dlsiteId)
+        }
+
+        val response = dlistClient.suggestWork(keyword, locale)
+        if (response.work.isNotEmpty()) {
+            val work = response.work.first()
+            log.info("Suggest work found for keyword: {}, work:{}", keyword, work)
+            return fromDlsiteId(work.workNo, work.workName)
+        }
+        log.info("No work found for keyword: {}", keyword)
+        return null
     }
 
-    private fun fromDlsiteId(dlsiteId: String): DlsiteWorkInfo {
-        return dlistClient.getWorkInfo(dlsiteId, locale)
+    /**
+     * suggest的名称暂时没有和谐优先使用
+     */
+    private fun fromDlsiteId(dlsiteId: String, suggestWorkName: String? = null): DlsiteWorkInfo {
+        val info = dlistClient.getWorkInfo(dlsiteId, locale)
+        if (suggestWorkName == null) return info
+        return info.copy(title = suggestWorkName)
     }
 
     override fun extractFrom(text: String): PatternVariables? {

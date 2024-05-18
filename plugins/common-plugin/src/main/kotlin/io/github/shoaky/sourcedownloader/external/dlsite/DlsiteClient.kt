@@ -1,22 +1,28 @@
 package io.github.shoaky.sourcedownloader.external.dlsite
 
+import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
+import com.google.common.net.HttpHeaders
 import io.github.shoaky.sourcedownloader.sdk.util.find
+import io.github.shoaky.sourcedownloader.sdk.util.http.CommonBodyHandler
+import io.github.shoaky.sourcedownloader.sdk.util.http.httpClient
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
+import java.net.URI
 import java.net.URLEncoder
+import java.net.http.HttpRequest
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-class DlsiteClient {
+class DlsiteClient(
+    private val userAgent: String = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
+) {
 
     fun getWorkInfo(dlsiteId: String, locale: String): DlsiteWorkInfo {
         val document = Jsoup.connect("https://www.dlsite.com/home/work/=/product_id/$dlsiteId.html")
             .cookie("locale", locale)
             .cookie("adultchecked", "1")
             .get()
-        // val canonical = document.select("link[rel=canonical]").attr("href")
-        // val dlsiteId = canonical.find(*idRegexes)
-        //     ?: throw IllegalArgumentException("Can't find dlsiteId in document element 'link[rel=canonical]'")
         return parseWorkDetail(document, dlsiteId)
     }
 
@@ -84,6 +90,17 @@ class DlsiteClient {
         }
     }
 
+    fun suggestWork(keyword: String, locale: String = "ja-jp"): SuggestResponse {
+        val encoded = URLEncoder.encode(keyword, Charsets.UTF_8)
+        val url = "https://www.dlsite.com/suggest/?term=$encoded&site=pro&time=${System.currentTimeMillis()}"
+        val request = HttpRequest.newBuilder(URI.create(url)).GET()
+            .header(HttpHeaders.USER_AGENT, userAgent)
+            .header("Cookie", "locale=$locale; adultchecked=1")
+            .build()
+        val bodyHandler = CommonBodyHandler(jacksonTypeRef<SuggestResponse>())
+        return httpClient.send(request, bodyHandler).body()
+    }
+
     companion object {
 
         private val idRegexes = arrayOf(
@@ -101,8 +118,24 @@ class DlsiteClient {
                 "販売日", "シリーズ名", "シナリオ", "イラスト", "声優", "音楽", "作品形式", "作者", "サークル名"
             ),
         )
+
         fun parseDlsiteId(text: String): String? {
             return text.find(*idRegexes)
         }
     }
 }
+
+data class SuggestResponse(
+    val work: List<SuggestWork>
+)
+
+data class SuggestWork(
+    @JsonProperty("work_name")
+    val workName: String,
+    @JsonProperty("workno")
+    val workNo: String,
+    @JsonProperty("maker_name")
+    val markerName: String? = null,
+    @JsonProperty("work_type")
+    val workType: String? = null
+)
