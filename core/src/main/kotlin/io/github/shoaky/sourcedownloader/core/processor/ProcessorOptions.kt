@@ -63,20 +63,18 @@ data class VariableProcessChain(
     val condition: CompiledExpression<Boolean>? = null
 ) {
 
-    fun process(value: String): Map<String, String> {
+    fun process(value: String, contextVariables: Map<String, Any>): Map<String, String> {
         val tempVars = mutableMapOf<String, String>()
-        val primaries = mutableSetOf<String>()
         val processedVar = chain.fold(value) { acc, provider ->
             val primary = provider.primary() ?: return@fold acc
             val vars = provider.extractFrom(acc)?.variables() ?: return@fold acc
             tempVars.putAll(vars)
-            primaries.add(primary)
             return@fold vars[primary] ?: acc
         }
 
         val result : MutableMap<String, String> = mutableMapOf()
         tempVars.mapNotNull { (key, value) ->
-            if (key in primaries) return@mapNotNull null
+            if (contextVariables.containsKey(key)) return@mapNotNull null
             if (key in output.excludeKeys) return@mapNotNull null
             if (output.includeKeys.isNotEmpty() && key !in output.includeKeys) return@mapNotNull null
             (output.keyMapping[key] ?: key) to value

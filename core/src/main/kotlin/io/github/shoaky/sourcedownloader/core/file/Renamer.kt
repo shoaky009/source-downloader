@@ -219,7 +219,7 @@ class Renamer(
                 return@forEach
             }
             log.debug("Process variable '{}' with value '{}'", process.input, value)
-            val processed = process.process(value)
+            val processed = process.process(value, variables)
             if (processed.isNotEmpty()) {
                 processedVariables.putAll(processed)
             }
