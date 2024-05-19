@@ -147,16 +147,20 @@ class Renamer(
     fun itemRenameVariables(sourceItem: SourceItem, itemVariables: PatternVariables): RenameVariables {
         val vars = mutableMapOf<String, Any>()
         vars.putAll(itemVariables.variables().replaceVariables())
-        vars["item"] = SourceItemRenameVariables(
-            sourceItem.title.replaceVariable("item.title"),
-            sourceItem.datetime.toLocalDate().toString().replaceVariable("item.date"),
-            sourceItem.datetime.year.toString().replaceVariable("item.year"),
-            sourceItem.datetime.monthValue.toString().replaceVariable("item.month"),
-            sourceItem.contentType.replaceVariable("item.contentType"),
-            sourceItem.attrs.mapValues { it.value.toString() }.replaceVariables()
-        )
+        vars["item"] = buildSourceItemRenameVariables(sourceItem)
         val (variables, _) = processVariable(vars, false)
         return RenameVariables(vars, variables)
+    }
+
+    private fun buildSourceItemRenameVariables(sourceItem: SourceItem): Map<String, Any> {
+        return mapOf(
+            "title" to sourceItem.title.replaceVariable("item.title"),
+            "date" to sourceItem.datetime.toLocalDate().toString().replaceVariable("item.date"),
+            "year" to sourceItem.datetime.year.toString().replaceVariable("item.year"),
+            "month" to sourceItem.datetime.monthValue.toString().replaceVariable("item.month"),
+            "contentType" to sourceItem.contentType.replaceVariable("item.contentType"),
+            "attrs" to sourceItem.attrs.mapValues { it.value.toString() }.replaceVariables()
+        )
     }
 
     /**
@@ -166,12 +170,7 @@ class Renamer(
         val vars = mutableMapOf<String, Any>()
         vars.putAll(file.patternVariables.variables().replaceVariables())
 
-        vars["file"] =
-            SourceFileRenameVariables(file.fileDownloadPath.nameWithoutExtension.replaceVariable("file.name"),
-                file.sourceFile.attrs.mapValues { it.value.toString() }.replaceVariables(),
-                file.getPathOriginalLayout().joinToString("/") { it.replaceVariable("file.originalLayout") }
-            )
-
+        vars["file"] = buildSourceFileRenameVariables(file)
         val (variables, processed) = processVariable(vars)
         if (processed) {
             for ((key, value) in extraVariables.processedVariables.entries) {
@@ -184,6 +183,15 @@ class Renamer(
         }
 
         return RenameVariables(vars, variables)
+    }
+
+    private fun buildSourceFileRenameVariables(file: RawFileContent): Map<String, Any> {
+        return mapOf(
+            "name" to file.fileDownloadPath.nameWithoutExtension.replaceVariable("file.name"),
+            "attrs" to file.sourceFile.attrs.mapValues { it.value.toString() }.replaceVariables(),
+            "originalLayout" to file.getPathOriginalLayout()
+                .joinToString("/") { it.replaceVariable("file.originalLayout") }
+        )
     }
 
     /**
@@ -247,19 +255,6 @@ class Renamer(
         }
     }
 }
-
-private data class SourceItemRenameVariables(
-    val title: String,
-    val date: String,
-    val year: String,
-    val month: String,
-    val contentType: String,
-    val attrs: Map<String, Any>
-)
-
-private data class SourceFileRenameVariables(
-    val name: String, val attrs: Map<String, Any>, val originalLayout: String
-)
 
 private data class ResultWrapper<T>(
     val value: T,
