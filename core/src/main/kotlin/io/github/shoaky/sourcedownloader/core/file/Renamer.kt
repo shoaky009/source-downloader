@@ -60,7 +60,9 @@ class Renamer(
         }
 
         return when (variableErrorStrategy) {
-            VariableErrorStrategy.STAY, VariableErrorStrategy.TO_UNRESOLVED, VariableErrorStrategy.ORIGINAL -> {
+            VariableErrorStrategy.STAY,
+            VariableErrorStrategy.TO_UNRESOLVED,
+            VariableErrorStrategy.ORIGINAL -> {
                 ResultWrapper.fromFilename(fileDownloadPath.name, parse)
             }
 
@@ -146,10 +148,11 @@ class Renamer(
 
     fun itemRenameVariables(sourceItem: SourceItem, itemVariables: PatternVariables): RenameVariables {
         val vars = mutableMapOf<String, Any>()
-        vars.putAll(itemVariables.variables().replaceVariables())
+        val replacedVars = itemVariables.variables().replaceVariables()
+        vars.putAll(replacedVars)
         vars["item"] = buildSourceItemRenameVariables(sourceItem)
         val (variables, _) = processVariable(vars, false)
-        return RenameVariables(vars, variables)
+        return RenameVariables(vars, variables, replacedVars)
     }
 
     private fun buildSourceItemRenameVariables(sourceItem: SourceItem): Map<String, Any> {
@@ -167,11 +170,12 @@ class Renamer(
      * @param extraVariables 优先级比file低
      */
     private fun fileRenameVariables(file: RawFileContent, extraVariables: RenameVariables): RenameVariables {
-        val vars = mutableMapOf<String, Any>()
-        vars.putAll(file.patternVariables.variables().replaceVariables())
+        val renameVars = mutableMapOf<String, Any>()
+        val filePatternVars = file.patternVariables.variables().replaceVariables()
+        renameVars.putAll(filePatternVars)
 
-        vars["file"] = buildSourceFileRenameVariables(file)
-        val (variables, processed) = processVariable(vars)
+        renameVars["file"] = buildSourceFileRenameVariables(file)
+        val (variables, processed) = processVariable(renameVars)
         if (processed) {
             for ((key, value) in extraVariables.processedVariables.entries) {
                 variables.putIfAbsent(key, value)
@@ -179,10 +183,12 @@ class Renamer(
         }
 
         for ((key, value) in extraVariables.variables.entries) {
-            vars.putIfAbsent(key, value)
+            renameVars.putIfAbsent(key, value)
         }
 
-        return RenameVariables(vars, variables)
+        // 提供要表达式vars?.xxx的语句
+        renameVars["vars"] = filePatternVars + extraVariables.patternVariables
+        return RenameVariables(renameVars, variables)
     }
 
     private fun buildSourceFileRenameVariables(file: RawFileContent): Map<String, Any> {
@@ -216,6 +222,7 @@ class Renamer(
             val value = try {
                 doc.read<String>("$.${process.input}")
             } catch (e: PathNotFoundException) {
+                log.debug("Variable '{}' not found, msg:{}", process.input, e.message)
                 return@forEach
             }
             log.debug("Process variable '{}' with value '{}'", process.input, value)
