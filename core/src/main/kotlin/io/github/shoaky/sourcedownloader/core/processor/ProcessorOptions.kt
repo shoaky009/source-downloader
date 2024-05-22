@@ -65,9 +65,10 @@ data class VariableProcessChain(
 
     fun process(value: String, contextVariables: Map<String, Any>): Map<String, String> {
         val tempVars = mutableMapOf<String, String>()
-        val processedVar = chain.fold(value) { acc, provider ->
-            val primary = provider.primary() ?: return@fold acc
-            val vars = provider.extractFrom(acc)?.variables() ?: return@fold acc
+        val processedVar = chain.fold(value) { acc: String?, provider ->
+            if (acc == null) return@fold null
+            val primary = provider.primary() ?: return@fold null
+            val vars = provider.extractFrom(acc)?.variables() ?: return@fold null
             tempVars.putAll(vars)
             return@fold vars[primary] ?: acc
         }
@@ -80,7 +81,9 @@ data class VariableProcessChain(
             (output.keyMapping[key] ?: key) to value
         }.toMap(result)
 
-        result[output.keyMapping.getOrDefault(input, input)] = processedVar
+        if (processedVar != null) {
+            result[output.keyMapping.getOrDefault(input, input)] = processedVar
+        }
         return result
     }
 }
