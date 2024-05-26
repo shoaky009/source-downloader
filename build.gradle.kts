@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
+
 group = "io.github.shoaky"
 
 plugins {
@@ -48,8 +50,9 @@ subprojects {
     }
 
     tasks.compileKotlin {
-        kotlinOptions {
+        compilerOptions {
             freeCompilerArgs = listOf("-Xjsr305=strict")
+            apiVersion.set(KotlinVersion.KOTLIN_2_0)
         }
     }
 
@@ -72,12 +75,6 @@ subprojects {
 
     kotlin {
         jvmToolchain(javaVersion)
-        // 打开k2 mockito有点问题
-        // sourceSets.all {
-        //     languageSettings {
-        //         languageVersion = "2.0"
-        //     }
-        // }
     }
 
 }
