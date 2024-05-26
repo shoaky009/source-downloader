@@ -30,6 +30,7 @@ private class ProcessingContentController(
     }
 
     /**
+     * TODO 改POST
      * 查询ProcessingContent
      * @param query 查询条件
      * @param limit 查询数量, 默认20
@@ -41,14 +42,12 @@ private class ProcessingContentController(
         limit: Int = 20,
         maxId: Long = 0
     ): Scroll {
-        if (query.itemTitle != null && query.processorName == null) {
-            throw IllegalArgumentException("itemTitle must be used with processorName")
+        if (query.item != null && query.processorName == null) {
+            // 为查询性能做一定的限制
+            throw IllegalArgumentException("Item condition must be used with processorName")
         }
         val contents = storage.queryContents(query, limit, maxId)
-        return Scroll(
-            contents,
-            contents.lastOrNull()?.id ?: maxId
-        )
+        return Scroll(contents, contents.lastOrNull()?.id ?: maxId)
     }
 
     /**

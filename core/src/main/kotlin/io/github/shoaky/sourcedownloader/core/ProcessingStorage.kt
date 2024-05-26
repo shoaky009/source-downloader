@@ -35,7 +35,7 @@ interface ProcessingStorage {
 
     fun deleteTargetPaths(paths: List<String>, hashing: String? = null)
 
-    fun query(query: ProcessingQuery): List<ProcessingContent>
+    fun queryAllContent(query: ProcessingQuery): List<ProcessingContent>
 
     fun queryContents(query: ProcessingQuery, limit: Int, maxId: Long): List<ProcessingContent>
 }

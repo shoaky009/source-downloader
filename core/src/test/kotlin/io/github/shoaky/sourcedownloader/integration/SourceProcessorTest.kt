@@ -46,7 +46,7 @@ class SourceProcessorTest {
 
         processor.run()
         processor.runRename()
-        val contents = processingStorage.query(ProcessingQuery("NormalCase"))
+        val contents = processingStorage.queryAllContent(ProcessingQuery("NormalCase"))
             .associateBy { it.itemContent.sourceItem.title }
         assertEquals(3, contents.size)
 
@@ -62,7 +62,7 @@ class SourceProcessorTest {
         val processor = processorManager.getProcessor("NormalCaseCopy").get()
         val contents = processor.dryRun()
         assertEquals(3, contents.size)
-        assertEquals(0, processingStorage.query(ProcessingQuery("NormalCaseCopy")).size)
+        assertEquals(0, processingStorage.queryAllContent(ProcessingQuery("NormalCaseCopy")).size)
     }
 
     @Test
@@ -74,7 +74,7 @@ class SourceProcessorTest {
         val processor = processorManager.getProcessor("FileStatusCase").get()
 
         processor.run()
-        val records = processingStorage.query(ProcessingQuery("FileStatusCase")).sortedBy { it.id }
+        val records = processingStorage.queryAllContent(ProcessingQuery("FileStatusCase")).sortedBy { it.id }
             .associateBy { it.itemContent.sourceItem.title }
 
         downloadedFile.deleteIfExists()
@@ -91,7 +91,7 @@ class SourceProcessorTest {
         val processor = processorManager.getProcessor("FileStatusCase2").get()
 
         processor.run()
-        val records = processingStorage.query(ProcessingQuery("FileStatusCase2")).sortedBy { it.id }
+        val records = processingStorage.queryAllContent(ProcessingQuery("FileStatusCase2")).sortedBy { it.id }
         val record = records.first { it.itemContent.sourceItem.title == "test-dir" }
         assertEquals(FileContentStatus.FILE_CONFLICT, record.itemContent.fileContents[0].status)
         assertEquals(FileContentStatus.FILE_CONFLICT, record.itemContent.fileContents[1].status)
@@ -106,7 +106,7 @@ class SourceProcessorTest {
 
         processor.run()
         processor.runRename()
-        val contents = processingStorage.query(ProcessingQuery(name))
+        val contents = processingStorage.queryAllContent(ProcessingQuery(name))
             .associateBy { it.itemContent.sourceItem.title }
         assertEquals(3, contents.size)
 
@@ -126,7 +126,7 @@ class SourceProcessorTest {
         processor.run()
         processor.runRename()
 
-        val contents = processingStorage.query(ProcessingQuery(name))
+        val contents = processingStorage.queryAllContent(ProcessingQuery(name))
             .associateBy { it.itemContent.sourceItem.title }
         println(Jackson.toJsonString(contents))
 
@@ -143,7 +143,7 @@ class SourceProcessorTest {
 
         processor.run()
         processor.runRename()
-        val contents = processingStorage.query(ProcessingQuery(processorName))
+        val contents = processingStorage.queryAllContent(ProcessingQuery(processorName))
             .associateBy { it.itemContent.sourceItem.title }
 
         val selfPath = savePath.resolve(processorName)
@@ -164,7 +164,7 @@ class SourceProcessorTest {
 
         processor.run()
         processor.runRename()
-        val contents = processingStorage.query(ProcessingQuery(processorName))
+        val contents = processingStorage.queryAllContent(ProcessingQuery(processorName))
             .associateBy { it.itemContent.sourceItem.title }
         // 如果实现了对被替换文件的状态更新，这里需要断言REPLACED
         assertEquals(
@@ -183,7 +183,7 @@ class SourceProcessorTest {
         val processor = processorManager.getProcessor(processorName).get()
 
         processor.run()
-        val contents = processingStorage.query(ProcessingQuery(processorName))
+        val contents = processingStorage.queryAllContent(ProcessingQuery(processorName))
             .associateBy { it.itemContent.sourceItem.title }
         // 如果实现了对被替换文件的状态更新，这里需要断言REPLACED
         assertEquals(
@@ -223,7 +223,7 @@ class SourceProcessorTest {
         val processor = processorManager.getProcessor(processorName).get()
         processor.run()
         val contents =
-            processingStorage.query(ProcessingQuery(processorName)).associateBy { it.itemContent.sourceItem.title }
+            processingStorage.queryAllContent(ProcessingQuery(processorName)).associateBy { it.itemContent.sourceItem.title }
         assertEquals(ProcessingContent.Status.WAITING_TO_RENAME, contents.getValue("test1").status)
         assertEquals(ProcessingContent.Status.TARGET_ALREADY_EXISTS, contents.getValue("test2").status)
     }
@@ -252,13 +252,13 @@ class SourceProcessorTest {
         val sourceFiles = contents.getValue(testItemTitle).itemContent.fileContents
         val targetPaths = sourceFiles.map { it.targetPath() }
         val anyTargetPaths = processingStorage.targetPathExists(targetPaths).any { it }
-        val hasErrorItem = processingStorage.query(ProcessingQuery(processorName))
+        val hasErrorItem = processingStorage.queryAllContent(ProcessingQuery(processorName))
             .any { it.itemContent.sourceItem.title == testItemTitle }
         assert(hasErrorItem.not())
         assert(anyTargetPaths.not())
 
         processor.run()
-        val testItem = processingStorage.query(ProcessingQuery("DownloadErrorCase"))
+        val testItem = processingStorage.queryAllContent(ProcessingQuery("DownloadErrorCase"))
             .first { it.itemContent.sourceItem.title == testItemTitle }
 
         assertEquals(ProcessingContent.Status.RENAMED, testItem.status)
@@ -277,7 +277,7 @@ class SourceProcessorTest {
         ).get()
         println(downloader.getCanceled())
 
-        val contents = processingStorage.query(ProcessingQuery("ReplaceFileCancelSubmittedItem"))
+        val contents = processingStorage.queryAllContent(ProcessingQuery("ReplaceFileCancelSubmittedItem"))
             .associateBy { it.itemContent.sourceItem.title }
         val test2 = contents.getValue("test2").itemContent.fileContents.first()
         val test1 = contents.getValue("test1").itemContent.fileContents.first()
@@ -319,7 +319,7 @@ class SourceProcessorTest {
         val processor = processorManager.getProcessor(processorName).get()
         processor.run()
 
-        val contents = processingStorage.query(ProcessingQuery(processorName))
+        val contents = processingStorage.queryAllContent(ProcessingQuery(processorName))
             .associateBy { it.itemContent.sourceItem.title }
         println(Jackson.toJsonString(contents))
 

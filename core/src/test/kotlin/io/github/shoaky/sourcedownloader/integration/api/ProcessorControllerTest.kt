@@ -68,7 +68,7 @@ class ProcessorControllerTest {
                 assert(read.all { it.notExists() })
             }
         runCatching {
-            processingStorage.query(ProcessingQuery("DryRunCase"))
+            processingStorage.queryAllContent(ProcessingQuery("DryRunCase"))
         }.onSuccess {
             assert(it.isEmpty())
         }.onFailure {

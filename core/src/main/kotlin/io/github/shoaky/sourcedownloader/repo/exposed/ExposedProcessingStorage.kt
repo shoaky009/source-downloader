@@ -281,10 +281,10 @@ class ExposedProcessingStorage : ProcessingStorage {
         }
     }
 
-    override fun query(query: ProcessingQuery): List<ProcessingContent> {
+    override fun queryAllContent(query: ProcessingQuery): List<ProcessingContent> {
         return transaction {
             val builder = Processings.selectAll()
-            query.apply(builder)
+            builder.applyConditions(query)
             builder
                 .map {
                     ProcessingContent(
@@ -305,17 +305,8 @@ class ExposedProcessingStorage : ProcessingStorage {
     override fun queryContents(query: ProcessingQuery, limit: Int, maxId: Long): List<ProcessingContent> {
         return transaction {
             val builder = Processings.selectAll()
-            if (query.id != null) builder.andWhere { Processings.id inList query.id }
-            if (query.processorName != null) builder.andWhere { Processings.processorName inList  query.processorName }
-            if (query.status != null) builder.andWhere { Processings.status inList query.status }
-            if (query.itemHash != null) builder.andWhere { Processings.itemHash eq query.itemHash }
-            if (query.itemTitle != null) {
-                builder.andWhere { Processings.itemContent.extract<String>(".sourceItem.title") glob "*${query.itemTitle}*" }
-            }
-            if (query.createTime.begin != null) builder.andWhere { Processings.createTime greaterEq query.createTime.begin }
-            if (query.createTime.end != null) builder.andWhere { Processings.createTime lessEq query.createTime.end }
+            builder.applyConditions(query)
             if (maxId > 0) builder.andWhere { Processings.id less maxId }
-
             builder.orderBy(Processings.id, SortOrder.DESC)
                 .limit(limit)
                 .map {
@@ -332,6 +323,31 @@ class ExposedProcessingStorage : ProcessingStorage {
                     )
                 }
         }
+    }
+
+    private fun Query.applyConditions(query: ProcessingQuery) {
+        if (query.id != null) this.andWhere { Processings.id inList query.id }
+        if (query.processorName != null) this.andWhere { Processings.processorName inList query.processorName }
+        if (query.status != null) this.andWhere { Processings.status inList query.status }
+        if (query.itemHash != null) this.andWhere { Processings.itemHash eq query.itemHash }
+        if (query.item?.title != null) {
+            this.andWhere { Processings.itemContent.extract<String>(".sourceItem.title") glob "*${query.item.title}*" }
+        }
+        if (query.item?.attrs != null) {
+            query.item.attrs.forEach { (key, value) ->
+                this.andWhere { Processings.itemContent.extract<String>(".sourceItem.attrs.$key") eq value }
+            }
+        }
+        if (query.item?.variables != null) {
+            query.item.variables.forEach { (key, value) ->
+                this.andWhere { Processings.itemContent.extract<String>(".itemVariables.$key") eq value }
+            }
+        }
+        if (query.item?.contentType != null) {
+            this.andWhere { Processings.itemContent.extract<String>(".sourceItem.contentType") eq query.item.contentType }
+        }
+        if (query.createTime.begin != null) this.andWhere { Processings.createTime greaterEq query.createTime.begin }
+        if (query.createTime.end != null) this.andWhere { Processings.createTime lessEq query.createTime.end }
     }
 }
 
