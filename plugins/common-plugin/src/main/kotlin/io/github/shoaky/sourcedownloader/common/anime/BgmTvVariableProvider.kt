@@ -3,7 +3,7 @@ package io.github.shoaky.sourcedownloader.common.anime
 import com.google.common.cache.CacheBuilder
 import com.google.common.cache.CacheLoader
 import io.github.shoaky.sourcedownloader.external.bangumi.BgmTvApiClient
-import io.github.shoaky.sourcedownloader.external.bangumi.SearchSubjectV0Request
+import io.github.shoaky.sourcedownloader.external.bangumi.SearchSubjectRequest
 import io.github.shoaky.sourcedownloader.sdk.PatternVariables
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.VariableProvider
@@ -21,10 +21,13 @@ class BgmTvVariableProvider(
         })
 
     private fun searchAnime(title: String): Anime {
+        if (title.isBlank()) {
+            return Anime()
+        }
         val body = bgmTvApiClient.execute(
-            SearchSubjectV0Request(title)
+            SearchSubjectRequest(title)
         ).body()
-        val subjectItem = body.data.firstOrNull()
+        val subjectItem = body.list.firstOrNull()
         if (subjectItem == null) {
             log.warn("bgmtv searching anime: $title no result")
             return Anime()
