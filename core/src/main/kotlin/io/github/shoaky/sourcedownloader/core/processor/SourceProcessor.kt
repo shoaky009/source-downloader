@@ -260,6 +260,7 @@ class SourceProcessor(
         )
         val itemVariables = variableProvider.itemVariables(sourceItem)
         val itemRenameVariables = renamer.itemRenameVariables(sourceItem, itemVariables)
+        log.trace("Processor:'{}' item:{} variables:{}", name, sourceItem, itemVariables)
         val fileContents = resolvedFiles.groupBy {
             options.matchFileOption(it)
         }.flatMap { (fileOption, files) ->

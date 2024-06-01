@@ -148,11 +148,11 @@ class Renamer(
 
     fun itemRenameVariables(sourceItem: SourceItem, itemVariables: PatternVariables): RenameVariables {
         val vars = mutableMapOf<String, Any>()
-        val replacedVars = itemVariables.variables().replaceVariables()
-        vars.putAll(replacedVars)
+        val replacedItemVars = itemVariables.variables().replaceVariables()
+        vars.putAll(replacedItemVars)
         vars["item"] = buildSourceItemRenameVariables(sourceItem)
         val (variables, _) = processVariable(vars, false)
-        return RenameVariables(vars, variables, replacedVars)
+        return RenameVariables(vars, variables.replaceVariables(), replacedItemVars)
     }
 
     private fun buildSourceItemRenameVariables(sourceItem: SourceItem): Map<String, Any> {
