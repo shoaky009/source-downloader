@@ -42,3 +42,6 @@ build/
 
 # Ignore Gradle build output directory
 build
+
+# Ignore Kotlin compiler output directory
+.kotlin

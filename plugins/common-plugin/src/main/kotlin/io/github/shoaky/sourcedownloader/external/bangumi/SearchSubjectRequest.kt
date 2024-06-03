@@ -3,6 +3,7 @@ package io.github.shoaky.sourcedownloader.external.bangumi
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import io.github.shoaky.sourcedownloader.sdk.http.HttpMethod
+import io.github.shoaky.sourcedownloader.sdk.util.http.CommonBodyHandler
 
 class SearchSubjectRequest(
     val keyword: String,
@@ -13,4 +14,9 @@ class SearchSubjectRequest(
     override val path: String = "/search/subject/$keyword"
     override val responseBodyType: TypeReference<SearchSubjectBody> = jacksonTypeRef()
     override val httpMethod: String = HttpMethod.GET.name
+
+    override fun bodyHandler(): CommonBodyHandler<SearchSubjectBody> {
+        return CommonBodyHandler(this.responseBodyType, SearchSubjectBody())
+    }
+
 }

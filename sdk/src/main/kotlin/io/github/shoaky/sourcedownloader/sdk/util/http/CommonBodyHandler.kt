@@ -8,7 +8,11 @@ import java.net.http.HttpResponse
 import java.util.function.Supplier
 
 class CommonBodyHandler<T : Any>(
-    private val type: TypeReference<T>
+    private val type: TypeReference<T>,
+    /**
+     * Default value for body, if body is null or response unexpected content will return default value
+     */
+    private val default: T? = null
 ) : HttpResponse.BodyHandler<T> {
 
     private val bodyMapperSuppliers: MutableMap<String, Supplier<BodyMapper<T>>> = mutableMapOf(
@@ -54,6 +58,9 @@ class CommonBodyHandler<T : Any>(
             }
 
             val body = inputStream.readAllBytes().decodeToString()
+            if (default != null) {
+                return@mapping default
+            }
             throw IllegalArgumentException("Unsupported media type: $mediaType , body:$body")
         }
     }

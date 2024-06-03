@@ -1,8 +1,8 @@
 package io.github.shoaky.sourcedownloader.external.bangumi
 
-class SearchSubjectBody(
-    val results: Int,
-    val list: List<SubjectItem>
+data class SearchSubjectBody(
+    val results: Int = 0,
+    val list: List<SubjectItem> = emptyList()
 ) : Iterable<SubjectItem> {
     override fun iterator(): Iterator<SubjectItem> {
         return list.iterator()
