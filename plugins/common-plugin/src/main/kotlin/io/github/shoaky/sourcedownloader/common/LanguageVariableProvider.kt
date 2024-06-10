@@ -21,7 +21,7 @@ import kotlin.io.path.readLines
  * zh-CHT
  */
 class LanguageVariableProvider(
-    private val readContent: Boolean = false
+    private val readContent: Boolean = true
 ) : VariableProvider {
 
     override fun itemVariables(sourceItem: SourceItem): PatternVariables = PatternVariables.EMPTY
