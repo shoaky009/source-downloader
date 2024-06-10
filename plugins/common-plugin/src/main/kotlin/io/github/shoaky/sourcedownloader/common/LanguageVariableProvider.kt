@@ -9,6 +9,7 @@ import io.github.shoaky.sourcedownloader.sdk.SourceFile
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.VariableProvider
 import io.github.shoaky.sourcedownloader.sdk.util.replaces
+import java.nio.charset.MalformedInputException
 import kotlin.io.path.extension
 import kotlin.io.path.nameWithoutExtension
 import kotlin.io.path.notExists
@@ -73,7 +74,12 @@ class LanguageVariableProvider(
 
     private fun collectAssFormatText(file: SourceFile): List<String> {
         // 暂时没处理OP在前面的情况
-        return file.path.readLines()
+        val readLines = try {
+            file.path.readLines()
+        } catch (_: MalformedInputException) {
+            file.path.readLines(Charsets.ISO_8859_1)
+        }
+        return readLines
             .asSequence()
             .dropWhile { it.trim() != "[Events]" }
             .filter { it.startsWith("Dialogue") }
