@@ -36,6 +36,15 @@ class SpelCompiledExpression<T>(
                     Boolean::class.java
                 )
             )
+            context.registerFunction(
+                "joinIgnoreNull",
+                CelLibrary::class.java.getDeclaredMethod(
+                    "joinIgnoreNull",
+                    Collection::class.java,
+                    String::class.java,
+                    String::class.java,
+                )
+            )
         }
     }
 }
