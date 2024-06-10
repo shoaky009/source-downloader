@@ -22,8 +22,13 @@ data class CorePathPattern(
         while (matcher.find()) {
             val raw = matcher.group()
             val parsed = parseRaw(raw)
-            val expression = expressionFactory.create(parsed, String::class.java, defs(parsed))
-            // 后面调整
+            // FIXME 需要重新设计，这里不太合理
+            val defs = if (expressionFactory is CelCompiledExpressionFactory) {
+                defs(parsed)
+            } else {
+                emptyMap()
+            }
+            val expression = expressionFactory.create(parsed, String::class.java, defs)
             if (expression is CelCompiledExpression) {
                 expression.optional = isOptional(raw)
             }
@@ -47,6 +52,7 @@ data class CorePathPattern(
         return buildMap {
             put("item", VariableType.ANY)
             put("file", VariableType.ANY)
+            put("vars", VariableType.ANY)
             if (parsed.startsWith("item.") || parsed.startsWith("file.")) {
                 return@buildMap
             }
