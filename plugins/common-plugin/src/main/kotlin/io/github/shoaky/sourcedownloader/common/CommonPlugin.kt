@@ -21,7 +21,6 @@ internal class CommonPlugin : Plugin {
         )
         pluginContext.registerSupplier(
             *getObjectSuppliers("io.github.shoaky.sourcedownloader.common.supplier"),
-            // *getObjectSupplier(),
             QbittorrentDownloaderSupplier(pluginContext.getInstanceManager()),
             AnimeVariableProviderSupplier(pluginContext),
             MikanVariableProviderSupplier(pluginContext),
@@ -38,31 +37,4 @@ internal class CommonPlugin : Plugin {
         return PluginDescription("common", "0.0.1")
     }
 
-    private fun getObjectSupplier(): Array<ComponentSupplier<*>> {
-        return arrayOf(
-            AnimeFileFilterSupplier,
-            AnimeReplacementDeciderSupplier,
-            AnimeTaggerSupplier,
-            AnitomVariableProviderSupplier,
-            CommonManualSourceSupplier,
-            DlsiteVariableProviderSupplier,
-            EpisodeVariableProviderSupplier,
-            FanboxIntegrationSupplier,
-            JackettSourceSupplier,
-            LanguageVariableProviderSupplier,
-            MediaTypeExistsDetectorSupplier,
-            OpenAiVariableProviderSupplier,
-            PatreonIntegrationSupplier,
-            RssSourceSupplier,
-            SeasonVariableProviderSupplier,
-            SimpleFileTaggerSupplier,
-            TorrentFileResolverSupplier,
-            TransmissionDownloaderSupplier,
-            WebdavMoverSupplier,
-            PixivIntegrationSupplier,
-            KeywordVariableProviderSupplier,
-            BilibiliSourceSupplier,
-            EmbyImageTaggerSupplier
-        )
-    }
 }
