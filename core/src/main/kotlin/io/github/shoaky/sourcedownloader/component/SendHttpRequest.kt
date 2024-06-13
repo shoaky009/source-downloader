@@ -16,6 +16,7 @@ import org.springframework.web.util.UriComponentsBuilder
 import java.net.http.HttpRequest
 import java.net.http.HttpRequest.BodyPublishers
 import java.net.http.HttpResponse.BodyHandlers
+import java.time.Duration
 
 /**
  * 发送一个HTTP请求
@@ -34,10 +35,18 @@ class SendHttpRequest(
         val bodyPublishers = buildBodyPublisher(context, itemContent, headers)
 
         val uri = uriComponents.toUri()
-        val request = HttpRequest.newBuilder(uri).method(config.method.name(), bodyPublishers)
+        val request = HttpRequest.newBuilder(uri)
+            .method(config.method.name(), bodyPublishers)
+            .timeout(Duration.ofSeconds(30))
 
         headers.forEach(request::setHeader)
-        val response = httpClient.send(request.build(), BodyHandlers.discarding())
+        val response = try {
+            httpClient.send(request.build(), BodyHandlers.discarding())
+        } catch (e: Exception) {
+            log.error("Send http request to $uri failed, detail:{}", e.message)
+            throw e
+        }
+
         if (isNot2XX(response.statusCode())) {
             log.warn("Send http request to $uri, response code is ${response.statusCode()}")
         }
