@@ -14,6 +14,7 @@ object FullWidthReplacer : VariableReplacer {
         '～' to '~',
         '！' to '!',
         '？' to '?',
+        '　' to ' ',
     )
 
     override fun replace(key: String, value: String): String {
