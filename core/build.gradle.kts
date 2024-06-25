@@ -11,6 +11,7 @@ dependencies {
     // basic
     implementation(project(":sdk"))
     implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.data:spring-data-commons")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     implementation("org.flywaydb:flyway-core")

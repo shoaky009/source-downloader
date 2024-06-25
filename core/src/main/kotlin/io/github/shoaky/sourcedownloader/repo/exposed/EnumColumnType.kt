@@ -10,8 +10,8 @@ import kotlin.reflect.KClass
 
 class EnumColumnType<R, T>(
     private val enumClass: KClass<R>
-) : ColumnType(
-) where R : Enum<R>, R : EnumValue<T> {
+) : ColumnType<R>(true) where R : Enum<R>, R : EnumValue<T> {
+
 
     override fun sqlType(): String {
         val value = enumClass.java.enumConstants.first()
@@ -25,18 +25,14 @@ class EnumColumnType<R, T>(
     }
 
     @Suppress("UNCHECKED_CAST")
-    override fun valueFromDB(value: Any): Any {
+    override fun valueFromDB(value: Any): R {
         return enumClass.fromValue(value as T)
     }
 
-    @Suppress("UNCHECKED_CAST")
-    override fun notNullValueToDB(value: Any): Any {
-        return (value as R).getValue() as Any
+    override fun valueToDB(value: R?): Any? {
+        return value?.getValue()
     }
 
-    override fun nonNullValueToString(value: Any): String {
-        return value.toString()
-    }
 }
 
 inline fun <reified R, reified T> Table.enum(name: String): Column<R> where R : Enum<R>, R : EnumValue<T> {

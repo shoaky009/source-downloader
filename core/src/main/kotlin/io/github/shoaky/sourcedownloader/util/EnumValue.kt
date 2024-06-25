@@ -14,5 +14,5 @@ fun <T, R> KClass<R>.fromValue(value: T): R where R : EnumValue<T>, R : Enum<R> 
             return enum
         }
     }
-    throw RuntimeException("Unknown value: $this")
+    throw IllegalArgumentException("Unknown value $value for enum $this")
 }
