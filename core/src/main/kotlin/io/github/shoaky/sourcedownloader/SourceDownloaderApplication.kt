@@ -1,6 +1,7 @@
 package io.github.shoaky.sourcedownloader
 
 import io.github.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
+import io.github.shoaky.sourcedownloader.component.supplier.*
 import io.github.shoaky.sourcedownloader.config.SourceDownloaderProperties
 import io.github.shoaky.sourcedownloader.core.PluginManager
 import io.github.shoaky.sourcedownloader.core.ProcessorConfigStorage
@@ -12,7 +13,6 @@ import io.github.shoaky.sourcedownloader.sdk.InstanceManager
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentException
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
-import io.github.shoaky.sourcedownloader.sdk.util.getObjectSuppliers
 import jakarta.annotation.PreDestroy
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.InitializingBean
@@ -82,10 +82,41 @@ class SourceDownloaderApplication(
             *componentSupplier.toTypedArray()
         )
         componentManager.registerSupplier(
-            *getObjectSuppliers(
-                "io.github.shoaky.sourcedownloader.component.supplier",
-            )
-            // *getObjectSuppliers0()
+            // *getObjectSuppliers(
+            //     "io.github.shoaky.sourcedownloader.component.supplier",
+            // )
+            AlwaysReplaceSupplier,
+            CompositeItemFileResolverSupplier,
+            CompositeDownloaderSupplier,
+            CronTriggerSupplier,
+            DeleteEmptyDirectorySupplier,
+            ExpressionFileFilterSupplier,
+            ExpressionItemContentFilterSupplier,
+            ExpressionItemFilterSupplier,
+            FileSizeReplacementDeciderSupplier,
+            FixedScheduleTriggerSupplier,
+            FixedSourceSupplier,
+            FullWidthReplacerSupplier,
+            GeneralFileMoverSupplier,
+            HardlinkFileMoverSupplier,
+            HttpDownloaderSupplier,
+            ItemDirectoryExistsDetectorSupplier,
+            MappedFileTaggerSupplier,
+            MockDownloaderSupplier,
+            NeverReplaceSupplier,
+            NoneDownloaderSupplier,
+            RegexVariableProviderSupplier,
+            RegexVariableReplacerSupplier,
+            RunCommandSupplier,
+            SendHttpRequestSupplier,
+            SequenceVariableProviderSupplier,
+            SystemFileResolverSupplier,
+            SystemFileSourceSupplier,
+            TouchItemDirectorySupplier,
+            UriSourceSupplier,
+            UrlDownloaderSupplier,
+            UrlFileResolverSupplier,
+            WindowsPathReplacerSupplier
         )
         val types = componentManager.getSuppliers()
             .map { it.supplyTypes() }
