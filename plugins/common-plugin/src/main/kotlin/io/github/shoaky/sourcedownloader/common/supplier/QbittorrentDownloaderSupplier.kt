@@ -1,5 +1,7 @@
-package io.github.shoaky.sourcedownloader.common.torrent
+package io.github.shoaky.sourcedownloader.common.supplier
 
+import io.github.shoaky.sourcedownloader.common.torrent.QbittorrentDownloader
+import io.github.shoaky.sourcedownloader.common.torrent.TorrentFileResolver
 import io.github.shoaky.sourcedownloader.external.qbittorrent.QbittorrentClient
 import io.github.shoaky.sourcedownloader.external.qbittorrent.QbittorrentConfig
 import io.github.shoaky.sourcedownloader.sdk.CoreContext
