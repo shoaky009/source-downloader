@@ -9,9 +9,13 @@ import org.yaml.snakeyaml.Yaml
 @Component
 class DefaultComponents : ComponentConfigStorage {
 
-    override fun getAllComponentConfig(): Map<String, List<ComponentConfig>> {
+    private val componentConfig: Map<String, List<ComponentConfig>> by lazy {
         val config = ClassPathResource("default-component.yaml")
         val load = Yaml().load<Map<String, Any>>(config.inputStream)
-        return Jackson.convert(load, jacksonTypeRef())
+        Jackson.convert(load, jacksonTypeRef())
+    }
+
+    override fun getAllComponentConfig(): Map<String, List<ComponentConfig>> {
+        return componentConfig
     }
 }

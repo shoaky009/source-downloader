@@ -1,7 +1,8 @@
 package io.github.shoaky.sourcedownloader.core
 
 import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
+import com.google.common.cache.CacheBuilder
+import com.google.common.cache.CacheLoader
 import io.github.shoaky.sourcedownloader.core.component.ComponentConfig
 import io.github.shoaky.sourcedownloader.core.component.ConfigOperator
 import io.github.shoaky.sourcedownloader.sdk.Properties
@@ -9,6 +10,7 @@ import io.github.shoaky.sourcedownloader.sdk.component.ComponentTopType
 import io.github.shoaky.sourcedownloader.util.jackson.yamlMapper
 import org.slf4j.LoggerFactory
 import java.nio.file.Path
+import java.time.Duration
 import kotlin.io.path.Path
 import kotlin.io.path.inputStream
 
@@ -20,14 +22,19 @@ class YamlConfigOperator(
         log.info("Config path: {}", configPath.toAbsolutePath())
     }
 
+    private val cache = CacheBuilder.newBuilder().expireAfterWrite(Duration.ofSeconds(5))
+        .build(object : CacheLoader<Path, Config>() {
+            override fun load(key: Path): Config {
+                return yamlMapper.readValue(configPath.inputStream(), Config::class.java)
+            }
+        })
+
     override fun getAllProcessorConfig(): List<ProcessorConfig> {
-        val config = yamlMapper.readTree(configPath.inputStream()).get("processors") ?: return emptyList()
-        return yamlMapper.convertValue(config, jacksonTypeRef())
+        return cache.get(configPath).processors
     }
 
     override fun getAllComponentConfig(): Map<String, List<ComponentConfig>> {
-        val config = yamlMapper.readTree(configPath.inputStream()).get("components") ?: return emptyMap()
-        return yamlMapper.convertValue(config, jacksonTypeRef())
+        return cache.get(configPath).components
     }
 
     @Synchronized
@@ -41,6 +48,7 @@ class YamlConfigOperator(
             typeConfigs[index] = componentConfig
         }
         yamlMapper.writeValue(configPath.toFile(), config)
+        cache.invalidateAll()
     }
 
     @Synchronized
@@ -54,6 +62,7 @@ class YamlConfigOperator(
             processors[index] = processorConfig
         }
         yamlMapper.writeValue(configPath.toFile(), config)
+        cache.invalidateAll()
     }
 
     @Synchronized
@@ -65,6 +74,7 @@ class YamlConfigOperator(
         if (removed) {
             yamlMapper.writeValue(configPath.toFile(), config)
         }
+        cache.invalidateAll()
         return removed
     }
 
@@ -76,11 +86,12 @@ class YamlConfigOperator(
         if (removed) {
             yamlMapper.writeValue(configPath.toFile(), config)
         }
+        cache.invalidateAll()
         return removed
     }
 
     override fun getInstanceProps(name: String): Properties {
-        val config = yamlMapper.readValue(configPath.inputStream(), Config::class.java)
+        val config = cache.get(configPath)
         val typeConfigs = config.instances
         val props = typeConfigs.filter { it.name == name }
             .map {
