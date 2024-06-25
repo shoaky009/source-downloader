@@ -41,7 +41,17 @@ class DeleteEmptyDirectoryTest {
                     CorePathPattern.origin,
                     Path(""),
                     ""
-                )
+                ),
+                CoreFileContent(
+                    itemDownloadPath.resolve("test.mp3"),
+                    Path(""),
+                    testResourcePath,
+                    MapPatternVariables(),
+                    CorePathPattern.origin,
+                    CorePathPattern.origin,
+                    Path(""),
+                    ""
+                ),
             ),
             MapPatternVariables()
         )
