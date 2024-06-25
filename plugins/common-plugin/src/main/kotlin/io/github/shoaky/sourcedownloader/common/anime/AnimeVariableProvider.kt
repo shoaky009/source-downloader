@@ -150,7 +150,6 @@ class AnimeVariableProvider(
         )
         private val bracketsRegex = Regex("\\[.*?]")
 
-        // TODO 重构为chain
         fun extractTitle(sourceItem: SourceItem): String {
             val text = textClear.input(sourceItem.title)
             val removedBucket = text.replace(bracketsRegex, "").trim()

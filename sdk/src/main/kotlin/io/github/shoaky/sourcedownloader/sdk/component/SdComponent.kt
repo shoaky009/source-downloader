@@ -319,7 +319,6 @@ interface VariableReplacer : SdComponent {
 
 }
 
-// TODO
 interface ManualSource : SdComponent {
 
 }

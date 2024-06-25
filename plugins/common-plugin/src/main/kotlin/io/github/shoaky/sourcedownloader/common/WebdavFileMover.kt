@@ -68,12 +68,10 @@ open class WebdavFileMover(
     }
 
     override fun listPath(path: Path): List<Path> {
-        // TODO implement
         return super.listPath(path)
     }
 
     override fun pathMetadata(path: Path): SourceFile {
-        // TODO implement
         return super.pathMetadata(path)
     }
 
