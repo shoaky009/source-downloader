@@ -6,7 +6,7 @@ import io.github.shoaky.sourcedownloader.common.fanbox.CreatorPointer
 import io.github.shoaky.sourcedownloader.common.fanbox.FanboxPointer
 import io.github.shoaky.sourcedownloader.common.patreon.CampaignPointer
 import io.github.shoaky.sourcedownloader.common.patreon.PatreonPointer
-import io.github.shoaky.sourcedownloader.common.supplier.RssSourceSupplier
+import io.github.shoaky.sourcedownloader.common.rss.RssConfig
 import io.github.shoaky.sourcedownloader.external.anilist.PageResponse
 import io.github.shoaky.sourcedownloader.external.anilist.Search
 import io.github.shoaky.sourcedownloader.external.bangumi.*
@@ -71,8 +71,8 @@ class TriggerReflectionTest {
             typeOf<TransmissionResponse<TorrentGetResponse>>(),
             typeOf<TransmissionResponse<Session>>(),
             typeOf<AppGetDefaultSavePathRequest>(),
-            typeOf<RssSourceSupplier.Config>(),
-
+            typeOf<RssConfig>(),
+            typeOf<QbittorrentConfig>(),
             typeOf<PatreonPointer>(),
             typeOf<CampaignPointer>(),
             typeOf<FanboxPointer>(),

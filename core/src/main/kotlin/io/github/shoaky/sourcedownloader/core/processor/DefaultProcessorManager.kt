@@ -1,6 +1,5 @@
 package io.github.shoaky.sourcedownloader.core.processor
 
-import io.github.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
 import io.github.shoaky.sourcedownloader.component.*
 import io.github.shoaky.sourcedownloader.component.replacer.WindowsPathReplacer
 import io.github.shoaky.sourcedownloader.core.*
@@ -13,6 +12,7 @@ import io.github.shoaky.sourcedownloader.core.file.CorePathPattern
 import io.github.shoaky.sourcedownloader.sdk.component.*
 import io.github.shoaky.sourcedownloader.throwComponentException
 import io.github.shoaky.sourcedownloader.util.addToCollection
+import org.slf4j.LoggerFactory
 
 class DefaultProcessorManager(
     private val processingStorage: ProcessingStorage,
@@ -509,5 +509,10 @@ class DefaultProcessorManager(
             }
         }
         return fileGrouping
+    }
+
+    companion object {
+
+        private val log = LoggerFactory.getLogger("ProcessorManager")
     }
 }

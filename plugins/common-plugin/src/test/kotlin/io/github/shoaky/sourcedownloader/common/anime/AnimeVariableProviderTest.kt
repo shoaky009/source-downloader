@@ -3,6 +3,7 @@ package io.github.shoaky.sourcedownloader.common.anime
 import io.github.shoaky.sourcedownloader.external.anilist.AnilistClient
 import io.github.shoaky.sourcedownloader.external.bangumi.BgmTvApiClient
 import io.github.shoaky.sourcedownloader.sourceItem
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import java.nio.file.Files
 import kotlin.io.path.Path
@@ -11,7 +12,7 @@ import kotlin.test.assertEquals
 class AnimeVariableProviderTest {
 
     @Test
-    // @Disabled
+    @Disabled
     fun test() {
         val provider = AnimeVariableProvider(
             BgmTvApiClient(),

@@ -3,6 +3,15 @@
     "includes": [
       {
         "pattern": "\\Qorg/apache/tika/mime/tika-mimetypes.xml\\E"
+      },
+      {
+        "pattern": "\\Qlanguages/zh-CN\\E"
+      },
+      {
+        "pattern": "\\Qlanguages/zh-TW\\E"
+      },
+      {
+        "pattern": "\\Qlanguages/ja\\E"
       }
     ],
     "excludes": []

@@ -1,3 +1,5 @@
+import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
+
 plugins {
     alias(libs.plugins.spring.boot)
     alias(libs.plugins.kotlin.spring)
@@ -138,6 +140,13 @@ graalvmNative {
     }
 
     binaries.all {
+        // pgoInstrument = true
+        imageName.set("source-downloader")
+        buildArgs("-H:+UnlockExperimentalVMOptions", "-march=native")
+        val os = DefaultNativePlatform.getCurrentOperatingSystem()
+        if (os.isLinux) {
+            buildArgs("--gc=G1")
+        }
         resources.includedPatterns.add(".*.yaml")
         resources.includedPatterns.add(".*.yml")
         resources.autodetect()

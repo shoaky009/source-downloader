@@ -1,6 +1,5 @@
 package io.github.shoaky.sourcedownloader.core
 
-import com.fasterxml.jackson.annotation.JsonInclude
 import com.google.common.cache.CacheBuilder
 import com.google.common.cache.CacheLoader
 import io.github.shoaky.sourcedownloader.core.component.ComponentConfig
@@ -23,9 +22,9 @@ class YamlConfigOperator(
     }
 
     private val cache = CacheBuilder.newBuilder().expireAfterWrite(Duration.ofSeconds(5))
-        .build(object : CacheLoader<Path, Config>() {
-            override fun load(key: Path): Config {
-                return yamlMapper.readValue(configPath.inputStream(), Config::class.java)
+        .build(object : CacheLoader<Path, AllDeclaredConfig>() {
+            override fun load(path: Path): AllDeclaredConfig {
+                return yamlMapper.readValue(configPath.inputStream(), AllDeclaredConfig::class.java)
             }
         })
 
@@ -39,7 +38,7 @@ class YamlConfigOperator(
 
     @Synchronized
     override fun save(type: String, componentConfig: ComponentConfig) {
-        val config = yamlMapper.readValue(configPath.inputStream(), Config::class.java)
+        val config = yamlMapper.readValue(configPath.inputStream(), AllDeclaredConfig::class.java)
         val typeConfigs = config.components[type] ?: mutableListOf()
         val index = typeConfigs.indexOfFirst { it.name == componentConfig.name }
         if (index < 0) {
@@ -53,7 +52,7 @@ class YamlConfigOperator(
 
     @Synchronized
     override fun save(name: String, processorConfig: ProcessorConfig) {
-        val config = yamlMapper.readValue(configPath.inputStream(), Config::class.java)
+        val config = yamlMapper.readValue(configPath.inputStream(), AllDeclaredConfig::class.java)
         val processors = config.processors
         val index = processors.indexOfFirst { it.name == name }
         if (index < 0) {
@@ -67,7 +66,7 @@ class YamlConfigOperator(
 
     @Synchronized
     override fun deleteComponent(topType: ComponentTopType, type: String, name: String): Boolean {
-        val config = yamlMapper.readValue(configPath.inputStream(), Config::class.java)
+        val config = yamlMapper.readValue(configPath.inputStream(), AllDeclaredConfig::class.java)
         val components = config.components
         val configs = components[topType.primaryName] ?: mutableListOf()
         val removed = configs.removeIf { it.type == type && it.name == name }
@@ -80,7 +79,7 @@ class YamlConfigOperator(
 
     @Synchronized
     override fun deleteProcessor(name: String): Boolean {
-        val config = yamlMapper.readValue(configPath.inputStream(), Config::class.java)
+        val config = yamlMapper.readValue(configPath.inputStream(), AllDeclaredConfig::class.java)
         val processors = config.processors
         val removed = processors.removeIf { it.name == name }
         if (removed) {
@@ -105,16 +104,3 @@ class YamlConfigOperator(
         private val log = LoggerFactory.getLogger(YamlConfigOperator::class.java)
     }
 }
-
-@JsonInclude(JsonInclude.Include.NON_DEFAULT)
-data class InstanceConfig(
-    val name: String,
-    val props: Map<String, Any>
-)
-
-@JsonInclude(JsonInclude.Include.NON_DEFAULT)
-private data class Config(
-    val components: MutableMap<String, MutableList<ComponentConfig>> = mutableMapOf(),
-    val processors: MutableList<ProcessorConfig> = mutableListOf(),
-    val instances: MutableList<InstanceConfig> = mutableListOf()
-)

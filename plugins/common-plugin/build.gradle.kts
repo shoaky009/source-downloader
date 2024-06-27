@@ -1,5 +1,6 @@
 plugins {
     `java-library`
+    alias(libs.plugins.graalvm)
 }
 
 dependencies {
@@ -17,4 +18,24 @@ dependencies {
     implementation(libs.tika.langdetect.optimaize)
     implementation(libs.jsoup)
     implementation(libs.fuzzywuzzy)
+}
+
+tasks.nativeCompile {
+    this.enabled = false
+}
+tasks.nativeCompileClasspathJar {
+    this.enabled = false
+}
+tasks.nativeBuild {
+    this.enabled = false
+}
+graalvmNative {
+    agent {
+        this.defaultMode.set("standard")
+        metadataCopy {
+            inputTaskNames.add("test")
+            outputDirectories.add("src/main/resources/META-INF/native-image")
+            mergeWithExisting.set(true)
+        }
+    }
 }

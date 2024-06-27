@@ -1,0 +1,38 @@
+[
+  {
+    "name": "bt.bencoding.serializers.BEMapDecoder",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "bt.bencoding.serializers.BEListDecoder",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "bt.bencoding.serializers.BEIntegerDecoder",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "bt.bencoding.serializers.BEStringDecoder",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  }
+]

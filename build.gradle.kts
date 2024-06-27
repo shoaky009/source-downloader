@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
-
 group = "io.github.shoaky"
 
 plugins {
@@ -52,7 +50,6 @@ subprojects {
     tasks.compileKotlin {
         compilerOptions {
             freeCompilerArgs = listOf("-Xjsr305=strict")
-            apiVersion.set(KotlinVersion.KOTLIN_2_0)
         }
     }
 
