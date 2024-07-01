@@ -9,15 +9,24 @@ import java.net.http.HttpResponse
 
 class FanboxClient(
     private val sessionId: String,
+    private val cookie: String? = null,
+    private val userAgent: String = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
     val server: URI = URI("https://api.fanbox.cc"),
     val headers: Map<String, String> = mapOf(
-        HttpHeaders.COOKIE to "FANBOXSESSID=$sessionId",
+        // cf_clearance=xxxxxxxxx
+        HttpHeaders.COOKIE to "FANBOXSESSID=$sessionId; $cookie",
         HttpHeaders.ORIGIN to "https://www.fanbox.cc",
         HttpHeaders.REFERER to "https://www.fanbox.cc/",
-        "sec-ch-ua" to """Not.A/Brand";v="8", "Chromium";v="114", "Google Chrome";v="114"""",
+        // "sec-ch-ua" to """Not/A)Brand";v="8", "Chromium";v="126", "Google Chrome";v="126"""",
         "sec-ch-ua-mobile" to "?0",
-        "sec-ch-ua-platform" to "Windows",
-        HttpHeaders.USER_AGENT to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
+        "sec-ch-ua-platform" to "\"Windows\"",
+        "sec-fetch-site" to "same-site",
+        "sec-fetch-mode" to "cors",
+        "sec-fetch-dest" to "empty",
+        "accept" to "application/json",
+        "accept-language" to "en,zh-CN;q=0.9,zh;q=0.8",
+        "priority" to "u=1, i",
+        HttpHeaders.USER_AGENT to userAgent
     )
 ) : HookedApiClient() {
 
