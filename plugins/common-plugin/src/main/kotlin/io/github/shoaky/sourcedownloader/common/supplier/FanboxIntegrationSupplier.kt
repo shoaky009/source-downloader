@@ -11,9 +11,12 @@ object FanboxIntegrationSupplier : ComponentSupplier<FanboxIntegration> {
 
     override fun apply(context: CoreContext, props: Properties): FanboxIntegration {
         val headers = props.getOrNull<Map<String, String>>("headers")
+        // cf_clearance=xxx
+        val cookie: String = props.get("cookie")
         val client = headers?.let {
-            FanboxClient(props.get("session-id"), headers = it)
-        } ?: FanboxClient(props.get("session-id"))
+            FanboxClient(props.get("session-id"), headers = it, cookie = cookie)
+        } ?: FanboxClient(props.get("session-id"), cookie = cookie)
+
         return FanboxIntegration(client, props.getOrNull("mode"))
     }
 
