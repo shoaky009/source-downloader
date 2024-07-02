@@ -417,7 +417,7 @@ class RenamerTest {
             createRawFileContent(filenamePattern = CorePathPattern("{item.attrs.title}-{source}")),
             itemVars,
 
-        )
+            )
 
         assertEquals("111-BD", result.targetPath().nameWithoutExtension)
     }
@@ -500,7 +500,11 @@ class RenamerTest {
                         keyMapping = mapOf("custom" to "custom_name", "number" to "numbers"),
                         excludeKeys = setOf("filter1"),
                     ),
-                    condition = CelCompiledExpressionFactory.create("file.name == 1", Boolean::class.java, sourceFileDefs())
+                    condition = CelCompiledExpressionFactory.create(
+                        "file.name == 1",
+                        Boolean::class.java,
+                        sourceFileDefs()
+                    )
                 )
             )
         )
@@ -532,6 +536,20 @@ class RenamerTest {
             itemVars2
         )
         assertEquals("2.txt", content2.targetFilename)
+    }
+
+    @Test
+    fun given_dot_filename_should_no_extension() {
+        val file = createRawFileContent(
+            filePath = Path(
+                "downloads",
+                "xxx",
+                "_____padding_file_0_如果您看到此文件，请升级到BitComet(比特彗星)0.85或以上版本____"
+            ),
+            filenamePattern = CorePathPattern("test"),
+        )
+        val fileContent = defaultRenamer.createFileContent(file, RenameVariables.EMPTY)
+        assertEquals("test", fileContent.targetFilename)
     }
 
     companion object {
