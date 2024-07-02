@@ -66,7 +66,7 @@ object TorrentFileResolver : ItemFileResolver {
                     }
 
             val torrentName = infoMap["name"]?.toString()
-            return infoMapFiles.value.filterIsInstance<BEMap>().map { file ->
+            return infoMapFiles.value.filterIsInstance<BEMap>().mapNotNull { file ->
                 val fileMap = file.value
                 val length = fileMap.getValue("length").toString().toLong()
                 val fileMapPath = fileMap.getValue("path")
@@ -74,6 +74,9 @@ object TorrentFileResolver : ItemFileResolver {
                     fileMapPath.value.map { it.toString() }
                 } else {
                     listOf(fileMapPath.toString())
+                }
+                if (pathElements.last().contains("如果您看到此文件，请升级到BitComet")) {
+                    return@mapNotNull null
                 }
                 val path = if (torrentName == null) {
                     Path(pathElements.joinToString("/"))
@@ -85,7 +88,7 @@ object TorrentFileResolver : ItemFileResolver {
         }
         val parent = Path(torrent.name)
         return torrent.files
-            .filter { it.size > 0 }
+            .filter { it.size > 0 && it.pathElements.last().contains("如果您看到此文件，请升级到BitComet").not() }
             .map {
                 val path = parent.resolve(it.pathElements.joinToString("/"))
                 SourceFile(path, mapOf("size" to it.size))
