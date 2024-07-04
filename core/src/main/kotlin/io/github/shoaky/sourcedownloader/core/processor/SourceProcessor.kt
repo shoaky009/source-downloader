@@ -1031,7 +1031,7 @@ class SourceProcessor(
 
             val warningFiles = processingContent.itemContent.fileContents.filter { it.status.isWarning() }
             if (warningFiles.isNotEmpty()) {
-                log.warn(
+                log.debug(
                     "Processor:'{}' has warning status, item:{} files:{}",
                     name,
                     processingContent.itemContent.sourceItem,
