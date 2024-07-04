@@ -36,10 +36,11 @@ object EpisodeVariableProvider : VariableProvider {
 
     private val textClear = TextClear(
         mapOf(
+            Regex("_") to " ",
             Regex("(?:480|720|1080|2160)P", RegexOption.IGNORE_CASE) to "",
             Regex("(1920x1080|3840x2160)", RegexOption.IGNORE_CASE) to "",
             Regex("x(?:264|265)", RegexOption.IGNORE_CASE) to "",
-            Regex("flacx2|ma10p|hi10p|yuv420p10|10bit|hevc10|aacx2|flac|4k|_", RegexOption.IGNORE_CASE) to "",
+            Regex("flacx2|ma10p|hi10p|yuv420p10|10bit|hevc10|aacx2|flac|4k", RegexOption.IGNORE_CASE) to "",
             Regex("\\b[A-Fa-f0-9]{8}\\b|CRC32.*[0-9A-F]{8}", RegexOption.IGNORE_CASE) to "",
             Regex("v\\d+|(\\d){5,}") to "",
             Regex("FIN", RegexOption.IGNORE_CASE) to "",
@@ -126,10 +127,8 @@ private data object CommonEpisodeValueParser : ValueParser {
 
     private val replaces = mapOf(
         Regex("[！？]") to " ",
-        Regex("【") to "[",
-        Regex("】") to "]",
-        Regex("\\(") to "[",
-        Regex("\\)") to "]",
+        Regex("[【(]") to "[",
+        Regex("[】)]") to "]",
         Regex("(?<=\\d)集") to "",
         // 匹配[12 xxx]提取[12]
         Regex("\\[(\\d+)\\s(.*?)]") to "[$1]",
@@ -245,7 +244,8 @@ private data object WordEpisodeValueParser : ValueParser {
 private object RangeEpisodeValueParser : ValueParser {
 
     private val rangeRegexes = listOf(
-        "(EP|E)(?<begin>\\d+)-(?<end>\\d+)".toRegex(RegexOption.IGNORE_CASE),
+        // "(EP|E)(?<begin>\\d+)-(?<end>\\d+)".toRegex(RegexOption.IGNORE_CASE),
+        "(?<begin>\\d+)-(?<end>\\d+)".toRegex(RegexOption.IGNORE_CASE),
     )
 
     override fun parse(value: String): Serializable? {
@@ -253,6 +253,9 @@ private object RangeEpisodeValueParser : ValueParser {
             val matchResult = rangeRegex.find(value) ?: continue
             val begin = matchResult.groups["begin"]?.value ?: continue
             val end = matchResult.groups["end"]?.value ?: continue
+            if (begin >= end) {
+                return null
+            }
             return "$begin-$end"
         }
         return null
