@@ -15,7 +15,9 @@ data class ChatCompletion(
     val temperature: Double = 1.0,
     val stream: Boolean = false,
     @JsonProperty("max_tokens")
-    val maxTokens: Int? = null
+    val maxTokens: Int? = null,
+    @JsonProperty("response_format")
+    val responseFormat: Map<String, Any> = mapOf("type" to "json_object")
 ) : BaseRequest<ChatResponse>() {
 
     override val path: String = "/v1/chat/completions"
@@ -31,7 +33,9 @@ data class ChatMessage(
     val content: String,
     val name: String? = null
 ) {
+
     companion object {
+
         fun ofSystem(content: String): ChatMessage {
             return ChatMessage("system", content)
         }

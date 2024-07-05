@@ -20,11 +20,20 @@ class OpenAiVariableProvider(
     private val openAiBaseUri: URI,
     private val openAiClient: OpenAiClient,
     private val systemRole: ChatMessage,
-    private val primary: String? = null
+    private val primary: String? = null,
+    private val model: String = "gpt-3.5-turbo",
+    private val includeFile: Boolean = false
 ) : VariableProvider {
 
     override fun itemVariables(sourceItem: SourceItem): PatternVariables {
-        return PatternVariables.EMPTY
+        val chatCompletion = ChatCompletion(
+            listOf(systemRole, ChatMessage.ofUser(sourceItem.title)),
+            model,
+        )
+        val response = openAiClient.execute(openAiBaseUri, chatCompletion).body()
+        val first = response.choices.map { it.message }.first()
+        val variables = Jackson.fromJson(first.content, jacksonTypeRef<Map<String, String>>())
+        return MapPatternVariables(variables)
     }
 
     override fun fileVariables(
@@ -32,6 +41,9 @@ class OpenAiVariableProvider(
         itemVariables: PatternVariables,
         sourceFiles: List<SourceFile>,
     ): List<PatternVariables> {
+        if (!includeFile) {
+            return sourceFiles.map { PatternVariables.EMPTY }
+        }
         return sourceFiles.map { file ->
             val path = file.path
             val chatCompletion = ChatCompletion(
@@ -56,6 +68,7 @@ class OpenAiVariableProvider(
             你现在是一个文件解析器，从文件名中解析信息
             需要的信息有:${resolveVariables}
             如果不存在字段无需返回，不返回其他会干扰json解析的字符
-        """.trimIndent()
+        """.trimIndent(),
+        val model: String = "gpt-3.5-turbo",
     )
 }
