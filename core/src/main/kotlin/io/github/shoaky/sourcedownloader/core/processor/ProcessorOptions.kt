@@ -81,7 +81,7 @@ data class VariableProcessChain(
             (output.keyMapping[key] ?: key) to value
         }.toMap(result)
 
-        if (processedVar != null) {
+        if (processedVar != null && !contextVariables.containsKey(input)) {
             result[output.keyMapping.getOrDefault(input, input)] = processedVar
         }
         return result

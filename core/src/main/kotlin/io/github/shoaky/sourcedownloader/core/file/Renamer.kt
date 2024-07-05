@@ -229,6 +229,9 @@ class Renamer(
             val processed = process.process(value, variables)
             if (processed.isNotEmpty()) {
                 processedVariables.putAll(processed)
+                for ((key, processedValue) in processed) {
+                    doc.put("$", key, processedValue)
+                }
             }
         }
         log.debug("Rename variables:{}", variables)
@@ -240,6 +243,7 @@ class Renamer(
         private const val UNRESOLVED = "unresolved"
         private val expressionPatternRegex: Pattern = Pattern.compile("\\{(.+?)}|:\\{(.+?)}")
         private val log = LoggerFactory.getLogger(Renamer::class.java)
+
         // 不一定完全正确现实情况比较复杂使用该正则过滤部分情况
         private val commonExtensionRegex = Regex(".([a-zA-Z0-9]{1,10}\$)")
 
