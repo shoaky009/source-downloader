@@ -54,15 +54,22 @@ class LanguageVariableProvider(
             return PatternVariables.EMPTY
         }
         val extension = file.path.extension
+        if (extension !in setOf("ass", "srt")) {
+            return PatternVariables.EMPTY
+        }
+
+        val lines = try {
+            file.path.readLines()
+        } catch (_: MalformedInputException) {
+            file.path.readLines(Charsets.ISO_8859_1)
+        }
         val collected: List<String> = when (extension) {
             "ass" -> {
-                collectAssFormatText(file)
+                collectAssFormatText(lines)
             }
-
             "srt" -> {
-                collectSrtFormatText(file)
+                collectSrtFormatText(lines)
             }
-
             else -> emptyList()
         }
         val result = languageDetector.detect(
@@ -72,14 +79,9 @@ class LanguageVariableProvider(
         return MapPatternVariables(mapOf("language" to language))
     }
 
-    private fun collectAssFormatText(file: SourceFile): List<String> {
+    private fun collectAssFormatText(lines: List<String>): List<String> {
         // 暂时没处理OP在前面的情况
-        val readLines = try {
-            file.path.readLines()
-        } catch (_: MalformedInputException) {
-            file.path.readLines(Charsets.ISO_8859_1)
-        }
-        return readLines
+        return lines
             .asSequence()
             .dropWhile { it.trim() != "[Events]" }
             .filter { it.startsWith("Dialogue") }
@@ -87,8 +89,8 @@ class LanguageVariableProvider(
             .take(DEFAULT_COLLECT_LINES).toList()
     }
 
-    private fun collectSrtFormatText(file: SourceFile): List<String> {
-        return file.path.readLines()
+    private fun collectSrtFormatText(lines: List<String>): List<String> {
+        return lines
             .asSequence()
             .filter { NUMBER_REGEX.matches(it).not() && SRT_TIME_REGEX.matches(it).not() }
             .filter { it.isNotBlank() }
