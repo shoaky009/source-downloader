@@ -40,8 +40,8 @@ object TelegramClientInstanceFactory : InstanceFactory<TelegramClientWrapper> {
         val proxyResource = props.getOrNull<URI>("proxy")?.let {
             val address = InetSocketAddress(it.host, it.port)
             when (it.scheme) {
-                "http" -> ProxyResources.ofHttp().address(address).build()
-                "socks5" -> ProxyResources.ofSocks5().address(address).build()
+                "http" -> ProxyResources.ofHttp().address(address).connectTimeout(Duration.ofSeconds(5)).build()
+                "socks5" -> ProxyResources.ofSocks5().address(address).connectTimeout(Duration.ofSeconds(5)).build()
                 else -> throw IllegalArgumentException("Unsupported proxy type ${it.scheme}")
             }
         }
