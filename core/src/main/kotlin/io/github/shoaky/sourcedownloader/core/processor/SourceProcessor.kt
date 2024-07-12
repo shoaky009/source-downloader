@@ -106,9 +106,6 @@ class SourceProcessor(
              * AlwaysLatestSource因为是NullPointer，所以在并行处理上没有问题
              */
             log.warn("Processor:'$name' parallelism:${options.parallelism} > 1, but source is not AlwaysLatestSource, recommend to set parallelism to 1")
-            if (options.fileReplacementDecider !is NeverReplace) {
-                log.warn("Processor:'$name' fileReplacementDecider:${options.fileReplacementDecider} is not NeverReplace, may have unexpected results")
-            }
         }
         log.debug("Processor:'{}' listeners{}", name, processListeners)
         listenChannel()
