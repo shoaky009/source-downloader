@@ -1,4 +1,9 @@
 components:
+  trigger:
+    - name: free-time-every20min
+      type: cron
+      props:
+        expression: "0 0/20 3-9 * * *"
   source:
     - name: pixiv
       type: pixiv
@@ -21,6 +26,7 @@ processors:
   - name: pixiv
     triggers:
       - fixed:6hour
+      #- cron:free-time-every20min
     source: pixiv
     downloader: http
     item-file-resolver: pixiv
@@ -30,5 +36,4 @@ processors:
       variable-providers:
         - "sequence"
       save-path-pattern: "{item.attrs.username}"
-      filename-pattern: "{item.date}_{item.title}_{sequence}"
-      pointer-batch-mode: false
+      filename-pattern: "{item.date}_{item.title}_{item.attrs.illustrationId}_{sequence}"
