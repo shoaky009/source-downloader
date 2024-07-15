@@ -204,7 +204,7 @@ class Renamer(
      * @return processed variables and whether processed
      */
     private fun processVariable(
-        variables: MutableMap<String, Any>, withCondition: Boolean = true
+        variables: Map<String, Any>, withCondition: Boolean = true
     ): Pair<MutableMap<String, String>, Boolean> {
         if (variableProcessChain.isEmpty()) {
             return mutableMapOf<String, String>() to false

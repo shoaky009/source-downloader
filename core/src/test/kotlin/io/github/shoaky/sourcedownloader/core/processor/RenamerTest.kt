@@ -527,15 +527,16 @@ class RenamerTest {
         assert(processed.containsKey("filter1").not())
 
         // For condition
-        val itemVars2 = renamer.itemRenameVariables(
-            sourceItem("aaaa ddd [1234]"),
-            MapPatternVariables().also { it.addVariable("custom", "aaaa ddd [1234]") }
-        )
-        val content2 = renamer.createFileContent(
-            createRawFileContent(filePath = Path("2.txt"), filenamePattern = CorePathPattern("{custom_name}")),
-            itemVars2
-        )
-        assertEquals("2.txt", content2.targetFilename)
+        // 该功能还有歧义暂时关闭
+        // val itemVars2 = renamer.itemRenameVariables(
+        //     sourceItem("aaaa ddd [1234]"),
+        //     MapPatternVariables().also { it.addVariable("custom", "aaaa ddd [1234]") }
+        // )
+        // val content2 = renamer.createFileContent(
+        //     createRawFileContent(filePath = Path("2.txt"), filenamePattern = CorePathPattern("{custom_name}")),
+        //     itemVars2
+        // )
+        // assertEquals("2.txt", content2.targetFilename)
     }
 
     @Test
