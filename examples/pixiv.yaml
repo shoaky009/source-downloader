@@ -10,7 +10,6 @@ components:
       props:
         # Cookie中的PHPSESSID
         session-id: "xxx"
-        user-id: 11111
         # 默认bookmark:获取收藏的作品,following:关注的用户的作品
         # mode: "bookmark"
   downloader:
