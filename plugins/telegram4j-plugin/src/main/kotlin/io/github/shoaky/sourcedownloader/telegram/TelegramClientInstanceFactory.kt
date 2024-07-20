@@ -84,11 +84,10 @@ object TelegramClientInstanceFactory : InstanceFactory<TelegramClientWrapper> {
         }
 
         val client = bootstrap.connect()
-            .timeout(Duration.ofSeconds(30))
             .doOnError {
                 log.error("Error while connecting to Telegram", it)
             }
-            .blockOptional(Duration.ofSeconds(30)).get()
+            .blockOptional(Duration.ofSeconds(5L)).get()
         return TelegramClientWrapper(client)
     }
 
@@ -103,7 +102,7 @@ class TelegramClientWrapper(
 ) : AutoCloseable {
 
     override fun close() {
-        client.disconnect().block(Duration.ofSeconds(10L))
+        client.disconnect().block(Duration.ofSeconds(3L))
         log.info("Telegram client closed")
     }
 
