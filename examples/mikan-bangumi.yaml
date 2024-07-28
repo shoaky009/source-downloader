@@ -58,18 +58,16 @@ processors:
   - name: mikan-bangumi
     triggers:
       - fixed:20min
-    # 如果不需要番剧补全使用
-    #source: rss:mikan
     source: mikan
     item-file-resolver: torrent
     downloader: qbittorrent
     mover: qbittorrent
     save-path: /mnt/bangumi
+    tags: [ "新番" ]
     options:
       variable-providers:
         - "mikan"
         - "episode"
-        - "season"
       process-listeners:
         - http:telegram-message-webhook
       save-path-pattern: "{name}/Season {season}/"
@@ -80,11 +78,18 @@ processors:
         category: Bangumi
         tags:
           - "mikan-bangumi"
-      # 根据mediaType来判断Item是否存在，例如S01E01.mp4已经存在在savaPath中，那么遇到S01E01.mkv将不会下载
-      file-exists-detector: 'media-type'
-      provide-metadata-variables: false
-      # 目标文件替换策略，anime总是会替换bilibili源和如果当前带版本号的会替换
-      #file-replacement-decider: anime
       item-expression-exclusions:
-        - "item.title.matches('720(?i)P')"
-        - "item.title.matches('中文配音')"
+        - "item.title.matches('720(?i)P|中文配音|CR |1280X720')"
+      file-expression-exclusions:
+        - "file.tags in ['image'] || file.extension in ['zip', 'rar']"
+      file-replacement-decider: anime
+      file-exists-detector: 'media-type'
+      file-taggers:
+        - "simple"
+      parallelism: 5
+      variable-process:
+        - input: name
+          chain: [ "season" ]
+          output:
+            key-mapping:
+              name: season
