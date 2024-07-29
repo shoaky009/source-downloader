@@ -145,8 +145,8 @@ class TelegramIntegration(
             }
             .doOnError {
                 log.error("Error downloading file:$fileDownloadPath", it)
-                log.info(
-                    "localFileSize:{} vs channelPos:{}, channelWriteTimes:{}",
+                log.debug(
+                    "LocalFileSize:{} vs channelPos:{}, channelWriteTimes:{}",
                     tempDownloadPath.fileSize(),
                     monitoredChannel.getDownloadedBytes(),
                     monitoredChannel.writeTimes()
