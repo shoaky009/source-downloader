@@ -374,7 +374,7 @@ class SourceProcessor(
                 modifyTime = LocalDateTime.now(),
             )
             processingStorage.save(toUpdate)
-            log.info("全部目标文件已存在无需重命名，id:{} item:{}", pc.id, pc.itemContent.sourceItem)
+            log.debug("全部目标文件已存在无需重命名，id:{} item:{}", pc.id, pc.itemContent.sourceItem)
             return
         }
 
@@ -452,7 +452,7 @@ class SourceProcessor(
     private fun moveFiles(content: CoreItemContent): Boolean {
         val movableFiles = content.movableFiles()
         if (movableFiles.isEmpty()) {
-            log.info("Processor:'$name' no available files to rename, item:'${content.sourceItem}'")
+            log.debug("Processor:'{}' no available files to rename, item:'{}'", name, content.sourceItem)
             return false
         }
         movableFiles.map { it.saveDirectoryPath() }
@@ -607,7 +607,7 @@ class SourceProcessor(
 
                     val sourceItem = pointed.sourceItem
                     if (itemSet.contains(sourceItem)) {
-                        log.info("Processor:'{}' source given duplicate item:{}", name, sourceItem)
+                        log.debug("Processor:'{}' source given duplicate item:{}", name, sourceItem)
                         semaphore.release()
                         continue
                     }
@@ -751,7 +751,7 @@ class SourceProcessor(
             val itemContent = createItemContent(sourceItem, itemOptions)
             val filterBy = itemContentFilters.firstOrNull { it.test(itemContent).not() }
             if (filterBy != null) {
-                log.info("Processor:'{}' {} filtered item:{}", name, filterBy::class.simpleName, sourceItem)
+                log.debug("Processor:'{}' {} filtered item:{}", name, filterBy::class.simpleName, sourceItem)
                 return ProcessingContent(name, itemContent).copy(status = FILTERED)
             }
 
@@ -891,7 +891,7 @@ class SourceProcessor(
 
             // 预防这一批次的Item有相同的目标，并且是AsyncDownloader的情况下会重复下载
             if (files.all { it.status == FileContentStatus.TARGET_EXISTS }) {
-                log.info(
+                log.debug(
                     "Item files already exists:{}, files:{}",
                     sc.sourceItem,
                     sc.fileContents.map { it.targetPath() })
@@ -939,7 +939,7 @@ class SourceProcessor(
             val itemContent = pc.itemContent
             val downloadTask = createDownloadTask(itemContent, replaceFiles)
             // NOTE 非异步下载器会阻塞
-            log.info(
+            log.debug(
                 "Processor:'{}' submit download item:{}, count:{}, files:{}",
                 name,
                 downloadTask.sourceItem,
