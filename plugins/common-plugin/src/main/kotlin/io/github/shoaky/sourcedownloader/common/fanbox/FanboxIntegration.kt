@@ -123,7 +123,7 @@ private class CreatorPostsIterator(
     private val touchBottom = creatorPointer.touchBottom
     private val lastMaxId = creatorPointer.topId ?: 0L
     private var finished = false
-    private var posts: Posts = Posts()
+    private var posts: List<Post> = emptyList()
 
     override fun hasNext(): Boolean {
         if (finished) {
@@ -135,16 +135,17 @@ private class CreatorPostsIterator(
             return true
         }
         val lastMaxId = creatorPointer.topId
-        return posts.items.all { it.id != lastMaxId }
+        return posts.all { it.id != lastMaxId }
     }
 
     override fun next(): List<PointedItem<ItemPointer>> {
         val request = creatorPointer.nextRequest()
 
         posts = client.execute(request).body().body
-        val items = posts.items.filter { it.isRestricted.not() }
+        val lastPage = posts.isEmpty() || posts.size < request.limit
+        val items = posts.filter { it.isRestricted.not() }
             .map {
-                val update = creatorPointer.update(it, posts.hasNext().not())
+                val update = creatorPointer.update(it, lastPage)
                 creatorPointer = update
                 PointedItem(toItem(client.server, it), update) to it
             }

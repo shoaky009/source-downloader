@@ -17,9 +17,6 @@ data class Posts(
         return nextUrl != null
     }
 
-    fun nextRequest(): CreatorPostsRequest? {
-        return nextUrl?.let { CreatorPostsRequest.fromUri(it) }
-    }
 }
 
 data class User(

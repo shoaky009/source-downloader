@@ -10,10 +10,10 @@ class CreatorPostsRequest(
     val maxPublishedDatetime: String? = null,
     val maxId: Long? = null,
     val limit: Int = 25
-) : FanboxRequest<Posts>() {
+) : FanboxRequest<List<Post>>() {
 
     override val path: String = "/post.listCreator"
-    override val responseBodyType: TypeReference<FanboxResponse<Posts>> = jacksonTypeRef()
+    override val responseBodyType: TypeReference<FanboxResponse<List<Post>>> = jacksonTypeRef()
 
     companion object {
 
