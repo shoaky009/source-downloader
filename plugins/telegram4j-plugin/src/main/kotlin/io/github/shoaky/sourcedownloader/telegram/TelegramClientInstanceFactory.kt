@@ -66,7 +66,7 @@ object TelegramClientInstanceFactory : InstanceFactory<TelegramClientWrapper> {
             .setPingInterval(Duration.ofSeconds(config.pingInterval))
             .setEntityRetrieverStrategy(
                 EntityRetrievalStrategy.preferred(
-                    EntityRetrievalStrategy.RPC,
+                    EntityRetrievalStrategy.STORE_FALLBACK_RPC,
                     PreferredEntityRetriever.Setting.FULL,
                     PreferredEntityRetriever.Setting.FULL
                 )

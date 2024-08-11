@@ -176,7 +176,7 @@ class TelegramIntegration(
         log.info("Create file part stream for file: {}, offset:{}", fileDownloadPath, offset)
         return client.downloadFile(fileReferenceId, monitoredChannel.getDownloadedBytes(), MAX_FILE_PART_SIZE, true)
             .publishOn(Schedulers.fromExecutor(Executors.newVirtualThreadPerTaskExecutor()))
-            .timeout(Duration.ofMinutes(3))
+            .timeout(Duration.ofMinutes(1))
             .onErrorResume(RpcException::class.java) {
                 val error = it.error
                 if (monitoredChannel.isDone().not() && retryErrorCodes.contains(error.errorCode())) {
