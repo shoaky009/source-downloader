@@ -18,7 +18,9 @@ import java.nio.ByteBuffer
 import java.nio.file.Path
 import java.time.Instant
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.io.path.createDirectories
 import kotlin.io.path.deleteIfExists
+import kotlin.io.path.notExists
 
 /**
  * HTTP下载器，URI取自[SourceFile.downloadUri]
@@ -55,6 +57,9 @@ class HttpDownloader(
             return
         }
 
+        if (path.parent != downloadPath && path.parent.notExists()) {
+            path.parent.createDirectories()
+        }
         val bodyHandler = MonitorableBodyHandler(BodyHandlers.ofFile(path))
         val request = HttpRequest.newBuilder(file.downloadUri).GET()
             .apply {
