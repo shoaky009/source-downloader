@@ -37,7 +37,7 @@ internal class CommonPlugin : Plugin {
             MediaTypeExistsDetectorSupplier,
             MikanSourceSupplier(pluginContext),
             MikanVariableProviderSupplier(pluginContext),
-            OpenAiVariableProviderSupplier,
+            AiVariableProviderSupplier,
             PatreonIntegrationSupplier,
             PixivIntegrationSupplier,
             QbittorrentDownloaderSupplier(pluginContext.getInstanceManager()),

@@ -1,22 +1,29 @@
 package io.github.shoaky.sourcedownloader.common.supplier
 
-import io.github.shoaky.sourcedownloader.common.ai.OpenAiVariableProvider
+import io.github.shoaky.sourcedownloader.common.ai.AiVariableProvider
+import io.github.shoaky.sourcedownloader.external.openai.AiClient
 import io.github.shoaky.sourcedownloader.external.openai.ChatMessage
-import io.github.shoaky.sourcedownloader.external.openai.OpenAiClient
 import io.github.shoaky.sourcedownloader.sdk.CoreContext
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
 
-object OpenAiVariableProviderSupplier : ComponentSupplier<OpenAiVariableProvider> {
+object AiVariableProviderSupplier : ComponentSupplier<AiVariableProvider> {
 
-    override fun apply(context: CoreContext, props: Properties): OpenAiVariableProvider {
-        val config = props.parse<OpenAiVariableProvider.OpenAiConfig>()
-        val client = OpenAiClient(
+    override fun apply(context: CoreContext, props: Properties): AiVariableProvider {
+        val config = props.parse<AiVariableProvider.AiConfig>()
+        val client = AiClient(
             config.apiKeys
         )
         val primary = props.getOrNull<String>("primary")
-        return OpenAiVariableProvider(config.apiHost, client, ChatMessage.ofSystem(config.systemRole), primary, config.model)
+        return AiVariableProvider(
+            config.apiHost,
+            client,
+            ChatMessage.ofSystem(config.systemRole),
+            primary,
+            config.model,
+            temperature = config.temperature
+        )
     }
 
     override fun supplyTypes(): List<ComponentType> {

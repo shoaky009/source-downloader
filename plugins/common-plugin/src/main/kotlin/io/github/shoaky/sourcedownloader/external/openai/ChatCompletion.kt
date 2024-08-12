@@ -12,7 +12,7 @@ import io.github.shoaky.sourcedownloader.sdk.http.HttpMethod
 data class ChatCompletion(
     val messages: List<ChatMessage>,
     val model: String = "gpt-3.5-turbo",
-    val temperature: Double = 1.0,
+    val temperature: Double = 0.85,
     val stream: Boolean = false,
     @JsonProperty("max_tokens")
     val maxTokens: Int? = null,

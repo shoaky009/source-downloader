@@ -6,7 +6,7 @@ import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import java.time.Duration
 
-class OpenAiClient(
+class AiClient(
     private val apiKeys: List<String>,
     private val timeout: Duration = Duration.ofSeconds(10L)
 ) : HookedApiClient() {
