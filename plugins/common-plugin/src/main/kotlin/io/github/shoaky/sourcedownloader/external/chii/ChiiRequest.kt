@@ -2,12 +2,13 @@ package io.github.shoaky.sourcedownloader.external.chii
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.core.type.TypeReference
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import com.google.common.net.MediaType
 import io.github.shoaky.sourcedownloader.external.anilist.GraphQLResponse
 import io.github.shoaky.sourcedownloader.sdk.http.BaseRequest
 import io.github.shoaky.sourcedownloader.sdk.http.HttpMethod
-import java.time.LocalDate
+import io.github.shoaky.sourcedownloader.util.UnescapeHtmlDeserializer
 
 class SubjectQueryChiiRequest(
     search: String,
@@ -49,7 +50,9 @@ data class QuerySubjectSearch(
 
 data class SubjectResultItem(
     val id: String,
+    @JsonDeserialize(using = UnescapeHtmlDeserializer::class)
     val name: String,
     @JsonProperty("nameCN")
+    @JsonDeserialize(using = UnescapeHtmlDeserializer::class)
     val nameCn: String,
 )

@@ -18,6 +18,7 @@ dependencies {
     implementation(libs.tika.langdetect.optimaize)
     implementation(libs.jsoup)
     implementation(libs.fuzzywuzzy)
+    implementation(libs.commons.text)
 }
 
 tasks.nativeCompile {
