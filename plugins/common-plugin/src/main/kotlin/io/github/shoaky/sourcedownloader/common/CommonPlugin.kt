@@ -50,7 +50,8 @@ internal class CommonPlugin : Plugin {
             TransmissionDownloaderSupplier,
             WebdavMoverSupplier,
             YoutubeDLIntegrationSupplier,
-            ChiiVariableProviderSupplier
+            ChiiVariableProviderSupplier,
+            AnimeTitleVariableProviderSupplier
         )
     }
 
