@@ -55,6 +55,15 @@ class QbittorrentDownloader(
         // 目前如果info hash只有v1也会试一遍v2，没必要
         val (success, infoHash, body) = retryWhen({
             val fileResponse = client.execute(TorrentFilesRequest(torrentHash))
+            if (fileResponse.statusCode() == HttpStatus.NOT_FOUND.value()) {
+                val infoHashV1 = getInfoHashV1(task.sourceItem, true)
+                val fileResponse = client.execute(TorrentFilesRequest(infoHashV1))
+                return@retryWhen Triple(
+                    fileResponse.statusCode() == HttpStatus.OK.value(),
+                    infoHashV1,
+                    fileResponse.body()
+                )
+            }
             Triple(fileResponse.statusCode() == HttpStatus.OK.value(), torrentHash, fileResponse.body())
         }, condition = { it.first }) {
             val infoHashV2 = getInfoHashV2(task.downloadUri().toURL())
@@ -141,7 +150,7 @@ class QbittorrentDownloader(
     }
 
     override fun move(itemContent: ItemContent): Boolean {
-        val torrentHash = getInfoHash(itemContent.sourceItem)
+        var torrentHash = getInfoHash(itemContent.sourceItem)
         val sourceFiles = itemContent.fileContents
 
         val firstFile = sourceFiles.first()
@@ -180,10 +189,17 @@ class QbittorrentDownloader(
         val torrentHash = getInfoHashV1(sourceItem)
         val torrent = client.execute(TorrentInfoRequest(hashes = torrentHash))
         if (torrent.body().isEmpty()) {
+            log.debug("Info hash v1 {} not found, try to get info hash v2", torrentHash)
             val infoHashV2 = getInfoHashV2(sourceItem.downloadUri.toURL())
             val response = client.execute(TorrentInfoRequest(hashes = infoHashV2))
-            if (response.statusCode() == 200) {
+            if (response.body().isNotEmpty()) {
                 return infoHashV2
+            }
+            log.debug("Info hash v2 {} not found, try to get from url info hash v1", infoHashV2)
+            val infoHashV1 = getInfoHashV1(sourceItem, true)
+            val v1Response = client.execute(TorrentInfoRequest(hashes = infoHashV1))
+            if (v1Response.statusCode() == 200) {
+                return infoHashV1
             }
             log.warn("Get torrent info failed, hash:$torrentHash code:${torrent.statusCode()} body:${torrent.body()}")
         }
@@ -229,7 +245,10 @@ class QbittorrentDownloader(
 }
 
 private val metadataService = MetadataService()
-fun getInfoHashV1(sourceItem: SourceItem): String {
+fun getInfoHashV1(sourceItem: SourceItem, forceFromUrl: Boolean = false): String {
+    if (forceFromUrl) {
+        return metadataService.fromUrl(sourceItem.downloadUri.toURL()).torrentId.toString()
+    }
     return tryParseTorrentHash(sourceItem)
         ?: metadataService.fromUrl(sourceItem.downloadUri.toURL()).torrentId.toString()
 }
