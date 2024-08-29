@@ -12,12 +12,12 @@ object AnimeTitleVariableProvider : VariableProvider {
         AniTitleExtractor
     )
 
-    private val clear = TextClear(
+    private val inputClear = TextClear(
         mapOf(Regex("（僅限港澳台）") to "")
     )
 
     override fun itemVariables(sourceItem: SourceItem): PatternVariables {
-        val title = clear.input(sourceItem.title)
+        val title = inputClear.input(sourceItem.title)
         for (extractor in chain) {
             val result = extractor.extract(title)
             if (result != null) {
@@ -52,6 +52,7 @@ object AniTitleExtractor : Extractor {
     private val EPISODE_REGEX = Regex(" - \\d+(\\.\\d+)? \\[.*]")
     private const val INVALID_INDEX = -1
     private const val SPECIAL_CHAR = " - "
+
     override fun extract(raw: String): Titles? {
         val groupIndex = raw.indexOf("[ANI]", ignoreCase = true)
         if (groupIndex == INVALID_INDEX) {
