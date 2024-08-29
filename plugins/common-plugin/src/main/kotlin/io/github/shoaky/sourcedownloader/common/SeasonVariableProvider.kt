@@ -32,7 +32,7 @@ object SeasonVariableProvider : VariableProvider {
             ExtractTitleSeasonParser,
             TmdbSeasonParser(TmdbClient.default, true)
         ),
-        false
+        true
     )
 
     override fun fileVariables(

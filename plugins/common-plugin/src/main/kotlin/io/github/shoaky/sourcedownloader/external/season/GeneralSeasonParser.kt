@@ -15,7 +15,7 @@ object GeneralSeasonParser : SeasonParser {
 
     // 常见的比如第X季 第X期 S Season
     private val generalSeasonRegex =
-        RegexRule("S\\d{1,2}|Season \\d{1,2}|第.[季期]|\\d+(?i:rd|nd)|第.*季".toRegex(RegexOption.IGNORE_CASE)) {
+        RegexRule("S\\d{1,2}|Season\\s*\\d{1,2}|第.[季期]|\\d+(?i:rd|nd)|第.*季".toRegex(RegexOption.IGNORE_CASE)) {
             val s = it.replace("S", "", true)
                 .replace("Season", "", true)
                 .replace("第", "")
