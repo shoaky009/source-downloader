@@ -1,6 +1,5 @@
 package io.github.shoaky.sourcedownloader.core.expression
 
-import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import org.projectnessie.cel.checker.Decls
 import org.projectnessie.cel.extension.StringsLib
 import org.projectnessie.cel.tools.ScriptHost
@@ -34,9 +33,9 @@ object CelCompiledExpressionFactory : CompiledExpressionFactory {
     fun <T> create(raw: String, resultType: Class<T>): CompiledExpression<T> {
         val sc = scriptHost.buildScript(raw)
             .withDeclarations(
-                Decls.newVar("item", Decls.newObjectType(SourceItem::class.java.name))
+                Decls.newVar("item", Decls.Dyn),
+                Decls.newVar("file", Decls.Dyn),
             )
-            .withTypes(SourceItem::class.java)
             .build()
         return CelCompiledExpression(sc, resultType, raw)
     }

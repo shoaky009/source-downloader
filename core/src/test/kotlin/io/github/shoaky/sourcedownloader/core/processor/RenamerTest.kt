@@ -13,6 +13,8 @@ import io.github.shoaky.sourcedownloader.core.file.*
 import io.github.shoaky.sourcedownloader.sdk.MapPatternVariables
 import io.github.shoaky.sourcedownloader.sdk.PatternVariables
 import io.github.shoaky.sourcedownloader.sdk.SourceFile
+import io.github.shoaky.sourcedownloader.sdk.SourceItem
+import io.github.shoaky.sourcedownloader.sdk.component.VariableProvider
 import io.github.shoaky.sourcedownloader.sourceItem
 import io.github.shoaky.sourcedownloader.testResourcePath
 import org.junit.jupiter.api.AfterAll
@@ -475,6 +477,70 @@ class RenamerTest {
     }
 
     @Test
+    fun test_variable_process_normal_case() {
+        val renamer = Renamer(
+            variableProcessChain = listOf(
+                VariableProcessChain(
+                    input = "title",
+                    listOf(
+                        FixedVariableProvider("title", mapOf("1234" to "4321")),
+                    ),
+                    VariableProcessOutput(),
+                    VariableProcessOutputScope.ITEM
+                )
+            )
+        )
+
+        val itemVars = renamer.itemRenameVariables(
+            sourceItem("1234"),
+            MapPatternVariables().also { it.addVariable("title", "1234") }
+        )
+        renamer.itemRenameVariables(sourceItem("1234"), itemVars)
+        val fileContent = renamer.createFileContent(
+            createRawFileContent(filenamePattern = CorePathPattern("{title}")),
+            itemVars
+        )
+        assertEquals("4321.txt", fileContent.targetFilename)
+        assertEquals("4321", itemVars.processedVariables["title"])
+        assertEquals("4321", itemVars.processedVariables["title"])
+    }
+
+    @Test
+    fun test_variable_process_condition_false() {
+        // given data
+        val renamer = Renamer(
+            variableProcessChain = listOf(
+                VariableProcessChain(
+                    input = "title",
+                    listOf(
+                        FixedVariableProvider("title", mapOf("1234" to "4321")),
+                    ),
+                    VariableProcessOutput(),
+                    VariableProcessOutputScope.ITEM,
+                    condition = CelCompiledExpressionFactory.create(
+                        "item.attrs.conditionAttr == 'true'",
+                        Boolean::class.java
+                    )
+                )
+            )
+        )
+
+        val item = sourceItem(attrs = mapOf("conditionAttr" to false))
+        val itemVars = renamer.itemRenameVariables(
+            item,
+            MapPatternVariables().also { it.addVariable("title", "1234") }
+        )
+        val fileContent = renamer.createFileContent(
+            createRawFileContent(
+                filenamePattern = CorePathPattern("{title}"), attrs =
+                mapOf("conditionAttr" to false)
+            ),
+            itemVars
+        )
+        assertEquals("1234.txt", fileContent.targetFilename)
+    }
+
+    @Test
     fun test_variable_process() {
         val renamer = Renamer(
             variableProcessChain = listOf(
@@ -500,6 +566,7 @@ class RenamerTest {
                         keyMapping = mapOf("custom" to "custom_name", "number" to "numbers"),
                         excludeKeys = setOf("filter1"),
                     ),
+                    outputScope = VariableProcessOutputScope.ITEM,
                     condition = CelCompiledExpressionFactory.create(
                         "file.name == 1",
                         Boolean::class.java,
@@ -592,6 +659,35 @@ class RenamerTest {
         }
     }
 
+}
+
+class FixedVariableProvider(
+    private val name: String,
+    private val mapping: Map<String, String>
+) : VariableProvider {
+
+    override fun itemVariables(sourceItem: SourceItem): PatternVariables {
+        return MapPatternVariables(mapping)
+    }
+
+    override fun fileVariables(
+        sourceItem: SourceItem,
+        itemVariables: PatternVariables,
+        sourceFiles: List<SourceFile>
+    ): List<PatternVariables> {
+        val vars = MapPatternVariables(mapping)
+        return sourceFiles.map {
+            vars
+        }
+    }
+
+    override fun primary(): String {
+        return name
+    }
+
+    override fun extractFrom(text: String): PatternVariables? {
+        return mapping[text]?.let { MapPatternVariables(mapOf(name to it)) }
+    }
 }
 
 fun createRawFileContent(

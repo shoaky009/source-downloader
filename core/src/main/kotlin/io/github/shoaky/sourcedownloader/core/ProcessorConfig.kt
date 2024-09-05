@@ -10,6 +10,7 @@ import io.github.shoaky.sourcedownloader.core.file.CorePathPattern
 import io.github.shoaky.sourcedownloader.core.file.VariableErrorStrategy
 import io.github.shoaky.sourcedownloader.core.processor.VariableConflictStrategy
 import io.github.shoaky.sourcedownloader.core.processor.VariableProcessOutput
+import io.github.shoaky.sourcedownloader.core.processor.VariableProcessOutputScope
 import io.github.shoaky.sourcedownloader.sdk.DownloadOptions
 import java.time.Duration
 
@@ -113,6 +114,8 @@ data class ProcessorConfig(
         val input: String,
         val chain: List<ComponentId> = emptyList(),
         val output: VariableProcessOutput = VariableProcessOutput(),
+        // ITEM, FILE, BOTH
+        val outputScope: VariableProcessOutputScope,
         val conditionExpression: String? = null
     )
 

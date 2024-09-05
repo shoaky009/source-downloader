@@ -407,7 +407,7 @@ class DefaultProcessorManager(
             val condition = cfg.conditionExpression?.let {
                 expressionFactory.create(it, Boolean::class.java, fileContentDefs())
             }
-            VariableProcessChain(cfg.input, chain, cfg.output, condition)
+            VariableProcessChain(cfg.input, chain, cfg.output, cfg.outputScope, condition)
         }
     }
 
