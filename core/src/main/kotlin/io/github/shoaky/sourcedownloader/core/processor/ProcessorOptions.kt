@@ -60,6 +60,7 @@ data class VariableProcessChain(
     val input: String,
     val chain: List<VariableProvider>,
     val output: VariableProcessOutput,
+    val outputScope: VariableProcessOutputScope,
     val condition: CompiledExpression<Boolean>? = null
 ) {
 
@@ -107,3 +108,11 @@ data class ItemOption(
     val sourceItemFilters: List<SourceItemFilter>? = null,
     val variableProviders: List<VariableProvider>? = null,
 )
+
+enum class VariableProcessOutputScope {
+    ITEM,
+    FILE,
+
+    // if ITEM and FILE have the same variable, FILE will be used
+    BOTH
+}
