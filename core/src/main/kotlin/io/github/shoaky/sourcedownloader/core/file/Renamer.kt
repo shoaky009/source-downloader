@@ -3,10 +3,12 @@ package io.github.shoaky.sourcedownloader.core.file
 import com.jayway.jsonpath.JsonPath
 import com.jayway.jsonpath.PathNotFoundException
 import io.github.shoaky.sourcedownloader.core.processor.VariableProcessChain
+import io.github.shoaky.sourcedownloader.core.processor.VariableProcessOutputScope
 import io.github.shoaky.sourcedownloader.sdk.*
 import io.github.shoaky.sourcedownloader.sdk.component.VariableReplacer
 import org.slf4j.LoggerFactory
 import java.nio.file.Path
+import java.util.*
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 import kotlin.io.path.extension
@@ -151,7 +153,7 @@ class Renamer(
         val replacedItemVars = itemVariables.variables().replaceVariables()
         vars.putAll(replacedItemVars)
         vars["item"] = buildSourceItemRenameVariables(sourceItem)
-        val (variables, _) = processVariable(vars, false)
+        val (variables, _) = processVariable(vars, ITEM_SCOPE, false)
         return RenameVariables(vars, variables.replaceVariables(), replacedItemVars)
     }
 
@@ -169,13 +171,17 @@ class Renamer(
     /**
      * @param extraVariables 优先级比file低
      */
-    private fun fileRenameVariables(file: RawFileContent, extraVariables: RenameVariables): RenameVariables {
+    fun fileRenameVariables(file: RawFileContent, extraVariables: RenameVariables): RenameVariables {
         val renameVars = mutableMapOf<String, Any>()
         val filePatternVars = file.patternVariables.variables().replaceVariables()
         renameVars.putAll(filePatternVars)
 
         renameVars["file"] = buildSourceFileRenameVariables(file)
-        val (variables, processed) = processVariable(renameVars)
+        val item = extraVariables.variables["item"]
+        if (item != null) {
+            renameVars["item"] = item
+        }
+        val (variables, processed) = processVariable(renameVars, FILE_SCOPE)
         if (processed) {
             for ((key, value) in extraVariables.processedVariables.entries) {
                 variables.putIfAbsent(key, value)
@@ -204,7 +210,9 @@ class Renamer(
      * @return processed variables and whether processed
      */
     private fun processVariable(
-        variables: Map<String, Any>, withCondition: Boolean = true
+        variables: Map<String, Any>,
+        outputScope: Set<VariableProcessOutputScope>,
+        withCondition: Boolean = true
     ): Pair<MutableMap<String, String>, Boolean> {
         if (variableProcessChain.isEmpty()) {
             return mutableMapOf<String, String>() to false
@@ -212,12 +220,13 @@ class Renamer(
         val processedVariables: MutableMap<String, String> = mutableMapOf()
         val doc = JsonPath.parse(variables)
         var processedFlag = false
-        variableProcessChain.filter {
-            if (withCondition) {
-                return@filter it.condition?.execute(variables) ?: true
+        val chain = variableProcessChain
+            .filter { it.outputScope in outputScope }
+            .filter {
+                if (withCondition.not()) return@filter true
+                it.condition == null || it.condition.execute(variables)
             }
-            true
-        }.forEach { process ->
+        chain.forEach { process ->
             processedFlag = true
             val value = try {
                 doc.read<String>("$.${process.input}")
@@ -246,7 +255,10 @@ class Renamer(
 
         // 不一定完全正确现实情况比较复杂使用该正则过滤部分情况
         private val commonExtensionRegex = Regex(".([a-zA-Z0-9]{1,10}\$)")
-
+        private val ITEM_SCOPE: Set<VariableProcessOutputScope> =
+            EnumSet.of(VariableProcessOutputScope.ITEM, VariableProcessOutputScope.BOTH)
+        private val FILE_SCOPE: Set<VariableProcessOutputScope> =
+            EnumSet.of(VariableProcessOutputScope.FILE, VariableProcessOutputScope.BOTH)
     }
 
     private fun String.replaceVariable(name: String): String {
