@@ -754,7 +754,7 @@ class SourceProcessor(
                 log.debug("Processor:'{}' {} filtered item:{}", name, filterBy::class.simpleName, sourceItem)
                 return ProcessingContent(name, itemContent).copy(status = FILTERED)
             }
-
+            val itemContext = ItemContext()
             val mover = this.selectUpdateStatusMover()
             var replaceFiles: List<CoreFileContent> = emptyList()
             processLock.lock {
@@ -771,16 +771,26 @@ class SourceProcessor(
                 secondaryFileMover.preoccupiedTargetPath(sourceItem, targetPaths)
                 replaceFiles = identifyFilesToReplace(itemContent)
                 context.addItemPaths(itemContent, targetPaths)
-            }
 
-            val (shouldDownload, contentStatus) = probeContentStatus(itemContent, replaceFiles)
-            log.trace(
-                "Processor:'{}' item:{}, shouldDownload: {}, contentStatus:{}",
-                name, sourceItem, shouldDownload, contentStatus
-            )
-            val processingContent = postProcessingContent(
-                ProcessingContent(name, itemContent).copy(status = contentStatus)
-            )
+                val (shouldDownload, contentStatus) = probeContentStatus(itemContent, replaceFiles)
+                itemContext.shouldDownload = shouldDownload
+                itemContext.status = contentStatus
+                if (context.isItemCanceled(sourceItem)) {
+                    itemContext.status = CANCELLED
+                }
+                log.trace(
+                    "Processor:'{}' item:{}, shouldDownload: {}, contentStatus:{}",
+                    name, sourceItem, shouldDownload, contentStatus
+                )
+                val processingContent = postProcessingContent(
+                    ProcessingContent(name, itemContent).copy(status = itemContext.status)
+                )
+                itemContext.content = processingContent
+            }
+            val shouldDownload = itemContext.shouldDownload
+            val contentStatus = itemContext.status
+            val processingContent = itemContext.content
+            checkNotNull(processingContent)
 
             if (shouldDownload) {
                 val success = doDownload(processingContent, replaceFiles)
@@ -860,6 +870,7 @@ class SourceProcessor(
                                     content.fileContents.filter { it.targetPath() == existTargetPath }
                                         .onEach { it.status = FileContentStatus.REPLACED }
                                     cancelItem(content.sourceItem, fileContent, discardedItems)
+                                    context.cancelItem(content.sourceItem)
                                 }
                         }
                     }
@@ -965,6 +976,12 @@ class SourceProcessor(
             processItems()
         }
     }
+
+    private data class ItemContext(
+        var shouldDownload: Boolean = false,
+        var status: ProcessingContent.Status = NO_FILES,
+        var content: ProcessingContent? = null
+    )
 
     private fun invokeListeners(
         mode: ListenerMode = ListenerMode.EACH,

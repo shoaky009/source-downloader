@@ -2,6 +2,14 @@ plugins {
     `java-library`
 }
 
+// repositories {
+//     rootProject.repositories.add(
+//         maven {
+//             url = uri("https://mvn.mchv.eu/repository/mchv/")
+//         }
+//     )
+// }
+
 dependencies {
     implementation(project(":sdk"))
     implementation(project(":common"))
@@ -12,4 +20,7 @@ dependencies {
 
     implementation(libs.zxing.core)
     implementation(libs.telegram4j)
+    // implementation(platform("it.tdlight:tdlight-java-bom:3.4.0+td.1.8.26"))
+    // implementation("it.tdlight:tdlight-java")
+    // implementation(group = "it.tdlight", name = "tdlight-natives", classifier = "macos_arm64")
 }

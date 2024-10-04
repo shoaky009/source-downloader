@@ -20,6 +20,7 @@ class CoreProcessContext(
     val stat: ProcessStat = ProcessStat(processName)
     private val currentProcessItemPathsMapping: Multimap<CoreItemContent, Path> = ArrayListMultimap.create()
     private val processedItems: MutableList<SourceItem> = mutableListOf()
+    private val cancelItems: MutableSet<SourceItem> = mutableSetOf()
     private var hasError: Boolean = false
     override fun processor(): ProcessorInfo {
         return processor
@@ -62,6 +63,14 @@ class CoreProcessContext(
         return currentProcessItemPathsMapping.entries()
             .filter { it.value == path }
             .map { it.key }
+    }
+
+    fun cancelItem(sourceItem: SourceItem) {
+        cancelItems.add(sourceItem)
+    }
+
+    fun isItemCanceled(sourceItem: SourceItem): Boolean {
+        return cancelItems.contains(sourceItem)
     }
 
 }
