@@ -2,6 +2,7 @@ package io.github.shoaky.sourcedownloader.common.rss
 
 import com.apptasticsoftware.rssreader.Enclosure
 import com.apptasticsoftware.rssreader.RssReader
+import com.google.common.net.UrlEscapers
 import io.github.shoaky.sourcedownloader.external.rss.RssExtReader
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.AlwaysLatestSource
@@ -54,9 +55,12 @@ class RssSource(
                         LocalDateTime.parse(it, dateFormat)
                     }.getOrDefault(LocalDateTime.now()),
                     enclosure.type,
-                    URI(enclosure.url.ifBlank {
-                        item.link.get()
-                    }),
+                    URI(
+                        UrlEscapers.urlFragmentEscaper().escape(
+                            enclosure.url.ifBlank {
+                                item.link.get()
+                            })
+                    ),
                     item.attrs,
                     item.tags
                 )
