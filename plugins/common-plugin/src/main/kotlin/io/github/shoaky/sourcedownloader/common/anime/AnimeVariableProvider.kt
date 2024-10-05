@@ -219,7 +219,7 @@ private class TitleScore(
 
 private val log = LoggerFactory.getLogger(AnimeVariableProvider::class.java)
 
-internal data class Anime(
+data class Anime(
     val romajiName: String? = null,
     val nativeName: String? = null
 ) : PatternVariables

@@ -4,7 +4,7 @@ import kotlin.reflect.KClass
 import kotlin.reflect.full.isSuperclassOf
 
 @Suppress("UNUSED")
-data class ComponentRule internal constructor(
+data class ComponentRule(
     val isAllow: Boolean,
     val type: ComponentTopType,
     val value: KClass<out SdComponent>

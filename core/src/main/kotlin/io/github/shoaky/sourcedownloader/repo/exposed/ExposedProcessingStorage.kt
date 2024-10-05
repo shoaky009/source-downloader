@@ -185,7 +185,9 @@ class ExposedProcessingStorage : ProcessingStorage {
         val ids = paths.map { it.toString() }
         return transaction {
             val existingIds = TargetPaths
-                .select { TargetPaths.id inList ids and (TargetPaths.itemHashing neq excludedItemHashing) }
+                .selectAll().where {
+                    TargetPaths.id inList ids and (TargetPaths.itemHashing neq excludedItemHashing)
+                }
                 .map { it[TargetPaths.id].value }
                 .toSet()
             ids.map { existingIds.contains(it) }
