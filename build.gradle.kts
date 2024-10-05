@@ -14,6 +14,7 @@ allprojects {
         maven { url = uri("https://maven.pkg.jetbrains.space/public/p/exposed/release") }
         maven { url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/bootstrap") }
         maven { url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots") }
+        maven { url = uri("https://jitpack.io") }
     }
 }
 
