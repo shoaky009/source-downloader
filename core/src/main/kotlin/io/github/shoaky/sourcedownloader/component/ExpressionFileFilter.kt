@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory
 
 /**
  * 文件级别的CEL表达式过滤器，可用变量有
- * filename:文件名没有扩展名
+ * filename:文件名不包括扩展名
  * ext:文件扩展名例如mp4
  * tags:标签，数组类型例如["demo"]
  * vars:文件对应的变量key-value例如{"name":"demo"}

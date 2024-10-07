@@ -25,7 +25,7 @@ object AnimeFileFilter : FileContentFilter {
      */
     private val spRegexes = listOf(
         "NCOP|NCED|MENU|Fonts|Scan|Event|Lecture|Preview|特典|Other".toRegex(RegexOption.IGNORE_CASE),
-        "PV|CM|IV|Info|INFO|OP|ED".toRegex()
+        "PV|CM|IV|Info|INFO|OP|ED|Cast| Program | MV |Making".toRegex()
     )
 
     // SPECIAL CD
