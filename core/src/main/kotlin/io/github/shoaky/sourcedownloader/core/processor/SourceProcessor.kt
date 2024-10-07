@@ -427,20 +427,14 @@ class SourceProcessor(
             .toMutableList()
             .apply { this.addAll(replaceFiles) }
             .distinct()
-        if (log.isDebugEnabled) {
-            log.debug(
-                "Processor:'{}' item:{} create download task, files:{}",
-                name,
-                content.sourceItem.title,
-                downloadFiles
-            )
-        }
+        val item = content.sourceItem
+        log.debug("Processor:'{}' item:{} create download task, files:{}", name, item.title, downloadFiles)
 
-        val headers = HashMap(source.headers(content.sourceItem))
+        val headers = HashMap(source.headers(item))
         headers.putAll(options.downloadOptions.headers)
         val downloadOptions = options.downloadOptions
         return DownloadTask(
-            content.sourceItem,
+            item,
             downloadFiles.map {
                 SourceFile(it.fileDownloadPath, it.attrs, it.fileUri, data = it.data)
             },
