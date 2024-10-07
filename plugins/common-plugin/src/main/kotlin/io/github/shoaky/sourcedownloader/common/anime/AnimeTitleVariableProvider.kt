@@ -1,86 +1,98 @@
 package io.github.shoaky.sourcedownloader.common.anime
 
 import com.google.common.base.CharMatcher
+import io.github.shoaky.sourcedownloader.common.anime.extractor.*
 import io.github.shoaky.sourcedownloader.sdk.PatternVariables
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.VariableProvider
 import io.github.shoaky.sourcedownloader.sdk.util.TextClear
+import org.slf4j.LoggerFactory
+import java.util.function.Predicate
 
 object AnimeTitleVariableProvider : VariableProvider {
 
-    private val chain: List<Extractor> = listOf(
-        AniTitleExtractor
+    private val inputClear = TextClear(
+        mapOf(
+            Regex("（僅限港澳台）") to "",
+            Regex("10-bit|8-bit|1080p|720p|HEVC|BDRip|AV1|OPUS|AVC", RegexOption.IGNORE_CASE) to "",
+            Regex("(GB|BIG5).?MP4|\\d+X\\d+|\\d\\.0|\\d+-\\d+", RegexOption.IGNORE_CASE) to "",
+            Regex("[(【（]") to "[",
+            Regex("[)】）]") to "]",
+            Regex("\\d+月新番|\\[\\d+]|\\[END]|\\[\\d*v\\d+]|★.*?★", RegexOption.IGNORE_CASE) to "",
+            Regex("\\[[^]]*(简|繁|招募|翻译)[^]]*]") to "",
+            Regex("\\[]", RegexOption.IGNORE_CASE) to "",
+            Regex("\\|\\s*\$", RegexOption.IGNORE_CASE) to "",
+        )
     )
 
-    private val inputClear = TextClear(
-        mapOf(Regex("（僅限港澳台）") to "")
+    private val defaultChain: List<Extractor> = listOf(
+        AniTitleExtractor,
+        SeparateTitleExtractor(" / "),
+        SeparateTitleExtractor(" | "),
+        SeparateTitleExtractor("\\"),
+    )
+
+    private val fallbackChain: List<Extractor> = listOf(
+        SeparateTitleExtractor("/"),
+        SeparateTitleExtractor("|"),
+        AllBracketTitleExtractor,
+        DefaultTitleExtractor
+    )
+    private val titlesFilter: List<Predicate<String>> = listOf(
+        Predicate { it.contains("字幕组") },
     )
 
     override fun itemVariables(sourceItem: SourceItem): PatternVariables {
-        val title = inputClear.input(sourceItem.title)
-        for (extractor in chain) {
-            val result = extractor.extract(title)
-            if (result != null) {
-                return result
+        val rawTitle = inputClear.input(sourceItem.title).trim()
+        log.debug("Text to extract: {}", rawTitle)
+        return chain(rawTitle, defaultChain) ?: PatternVariables.EMPTY
+    }
+
+    private fun chain(rawTitle: String, extractors: List<Extractor>): Titles? {
+        for (extractor in extractors) {
+            val titles = extractor.extract(rawTitle) ?: continue
+            if (titles.isEmpty()) {
+                continue
+            }
+            log.debug("Extractor:{} Extracted titles: {}", extractor::class.simpleName, titles)
+            val processedTitles = titles
+                .map { title ->
+                    val result = title.replace(bracketsRegex, "").trim()
+                    if (result.isEmpty() && extractors !== fallbackChain) {
+                        return chain(rawTitle, fallbackChain)
+                    }
+                    result
+                }
+                .filter { title -> titlesFilter.none { filter -> filter.test(title) } }
+            if (processedTitles.size == 1) {
+                return Titles(title = processedTitles.first())
+            }
+
+            val romajiTitle = findRomajiTitle(processedTitles)
+            if (romajiTitle != null) {
+                val title = processedTitles.firstOrNull { it != romajiTitle } ?: romajiTitle
+                return Titles(title = title, romajiTitle = romajiTitle)
             }
         }
-        return PatternVariables.EMPTY
+        return chain(rawTitle, fallbackChain)
+    }
+
+    private fun findRomajiTitle(removed: List<String>): String? {
+        for (str in removed) {
+            val allOf = CharMatcher.ascii().matchesAllOf(str)
+            if (allOf) {
+                return str
+            }
+        }
+        return null
     }
 
     override fun primary(): String {
         return "title"
     }
 
-}
-
-interface Extractor {
-
-    fun extract(raw: String): Titles?
-}
-
-data class Titles(
-    val title: String,
-    val romaji: String? = null,
-) : PatternVariables
-
-/**
- * 从[ANI]到集数之间的内容，再判断是否需要提取罗马或标题
- */
-object AniTitleExtractor : Extractor {
-
-    private const val GROUP = "[ANi]"
-    private val EPISODE_REGEX = Regex(" - \\d+(\\.\\d+)? \\[.*]")
-    private const val INVALID_INDEX = -1
-    private const val SPECIAL_CHAR = " - "
-
-    override fun extract(raw: String): Titles? {
-        val groupIndex = raw.indexOf("[ANI]", ignoreCase = true)
-        if (groupIndex == INVALID_INDEX) {
-            return null
-        }
-        val startIndex = groupIndex + GROUP.length
-        val endIndex = EPISODE_REGEX.find(raw)?.range?.start ?: -1
-        if (endIndex == INVALID_INDEX) {
-            return null
-        }
-        val title = raw.substring(startIndex, endIndex)
-        val multiTitle = title.split(SPECIAL_CHAR)
-        if (multiTitle.isEmpty()) {
-            return null
-        }
-        if (multiTitle.size == 1) {
-            return Titles(multiTitle.first().trim())
-        }
-        if (multiTitle.size == 2) {
-            val (title1, title2) = multiTitle
-            val allOf = CharMatcher.ascii().matchesAllOf(title1)
-            if (allOf) {
-                return Titles(title2.trim(), title1.trim())
-            }
-            return Titles(title1.trim(), title2.trim())
-        }
-        // 偷懒先看效果
-        return Titles(multiTitle.last().trim())
-    }
+    private val log = LoggerFactory.getLogger(AnimeTitleVariableProvider::class.java)
 
 }
+
+val bracketsRegex = Regex("\\[.*?]")
