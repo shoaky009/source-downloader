@@ -4,7 +4,9 @@ import io.github.shoaky.sourcedownloader.sdk.component.ComponentException
 
 object LastStringSeasonParser : SeasonParser {
 
-    private val lastMatchPattern = "((?<!\\d)\\d(?!\\d)(?!.*\\d)|二|三|四|五|六|七|八|九|十|II|III|IV|V|VI|VII|VIII|IX|X|Ⅱ|Ⅲ|Ⅳ)\$".toRegex()
+    private val lastMatchPattern =
+        "((?<!\\d)\\d(?!\\d)(?!.*\\d)|二|三|四|五|六|七|八|九|十|II|III|IV|V|VI|VII|VIII|IX|X|Ⅱ|Ⅲ|Ⅳ)\$".toRegex()
+    private val excludePattern = Regex("(\\d+[/／]\\d+)\$")
 
     // 标题最后是连续数字的
     private val lastRegex = RegexRule(lastMatchPattern) {
@@ -13,6 +15,9 @@ object LastStringSeasonParser : SeasonParser {
     }
 
     override fun input(subject: String): SeasonResult? {
+        if (excludePattern.containsMatchIn(subject)) {
+            return null
+        }
         lastRegex.ifMatchConvert(subject)?.let {
             return SeasonResult(it, SeasonResult.Accuracy.ACCURATE)
         }

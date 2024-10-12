@@ -13,21 +13,17 @@ class SeasonSupport(
     }
 
     fun input(vararg subjects: ParseValue): Int? {
-        subjects
-            .map {
-                replaceValueIfNecessary(it)
+        for (subject in subjects) {
+            val processed = replaceValueIfNecessary(subject)
+            val result = if (processed.anyResult) {
+                anyValue(processed)
+            } else {
+                voteValue(processed)
             }
-            .filter { it.value.isNotBlank() }
-            .forEach {
-                val res = if (it.anyResult) {
-                    anyValue(it)
-                } else {
-                    voteValue(it)
-                }
-                if (res != null) {
-                    return res
-                }
+            if (result != null) {
+                return result
             }
+        }
         if (withDefault) {
             return 1
         }
@@ -74,6 +70,7 @@ class SeasonSupport(
         for (rule in chain) {
             val res = rule.input(subject.value)
             if (res != null) {
+                log.debug("匹配到规则:{} value:{} result:{}", rule::class.simpleName, subject.value, res)
                 return res.value
             }
         }
