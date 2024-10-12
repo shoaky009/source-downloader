@@ -44,6 +44,7 @@ dependencies {
         kapt(libs.therapi.javadoc.scribe)
         implementation(libs.springdocs.openapi.starter.webmvc.api)
     }
+    testImplementation(libs.jsonschema.generator)
 }
 
 fun DependencyHandlerScope.resolveBuildInPlugins() {

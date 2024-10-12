@@ -184,6 +184,24 @@ private class ComponentController(
             }
         }.flatMapConcat { it.asFlow() }
     }
+
+    @GetMapping("/types")
+    fun getTypes(type: ComponentTopType?): List<ComponentType> {
+        return componentManager.getSuppliers()
+            .map { it.supplyTypes() }
+            .flatten()
+            .filter { type == null || it.type == type }
+            .distinct()
+    }
+
+    @GetMapping("/{type}/{typeName}/metadata")
+    fun getSchema(
+        @PathVariable type: ComponentTopType,
+        @PathVariable typeName: String
+    ): ComponentMetadata? {
+        val supplier = componentManager.getSupplier(ComponentType.of(type, typeName))
+        return supplier.metadata()
+    }
 }
 
 fun <T> tickerFlow(period: Long, initialValue: T, nextValue: suspend (T) -> T): Flow<T> = flow {
