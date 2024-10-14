@@ -19,6 +19,7 @@ allprojects {
 }
 
 scmVersion {
+    versionCreator("simple")
     useHighestVersion.set(true)
 }
 
