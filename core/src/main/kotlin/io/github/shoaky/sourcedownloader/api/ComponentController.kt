@@ -1,6 +1,9 @@
 package io.github.shoaky.sourcedownloader.api
 
-import io.github.shoaky.sourcedownloader.core.component.*
+import io.github.shoaky.sourcedownloader.core.component.ComponentConfig
+import io.github.shoaky.sourcedownloader.core.component.ComponentId
+import io.github.shoaky.sourcedownloader.core.component.ComponentManager
+import io.github.shoaky.sourcedownloader.core.component.ConfigOperator
 import io.github.shoaky.sourcedownloader.core.componentTypeRef
 import io.github.shoaky.sourcedownloader.sdk.component.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -131,17 +134,6 @@ private class ComponentController(
         configOperator.deleteComponent(type, typeName, name)
         // 待定是否要删除
         componentManager.destroy(componentType, name)
-    }
-
-    /**
-     * 获取Component描述(未完成)
-     */
-    @GetMapping("/descriptions")
-    fun getComponentDescriptions(): List<ComponentDescription> {
-        return componentManager.getComponentDescriptions()
-            .sortedBy { description ->
-                description.types.maxOfOrNull { it.topType }
-            }
     }
 
     /**

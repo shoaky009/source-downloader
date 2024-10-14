@@ -787,6 +787,7 @@ class SourceProcessor(
             checkNotNull(processingContent)
 
             if (shouldDownload) {
+                log.info("Processor:'{}' start download item:{}", name, sourceItem)
                 val success = doDownload(processingContent, replaceFiles)
                 if (success && downloader !is AsyncDownloader) {
                     log.trace("Processor:'{}' start rename item:{}", name, sourceItem)

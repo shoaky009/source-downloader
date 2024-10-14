@@ -8,9 +8,7 @@ import io.github.shoaky.sourcedownloader.sdk.CoreContext
 import io.github.shoaky.sourcedownloader.sdk.InstanceFactory
 import io.github.shoaky.sourcedownloader.sdk.InstanceManager
 import io.github.shoaky.sourcedownloader.sdk.Properties
-import io.github.shoaky.sourcedownloader.sdk.component.ComponentRule
-import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
-import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
+import io.github.shoaky.sourcedownloader.sdk.component.*
 
 class QbittorrentDownloaderSupplier(
     private val instanceManager: InstanceManager
@@ -33,6 +31,38 @@ class QbittorrentDownloaderSupplier(
     override fun rules(): List<ComponentRule> {
         return listOf(
             ComponentRule.allowFileResolver(TorrentFileResolver::class)
+        )
+    }
+
+    override fun metadata(): ComponentMetadata {
+        return ComponentMetadata(
+            description = "Qbittorrent Downloader",
+            propertySchema = JsonSchema(
+                type = "object",
+                description = "Qbittorrent Downloader",
+                required = listOf("host"),
+                properties = mapOf(
+                    "username" to JsonSchema(
+                        type = "string",
+                        title = "Username",
+                    ),
+                    "password" to JsonSchema(
+                        type = "string",
+                        title = "Password",
+                    ),
+                    "endpoint" to JsonSchema(
+                        type = "string",
+                        title = "Endpoint",
+                        description = "Qbittorrent endpoint",
+                        examples = listOf("http://localhost:8080")
+                    ),
+                    "always-download-all" to JsonSchema(
+                        type = "boolean",
+                        title = "总是下载所有文件",
+                        default = false
+                    )
+                ),
+            )
         )
     }
 }
