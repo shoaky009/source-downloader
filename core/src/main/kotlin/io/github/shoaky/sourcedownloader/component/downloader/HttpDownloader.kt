@@ -6,11 +6,11 @@ import io.github.shoaky.sourcedownloader.sdk.SourceFile
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentStateful
 import io.github.shoaky.sourcedownloader.sdk.component.Downloader
+import io.github.shoaky.sourcedownloader.sdk.http.StatusCodes
 import io.github.shoaky.sourcedownloader.sdk.util.http.httpClient
 import io.github.shoaky.sourcedownloader.sdk.util.readableRate
 import kotlinx.coroutines.*
 import org.slf4j.LoggerFactory
-import org.springframework.http.HttpStatus
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse.*
@@ -70,11 +70,11 @@ class HttpDownloader(
         withContext(dispatchers) {
             val job = launch {
                 val response = client.send(request, bodyHandler)
-                val statusCode = HttpStatus.valueOf(response.statusCode())
-                if (statusCode == HttpStatus.NOT_FOUND) {
+                val statusCode = response.statusCode()
+                if (statusCode == StatusCodes.NOT_FOUND) {
                     throw ProcessingException.skip("Download failed: $path, uri:${file.downloadUri} status code: ${response.statusCode()}")
                 }
-                if (statusCode.isError) {
+                if (statusCode >= 400) {
                     throw IllegalStateException("Download failed: $path, status code: ${response.statusCode()}")
                 }
             }

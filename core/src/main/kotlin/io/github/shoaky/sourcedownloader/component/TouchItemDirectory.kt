@@ -1,6 +1,6 @@
 package io.github.shoaky.sourcedownloader.component
 
-import io.github.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
+import io.github.shoaky.sourcedownloader.CoreApplication.Companion.log
 import io.github.shoaky.sourcedownloader.sdk.ItemContent
 import io.github.shoaky.sourcedownloader.sdk.ProcessContext
 import io.github.shoaky.sourcedownloader.sdk.component.ProcessListener

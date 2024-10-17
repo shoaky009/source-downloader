@@ -4,9 +4,7 @@ import io.github.shoaky.sourcedownloader.sdk.CoreContext
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
-import org.springframework.stereotype.Component
 
-@Component
 object DelayItemDownloaderSupplier : ComponentSupplier<DelayItemDownloader> {
 
     override fun apply(context: CoreContext, props: Properties): DelayItemDownloader {

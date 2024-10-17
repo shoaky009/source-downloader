@@ -33,8 +33,10 @@ interface ComponentManager {
 
     fun getAllComponentNames(): Set<String>
 
-    fun getAllTrigger(): List<Trigger> {
-        return getAllComponent().map { it.component }.filterIsInstance<Trigger>()
+    fun getAllTrigger(): List<ComponentWrapper<Trigger>> {
+        return getAllComponent()
+            .filter { it.type.type == ComponentTopType.TRIGGER }
+            .filterIsInstance<ComponentWrapper<Trigger>>()
     }
 
     fun getAllSource(): List<Source<SourcePointer>> {
@@ -61,6 +63,8 @@ interface ComponentManager {
     fun getComponentDescriptions(): List<ComponentDescription>
 
     fun destroy(type: ComponentType, name: String)
+
+    fun destroy()
 }
 
 // NOTE 描述功能实现方式待定

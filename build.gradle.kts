@@ -4,6 +4,8 @@ plugins {
     alias(libs.plugins.kotlin.jvm)
     jacoco
     alias(libs.plugins.axion.release)
+    alias(libs.plugins.gradle.git.properties) apply false
+    alias(libs.plugins.spring.boot) apply false
 }
 
 allprojects {
@@ -34,7 +36,7 @@ subprojects {
     apply(plugin = "org.jetbrains.kotlin.jvm")
     apply(plugin = "java")
     apply(plugin = "jacoco")
-    project(":core").apply(plugin = "org.jetbrains.kotlin.kapt")
+    project(":applications:spring").apply(plugin = "org.jetbrains.kotlin.kapt")
 
     tasks.test {
         useJUnitPlatform()

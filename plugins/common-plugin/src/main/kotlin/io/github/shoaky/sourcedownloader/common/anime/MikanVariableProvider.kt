@@ -31,6 +31,7 @@ class MikanVariableProvider(
             SpSeasonParser,
             GeneralSeasonParser,
             LastStringSeasonParser,
+            ContainsSeasonKeyword,
             TmdbSeasonParser(tmdbClient)
         ), withDefault = true
     )

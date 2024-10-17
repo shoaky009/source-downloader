@@ -10,14 +10,13 @@ import io.github.shoaky.sourcedownloader.sdk.component.*
 import io.github.shoaky.sourcedownloader.throwComponentException
 import io.github.shoaky.sourcedownloader.util.Events
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.DisposableBean
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.reflect.jvm.jvmName
 
 class DefaultComponentManager(
     private val objectContainer: ObjectWrapperContainer,
     private val configStorages: List<ComponentConfigStorage>
-) : ComponentManager, DisposableBean {
+) : ComponentManager {
 
     private val componentSuppliers: MutableMap<ComponentType, ComponentSupplier<*>> = ConcurrentHashMap()
 

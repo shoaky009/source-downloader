@@ -1,6 +1,6 @@
 FROM azul/zulu-openjdk-alpine:21-jre as builder
 
-COPY core/build/libs/source-downloader-core-*.jar application.jar
+COPY applications/spring/build/libs/source-downloader-spring-*.jar application.jar
 RUN java -Djarmode=layertools -jar application.jar extract
 
 FROM azul/zulu-openjdk-alpine:21-jre
@@ -23,4 +23,4 @@ COPY --from=builder source-downloader-plugins/BOOT-INF/lib /app/lib
 COPY --from=builder application/BOOT-INF/classes /app
 COPY --from=builder application/META-INF /app/META-INF
 
-ENTRYPOINT java -cp ".:/app/lib/*:/app/plugins/*:/app/plugins/lib/*" $JAVA_OPTS io.github.shoaky.sourcedownloader.SourceDownloaderApplication $SPRINGBOOT_OPTS
+ENTRYPOINT java -cp ".:/app/lib/*:/app/plugins/*:/app/plugins/lib/*" $JAVA_OPTS io.github.shoaky.sourcedownloader.application.spring.SourceDownloaderSpringApplication $SPRINGBOOT_OPTS

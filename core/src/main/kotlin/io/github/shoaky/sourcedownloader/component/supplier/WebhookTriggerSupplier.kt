@@ -5,18 +5,13 @@ import io.github.shoaky.sourcedownloader.sdk.CoreContext
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
-import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.stereotype.Component
-import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping
 
-@Component
 class WebhookTriggerSupplier(
-    @Qualifier("requestMappingHandlerMapping")
-    private val requestMapping: RequestMappingHandlerMapping
+    private val adapter: WebhookTrigger.Adapter
 ) : ComponentSupplier<WebhookTrigger> {
 
     override fun apply(context: CoreContext, props: Properties): WebhookTrigger {
-        return WebhookTrigger(props.get("path"), props.getOrDefault("method", "GET"), requestMapping)
+        return WebhookTrigger(props.get("path"), props.getOrDefault("method", "GET"), adapter)
     }
 
     override fun supplyTypes(): List<ComponentType> {

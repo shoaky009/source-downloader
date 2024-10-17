@@ -1,24 +1,22 @@
 package io.github.shoaky.sourcedownloader.repo.exposed
 
-import io.github.shoaky.sourcedownloader.api.NotFoundException
 import io.github.shoaky.sourcedownloader.core.ProcessingContent
 import io.github.shoaky.sourcedownloader.core.ProcessingStorage
 import io.github.shoaky.sourcedownloader.core.ProcessorSourceState
 import io.github.shoaky.sourcedownloader.core.processor.ProcessingTargetPath
 import io.github.shoaky.sourcedownloader.repo.ProcessingQuery
+import io.github.shoaky.sourcedownloader.service.NotFoundException
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 import org.jetbrains.exposed.sql.json.extract
 import org.jetbrains.exposed.sql.transactions.transaction
-import org.springframework.stereotype.Component
 import java.nio.file.Path
 import java.time.LocalDateTime
 import kotlin.io.path.Path
 
 typealias EProcessorSourceState = io.github.shoaky.sourcedownloader.repo.exposed.ProcessorSourceState
 
-@Component
 class ExposedProcessingStorage : ProcessingStorage {
 
     override fun save(content: ProcessingContent): ProcessingContent {

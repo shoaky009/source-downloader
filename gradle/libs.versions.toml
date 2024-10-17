@@ -1,5 +1,6 @@
 [versions]
 spring-boot = "3.3.4"
+spring = "6.1.13"
 guava = "33.3.1-jre"
 commons-lang3 = "3.17.0"
 cel = "0.5.1"
@@ -27,31 +28,81 @@ fuzzywuzzy = "1.4.0"
 gradle-git-properties = "2.4.2"
 commons-text = "1.12.0"
 jsonschema = "4.36.0"
+vertx = "4.5.10"
+junit = "5.11.2"
+mockito = "5.14.2"
+hikaricp = "5.1.0"
+micrometer = "1.13.6"
+jackson = "2.17.2"
+logback = "1.5.11"
+slf4j = "2.0.16"
+flyway = "10.20.0"
+spring-retry = "2.0.10"
 
 [libraries]
 spring-boot-dependencies = { module = "org.springframework.boot:spring-boot-dependencies", version.ref = "spring-boot" }
-guava = { module = "com.google.guava:guava", version.ref = "guava" }
+spring-context = { module = "org.springframework:spring-context", version.ref = "spring" }
+spring-expression = { module = "org.springframework:spring-expression", version.ref = "spring" }
+spring-jdbc = { module = "org.springframework:spring-jdbc", version.ref = "spring" }
+spring-retry = { module = "org.springframework.retry:spring-retry", version.ref = "spring-retry" }
+
+jackson-bom = { module = "com.fasterxml.jackson:jackson-bom", version.ref = "jackson" }
+jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
+jackson-core = { module = "com.fasterxml.jackson.core:jackson-core", version.ref = "jackson" }
+jackson-datatype-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson" }
+jackson-kotlin-module = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
+
+slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
+logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+
 commons-lang3 = { module = "org.apache.commons:commons-lang3", version.ref = "commons-lang3" }
 commons-collections4 = { module = "org.apache.commons:commons-collections4", version.ref = "commons-collections4" }
+commons-text = { module = "org.apache.commons:commons-text", version.ref = "commons-text" }
+
 cel-bom = { module = "org.projectnessie.cel:cel-bom", version.ref = "cel" }
 cel-tools = { module = "org.projectnessie.cel:cel-tools", version.ref = "cel" }
 cel-jackson = { module = "org.projectnessie.cel:cel-jackson", version.ref = "cel" }
-sqlite-jdbc = { module = "org.xerial:sqlite-jdbc", version.ref = "sqlite" }
+
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-core-jvm = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-reactor = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-reactor", version.ref = "kotlinx-coroutines" }
-zxing-core = { module = "com.google.zxing:core", version.ref = "zxing" }
-telegram4j = { module = "io.github.shoaky009:telegram4j-core", version.ref = "telegram4j" }
-rssreader = { module = "com.apptasticsoftware:rssreader", version.ref = "rssreader" }
-anitomyJ = { module = "com.dgtlrepublic:anitomyJ", version.ref = "anitomyJ" }
+
+junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit" }
+junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit" }
+mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockito" }
+mockito-junit-jupiter = { module = "org.mockito:mockito-junit-jupiter", version.ref = "mockito" }
+
+vertx-stack-depchain = { module = "io.vertx:vertx-stack-depchain", version.ref = "vertx" }
+vertx-web = { module = "io.vertx:vertx-web", version.ref = "vertx" }
+vertx-config-yaml = { module = "io.vertx:vertx-config-yaml", version.ref = "vertx" }
+vertx-kotlin-coroutines = { module = "io.vertx:vertx-lang-kotlin-coroutines", version.ref = "vertx" }
+vertx-kotlin = { module = "io.vertx:vertx-lang-kotlin", version.ref = "vertx" }
+vertx-micrometer-metrics = { module = "io.vertx:vertx-micrometer-metrics", version.ref = "vertx" }
+
+micrometer-core = { module = "io.micrometer:micrometer-core", version.ref = "micrometer" }
+micrometer-registry-jmx = { module = "io.micrometer:micrometer-registry-jmx", version.ref = "micrometer" }
+
+exposed-java-time = { module = "org.jetbrains.exposed:exposed-java-time", version.ref = "exposed" }
+exposed-json = { module = "org.jetbrains.exposed:exposed-json", version.ref = "exposed" }
+exposed-dao = { module = "org.jetbrains.exposed:exposed-dao", version.ref = "exposed" }
+exposed-jdbc = { module = "org.jetbrains.exposed:exposed-jdbc", version.ref = "exposed" }
+exposed-spring-boot-stater = { module = "org.jetbrains.exposed:exposed-spring-boot-starter", version.ref = "exposed" }
+hikaricp = { module = "com.zaxxer:HikariCP", version.ref = "hikaricp" }
+sqlite-jdbc = { module = "org.xerial:sqlite-jdbc", version.ref = "sqlite" }
+flyway-core = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
+
 bt-core = { module = "com.github.atomashpolskiy:bt-core", version.ref = "atomashpolskiy-bt" }
 bt-dht = { module = "com.github.atomashpolskiy:bt-dht", version.ref = "atomashpolskiy-bt" }
 tika-core = { module = "org.apache.tika:tika-core", version.ref = "tika" }
 tika-langdetect-optimaize = { module = "org.apache.tika:tika-langdetect-optimaize", version.ref = "tika" }
+
+guava = { module = "com.google.guava:guava", version.ref = "guava" }
+zxing-core = { module = "com.google.zxing:core", version.ref = "zxing" }
+telegram4j = { module = "io.github.shoaky009:telegram4j-core", version.ref = "telegram4j" }
+rssreader = { module = "com.apptasticsoftware:rssreader", version.ref = "rssreader" }
+anitomyJ = { module = "com.dgtlrepublic:anitomyJ", version.ref = "anitomyJ" }
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
-exposed-java-time = { module = "org.jetbrains.exposed:exposed-java-time", version.ref = "exposed" }
-exposed-json = { module = "org.jetbrains.exposed:exposed-json", version.ref = "exposed" }
-exposed-spring-boot-stater = { module = "org.jetbrains.exposed:exposed-spring-boot-starter", version.ref = "exposed" }
+
 graalvm-sdk = { module = "org.graalvm.sdk:graal-sdk", version.ref = "graalvm" }
 protobuf = { module = "com.google.protobuf:protobuf-java", version.ref = "protobuf" }
 springdocs-openapi-starter-webmvc-api = { module = "org.springdoc:springdoc-openapi-starter-webmvc-api", version.ref = "springdocs" }
@@ -59,13 +110,12 @@ therapi-runtime-javadoc = { module = "com.github.therapi:therapi-runtime-javadoc
 therapi-javadoc-scribe = { module = "com.github.therapi:therapi-runtime-javadoc-scribe", version.ref = "therapi-javadoc" }
 json-path = { module = "com.jayway.jsonpath:json-path", version.ref = "json-path" }
 fuzzywuzzy = { module = "me.xdrop:fuzzywuzzy", version.ref = "fuzzywuzzy" }
-commons-text = { module = "org.apache.commons:commons-text", version.ref = "commons-text" }
 jsonschema-generator = { module = "com.github.victools:jsonschema-generator", version.ref = "jsonschema" }
 
 [bundles]
 cel = ["cel-tools", "cel-jackson"]
 bt = ["bt-core", "bt-dht"]
-exposed = ["exposed-java-time", "exposed-spring-boot-stater", "exposed-json"]
+exposed = ["exposed-java-time", "exposed-json", "exposed-dao", "exposed-jdbc"]
 
 [plugins]
 spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }

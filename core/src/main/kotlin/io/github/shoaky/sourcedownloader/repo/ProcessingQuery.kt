@@ -1,7 +1,6 @@
 package io.github.shoaky.sourcedownloader.repo
 
 import io.github.shoaky.sourcedownloader.core.ProcessingContent
-import org.springframework.web.bind.annotation.RequestParam
 import java.time.LocalDateTime
 
 data class ProcessingQuery(

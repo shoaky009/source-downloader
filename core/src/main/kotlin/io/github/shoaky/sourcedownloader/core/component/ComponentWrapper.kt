@@ -36,6 +36,10 @@ data class ComponentWrapper<T : SdComponent>(
         return processorRef
     }
 
+    fun componentName(): String {
+        return "${type.typeName}:$name"
+    }
+
 }
 
 data class ProcessorWrapper(

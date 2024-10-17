@@ -3,16 +3,17 @@ package io.github.shoaky.sourcedownloader.component
 import com.fasterxml.jackson.annotation.JsonAlias
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer
-import io.github.shoaky.sourcedownloader.SourceDownloaderApplication.Companion.log
+import com.google.common.net.HttpHeaders
+import com.google.common.net.MediaType
+import com.google.common.net.UrlEscapers
 import io.github.shoaky.sourcedownloader.sdk.ItemContent
 import io.github.shoaky.sourcedownloader.sdk.ProcessContext
 import io.github.shoaky.sourcedownloader.sdk.component.ProcessListener
+import io.github.shoaky.sourcedownloader.sdk.http.HttpMethod
 import io.github.shoaky.sourcedownloader.sdk.util.Jackson
 import io.github.shoaky.sourcedownloader.sdk.util.http.httpClient
-import org.springframework.http.HttpHeaders
-import org.springframework.http.HttpMethod
-import org.springframework.http.MediaType
-import org.springframework.web.util.UriComponentsBuilder
+import org.slf4j.LoggerFactory
+import java.net.URI
 import java.net.http.HttpRequest
 import java.net.http.HttpRequest.BodyPublishers
 import java.net.http.HttpResponse.BodyHandlers
@@ -26,17 +27,13 @@ class SendHttpRequest(
 ) : ProcessListener {
 
     override fun onItemSuccess(context: ProcessContext, itemContent: ItemContent) {
-        val uriComponents = UriComponentsBuilder.fromHttpUrl(config.url).encode().build().expand(
-                mapOf("summary" to itemContent.summaryContent())
-            )
-
+        val uri = buildUri(mapOf("summary" to itemContent.summaryContent()))
         val headers = mutableMapOf<String, String>()
         headers.putAll(config.headers)
         val bodyPublishers = buildBodyPublisher(context, itemContent, headers)
 
-        val uri = uriComponents.toUri()
         val request = HttpRequest.newBuilder(uri)
-            .method(config.method.name(), bodyPublishers)
+            .method(config.method.name, bodyPublishers)
             .timeout(Duration.ofSeconds(30))
 
         headers.forEach(request::setHeader)
@@ -52,19 +49,33 @@ class SendHttpRequest(
         }
     }
 
+    private fun buildUri(vars: Map<String, String>): URI {
+        val (base, queryString) = config.url.split("?", limit = 2)
+        val keyValues = queryString.split("&")
+        var url = base
+        keyValues.forEachIndexed { index, keyValue ->
+            val pair = keyValue.split("=")
+            val name = pair.getOrNull(0) ?: return@forEachIndexed
+            var value = pair.getOrNull(1) ?: ""
+            vars.forEach { (key, v) ->
+                value = value.replace("{$key}", v)
+            }
+            val encodedValue = UrlEscapers.urlFragmentEscaper().escape(value)
+            url += if (index == 0) "?$name=$encodedValue" else "&$name=$encodedValue"
+        }
+        return URI(url)
+    }
+
     override fun onProcessCompleted(processContext: ProcessContext) {
         val processedItems = processContext.processedItems()
         val size = processedItems.size
-        val uriComponents = UriComponentsBuilder.fromHttpUrl(config.url).encode().build().expand(
-                mapOf("summary" to "Processed $size items")
-            )
 
         val headers = mutableMapOf<String, String>()
         headers.putAll(config.headers)
         val bodyPublishers = buildBodyPublisher(processContext, headers)
 
-        val uri = uriComponents.toUri()
-        val request = HttpRequest.newBuilder(uri).method(config.method.name(), bodyPublishers)
+        val uri = buildUri(mapOf("summary" to "Processed $size items"))
+        val request = HttpRequest.newBuilder(uri).method(config.method.name, bodyPublishers)
 
         headers.forEach(request::setHeader)
         val response = httpClient.send(request.build(), BodyHandlers.discarding())
@@ -84,7 +95,7 @@ class SendHttpRequest(
             val body = config.body?.replace("{summary}", content.summaryContent())
             BodyPublishers.ofString(body)
         } else if (config.withContentBody) {
-            headers[HttpHeaders.CONTENT_TYPE] = MediaType.APPLICATION_JSON_VALUE
+            headers[HttpHeaders.CONTENT_TYPE] = MediaType.JSON_UTF_8.toString()
             BodyPublishers.ofString(
                 Jackson.toJsonString(
                     mapOf("content" to content, "processor" to context.processor())
@@ -105,7 +116,7 @@ class SendHttpRequest(
             val body = config.body?.replace("{summary}", "Processed ${contents.size} items")
             BodyPublishers.ofString(body)
         } else if (config.withContentBody) {
-            headers[HttpHeaders.CONTENT_TYPE] = MediaType.APPLICATION_JSON_VALUE
+            headers[HttpHeaders.CONTENT_TYPE] = MediaType.JSON_UTF_8.toString()
             BodyPublishers.ofString(
                 Jackson.toJsonString(
                     mapOf("contents" to contents, "processor" to context.processor())
@@ -116,9 +127,15 @@ class SendHttpRequest(
         }
     }
 
+    companion object {
+
+        private val log = LoggerFactory.getLogger(SendHttpRequest::class.java)
+    }
+
     data class HttpRequestConfig(
         val url: String,
-        @JsonSerialize(using = ToStringSerializer::class) val method: HttpMethod = HttpMethod.POST,
+        @JsonSerialize(using = ToStringSerializer::class)
+        val method: HttpMethod = HttpMethod.POST,
         val headers: Map<String, String> = emptyMap(),
         val body: String? = null,
         @JsonAlias("with-content-body") val withContentBody: Boolean = false

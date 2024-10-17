@@ -8,17 +8,15 @@ plugins {
 }
 
 dependencies {
-
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 
-    api(platform(libs.spring.boot.dependencies))
-    api("com.fasterxml.jackson.core:jackson-core")
-    api("com.fasterxml.jackson.module:jackson-module-kotlin")
-    api("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
+    api(libs.jackson.core)
+    api(libs.jackson.datatype.jsr310)
+    api(libs.jackson.kotlin.module)
 
-    api("org.slf4j:slf4j-api")
-    api("ch.qos.logback:logback-classic")
+    api(libs.slf4j.api)
+    api(libs.logback.classic)
 
     api(libs.guava)
     api(libs.commons.lang3)

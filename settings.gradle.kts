@@ -7,6 +7,7 @@ include(":plugins:telegram4j-plugin")
 include(":plugins:foreign-plugin")
 include(":common")
 include(":applications:spring")
+include("applications:vertx")
 
 pluginManagement {
     repositories {

@@ -4,7 +4,6 @@ import io.github.shoaky.sourcedownloader.sdk.DownloadTask
 import io.github.shoaky.sourcedownloader.sdk.SourceFile
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.Downloader
-import org.springframework.core.io.UrlResource
 import java.nio.channels.Channels
 import java.nio.channels.FileChannel
 import java.nio.file.Path
@@ -19,9 +18,7 @@ class UrlDownloader(
 ) : Downloader {
 
     override fun submit(task: DownloadTask): Boolean {
-        val uriResource = UrlResource(task.downloadUri())
-
-        val readableByteChannel = Channels.newChannel(uriResource.inputStream)
+        val readableByteChannel = Channels.newChannel(task.downloadUri().toURL().openStream())
         task.downloadFiles.associateBy { it.path.parent }
             .forEach {
                 it.key.createDirectories()

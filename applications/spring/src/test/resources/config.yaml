@@ -1,0 +1,95 @@
+components:
+  source:
+    - name: "normal-case"
+      type: "fixed"
+      props:
+        offset-mode: true
+        content:
+          - item:
+              title: "test1"
+              link: "file://test1"
+              date: "2022-01-01T00:00:00"
+              contentType: "file"
+              downloadUri: "file://test1"
+            files:
+              - path: "test1.jpg"
+          - item:
+              title: "test2"
+              link: "file://test2"
+              date: "2022-01-01T00:00:00"
+              contentType: "file"
+              downloadUri: "file://test2"
+            files:
+              - path: "test2.jpg"
+          - item:
+              title: "test-dir"
+              link: "file://test-dir"
+              date: "2022-01-01T00:00:00"
+              contentType: "file"
+              downloadUri: "file://test-dir"
+            files:
+              - path: "test3.jpg"
+              - path: "test4.jpg"
+    - name: "error-item"
+      type: "fixed"
+      props:
+        content:
+          - item:
+              title: "error"
+              link: "file://error"
+              date: "2022-01-01T00:00:00"
+              contentType: "file"
+              downloadUri: "file://test1"
+            files:
+              - path: "test1.jpg"
+    - name: "api-create"
+      type: "system-file"
+      props:
+        path: "src/test/resources/sources"
+  file-resolver:
+    - name: "normal-case"
+      type: "fixed"
+    - name: "error-item"
+      type: "fixed"
+  downloader:
+    - name: "mock"
+      type: "mock"
+      props:
+        download-path: "src/test/resources/downloads"
+    - name: "url"
+      type: "url"
+      props:
+        download-path: "src/test/resources/downloads"
+processors:
+  - name: "NormalCase"
+    source: "fixed:normal-case"
+    item-file-resolver: "fixed:normal-case"
+    downloader: "mock"
+    file-mover: "general"
+    save-path: "src/test/resources/target/NormalCase"
+    options:
+      save-path-pattern: "{item.title}/{item.date}/"
+      filename-pattern: "{file.name} - {sequence}"
+      variable-providers:
+        - "sequence"
+    enabled: true
+  - name: "ErrorContinueCase"
+    source: "fixed:error-item"
+    item-file-resolver: "fixed:error-item"
+    downloader: "mock"
+    file-mover: "general"
+    save-path: "src/test/resources/target/ErrorContinueCase"
+    options: { }
+    enabled: true
+  - name: "DryRunCase"
+    source: "fixed:normal-case"
+    item-file-resolver: "fixed:normal-case"
+    downloader: "url"
+    file-mover: "general"
+    save-path: "src/test/resources/target/NormalCase"
+    options:
+      save-path-pattern: "{item.title}/{item.date}/"
+      filename-pattern: "{file.name} - {sequence}"
+      variable-providers:
+        - "sequence"
+    enabled: true

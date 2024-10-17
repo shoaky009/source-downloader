@@ -1,47 +1,85 @@
 package io.github.shoaky.sourcedownloader.integration
 
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
+import io.github.shoaky.sourcedownloader.CoreApplication
 import io.github.shoaky.sourcedownloader.component.source.FixedSource
-import io.github.shoaky.sourcedownloader.core.ProcessingContent
-import io.github.shoaky.sourcedownloader.core.ProcessingStorage
-import io.github.shoaky.sourcedownloader.core.ProcessorSourceState
-import io.github.shoaky.sourcedownloader.core.component.ComponentId
-import io.github.shoaky.sourcedownloader.core.component.ComponentManager
-import io.github.shoaky.sourcedownloader.core.component.ComponentWrapper
+import io.github.shoaky.sourcedownloader.config.SourceDownloaderProperties
+import io.github.shoaky.sourcedownloader.core.*
+import io.github.shoaky.sourcedownloader.core.component.*
 import io.github.shoaky.sourcedownloader.core.file.FileContentStatus
+import io.github.shoaky.sourcedownloader.core.processor.DefaultProcessorManager
 import io.github.shoaky.sourcedownloader.core.processor.ProcessorManager
 import io.github.shoaky.sourcedownloader.createIfNotExists
 import io.github.shoaky.sourcedownloader.integration.support.DelayItemDownloader
+import io.github.shoaky.sourcedownloader.integration.support.DelayItemDownloaderSupplier
+import io.github.shoaky.sourcedownloader.integration.support.Item2ReplaceDeciderSupplier
+import io.github.shoaky.sourcedownloader.integration.support.TestDirErrorDownloaderSupplier
 import io.github.shoaky.sourcedownloader.repo.ProcessingQuery
+import io.github.shoaky.sourcedownloader.repo.exposed.ExposedProcessingStorage
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentTopType
 import io.github.shoaky.sourcedownloader.sdk.util.Jackson
 import io.github.shoaky.sourcedownloader.testResourcePath
+import io.github.shoaky.sourcedownloader.util.RestorableConfigOperator
+import org.flywaydb.core.Flyway
+import org.jetbrains.exposed.sql.Database
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.context.ActiveProfiles
+import org.springframework.jdbc.datasource.SingleConnectionDataSource
 import kotlin.io.path.*
 import kotlin.test.assertEquals
 
-@SpringBootTest
-@ActiveProfiles("integration-test")
 @OptIn(ExperimentalPathApi::class)
 class SourceProcessorTest {
 
-    @Autowired
-    lateinit var processingStorage: ProcessingStorage
+    private val props = SourceDownloaderProperties(testResourcePath)
+    private val container = SimpleObjectWrapperContainer()
+    private val processingStorage: ProcessingStorage = ExposedProcessingStorage()
+    private val instanceManager = DefaultInstanceManager(configOperator)
+    private val componentManager: ComponentManager = DefaultComponentManager(
+        container,
+        listOf(
+            DefaultComponents(),
+            configOperator
+        )
+    )
+    private val pluginManager = PluginManager(
+        componentManager,
+        instanceManager,
+        props
+    )
+    private val processorManager: ProcessorManager =
+        DefaultProcessorManager(processingStorage, componentManager, container)
 
-    @Autowired
-    lateinit var processorManager: ProcessorManager
+    private val application = CoreApplication(
+        props,
+        DefaultInstanceManager(configOperator),
+        componentManager,
+        processorManager,
+        pluginManager,
+        listOf(configOperator),
+        listOf(
+            DelayItemDownloaderSupplier,
+            Item2ReplaceDeciderSupplier,
+            TestDirErrorDownloaderSupplier
+        )
+    )
 
-    @Autowired
-    lateinit var componentManager: ComponentManager
+    init {
+        val dataSource = SingleConnectionDataSource("jdbc:sqlite::memory:", true)
+        dataSource.setDriverClassName("org.sqlite.JDBC")
+        dataSource.password = "sd"
+        dataSource.username = "sd"
+        val flyway = Flyway.configure().dataSource(dataSource)
+            .locations("classpath:/db/migration")
+            .load()
+        flyway.migrate()
+        Database.connect(dataSource)
+        application.start()
+    }
 
     @Test
     fun normal() {
         val selfPath = savePath.resolve("NormalCase")
-
         val processor = processorManager.getProcessor("NormalCase").get()
 
         processor.run()
@@ -352,12 +390,16 @@ class SourceProcessorTest {
 
         private val savePath = testResourcePath.resolve("target")
         private val downloadPath = testResourcePath.resolve("downloads")
+        private val dataLocation = testResourcePath
+        private val configPath = dataLocation.resolve("config.yaml")
+        private val configOperator = RestorableConfigOperator(configPath, YamlConfigOperator(configPath))
 
         @JvmStatic
         @AfterAll
         fun clean() {
             savePath.deleteRecursively()
             downloadPath.deleteRecursively()
+            configOperator.restore()
         }
     }
 
