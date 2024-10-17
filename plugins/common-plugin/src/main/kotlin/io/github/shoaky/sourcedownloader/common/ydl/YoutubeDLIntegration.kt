@@ -6,7 +6,7 @@ import io.github.shoaky.sourcedownloader.sdk.SourceFile
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.AsyncDownloader
 import io.github.shoaky.sourcedownloader.sdk.component.ItemFileResolver
-import org.springframework.http.HttpStatus
+import io.github.shoaky.sourcedownloader.sdk.http.StatusCodes
 import java.nio.file.Path
 import kotlin.io.path.Path
 
@@ -43,7 +43,7 @@ class YoutubeDLIntegration(
                 task.sourceItem.link.toURL()
             )
         )
-        return response.statusCode() == HttpStatus.OK.value()
+        return response.statusCode() == StatusCodes.OK
     }
 
     override fun defaultDownloadPath(): Path {

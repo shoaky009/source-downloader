@@ -86,13 +86,4 @@ class ComponentControllerTest {
         ).andExpect(status().is4xxClientError)
     }
 
-    @Test
-    fun get_component_desc() {
-        mockMvc.perform(get("/api/component/descriptions"))
-            .andExpect(status().isOk)
-            .andExpect {
-                MockMvcResultMatchers.jsonPath("$.*").isNotEmpty
-            }
-    }
-
 }

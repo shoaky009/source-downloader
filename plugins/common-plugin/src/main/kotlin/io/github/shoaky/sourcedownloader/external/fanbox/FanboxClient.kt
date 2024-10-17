@@ -1,8 +1,8 @@
 package io.github.shoaky.sourcedownloader.external.fanbox
 
+import com.google.common.net.HttpHeaders
 import io.github.shoaky.sourcedownloader.sdk.http.BaseRequest
 import io.github.shoaky.sourcedownloader.sdk.http.HookedApiClient
-import org.springframework.http.HttpHeaders
 import java.net.URI
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse

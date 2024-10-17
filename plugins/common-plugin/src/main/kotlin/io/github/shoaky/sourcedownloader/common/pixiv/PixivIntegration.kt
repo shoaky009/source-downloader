@@ -6,12 +6,12 @@ import io.github.shoaky.sourcedownloader.external.pixiv.*
 import io.github.shoaky.sourcedownloader.sdk.*
 import io.github.shoaky.sourcedownloader.sdk.component.ItemFileResolver
 import io.github.shoaky.sourcedownloader.sdk.component.Source
+import io.github.shoaky.sourcedownloader.sdk.http.StatusCodes
 import io.github.shoaky.sourcedownloader.sdk.util.ExpandIterator
 import io.github.shoaky.sourcedownloader.sdk.util.IterationResult
 import io.github.shoaky.sourcedownloader.sdk.util.flatten
 import io.github.shoaky.sourcedownloader.sdk.util.http.httpClient
 import org.slf4j.LoggerFactory
-import org.springframework.http.HttpStatus
 import java.net.URI
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse.BodyHandlers
@@ -128,7 +128,7 @@ class PixivIntegration(
         headers(sourceItem)
             .forEach { (key, value) -> basicRequestBuilder.setHeader(key, value) }
         val headResponse = httpClient.send(basicRequestBuilder.build(), BodyHandlers.discarding())
-        if (headResponse.statusCode() != HttpStatus.OK.value()) {
+        if (headResponse.statusCode() != StatusCodes.OK) {
             throw ProcessingException.retryable(
                 "Get ugoira meta failed, illustrationId: $illustrationId, statusCode: ${headResponse.statusCode()}"
             )

@@ -1,10 +1,10 @@
 package io.github.shoaky.sourcedownloader.external.transmission
 
+import com.google.common.net.HttpHeaders
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentException
 import io.github.shoaky.sourcedownloader.sdk.http.BaseRequest
 import io.github.shoaky.sourcedownloader.sdk.http.HookedApiClient
 import io.github.shoaky.sourcedownloader.sdk.util.encodeBase64
-import org.springframework.http.HttpHeaders
 import java.net.URI
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse

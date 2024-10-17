@@ -5,21 +5,17 @@ import io.github.shoaky.sourcedownloader.core.component.ComponentManager
 import io.github.shoaky.sourcedownloader.sdk.InstanceManager
 import io.github.shoaky.sourcedownloader.sdk.plugin.Plugin
 import org.slf4j.LoggerFactory
-import org.springframework.stereotype.Component
 import java.util.*
 
-@Component
 class PluginManager(
     componentManager: ComponentManager,
     instanceManager: InstanceManager,
-    cacheManager: MemoryCacheManager,
     applicationProps: SourceDownloaderProperties
 ) {
 
     private val pluginContext = DefaultPluginContext(
         componentManager,
         instanceManager,
-        cacheManager,
         applicationProps
     )
     private val plugins = Collections.synchronizedList(mutableListOf<Plugin>())

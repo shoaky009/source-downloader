@@ -19,7 +19,7 @@ import java.util.*
 import javax.net.ssl.SSLSession
 import kotlin.jvm.optionals.getOrNull
 
-typealias GHttpHeaders = com.google.common.net.HttpHeaders
+internal typealias GHttpHeaders = com.google.common.net.HttpHeaders
 
 interface ApiClient {
 

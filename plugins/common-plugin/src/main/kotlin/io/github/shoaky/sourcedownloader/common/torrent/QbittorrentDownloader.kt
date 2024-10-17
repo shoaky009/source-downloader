@@ -11,8 +11,8 @@ import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentException
 import io.github.shoaky.sourcedownloader.sdk.component.TorrentDownloader
 import io.github.shoaky.sourcedownloader.sdk.component.TorrentDownloader.Companion.tryParseTorrentHash
+import io.github.shoaky.sourcedownloader.sdk.http.StatusCodes
 import org.slf4j.LoggerFactory
-import org.springframework.http.HttpStatus
 import java.io.IOException
 import java.net.URL
 import java.nio.file.Path
@@ -55,21 +55,21 @@ class QbittorrentDownloader(
         // 目前如果info hash只有v1也会试一遍v2，没必要
         val (success, infoHash, body) = retryWhen({
             val fileResponse = client.execute(TorrentFilesRequest(torrentHash))
-            if (fileResponse.statusCode() == HttpStatus.NOT_FOUND.value()) {
+            if (fileResponse.statusCode() == StatusCodes.NOT_FOUND) {
                 val infoHashV1 = getInfoHashV1(task.sourceItem, true)
                 val fileResponse = client.execute(TorrentFilesRequest(infoHashV1))
                 return@retryWhen Triple(
-                    fileResponse.statusCode() == HttpStatus.OK.value(),
+                    fileResponse.statusCode() == StatusCodes.OK,
                     infoHashV1,
                     fileResponse.body()
                 )
             }
-            Triple(fileResponse.statusCode() == HttpStatus.OK.value(), torrentHash, fileResponse.body())
+            Triple(fileResponse.statusCode() == StatusCodes.OK, torrentHash, fileResponse.body())
         }, condition = { it.first }) {
             val infoHashV2 = getInfoHashV2(task.downloadUri().toURL())
             log.info("Try to get files with info hash v2:$infoHashV2")
             val files = client.execute(TorrentFilesRequest(infoHashV2))
-            Triple(files.statusCode() == HttpStatus.OK.value(), infoHashV2, files.body())
+            Triple(files.statusCode() == StatusCodes.OK, infoHashV2, files.body())
         }
 
         if (success.not()) {
@@ -112,7 +112,7 @@ class QbittorrentDownloader(
 
     override fun defaultDownloadPath(): Path {
         val response = client.execute(AppGetDefaultSavePathRequest())
-        if (response.statusCode() != HttpStatus.OK.value()) {
+        if (response.statusCode() != StatusCodes.OK) {
             throw ComponentException.processing("获取默认下载路径失败,code:${response.statusCode()} body:${response.body()}")
         }
         return Path.of(response.body())
@@ -163,7 +163,7 @@ class QbittorrentDownloader(
             val renameFile = client.execute(
                 TorrentsRenameFileRequest(torrentHash, torrentRelativePath, targetRelativePath)
             )
-            val success = renameFile.statusCode() == HttpStatus.OK.value()
+            val success = renameFile.statusCode() == StatusCodes.OK
             if (success.not()) {
                 log.error("Rename file failed, hash:$torrentHash code:${renameFile.statusCode()} body:${renameFile.body()}")
             }
@@ -179,10 +179,10 @@ class QbittorrentDownloader(
                 itemLocation.toString()
             )
         )
-        if (setLocationResponse.statusCode() != HttpStatus.OK.value()) {
+        if (setLocationResponse.statusCode() != StatusCodes.OK) {
             log.error("set location failed,hash:$torrentHash code:${setLocationResponse.statusCode()} body:${setLocationResponse.body()}")
         }
-        return allSuccess && setLocationResponse.statusCode() == HttpStatus.OK.value()
+        return allSuccess && setLocationResponse.statusCode() == StatusCodes.OK
     }
 
     private fun getInfoHash(sourceItem: SourceItem): String {

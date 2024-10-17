@@ -4,8 +4,8 @@ import io.github.shoaky.sourcedownloader.external.webdav.*
 import io.github.shoaky.sourcedownloader.sdk.ItemContent
 import io.github.shoaky.sourcedownloader.sdk.SourceFile
 import io.github.shoaky.sourcedownloader.sdk.component.FileMover
+import io.github.shoaky.sourcedownloader.sdk.http.StatusCodes
 import org.slf4j.LoggerFactory
-import org.springframework.http.HttpStatus
 import java.nio.file.Path
 import kotlin.io.path.deleteIfExists
 
@@ -29,7 +29,7 @@ open class WebdavFileMover(
             val dst = it.targetPath().toString()
             val moveFile = MoveFile("$webdavPath$src", "$webdavPath$dst")
             webdavClient.execute(moveFile)
-        }.all { it.statusCode() == HttpStatus.CREATED.value() }
+        }.all { it.statusCode() == StatusCodes.CREATED }
     }
 
     private fun uploadFile(itemContent: ItemContent): Boolean {
@@ -38,7 +38,7 @@ open class WebdavFileMover(
             val target = it.targetPath().toString()
             val uploadFile = UploadFile("$webdavPath$target", it.fileDownloadPath)
             val resp = webdavClient.execute(uploadFile)
-            if (resp.statusCode() != HttpStatus.CREATED.value()) {
+            if (resp.statusCode() != StatusCodes.CREATED) {
                 log.error("Failed to create file: {}, code: {} body:{}", it.targetPath(), resp.statusCode(), resp.body())
                 return@map false
             }
@@ -51,14 +51,14 @@ open class WebdavFileMover(
 
     override fun exists(paths: List<Path>): List<Boolean> {
         return paths.map {
-            webdavClient.execute(FindProp(it.toString())).statusCode() == HttpStatus.OK.value()
+            webdavClient.execute(FindProp(it.toString())).statusCode() == StatusCodes.OK
         }
     }
 
     override fun createDirectories(path: Path) {
         val createDirectory = CreateDirectory(path.toString())
         val resp = webdavClient.execute(createDirectory)
-        if (resp.statusCode() != HttpStatus.OK.value()) {
+        if (resp.statusCode() != StatusCodes.OK) {
             log.error("Failed to create directory: $path, code: ${resp.statusCode()} body:${resp.body()}")
         }
     }

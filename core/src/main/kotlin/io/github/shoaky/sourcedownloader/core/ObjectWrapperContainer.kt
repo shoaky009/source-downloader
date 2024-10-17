@@ -12,6 +12,7 @@ import io.github.shoaky.sourcedownloader.throwComponentException
 import org.springframework.beans.BeansException
 import org.springframework.beans.factory.support.DefaultListableBeanFactory
 import org.springframework.core.ResolvableType
+import java.util.concurrent.ConcurrentHashMap
 
 interface ObjectWrapperContainer {
 
@@ -30,6 +31,39 @@ interface ObjectWrapperContainer {
     fun remove(name: String)
 
     fun getAllObjectNames(): Set<String>
+
+}
+
+class SimpleObjectWrapperContainer : ObjectWrapperContainer {
+
+    private val objects: MutableMap<String, ObjectWrapper<*>> = ConcurrentHashMap()
+
+    override fun contains(name: String): Boolean {
+        return objects.containsKey(name)
+    }
+
+    override fun put(name: String, value: ObjectWrapper<*>) {
+        objects[name] = value
+    }
+
+    override fun <T : Any, W : ObjectWrapper<T>> get(name: String, type: TypeReference<W>): W {
+        @Suppress("UNCHECKED_CAST")
+        return objects[name] as? W
+            ?: throw IllegalArgumentException("Object $name cannot be cast to ${type.type}")
+    }
+
+    override fun <T : Any, W : ObjectWrapper<T>> getObjectsOfType(type: TypeReference<W>): Map<String, W> {
+        @Suppress("UNCHECKED_CAST")
+        return objects.filterValues { it::class.java == type.type } as Map<String, W>
+    }
+
+    override fun remove(name: String) {
+        objects.remove(name)
+    }
+
+    override fun getAllObjectNames(): Set<String> {
+        return objects.keys
+    }
 
 }
 

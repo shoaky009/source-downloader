@@ -16,6 +16,7 @@ dependencies {
     implementation("org.springframework.data:spring-data-commons")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.flywaydb:flyway-core")
     implementation(libs.sqlite.jdbc)
     // kotlin
@@ -37,7 +38,6 @@ dependencies {
 
     resolveBuildInPlugins()
     implementation("org.springframework.boot:spring-boot-starter-actuator")
-    // implementation("org.springframework.boot:spring-boot-starter-validation")
     val isGenerateOpenApiDocs = gradle.startParameter.taskNames.contains("generateOpenApiDocs")
     if (isGenerateOpenApiDocs) {
         implementation(libs.therapi.runtime.javadoc)
