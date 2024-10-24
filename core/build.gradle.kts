@@ -22,7 +22,10 @@ dependencies {
     api(libs.bundles.exposed)
     implementation(libs.json.path)
     implementation(libs.spring.expression)
-    implementation(libs.spring.context)
+
+    // 后面移除，不支持spel
+    compileOnly(libs.spring.context)
+    implementation("com.cronutils:cron-utils:9.2.1")
 
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testImplementation(libs.junit.jupiter.api)
