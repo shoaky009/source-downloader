@@ -38,6 +38,8 @@ logback = "1.5.11"
 slf4j = "2.0.16"
 flyway = "10.20.0"
 spring-retry = "2.0.10"
+cron-utils = "9.2.1"
+kotlin-retry = "2.0.1"
 
 [libraries]
 spring-boot-dependencies = { module = "org.springframework.boot:spring-boot-dependencies", version.ref = "spring-boot" }
@@ -45,12 +47,14 @@ spring-context = { module = "org.springframework:spring-context", version.ref = 
 spring-expression = { module = "org.springframework:spring-expression", version.ref = "spring" }
 spring-jdbc = { module = "org.springframework:spring-jdbc", version.ref = "spring" }
 spring-retry = { module = "org.springframework.retry:spring-retry", version.ref = "spring-retry" }
+spring-core = { module = "org.springframework:spring-core", version.ref = "spring" }
 
 jackson-bom = { module = "com.fasterxml.jackson:jackson-bom", version.ref = "jackson" }
 jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
 jackson-core = { module = "com.fasterxml.jackson.core:jackson-core", version.ref = "jackson" }
 jackson-datatype-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson" }
 jackson-kotlin-module = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
+jackson-dataformat-yaml = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml", version.ref = "jackson" }
 
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
@@ -111,6 +115,8 @@ therapi-javadoc-scribe = { module = "com.github.therapi:therapi-runtime-javadoc-
 json-path = { module = "com.jayway.jsonpath:json-path", version.ref = "json-path" }
 fuzzywuzzy = { module = "me.xdrop:fuzzywuzzy", version.ref = "fuzzywuzzy" }
 jsonschema-generator = { module = "com.github.victools:jsonschema-generator", version.ref = "jsonschema" }
+cron-utils = { module = "com.cronutils:cron-utils", version.ref = "cron-utils" }
+kotlin-retry = { module = "com.michael-bull.kotlin-retry:kotlin-retry", version.ref = "kotlin-retry" }
 
 [bundles]
 cel = ["cel-tools", "cel-jackson"]

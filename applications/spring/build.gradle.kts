@@ -16,6 +16,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     implementation(libs.exposed.spring.boot.stater)
+    runtimeOnly(libs.kotlinx.coroutines.reactor)
 }
 
 tasks.test {

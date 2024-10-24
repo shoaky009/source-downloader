@@ -1,6 +1,8 @@
 package io.github.shoaky.sourcedownloader.core.processor
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.github.michaelbull.retry.policy.*
+import com.github.michaelbull.retry.retry
 import io.github.shoaky.sourcedownloader.component.NeverReplace
 import io.github.shoaky.sourcedownloader.component.downloader.NoneDownloader
 import io.github.shoaky.sourcedownloader.component.source.SystemFileSource
@@ -15,7 +17,6 @@ import io.github.shoaky.sourcedownloader.sdk.*
 import io.github.shoaky.sourcedownloader.sdk.component.*
 import io.github.shoaky.sourcedownloader.sdk.util.Jackson
 import io.github.shoaky.sourcedownloader.util.JsonComparator
-import io.github.shoaky.sourcedownloader.util.LoggingStageRetryListener
 import io.github.shoaky.sourcedownloader.util.NoLock
 import io.github.shoaky.sourcedownloader.util.lock
 import kotlinx.coroutines.*
@@ -23,13 +24,11 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springframework.retry.support.RetryTemplateBuilder
 import java.io.IOException
 import java.nio.ByteBuffer
 import java.nio.charset.CodingErrorAction
 import java.nio.file.Files
 import java.nio.file.Path
-import java.time.Duration
 import java.time.LocalDateTime
 import java.util.*
 import java.util.concurrent.Executors
@@ -522,14 +521,6 @@ class SourceProcessor(
 
     companion object {
 
-        private val retry = RetryTemplateBuilder()
-            .maxAttempts(3)
-            .fixedBackoff(Duration.ofSeconds(5L).toMillis())
-            .retryOn(IOException::class.java)
-            .traversingCauses()
-            .withListener(LoggingStageRetryListener())
-            .build()
-
         private val processDispatcher = Executors.newThreadPerTaskExecutor(
             Thread.ofVirtual().name("process-task", 1).factory()
         ).asCoroutineDispatcher()
@@ -564,6 +555,23 @@ class SourceProcessor(
         val savePathPattern: CorePathPattern?,
     )
 
+    private fun getRetryPolicy(stage: String): RetryPolicy<Throwable> {
+        val ioExceptionPredicate = continueIf<Throwable> {
+            val failure = it.failure
+            val isContinue = failure is IOException
+            if (isContinue) {
+                log.warn(
+                    "第{}次重试失败, {}, message:{}",
+                    it.number,
+                    stage,
+                    "${failure::class.simpleName}:${failure.message}"
+                )
+            }
+            isContinue
+        }
+        return stopAtAttempts<Throwable>(4) + ioExceptionPredicate + constantDelay(options.retryBackoffMills)
+    }
+
     private abstract inner class Process(
         protected val sourceState: ProcessorSourceState = currentSourceState(),
         protected val sourcePointer: SourcePointer = ProcessorSourceState.resolvePointer(
@@ -582,8 +590,8 @@ class SourceProcessor(
             secondaryFileMover.releaseAll()
             val stat = context.stat
             stat.stopWatch.start("fetchItems")
-            val itemIterable = customIterable ?: retry.execute<Iterable<PointedItem<ItemPointer>>, IOException> {
-                it.setAttribute("stage", ProcessStage("FetchSourceItems", "Processor:$name SourceId:${sourceId}"))
+
+            val itemIterable = retry(getRetryPolicy("FetchSourceItems")) {
                 source.fetch(sourcePointer, options.fetchLimit)
             }
             stat.stopWatch.stop()
@@ -640,8 +648,9 @@ class SourceProcessor(
                                 return@launch
                             }
                         }.getOrElse {
-                            val errorContent = ProcessingContent(name, CoreItemContent(sourceItem, emptyList(), MapPatternVariables()))
-                                .copy(status = FAILURE, failureReason = it.message)
+                            val errorContent =
+                                ProcessingContent(name, CoreItemContent(sourceItem, emptyList(), MapPatternVariables()))
+                                    .copy(status = FAILURE, failureReason = it.message)
                             whenItemErrorReturning(errorContent, it)
                         }
 
@@ -678,7 +687,10 @@ class SourceProcessor(
             }
         }
 
-        protected open fun whenItemErrorReturning(errorContent: ProcessingContent, throwable: Throwable): ProcessingContent {
+        protected open fun whenItemErrorReturning(
+            errorContent: ProcessingContent,
+            throwable: Throwable
+        ): ProcessingContent {
             return errorContent
         }
 

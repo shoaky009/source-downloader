@@ -4,7 +4,6 @@ import com.cronutils.model.CronType
 import com.cronutils.model.definition.CronDefinitionBuilder
 import com.cronutils.model.time.ExecutionTime
 import com.cronutils.parser.CronParser
-import org.springframework.util.Assert
 import java.time.Clock
 import java.time.Duration
 import java.time.Instant
@@ -86,7 +85,7 @@ class CronTrigger(
         }
 
         private fun obtainCurrentFuture(): ScheduledFuture<*>? {
-            Assert.state(this.currentFuture != null, "No scheduled future")
+            assert(this.currentFuture != null) { "No scheduled future" }
             return this.currentFuture
         }
 
@@ -95,7 +94,7 @@ class CronTrigger(
             delegate.run()
             val completionTime = triggerContext.clock.instant()
             synchronized(this.triggerContextMonitor) {
-                Assert.state(this.scheduledExecutionTime != null, "No scheduled execution")
+                assert(this.scheduledExecutionTime != null) { "No scheduled execution" }
                 triggerContext.update(this.scheduledExecutionTime, actualExecutionTime, completionTime)
                 if (!obtainCurrentFuture()!!.isCancelled) {
                     schedule()

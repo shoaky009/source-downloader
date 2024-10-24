@@ -174,6 +174,11 @@ class CoreApplication(
     companion object {
 
         val log = LoggerFactory.getLogger("CoreApplication")
+
+        @JvmStatic
+        fun main(args: Array<String>) {
+
+        }
     }
 
 }
