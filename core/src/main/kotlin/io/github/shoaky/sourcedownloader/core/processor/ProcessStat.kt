@@ -1,6 +1,6 @@
 package io.github.shoaky.sourcedownloader.core.processor
 
-import org.springframework.util.StopWatch
+import io.github.shoaky.sourcedownloader.util.StopWatch
 import java.util.concurrent.atomic.AtomicInteger
 
 class ProcessStat(

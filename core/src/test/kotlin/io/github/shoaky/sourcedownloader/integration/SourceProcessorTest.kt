@@ -339,19 +339,6 @@ class SourceProcessorTest {
     }
 
     @Test
-    fun spel_case() {
-        val processorName = "SpelCase"
-        val processor = processorManager.getProcessor(processorName).get()
-
-        val contents = processor.dryRun().associateBy({ it.itemContent.sourceItem.title }) { it.itemContent }
-        assertEquals(2, contents.size)
-
-        assert(contents.getValue("test1").fileContents.first().targetFilename.contains("GROUPING"))
-        assertEquals(1, contents.getValue("test-dir").fileContents.size)
-        assertEquals("test4.jpg", contents.getValue("test-dir").fileContents.first().targetFilename)
-    }
-
-    @Test
     fun parallelism_replace_case() {
         val processorName = "ParallelismReplaceCase"
         val processor = processorManager.getProcessor(processorName).get()

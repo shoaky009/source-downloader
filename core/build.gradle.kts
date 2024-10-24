@@ -1,5 +1,6 @@
 plugins {
     `java-library`
+    alias(libs.plugins.spring.boot)
 }
 
 dependencies {
@@ -12,20 +13,18 @@ dependencies {
     api("org.jetbrains.kotlin:kotlin-stdlib")
     api(libs.kotlinx.coroutines.core)
     runtimeOnly(libs.kotlinx.coroutines.core.jvm)
-    runtimeOnly(libs.kotlinx.coroutines.reactor)
 
     // others
     implementation(libs.commons.collections4)
-    implementation(libs.spring.retry)
+    // implementation(libs.spring.retry)
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml")
     implementation(libs.bundles.cel)
     api(libs.bundles.exposed)
     implementation(libs.json.path)
-    implementation(libs.spring.expression)
+    // implementation(libs.spring.expression)
 
-    // 后面移除，不支持spel
-    compileOnly(libs.spring.context)
     implementation("com.cronutils:cron-utils:9.2.1")
+    implementation("com.michael-bull.kotlin-retry:kotlin-retry:2.0.1")
 
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testImplementation(libs.junit.jupiter.api)
