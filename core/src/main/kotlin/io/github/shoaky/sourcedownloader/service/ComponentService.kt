@@ -135,8 +135,8 @@ class ComponentService(
      * @param id Component实例名称例如`Downloader:telegram:telegram`
      */
     @OptIn(ExperimentalCoroutinesApi::class)
-    suspend fun stateDetailStream(
-        id: MutableSet<String>,
+    fun stateDetailStream(
+        id: Set<String>,
     ): Flow<EventItem> {
         return tickerFlow(1000L, Unit) {
         }.map {

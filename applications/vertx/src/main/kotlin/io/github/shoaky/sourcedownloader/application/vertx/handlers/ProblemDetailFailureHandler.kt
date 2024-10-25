@@ -3,6 +3,7 @@ package io.github.shoaky.sourcedownloader.application.vertx.handlers
 import io.vertx.core.Handler
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.RoutingContext
+import org.slf4j.LoggerFactory
 
 object ProblemDetailFailureHandler : Handler<RoutingContext> {
 
@@ -10,6 +11,10 @@ object ProblemDetailFailureHandler : Handler<RoutingContext> {
         MutableMap<out Throwable, FailureDetailHandler<in Throwable>> = mutableMapOf()
 
     override fun handle(ctx: RoutingContext) {
+        if (ctx.response().ended() || ctx.response().headWritten()) {
+            log.debug("Response already ended or head written, skip handling failure")
+            return
+        }
         val retDetail = retDetail(ctx) ?: ProblemDetail.internalServerError()
         val buf = JsonObject.mapFrom(retDetail).toBuffer()
         ctx.response().statusCode = retDetail.status
@@ -26,4 +31,6 @@ object ProblemDetailFailureHandler : Handler<RoutingContext> {
         }
         return null
     }
+
+    private val log = LoggerFactory.getLogger(ProblemDetailFailureHandler::class.java)
 }

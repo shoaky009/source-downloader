@@ -1,5 +1,3 @@
-import org.springframework.boot.gradle.tasks.bundling.BootJar
-
 tasks.jar {
     enabled = false
 }
@@ -7,8 +5,7 @@ tasks.jar {
 subprojects {
     apply(plugin = "com.gorylenko.gradle-git-properties")
     apply(plugin = "jacoco-report-aggregation")
-    // 比其他的好使可以自定义分层, 所有应用层都用这个打包
-    apply(plugin = "org.springframework.boot")
+    // apply(plugin = "com.google.cloud.tools.jib")
 
     dependencies {
         testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
@@ -16,33 +13,6 @@ subprojects {
         resolveBuildInPlugins()
     }
 
-    tasks.withType<BootJar> {
-        exclude("config.yaml")
-        layered {
-            application {
-                intoLayer("spring-boot-loader") {
-                    include("org/springframework/boot/loader/**")
-                }
-                intoLayer("application")
-            }
-            dependencies {
-                intoLayer("source-downloader-plugins") {
-                    include("io.github.shoaky:*-plugin:*")
-                }
-                intoLayer("snapshot-dependencies") {
-                    include("*:*:*SNAPSHOT")
-                }
-                intoLayer("dependencies")
-            }
-            layerOrder.addAll(
-                "dependencies",
-                "spring-boot-loader",
-                "snapshot-dependencies",
-                "source-downloader-plugins",
-                "application"
-            )
-        }
-    }
 }
 
 fun DependencyHandlerScope.resolveBuildInPlugins() {

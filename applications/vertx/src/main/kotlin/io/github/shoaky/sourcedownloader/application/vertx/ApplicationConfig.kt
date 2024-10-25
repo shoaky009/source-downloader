@@ -6,16 +6,19 @@ import java.nio.file.Path
 import kotlin.io.path.Path
 
 data class ApplicationConfig(
-    val server: HttpServerOptions = HttpServerOptions(),
+    val server: HttpServerOptions = HttpServerOptions().also {
+        it.port = 8080
+    },
     val sourceDownloader: SourceDownloaderConfig = SourceDownloaderConfig(),
     val datasource: HikariConfig = HikariConfig()
 ) {
 
     init {
+        val path = sourceDownloader.dataLocation.toString().ifBlank { "." }
         datasource
             .also {
                 it.driverClassName = "org.sqlite.JDBC"
-                it.jdbcUrl = "jdbc:sqlite:${sourceDownloader.dataLocation}source-downloader.db"
+                it.jdbcUrl = "jdbc:sqlite:$path/source-downloader.db"
                 it.username = "sd"
                 it.password = "sd"
             }
@@ -23,5 +26,8 @@ data class ApplicationConfig(
 }
 
 data class SourceDownloaderConfig(
-    val dataLocation: Path = Path("")
+    val dataLocation: Path = run {
+        val path = System.getenv("SOURCE_DOWNLOADER_DATA_LOCATION") ?: ""
+        Path(path)
+    }
 )

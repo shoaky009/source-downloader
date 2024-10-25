@@ -12,6 +12,7 @@ import io.github.shoaky.sourcedownloader.sdk.InstanceManager
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentException
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
+import io.github.shoaky.sourcedownloader.util.StopWatch
 import org.slf4j.LoggerFactory
 import java.net.URI
 
@@ -109,16 +110,30 @@ class CoreApplication(
     }
 
     fun start() {
+        val stopWatch = StopWatch("CoreApplication")
         setupProxy()
         val dataPath = runCatching {
             applicationProperties.dataLocation.toAbsolutePath()
         }.getOrDefault(applicationProperties.dataLocation)
         log.info("Application data location:${dataPath}")
+
+        stopWatch.start("core.application.plugins")
         loadAndInitPlugins()
+        stopWatch.stop()
+
+        stopWatch.start("core.application.instance-factories")
         registerInstanceFactories()
+        stopWatch.stop()
+
         log.info("Supported component types:${ComponentType.types()}")
+        stopWatch.start("core.application.component-suppliers")
         registerComponentSuppliers()
+        stopWatch.stop()
+
+        stopWatch.start("core.application.processors")
         createProcessors()
+        stopWatch.stop()
+        log.info("CoreApplication started in ${stopWatch.prettyPrint()}")
     }
 
     private fun registerInstanceFactories() {

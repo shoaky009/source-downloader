@@ -1,8 +1,13 @@
 package io.github.shoaky.sourcedownloader.application.vertx
 
+import com.fasterxml.jackson.databind.module.SimpleModule
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.zaxxer.hikari.HikariDataSource
 import io.github.shoaky.sourcedownloader.CoreApplication
-import io.github.shoaky.sourcedownloader.application.vertx.handlers.*
 import io.github.shoaky.sourcedownloader.component.supplier.WebhookTriggerSupplier
 import io.github.shoaky.sourcedownloader.component.trigger.WebhookTrigger
 import io.github.shoaky.sourcedownloader.config.SourceDownloaderProperties
@@ -18,21 +23,24 @@ import io.github.shoaky.sourcedownloader.core.processor.DefaultProcessorManager
 import io.github.shoaky.sourcedownloader.core.processor.ProcessorManager
 import io.github.shoaky.sourcedownloader.core.processor.log
 import io.github.shoaky.sourcedownloader.repo.exposed.ExposedProcessingStorage
-import io.github.shoaky.sourcedownloader.sdk.http.StatusCodes
 import io.github.shoaky.sourcedownloader.service.ComponentService
 import io.github.shoaky.sourcedownloader.service.ProcessingContentService
 import io.github.shoaky.sourcedownloader.service.ProcessorService
-import io.micrometer.core.instrument.simple.SimpleMeterRegistry
+import io.github.shoaky.sourcedownloader.util.StopWatch
 import io.vertx.core.Handler
 import io.vertx.core.Vertx
 import io.vertx.core.http.HttpMethod
+import io.vertx.core.json.jackson.DatabindCodec
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.RoutingContext
-import io.vertx.ext.web.handler.StaticHandler
+import io.vertx.kotlin.core.deploymentOptionsOf
 import io.vertx.kotlin.core.vertxOptionsOf
 import io.vertx.kotlin.micrometer.micrometerMetricsOptionsOf
-import io.vertx.micrometer.PrometheusScrapingHandler
+import io.vertx.kotlin.micrometer.vertxJmxMetricsOptionsOf
 import org.jetbrains.exposed.sql.Database
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 class SourceDownloaderVertxApplication {
 
@@ -40,116 +48,79 @@ class SourceDownloaderVertxApplication {
 
         @JvmStatic
         fun main(args: Array<String>) {
+            val stopWatch = StopWatch("SourceDownloaderApplication")
+            stopWatch.start("application.config")
             val applicationConfig = ApplicationConfig()
-            val context = createCoreApplication(args, applicationConfig)
+            stopWatch.stop()
 
-            SimpleMeterRegistry()
+            val vertx = vertx()
+            val context = createCoreApplication(args, applicationConfig, stopWatch, vertx)
+
+            stopWatch.start("database")
+            initDataSource(applicationConfig)
+            stopWatch.stop()
+
+            setupObjectMapper()
+            stopWatch.start("http.server")
+            vertx
+                .deployVerticle(
+                    HttpServerVerticle(applicationConfig, context), deploymentOptionsOf(
+                        worker = true
+                    )
+                )
+                .onComplete {
+                    stopWatch.stop()
+                    log.info("Application started in ${stopWatch.prettyPrint()}")
+                }
+        }
+
+        private fun setupObjectMapper() {
+            val simpleModule = SimpleModule()
+                .addSerializer(
+                    ToStringSerializer(LocalDateTime::class.java)
+                )
+                .addSerializer(
+                    ToStringSerializer(LocalDate::class.java)
+                )
+                .addDeserializer(
+                    LocalDate::class.java,
+                    LocalDateDeserializer(DateTimeFormatter.BASIC_ISO_DATE)
+                )
+                .addDeserializer(
+                    LocalDateTime::class.java,
+                    LocalDateTimeDeserializer(DateTimeFormatter.BASIC_ISO_DATE)
+                )
+            LocalDateTime.now().toString()
+            DatabindCodec.mapper()
+                .registerKotlinModule()
+                .registerModule(JavaTimeModule())
+                .registerModule(simpleModule)
+        }
+
+        private fun vertx(): Vertx {
             val options = vertxOptionsOf(
                 metricsOptions = micrometerMetricsOptionsOf(
                     enabled = true,
                     jvmMetricsEnabled = true,
-                    micrometerRegistry = SimpleMeterRegistry()
+                    jmxMetricsOptions = vertxJmxMetricsOptionsOf(enabled = true),
                 )
             )
             val vertx = Vertx.vertx(options)
-            val router = Router.router(vertx)
-                // handle unhandled exception
-                .errorHandler(StatusCodes.INTERNAL_SERVER_ERROR, ProblemDetailFailureHandler)
-            router
-                .route().subRouter(context.webhookRouter)
-            registerRouters(router, vertx, context)
-            initDataSource(applicationConfig)
-            vertx.createHttpServer(applicationConfig.server)
-                .requestHandler(router)
-                .listen()
-                .onComplete {
-                    if (it.succeeded()) {
-                        log.info("Server started on port ${it.result().actualPort()}")
-                    } else {
-                        log.error("Failed to start server", it.cause())
-                    }
-                }
+            return vertx
         }
 
         private fun initDataSource(applicationConfig: ApplicationConfig) {
-            Database.connect(HikariDataSource(applicationConfig.datasource))
-        }
-
-        private fun registerRouters(router: Router, vertx: Vertx, context: ApplicationContext) {
-            router
-                .route(HttpMethod.GET, "/api/application/reload")
-                .blockingHandler(CoreApplicationHandlers(context.coreApplication).reload())
-
-            val cpHandlers = ComponentEndpointHandlers(context.componentService)
-            router.route(HttpMethod.GET, "/api/component")
-                .blockingHandler(cpHandlers.queryComponents())
-            router.route(HttpMethod.POST, "/api/component")
-                .blockingHandler(cpHandlers.createComponent())
-            router.route(HttpMethod.DELETE, "/api/component/:type/:typeName/:name")
-                .blockingHandler(cpHandlers.deleteComponent())
-            router.route(HttpMethod.GET, "/api/component/:type/:typeName/:name/reload")
-                .blockingHandler(cpHandlers.reload())
-            router.route(HttpMethod.GET, "/api/component/types")
-                .blockingHandler(cpHandlers.getTypes())
-            router.route(HttpMethod.GET, "/api/component/:type/:typeName/metadata")
-                .blockingHandler(cpHandlers.getSchema())
-
-            val processorHandlers = ProcessorEndpointHandlers(context.processorService)
-            router.route(HttpMethod.GET, "/api/processor")
-                .blockingHandler(processorHandlers.getProcessors())
-            router.route(HttpMethod.GET, "/api/processor/:processorName")
-                .blockingHandler(processorHandlers.getConfig())
-            router.route(HttpMethod.POST, "/api/processor")
-                .blockingHandler(processorHandlers.create())
-            router.route(HttpMethod.PUT, "/api/processor/:processorName")
-                .blockingHandler(processorHandlers.update())
-            router.route(HttpMethod.DELETE, "/api/processor/:processorName")
-                .blockingHandler(processorHandlers.delete())
-            router.route(HttpMethod.GET, "/api/processor/:processorName/reload")
-                .blockingHandler(processorHandlers.reload())
-            router.route(HttpMethod.GET, "/api/processor/:processorName/dry-run")
-                .blockingHandler(processorHandlers.dryRun())
-            router.route(HttpMethod.POST, "/api/processor/:processorName/dry-run")
-                .blockingHandler(processorHandlers.dryRun())
-            router.route(HttpMethod.GET, "/api/processor/:processorName/trigger")
-                .blockingHandler(processorHandlers.trigger())
-            router.route(HttpMethod.GET, "/api/processor/:processorName/rename")
-                .blockingHandler(processorHandlers.rename())
-            router.route(HttpMethod.GET, "/api/processor/:processorName/state")
-                .blockingHandler(processorHandlers.getState())
-
-            val processingContentHandlers = ProcessingContentHandlers(
-                context.processingContentService
-            )
-            router.route(HttpMethod.GET, "/api/processing-content/:id")
-                .blockingHandler(processingContentHandlers.getProcessingContent())
-            router.route(HttpMethod.GET, "/api/processing-content")
-                .blockingHandler(processingContentHandlers.queryContents())
-            router.route(HttpMethod.PUT, "/api/processing-content/:id")
-                .blockingHandler(processingContentHandlers.modifyProcessingContent())
-            router.route(HttpMethod.DELETE, "/api/processing-content/:id")
-                .blockingHandler(processingContentHandlers.deleteProcessingContent())
-            router.route(HttpMethod.POST, "/api/processing-content/:id/reprocess")
-                .blockingHandler(processingContentHandlers.reprocess())
-
-            val targetPathHandlers = TargetPathHandlers(context.processingStorage)
-            router.route(HttpMethod.DELETE, "/api/target-path")
-                .blockingHandler(targetPathHandlers.deleteTargetPaths())
-            router.route("/metrics")
-                .handler(PrometheusScrapingHandler.create())
-
-            // 优先级最低路由ui页面
-            router.route("/*")
-                .handler(StaticHandler.create("static"))
-                .handler {
-                    it.reroute("/")
-                }
+            val dataSource = HikariDataSource(applicationConfig.datasource)
+            Database.connect(dataSource)
         }
 
         private fun createCoreApplication(
             args: Array<String>,
             applicationConfig: ApplicationConfig,
+            stopWatch: StopWatch,
+            vertx: Vertx
         ): ApplicationContext {
+            stopWatch.start("core.application.base")
             val dataLocation = applicationConfig.sourceDownloader.dataLocation
             val configPath = dataLocation.resolve("config.yaml")
             val configOperator = YamlConfigOperator(configPath)
@@ -173,7 +144,7 @@ class SourceDownloaderVertxApplication {
             val processorManager: ProcessorManager =
                 DefaultProcessorManager(processingStorage, componentManager, container)
 
-            val webhookRouter = Router.router(Vertx.vertx())
+            val webhookRouter = Router.router(vertx)
             val application = CoreApplication(
                 props,
                 DefaultInstanceManager(configOperator),
@@ -185,9 +156,14 @@ class SourceDownloaderVertxApplication {
                     WebhookTriggerSupplier(VertxWebhookAdapter(webhookRouter))
                 )
             )
-
             val storage = ExposedProcessingStorage()
+
+            configOperator.init()
+            stopWatch.stop()
+
+            stopWatch.start("core.application.start")
             application.start()
+            stopWatch.stop()
             return ApplicationContext(
                 instanceManager,
                 componentManager,
@@ -210,6 +186,12 @@ fun createRouteHandler(block: (ctx: RoutingContext) -> Any): Handler<RoutingCont
     Handler<RoutingContext> { ctx ->
         block.invoke(ctx)
     }
+
+fun createRouteCoHandler(block: suspend (ctx: RoutingContext) -> Unit): suspend (RoutingContext) -> Unit {
+    return { context: RoutingContext ->
+        block.invoke(context)
+    }
+}
 
 class VertxWebhookAdapter(
     private val router: Router

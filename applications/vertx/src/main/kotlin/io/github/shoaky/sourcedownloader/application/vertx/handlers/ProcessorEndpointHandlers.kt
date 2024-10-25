@@ -1,16 +1,20 @@
 package io.github.shoaky.sourcedownloader.application.vertx.handlers
 
+import io.github.shoaky.sourcedownloader.application.vertx.createRouteCoHandler
 import io.github.shoaky.sourcedownloader.application.vertx.createRouteHandler
 import io.github.shoaky.sourcedownloader.core.ProcessorConfig
 import io.github.shoaky.sourcedownloader.core.processor.DryRunOptions
+import io.github.shoaky.sourcedownloader.core.processor.log
 import io.github.shoaky.sourcedownloader.service.PageRequest
 import io.github.shoaky.sourcedownloader.service.ProcessorService
 import io.vertx.core.Handler
 import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.RoutingContext
-import io.vertx.kotlin.coroutines.CoroutineVerticle
-import io.vertx.kotlin.coroutines.coroutineRouter
+import kotlinx.coroutines.cancelChildren
+import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.flow.onStart
+import kotlin.coroutines.coroutineContext
 
 class ProcessorEndpointHandlers(
     private val processorService: ProcessorService
@@ -88,22 +92,40 @@ class ProcessorEndpointHandlers(
         }
     }
 
-    fun dryRunStream(): Handler<RoutingContext> {
-        return createRouteHandler { ctx ->
+    fun dryRunStream(): suspend (RoutingContext) -> Unit {
+        return createRouteCoHandler { ctx ->
             val processorName = ctx.pathParam("processorName")
             val options = if (ctx.body().isEmpty) {
                 DryRunOptions()
             } else {
                 ctx.body().asJsonObject().mapTo(DryRunOptions::class.java)
             }
+            val coContext = coroutineContext
+            val response = ctx.response()
+                .closeHandler {
+                    log.debug("Close dry run stream {}", processorName)
+                    coContext.cancelChildren()
+                }
+
             val streamData = processorService.dryRunStream(processorName, options)
-            // 假设你有流式处理响应的逻辑
-            ctx.response().setChunked(true)
-            // streamData.collect { item ->
-            //     ctx.response().write(JsonObject.mapFrom(item).toBuffer())
-            // }.onComplete {
-            //     ctx.response().end()
-            // }
+            response.headers()
+                .add("Content-Type", "application/x-ndjson")
+                .add("Cache-Control", "no-cache")
+                .add("Connection", "keep-alive")
+                .add("Keep-Alive", "timeout=5, max=1000")
+            response
+                .setChunked(true)
+
+            streamData
+                .onStart {
+                    log.debug("Start dry run stream with: {}", processorName)
+                }
+                .onCompletion {
+                    response.end()
+                }
+                .collect { item ->
+                    ctx.response().write(JsonObject.mapFrom(item).toBuffer().appendString("\n"))
+                }
         }
     }
 
@@ -165,18 +187,5 @@ class ProcessorEndpointHandlers(
             processorService.disableProcessor(processorName)
             ctx.response().setStatusCode(204).end()
         }
-    }
-}
-
-class HttpServerVerticle : CoroutineVerticle() {
-
-    override suspend fun start() {
-        coroutineRouter {
-            this.coroutineContext
-        }
-    }
-
-    override suspend fun stop() {
-        // ...
     }
 }

@@ -44,7 +44,3 @@ class SourceDownloaderSpringApplication(
 
     }
 }
-
-fun main(args: Array<String>) {
-    SpringApplication.run(SourceDownloaderSpringApplication::class.java, *args)
-}

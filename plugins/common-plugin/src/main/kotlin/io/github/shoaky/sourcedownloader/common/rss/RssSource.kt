@@ -7,8 +7,8 @@ import io.github.shoaky.sourcedownloader.external.rss.RssExtReader
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.AlwaysLatestSource
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentException
+import io.github.shoaky.sourcedownloader.sdk.util.http.httpClient
 import java.net.URI
-import java.net.http.HttpClient
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -86,7 +86,7 @@ private val dateTimePatterns = listOf(
     DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss Z", Locale.ENGLISH),
 )
 
-internal val defaultRssReader: RssReader = RssReader(HttpClient.newHttpClient())
+internal val defaultRssReader: RssReader = RssReader(httpClient)
 
 fun parseTime(pubDateText: String): LocalDateTime {
 

@@ -11,7 +11,9 @@ import org.slf4j.LoggerFactory
 import java.nio.file.Path
 import java.time.Duration
 import kotlin.io.path.Path
+import kotlin.io.path.createDirectories
 import kotlin.io.path.inputStream
+import kotlin.io.path.notExists
 
 class YamlConfigOperator(
     private val configPath: Path = Path("config.yaml")
@@ -19,6 +21,17 @@ class YamlConfigOperator(
 
     init {
         log.info("Config path: {}", configPath.toAbsolutePath())
+    }
+
+    fun init() {
+        if (configPath.parent != null && configPath.parent.notExists()) {
+            configPath.parent.createDirectories()
+        }
+        if (configPath.notExists()) {
+            log.info("Config file not found, create a new one")
+            val config = AllDeclaredConfig()
+            yamlMapper.writeValue(configPath.toFile(), config)
+        }
     }
 
     private val cache = CacheBuilder.newBuilder().expireAfterWrite(Duration.ofSeconds(5))

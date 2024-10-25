@@ -29,11 +29,11 @@ class ProcessingContentHandlers(
         return createRouteHandler { ctx ->
             val limit = ctx.request().getParam("limit", "20").toIntOrNull() ?: 20
             val maxId = ctx.request().getParam("limit", "0").toLongOrNull() ?: 0L
-            val processorName = ctx.request().params().getAll("processorName")
+            val processorName = ctx.request().params().getAll("processorName").takeIf { it.isNotEmpty() }
             val status = ctx.request().params().getAll("status").map {
                 ProcessingContent.Status.valueOf(it.uppercase())
-            }
-            val id = ctx.request().params().getAll("id").map { it.toLong() }
+            }.takeIf { it.isNotEmpty() }
+            val id = ctx.request().params().getAll("id").map { it.toLong() }.takeIf { it.isNotEmpty() }
             val itemHash = ctx.request().getParam("itemHash")
             val createTimeBegin = ctx.request().getParam("createTime.begin")
             val createTimeEnd = ctx.request().getParam("createTime.end")
@@ -41,7 +41,7 @@ class ProcessingContentHandlers(
             // val itemAttrs = ctx.request().getParam("item.attrs")
             // val itemVariables = ctx.request().getParam("item.variables")
             val itemContentType = ctx.request().getParam("item.contentType")
-            val itemTags = ctx.request().params().getAll("item.tags")
+            val itemTags = ctx.request().params().getAll("item.tags").takeIf { it.isNotEmpty() }
 
             val content = service.queryContents(
                 ProcessingQuery(
@@ -57,7 +57,7 @@ class ProcessingContentHandlers(
                         title = itemTitle,
                         contentType = itemContentType,
                         tags = itemTags
-                    )
+                    ).takeIf { it.title != null || it.contentType != null || it.tags != null }
                 ), limit, maxId
             )
             ctx.response().end(JsonObject.mapFrom(content).toBuffer())

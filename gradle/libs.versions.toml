@@ -40,6 +40,9 @@ flyway = "10.20.0"
 spring-retry = "2.0.10"
 cron-utils = "9.2.1"
 kotlin-retry = "2.0.1"
+jib-layer-filter = "0.3.0"
+jib = "3.4.4"
+jib-spring-boot = "0.1.0"
 
 [libraries]
 spring-boot-dependencies = { module = "org.springframework.boot:spring-boot-dependencies", version.ref = "spring-boot" }
@@ -117,6 +120,8 @@ fuzzywuzzy = { module = "me.xdrop:fuzzywuzzy", version.ref = "fuzzywuzzy" }
 jsonschema-generator = { module = "com.github.victools:jsonschema-generator", version.ref = "jsonschema" }
 cron-utils = { module = "com.cronutils:cron-utils", version.ref = "cron-utils" }
 kotlin-retry = { module = "com.michael-bull.kotlin-retry:kotlin-retry", version.ref = "kotlin-retry" }
+jib-layer-filter = { module = "com.google.cloud.tools:jib-layer-filter-extension-gradle", version.ref = "jib-layer-filter" }
+jib-spring-boot = { module = "com.google.cloud.tools:jib-spring-boot-extension-gradle", version.ref = "jib-spring-boot" }
 
 [bundles]
 cel = ["cel-tools", "cel-jackson"]
@@ -131,3 +136,4 @@ graalvm = { id = "org.graalvm.buildtools.native", version.ref = "graalvm-plugin"
 axion-release = { id = "pl.allegro.tech.build.axion-release", version.ref = "axion-release" }
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
 gradle-git-properties = { id = "com.gorylenko.gradle-git-properties", version.ref = "gradle-git-properties" }
+jib = { id = "com.google.cloud.tools.jib", version.ref = "jib" }

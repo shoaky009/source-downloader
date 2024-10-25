@@ -1,9 +1,17 @@
 import org.springframework.boot.gradle.tasks.aot.ProcessAot
 import org.springframework.boot.gradle.tasks.aot.ProcessTestAot
 
+buildscript {
+    dependencies {
+        classpath(libs.jib.spring.boot)
+    }
+}
+
 plugins {
     alias(libs.plugins.kotlin.spring)
     alias(libs.plugins.graalvm)
+    alias(libs.plugins.spring.boot)
+    alias(libs.plugins.jib)
 }
 
 group = "io.github.shoaky"
@@ -74,6 +82,37 @@ tasks.withType<ProcessTestAot> {
 springBoot {
     buildInfo()
 }
+
+jib {
+    from {
+        image = "azul/zulu-openjdk-alpine:21-jre"
+        platforms {
+            platform {
+                os = "linux"
+                architecture = "amd64"
+            }
+            platform {
+                os = "linux"
+                architecture = "arm64"
+            }
+        }
+    }
+    container {
+        creationTime = "USE_CURRENT_TIMESTAMP"
+        environment = mapOf(
+            "TZ" to "Asia/Shanghai",
+            "SOURCE_DOWNLOADER_DATA_LOCATION" to "/app/data/",
+            "SOURCE_DOWNLOADER_PLUGIN_LOCATION" to "/app/plugins/",
+            "JDK_JAVA_OPTIONS" to ""
+        )
+        appRoot = "/app"
+        workingDirectory = "/app"
+        ports = listOf("8080")
+        volumes = listOf("/tmp")
+        extraClasspath = listOf("/app/libs/*", "/app/plugins/*", "/app/plugins/lib/*")
+    }
+}
+
 //
 // graalvmNative {
 //     agent {

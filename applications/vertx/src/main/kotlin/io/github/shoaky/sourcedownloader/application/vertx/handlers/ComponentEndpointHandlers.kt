@@ -1,6 +1,9 @@
 package io.github.shoaky.sourcedownloader.application.vertx.handlers
 
+import io.github.shoaky.sourcedownloader.application.vertx.createRouteCoHandler
 import io.github.shoaky.sourcedownloader.application.vertx.createRouteHandler
+import io.github.shoaky.sourcedownloader.application.vertx.dataToJsonString
+import io.github.shoaky.sourcedownloader.core.processor.log
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentTopType
 import io.github.shoaky.sourcedownloader.service.ComponentCreateBody
 import io.github.shoaky.sourcedownloader.service.ComponentService
@@ -8,6 +11,9 @@ import io.vertx.core.Handler
 import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.RoutingContext
+import kotlinx.coroutines.cancelChildren
+import kotlinx.coroutines.flow.onStart
+import kotlin.coroutines.coroutineContext
 
 class ComponentEndpointHandlers(
     private val componentService: ComponentService
@@ -44,8 +50,6 @@ class ComponentEndpointHandlers(
             }
             val typeName = ctx.pathParams().getValue("typeName")
             val name: String = ctx.pathParams().getValue("name")
-            val pathParams = ctx.pathParams()
-            println(pathParams)
             componentService.deleteComponent(type, typeName, name)
             ctx.response().statusCode = 204
             ctx.response().end()
@@ -65,14 +69,35 @@ class ComponentEndpointHandlers(
         }
     }
 
-    // @GetMapping("/state-stream")
-    // suspend fun stateDetailStream(
-    //     @RequestParam id: MutableSet<String>,
-    // ): Flow<ServerSentEvent<Any>> {
-    //     return componentService.stateDetailStream(id).map {
-    //         ServerSentEvent.builder(it.data).event(it.event).id(it.id).build()
-    //     }
-    // }
+    fun stateDetailStream(): suspend (RoutingContext) -> Unit {
+        return createRouteCoHandler { ctx ->
+            val coroutineContext = coroutineContext
+            val id = ctx.request().params().getAll("id").toSet()
+            val response = ctx.response()
+                .closeHandler {
+                    log.debug("Close state stream id:{}", id)
+                    coroutineContext.cancelChildren()
+                }
+
+            response.headers()
+                .add("Content-Type", "text/event-stream")
+                .add("Cache-Control", "no-cache")
+                .add("Connection", "keep-alive")
+            response.setStatusCode(200)
+                .setChunked(true)
+                .write("")
+
+            componentService.stateDetailStream(id)
+                .onStart {
+                    log.debug("Start state stream with id: {}", id)
+                }
+                .collect {
+                    val data = dataToJsonString(it)
+                    response.write("id:${it.id}\nevent:${it.event}\ndata:$data\n\n")
+                }
+        }
+
+    }
 
     fun getTypes(): Handler<RoutingContext> {
         return createRouteHandler { ctx ->
