@@ -31,7 +31,7 @@ class ProcessingContentHandlers(
             val maxId = ctx.request().getParam("limit", "0").toLongOrNull() ?: 0L
             val processorName = ctx.request().params().getAll("processorName")
             val status = ctx.request().params().getAll("status").map {
-                ProcessingContent.Status.valueOf(it)
+                ProcessingContent.Status.valueOf(it.uppercase())
             }
             val id = ctx.request().params().getAll("id").map { it.toLong() }
             val itemHash = ctx.request().getParam("itemHash")

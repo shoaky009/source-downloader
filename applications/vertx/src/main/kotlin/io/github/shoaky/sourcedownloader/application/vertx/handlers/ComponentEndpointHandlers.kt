@@ -16,7 +16,7 @@ class ComponentEndpointHandlers(
     fun queryComponents(): Handler<RoutingContext> {
         return createRouteHandler { ctx ->
             val request = ctx.request()
-            val type = request.getParam("type")?.let { ComponentTopType.valueOf(it) }
+            val type = request.getParam("type")?.let { ComponentTopType.valueOf(it.uppercase()) }
             val typeName = request.getParam("typeName")
             val name = request.getParam("name")
             val data = componentService.queryComponents(type, typeName, name)
@@ -40,7 +40,7 @@ class ComponentEndpointHandlers(
     fun deleteComponent(): Handler<RoutingContext> {
         return createRouteHandler { ctx ->
             val type: ComponentTopType = ctx.pathParams().getValue("type").let {
-                ComponentTopType.valueOf(it)
+                ComponentTopType.valueOf(it.uppercase())
             }
             val typeName = ctx.pathParams().getValue("typeName")
             val name: String = ctx.pathParams().getValue("name")
@@ -55,7 +55,7 @@ class ComponentEndpointHandlers(
     fun reload(): Handler<RoutingContext> {
         return createRouteHandler { ctx ->
             val type: ComponentTopType = ctx.pathParams().getValue("type").let {
-                ComponentTopType.valueOf(it)
+                ComponentTopType.valueOf(it.uppercase())
             }
             val typeName = ctx.pathParams().getValue("typeName")
             val name: String = ctx.pathParams().getValue("name")
@@ -76,7 +76,7 @@ class ComponentEndpointHandlers(
 
     fun getTypes(): Handler<RoutingContext> {
         return createRouteHandler { ctx ->
-            val type = ctx.request().getParam("type")?.let { ComponentTopType.valueOf(it) }
+            val type = ctx.request().getParam("type")?.let { ComponentTopType.valueOf(it.uppercase()) }
             componentService.getTypes(type)
             ctx.response().end()
         }
@@ -84,7 +84,7 @@ class ComponentEndpointHandlers(
 
     fun getSchema(): Handler<RoutingContext> {
         return createRouteHandler { ctx ->
-            val type = ctx.request().getParam("type").let { ComponentTopType.valueOf(it) }
+            val type = ctx.request().getParam("type").let { ComponentTopType.valueOf(it.uppercase()) }
             val typeName = ctx.request().getParam("typeName")
             val data = componentService.getSchema(type, typeName)
             ctx.response().end(
