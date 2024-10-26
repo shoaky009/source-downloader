@@ -20,11 +20,15 @@ class ExpressionItemFilter(
     expressionFactory: CompiledExpressionFactory = CelCompiledExpressionFactory
 ) : SourceItemFilter {
 
-    private val exclusionScripts: List<CompiledExpression<Boolean>> = exclusions.map {
-        expressionFactory.create(it, Boolean::class.java, sourceItemDefs())
+    private val exclusionScripts: List<CompiledExpression<Boolean>> by lazy {
+        exclusions.map {
+            expressionFactory.create(it, Boolean::class.java, sourceItemDefs())
+        }
     }
-    private val inclusionScripts: List<CompiledExpression<Boolean>> = inclusions.map {
-        expressionFactory.create(it, Boolean::class.java, sourceItemDefs())
+    private val inclusionScripts: List<CompiledExpression<Boolean>> by lazy {
+        inclusions.map {
+            expressionFactory.create(it, Boolean::class.java, sourceItemDefs())
+        }
     }
 
     override fun test(item: SourceItem): Boolean {
