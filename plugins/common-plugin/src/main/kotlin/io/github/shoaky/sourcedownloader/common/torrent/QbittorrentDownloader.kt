@@ -28,6 +28,10 @@ class QbittorrentDownloader(
     private val alwaysDownloadAll: Boolean = false
 ) : TorrentDownloader {
 
+    private val defaultDownloadPath: Path by lazy {
+        loadDefaultDownloadPath()
+    }
+
     override fun submit(task: DownloadTask): Boolean {
         val tags = task.options.tags
             .joinToString(",")
@@ -111,6 +115,10 @@ class QbittorrentDownloader(
     }
 
     override fun defaultDownloadPath(): Path {
+        return defaultDownloadPath
+    }
+
+    private fun loadDefaultDownloadPath(): Path {
         val response = client.execute(AppGetDefaultSavePathRequest())
         if (response.statusCode() != StatusCodes.OK) {
             throw ComponentException.processing("获取默认下载路径失败,code:${response.statusCode()} body:${response.body()}")
@@ -150,7 +158,7 @@ class QbittorrentDownloader(
     }
 
     override fun move(itemContent: ItemContent): Boolean {
-        var torrentHash = getInfoHash(itemContent.sourceItem)
+        val torrentHash = getInfoHash(itemContent.sourceItem)
         val sourceFiles = itemContent.fileContents
 
         val firstFile = sourceFiles.first()

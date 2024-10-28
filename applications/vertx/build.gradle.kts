@@ -18,7 +18,6 @@ dependencies {
     api(platform(libs.vertx.stack.depchain))
     implementation(libs.vertx.web)
     implementation(libs.vertx.micrometer.metrics)
-    // implementation(libs.vertx.config.yaml)
     implementation(libs.vertx.kotlin.coroutines)
     implementation(libs.vertx.kotlin)
     implementation(libs.hikaricp)
