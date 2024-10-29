@@ -50,8 +50,9 @@ class SendHttpRequest(
     }
 
     private fun buildUri(vars: Map<String, String>): URI {
-        val (base, queryString) = config.url.split("?", limit = 2)
-        val keyValues = queryString.split("&")
+        val split = config.url.split("?", limit = 2)
+        val base = split[0]
+        val keyValues = split.getOrNull(1)?.split("&") ?: emptyList()
         var url = base
         keyValues.forEachIndexed { index, keyValue ->
             val pair = keyValue.split("=")
