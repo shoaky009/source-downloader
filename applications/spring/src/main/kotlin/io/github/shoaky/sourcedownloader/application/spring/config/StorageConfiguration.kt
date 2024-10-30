@@ -16,9 +16,9 @@ class StorageConfiguration(
     private val props: SourceDownloaderProperties
 ) {
 
-    @Bean
+    @Bean(initMethod = "init")
     @ConditionalOnMissingBean(ConfigOperator::class)
-    fun yamlConfigStorage(): ConfigOperator {
+    fun yamlConfigStorage(): YamlConfigOperator {
         val dataLocation = props.dataLocation
         val configPath = dataLocation.resolve("config.yaml")
         if (configPath.exists()) {

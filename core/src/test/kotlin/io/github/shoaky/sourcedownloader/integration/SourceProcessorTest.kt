@@ -379,7 +379,8 @@ class SourceProcessorTest {
         private val downloadPath = testResourcePath.resolve("downloads")
         private val dataLocation = testResourcePath
         private val configPath = dataLocation.resolve("config.yaml")
-        private val configOperator = RestorableConfigOperator(configPath, YamlConfigOperator(configPath))
+        private val configOperator =
+            RestorableConfigOperator(configPath, YamlConfigOperator(configPath).also { it.init() })
 
         @JvmStatic
         @AfterAll

@@ -19,11 +19,8 @@ class YamlConfigOperator(
     private val configPath: Path = Path("config.yaml")
 ) : ConfigOperator {
 
-    init {
-        log.info("Config path: {}", configPath.toAbsolutePath())
-    }
-
     fun init() {
+        log.info("Config path: {}", configPath.toAbsolutePath())
         if (configPath.parent != null && configPath.parent.notExists()) {
             configPath.parent.createDirectories()
         }
