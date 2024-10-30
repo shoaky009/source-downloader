@@ -1,21 +1,17 @@
 package io.github.shoaky.sourcedownloader.core
 
-import com.fasterxml.jackson.annotation.JsonAlias
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer
 import io.github.shoaky.sourcedownloader.component.replacer.RegexVariableReplacer
 import io.github.shoaky.sourcedownloader.core.component.ComponentId
 import io.github.shoaky.sourcedownloader.core.component.ListenerConfig
 import io.github.shoaky.sourcedownloader.core.expression.ExpressionType
-import io.github.shoaky.sourcedownloader.core.file.CorePathPattern
 import io.github.shoaky.sourcedownloader.core.file.VariableErrorStrategy
 import io.github.shoaky.sourcedownloader.core.processor.VariableConflictStrategy
 import io.github.shoaky.sourcedownloader.core.processor.VariableProcessOutput
 import io.github.shoaky.sourcedownloader.sdk.DownloadOptions
-import io.github.shoaky.sourcedownloader.sdk.component.VariableReplacer
 import java.nio.file.Path
 import java.time.Duration
 
@@ -24,10 +20,8 @@ data class ProcessorConfig(
     val name: String,
     val triggers: List<ComponentId> = emptyList(),
     val source: ComponentId,
-    @JsonAlias("file-resolver")
     val itemFileResolver: ComponentId,
     val downloader: ComponentId,
-    @JsonAlias("mover")
     val fileMover: ComponentId = ComponentId("mover:general"),
     @JsonSerialize(using = ToStringSerializer::class)
     val savePath: Path,
@@ -39,14 +33,11 @@ data class ProcessorConfig(
 
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     data class Options(
-        // 文件
-        @JsonAlias("variable-providers")
-        val savePathPattern: String = CorePathPattern.origin.pattern,
-        val filenamePattern: String = CorePathPattern.origin.pattern,
+        val savePathPattern: String = "",
+        val filenamePattern: String = "",
         val fileTaggers: List<ComponentId> = emptyList(),
         val variableProviders: List<ComponentId> = emptyList(),
-        @JsonDeserialize(contentAs = RegexVariableReplacer::class)
-        val regexVariableReplacers: List<VariableReplacer> = emptyList(),
+        val regexVariableReplacers: List<RegexVariableReplacer> = emptyList(),
         val variableReplacers: List<VariableReplacerConfig> = emptyList(),
         val variableNameReplace: Map<String, String> = emptyMap(),
         val variableErrorStrategy: VariableErrorStrategy = VariableErrorStrategy.STAY,
@@ -58,11 +49,8 @@ data class ProcessorConfig(
         val supportWindowsPlatformPath: Boolean = true,
         val variableProcess: List<VariableProcessConfig> = emptyList(),
         // 过滤
-        @JsonAlias("item-filters")
-        val sourceItemFilters: List<ComponentId> = emptyList(),
-        @JsonAlias("file-filters")
-        val fileContentFilters: List<ComponentId> = emptyList(),
-        @JsonAlias("content-filters")
+        val itemFilters: List<ComponentId> = emptyList(),
+        val fileFilters: List<ComponentId> = emptyList(),
         val itemContentFilters: List<ComponentId> = emptyList(),
         val itemExpressionExclusions: List<String> = emptyList(),
         val itemExpressionInclusions: List<String> = emptyList(),
@@ -70,9 +58,6 @@ data class ProcessorConfig(
         val contentExpressionInclusions: List<String> = emptyList(),
         val fileExpressionExclusions: List<String> = emptyList(),
         val fileExpressionInclusions: List<String> = emptyList(),
-        // 处理
-        // 为了兼容
-        @JsonAlias("run-after-completion")
         val processListeners: List<ListenerConfig> = emptyList(),
         @JsonFormat(shape = JsonFormat.Shape.STRING)
         val renameTaskInterval: Duration = Duration.ofMinutes(5),
@@ -116,7 +101,7 @@ data class ProcessorConfig(
         val filenamePattern: String? = null,
         val savePathPattern: String? = null,
         val variableProviders: List<ComponentId>? = null,
-        val sourceItemFilters: List<ComponentId>? = null,
+        val itemFilters: List<ComponentId>? = null,
         val itemExpressionExclusions: List<String>? = null,
         val itemExpressionInclusions: List<String>? = null,
     )

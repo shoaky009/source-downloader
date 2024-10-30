@@ -53,12 +53,12 @@ class SourceDownloaderVertxApplication {
             val applicationConfig = ApplicationConfig()
             stopWatch.stop()
 
-            val vertx = vertx()
-            val context = createCoreApplication(args, applicationConfig, stopWatch, vertx)
-
             stopWatch.start("database")
             initDataSource(applicationConfig)
             stopWatch.stop()
+
+            val vertx = vertx()
+            val context = createCoreApplication(args, applicationConfig, stopWatch, vertx)
 
             setupObjectMapper()
             stopWatch.start("http.server")

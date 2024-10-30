@@ -214,7 +214,7 @@ class DefaultProcessorManager(
             )
         }
         sourceItemFilter.addAll(
-            config.options.sourceItemFilters.map {
+            config.options.itemFilters.map {
                 componentManager.getComponent(
                     ComponentTopType.SOURCE_ITEM_FILTER,
                     it,
@@ -254,7 +254,7 @@ class DefaultProcessorManager(
             )
         }
         fileContentFilters.addAll(
-            config.options.fileContentFilters.map {
+            config.options.fileFilters.map {
                 componentManager.getComponent(
                     ComponentTopType.FILE_CONTENT_FILTER,
                     it,
@@ -423,16 +423,10 @@ class DefaultProcessorManager(
             val matcher = if (fileOption.tags.isNotEmpty()) {
                 TagSourceFilePartition(fileOption.tags)
             } else if (fileOption.expressionMatching != null) {
-                val expression = expressionFactory.create(
-                    fileOption.expressionMatching,
-                    Boolean::class.java,
-                    sourceFileDefs()
-                )
-                ExpressionSourceFilePartition(expression)
+                ExpressionSourceFilePartition(fileOption.expressionMatching, expressionFactory)
             } else {
                 throw ComponentException.other("fileGrouping must have tags or expressionMatching")
             }
-
 
             fileGrouping[matcher] = FileOption(
                 fileOption.savePathPattern?.let { CorePathPattern(it, expressionFactory) },
@@ -464,7 +458,7 @@ class DefaultProcessorManager(
                     null
                 }
 
-            val sourceItemFilters = itemOption.sourceItemFilters?.map {
+            val sourceItemFilters = itemOption.itemFilters?.map {
                 componentManager.getComponent(
                     ComponentTopType.SOURCE_ITEM_FILTER,
                     it,
@@ -475,9 +469,7 @@ class DefaultProcessorManager(
             val matcher = if (itemOption.tags.isNotEmpty()) {
                 TagSourceItemPartition(itemOption.tags)
             } else if (itemOption.expressionMatching != null) {
-                val expression =
-                    expressionFactory.create(itemOption.expressionMatching, Boolean::class.java, sourceItemDefs())
-                ExpressionSourceItemPartition(expression)
+                ExpressionSourceItemPartition(itemOption.expressionMatching, expressionFactory)
             } else {
                 throw ComponentException.other("itemGrouping must have tags or expressionMatching")
             }

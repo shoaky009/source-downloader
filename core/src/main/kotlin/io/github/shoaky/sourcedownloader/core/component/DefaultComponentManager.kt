@@ -64,7 +64,10 @@ class DefaultComponentManager(
                 id.toString(),
             )
             val component = try {
-                supplier.apply(context, props)
+                val start = System.currentTimeMillis()
+                val res = supplier.apply(context, props)
+                log.debug("Component $targetInstanceName created in ${System.currentTimeMillis() - start}ms")
+                res
             } catch (e: ComponentException) {
                 throw ComponentException.other("Component $primaryTypeBeanName failed cause by ${e.message}")
             }

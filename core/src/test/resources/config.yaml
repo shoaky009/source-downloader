@@ -242,7 +242,7 @@ processors:
           matched-expression: null
           filename-pattern: "{sequence}"
           save-path-pattern: "{item.title}"
-          file-content-filters: [ ]
+          file-filters: [ ]
           file-expression-exclusions: [ ]
           file-expression-inclusions: [ ]
           file-replacement-decider: null

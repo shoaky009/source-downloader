@@ -9,14 +9,15 @@ import io.github.shoaky.sourcedownloader.sdk.InstanceFactory
 import io.github.shoaky.sourcedownloader.sdk.InstanceManager
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.component.*
+import java.net.URI
 
 class QbittorrentDownloaderSupplier(
     private val instanceManager: InstanceManager
 ) : ComponentSupplier<QbittorrentDownloader> {
 
     override fun apply(context: CoreContext, props: Properties): QbittorrentDownloader {
-        val parse = props.parse<QbittorrentConfig>()
-        val name = "qbittorrentClient:${parse.username}"
+        val username = props.get<String>("username")
+        val name = "qbittorrentClient:${username}"
         val client = instanceManager.loadInstance(name, QbittorrentClient::class.java, props)
         return QbittorrentDownloader(client, props.getOrDefault("always-download-all", false))
     }
@@ -68,9 +69,15 @@ class QbittorrentDownloaderSupplier(
 }
 
 object QbittorrentClientInstanceFactory : InstanceFactory<QbittorrentClient> {
+
     override fun create(props: Properties): QbittorrentClient {
-        val parse = props.parse<QbittorrentConfig>()
-        return QbittorrentClient(parse)
+        return QbittorrentClient(
+            QbittorrentConfig(
+                URI(props.get<String>("endpoint")),
+                props.getOrNull("username"),
+                props.getOrNull("password"),
+            )
+        )
     }
 
     override fun type(): Class<QbittorrentClient> {
