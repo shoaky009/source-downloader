@@ -27,6 +27,9 @@ spring:
   threads:
     virtual:
       enabled: true
+  output:
+    ansi:
+      enabled: always
 source-downloader:
   data-location: ${SOURCE_DOWNLOADER_DATA_LOCATION:./}
 
