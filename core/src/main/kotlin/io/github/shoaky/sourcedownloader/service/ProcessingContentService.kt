@@ -12,7 +12,7 @@ class ProcessingContentService(
 ) {
 
     fun getProcessingContent(id: Long): ProcessingContent {
-        return storage.findById(id)
+        return storage.findById(id) ?: throw NotFoundException("Record $id not found")
     }
 
     /**
@@ -41,7 +41,7 @@ class ProcessingContentService(
      * @return 修改后的ProcessingContent
      */
     fun modifyProcessingContent(id: Long, body: UpdateProcessingContent): ProcessingContent {
-        val current = storage.findById(id)
+        val current = storage.findById(id) ?: throw NotFoundException("Record $id not found")
         val update = current.copy(
             // 这个待定，有些字段不允许修改
             status = body.status ?: current.status,
@@ -63,7 +63,7 @@ class ProcessingContentService(
      * 重新处理ProcessingContent
      */
     suspend fun reprocess(id: Long) {
-        val content = storage.findById(id)
+        val content = storage.findById(id) ?: throw NotFoundException("Record $id not found")
         val processor = processorManager.getProcessor(content.processorName).get()
         processor.reprocess(content)
     }

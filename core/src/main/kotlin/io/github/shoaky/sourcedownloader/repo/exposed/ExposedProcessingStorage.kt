@@ -5,7 +5,6 @@ import io.github.shoaky.sourcedownloader.core.ProcessingStorage
 import io.github.shoaky.sourcedownloader.core.ProcessorSourceState
 import io.github.shoaky.sourcedownloader.core.processor.ProcessingTargetPath
 import io.github.shoaky.sourcedownloader.repo.ProcessingQuery
-import io.github.shoaky.sourcedownloader.service.NotFoundException
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
@@ -192,7 +191,7 @@ class ExposedProcessingStorage : ProcessingStorage {
         }
     }
 
-    override fun findById(id: Long): ProcessingContent {
+    override fun findById(id: Long): ProcessingContent? {
         return transaction {
             Processing.findById(id)?.let {
                 ProcessingContent(
@@ -206,9 +205,7 @@ class ExposedProcessingStorage : ProcessingStorage {
                     modifyTime = it.modifyTime,
                     createTime = it.createTime
                 )
-            } ?: throw NotFoundException(
-                "ProcessingContent with id $id not found"
-            )
+            }
         }
     }
 
