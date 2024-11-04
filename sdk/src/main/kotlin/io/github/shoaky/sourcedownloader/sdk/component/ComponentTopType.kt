@@ -21,15 +21,15 @@ enum class ComponentTopType(
     PROCESS_LISTENER(ProcessListener::class, listOf("process-listener", "listener", "run-after-completion")),
     SOURCE_ITEM_FILTER(
         SourceItemFilter::class,
-        listOf("source-item-filter", "item-filter", "sourceItemFilter", "itemFilter")
+        listOf("item-filter", "source-item-filter", "sourceItemFilter", "itemFilter")
     ),
     ITEM_CONTENT_FILTER(
         ItemContentFilter::class,
-        listOf("item-content-filter", "content-filter", "itemContentFilter", "contentFilter")
+        listOf("item-content-filter", "itemContentFilter")
     ),
     FILE_CONTENT_FILTER(
         FileContentFilter::class,
-        listOf("file-content-filter", "file-filter", "fileContentFilter", "fileFilter")
+        listOf("file-filter", "file-content-filter", "fileContentFilter", "fileFilter")
     ),
     TAGGER(FileTagger::class, listOf("file-tagger", "tagger")),
     FILE_REPLACEMENT_DECIDER(

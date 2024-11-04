@@ -67,9 +67,9 @@ class SourceProcessor(
     private val filenamePattern = options.filenamePattern
     private val savePathPattern = options.savePathPattern
     private var renameTaskFuture: ScheduledFuture<*>? = null
-    private val sourceItemFilters: List<SourceItemFilter> = options.sourceItemFilters
+    private val sourceItemFilters: List<SourceItemFilter> = options.itemFilters
     private val itemContentFilters: List<ItemContentFilter> = options.itemContentFilters
-    private val fileContentFilters: List<FileContentFilter> = options.fileContentFilters
+    private val fileContentFilters: List<FileContentFilter> = options.fileFilters
     private val variableProviders = options.variableProviders
     private val processListeners: Map<ListenerMode, List<ProcessListener>> = options.processListeners
     private val taggers: List<FileTagger> = options.fileTaggers
@@ -275,7 +275,7 @@ class SourceProcessor(
                 fileContent to fileOption
             }
         }.filter { (fileContent, fileOption) ->
-            val filters = fileOption?.fileContentFilters ?: fileContentFilters
+            val filters = fileOption?.fileFilters ?: fileContentFilters
             val filter = filters.all { it.test(fileContent) }
             if (filter.not()) {
                 log.trace("Filtered file:{}", fileContent.fileDownloadPath)
@@ -739,7 +739,7 @@ class SourceProcessor(
 
         private fun selectItemOptions(item: PointedItem<ItemPointer>): ItemSelectedOptions {
             val itemOption = options.matchItemOption(item.sourceItem)
-            val itemFilters = itemOption?.sourceItemFilters ?: this.selectItemFilters()
+            val itemFilters = itemOption?.itemFilters ?: this.selectItemFilters()
             val itemVariableProviders = itemOption?.variableProviders ?: options.variableProviders
             return ItemSelectedOptions(
                 itemFilters,

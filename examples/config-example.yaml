@@ -44,10 +44,10 @@ components:
         method: POST
         url: "http://truenas:5678/webhook/telegram-notify?message=番剧 {summary}下载完成"
   #SourceItem过滤器
-  source-item-filter:
+  item-filter:
   #省略...
   #SourceFile过滤器
-  source-file-filter:
+  file-filter:
   #省略..
 
 processors:
@@ -142,10 +142,10 @@ processors:
       #重命名后是否删除对应SourceItem的空目录,默认:true
       delete-empty-directory: true
       #SourceItem过滤器，使用组件引用的方式
-      source-item-filters:
+      item-filters:
         - "test"
       #FileContent过滤器，使用组件引用的方式
-      file-content-filters:
+      file-filters:
         - "anime"
       #替换变量提供者的变量名
       variable-name-replace:

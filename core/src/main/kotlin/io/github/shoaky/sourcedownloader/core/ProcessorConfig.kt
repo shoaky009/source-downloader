@@ -39,8 +39,6 @@ data class ProcessorConfig(
 
     @JsonInclude(JsonInclude.Include.NON_DEFAULT)
     data class Options(
-        // 文件
-        @JsonAlias("variable-providers")
         val savePathPattern: String = CorePathPattern.origin.pattern,
         val filenamePattern: String = CorePathPattern.origin.pattern,
         val fileTaggers: List<ComponentId> = emptyList(),
@@ -57,12 +55,8 @@ data class ProcessorConfig(
         val itemGrouping: List<ItemGroupingConfig> = emptyList(),
         val supportWindowsPlatformPath: Boolean = true,
         val variableProcess: List<VariableProcessConfig> = emptyList(),
-        // 过滤
-        @JsonAlias("item-filters")
-        val sourceItemFilters: List<ComponentId> = emptyList(),
-        @JsonAlias("file-filters")
-        val fileContentFilters: List<ComponentId> = emptyList(),
-        @JsonAlias("content-filters")
+        val itemFilters: List<ComponentId> = emptyList(),
+        val fileFilters: List<ComponentId> = emptyList(),
         val itemContentFilters: List<ComponentId> = emptyList(),
         val itemExpressionExclusions: List<String> = emptyList(),
         val itemExpressionInclusions: List<String> = emptyList(),
@@ -72,7 +66,6 @@ data class ProcessorConfig(
         val fileExpressionInclusions: List<String> = emptyList(),
         // 处理
         // 为了兼容
-        @JsonAlias("run-after-completion")
         val processListeners: List<ListenerConfig> = emptyList(),
         @JsonFormat(shape = JsonFormat.Shape.STRING)
         val renameTaskInterval: Duration = Duration.ofMinutes(5),
@@ -103,7 +96,7 @@ data class ProcessorConfig(
         val expressionMatching: String? = null,
         val filenamePattern: String? = null,
         val savePathPattern: String? = null,
-        val fileContentFilters: List<ComponentId>? = null,
+        val fileFilters: List<ComponentId>? = null,
         val fileExpressionExclusions: List<String>? = null,
         val fileExpressionInclusions: List<String>? = null,
         val fileReplacementDecider: ComponentId? = null,
@@ -116,7 +109,7 @@ data class ProcessorConfig(
         val filenamePattern: String? = null,
         val savePathPattern: String? = null,
         val variableProviders: List<ComponentId>? = null,
-        val sourceItemFilters: List<ComponentId>? = null,
+        val sourceFilters: List<ComponentId>? = null,
         val itemExpressionExclusions: List<String>? = null,
         val itemExpressionInclusions: List<String>? = null,
     )

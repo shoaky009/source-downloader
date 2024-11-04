@@ -214,7 +214,7 @@ class DefaultProcessorManager(
             )
         }
         sourceItemFilter.addAll(
-            config.options.sourceItemFilters.map {
+            config.options.itemFilters.map {
                 componentManager.getComponent(
                     ComponentTopType.SOURCE_ITEM_FILTER,
                     it,
@@ -254,7 +254,7 @@ class DefaultProcessorManager(
             )
         }
         fileContentFilters.addAll(
-            config.options.fileContentFilters.map {
+            config.options.fileFilters.map {
                 componentManager.getComponent(
                     ComponentTopType.FILE_CONTENT_FILTER,
                     it,
@@ -408,7 +408,7 @@ class DefaultProcessorManager(
                 addFlag = true
             }
 
-            val filters = fileOption.fileContentFilters?.map {
+            val filters = fileOption.fileFilters?.map {
                 componentManager.getComponent(
                     ComponentTopType.FILE_CONTENT_FILTER,
                     it,
@@ -464,7 +464,7 @@ class DefaultProcessorManager(
                     null
                 }
 
-            val sourceItemFilters = itemOption.sourceItemFilters?.map {
+            val sourceItemFilters = itemOption.sourceFilters?.map {
                 componentManager.getComponent(
                     ComponentTopType.SOURCE_ITEM_FILTER,
                     it,
