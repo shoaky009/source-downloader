@@ -1,6 +1,7 @@
 package io.github.shoaky.sourcedownloader.core.processor
 
 import io.github.shoaky.sourcedownloader.component.*
+import io.github.shoaky.sourcedownloader.component.replacer.RegexVariableReplacer
 import io.github.shoaky.sourcedownloader.component.replacer.WindowsPathReplacer
 import io.github.shoaky.sourcedownloader.core.*
 import io.github.shoaky.sourcedownloader.core.component.*
@@ -320,7 +321,10 @@ class DefaultProcessorManager(
         }
         val replacers = buildSet {
             this.addAll(cpReplacers)
-            this.addAll(options.regexVariableReplacers)
+            val regexReplacers = options.regexVariableReplacers.map {
+                RegexVariableReplacer(Regex(it.regex), it.replacement)
+            }
+            this.addAll(regexReplacers)
             if (options.supportWindowsPlatformPath) {
                 this.add(WindowsPathReplacer)
             }

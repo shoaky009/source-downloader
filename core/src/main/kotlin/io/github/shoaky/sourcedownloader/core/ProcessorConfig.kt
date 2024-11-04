@@ -3,10 +3,8 @@ package io.github.shoaky.sourcedownloader.core
 import com.fasterxml.jackson.annotation.JsonAlias
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer
-import io.github.shoaky.sourcedownloader.component.replacer.RegexVariableReplacer
 import io.github.shoaky.sourcedownloader.core.component.ComponentId
 import io.github.shoaky.sourcedownloader.core.component.ListenerConfig
 import io.github.shoaky.sourcedownloader.core.expression.ExpressionType
@@ -15,7 +13,6 @@ import io.github.shoaky.sourcedownloader.core.file.VariableErrorStrategy
 import io.github.shoaky.sourcedownloader.core.processor.VariableConflictStrategy
 import io.github.shoaky.sourcedownloader.core.processor.VariableProcessOutput
 import io.github.shoaky.sourcedownloader.sdk.DownloadOptions
-import io.github.shoaky.sourcedownloader.sdk.component.VariableReplacer
 import java.nio.file.Path
 import java.time.Duration
 
@@ -43,8 +40,7 @@ data class ProcessorConfig(
         val filenamePattern: String = CorePathPattern.origin.pattern,
         val fileTaggers: List<ComponentId> = emptyList(),
         val variableProviders: List<ComponentId> = emptyList(),
-        @JsonDeserialize(contentAs = RegexVariableReplacer::class)
-        val regexVariableReplacers: List<VariableReplacer> = emptyList(),
+        val regexVariableReplacers: List<RegexVariableReplacerConfig> = emptyList(),
         val variableReplacers: List<VariableReplacerConfig> = emptyList(),
         val variableNameReplace: Map<String, String> = emptyMap(),
         val variableErrorStrategy: VariableErrorStrategy = VariableErrorStrategy.STAY,
@@ -64,8 +60,6 @@ data class ProcessorConfig(
         val contentExpressionInclusions: List<String> = emptyList(),
         val fileExpressionExclusions: List<String> = emptyList(),
         val fileExpressionInclusions: List<String> = emptyList(),
-        // 处理
-        // 为了兼容
         val processListeners: List<ListenerConfig> = emptyList(),
         @JsonFormat(shape = JsonFormat.Shape.STRING)
         val renameTaskInterval: Duration = Duration.ofMinutes(5),
@@ -120,6 +114,11 @@ data class ProcessorConfig(
         val chain: List<ComponentId> = emptyList(),
         val output: VariableProcessOutput = VariableProcessOutput(),
         val conditionExpression: String? = null
+    )
+
+    data class RegexVariableReplacerConfig(
+        val regex: String,
+        val replacement: String
     )
 
 }
