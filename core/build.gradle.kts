@@ -1,5 +1,6 @@
 plugins {
     `java-library`
+    // 可以移除只是为了看打包成fat jar的大小
     alias(libs.plugins.spring.boot)
 }
 

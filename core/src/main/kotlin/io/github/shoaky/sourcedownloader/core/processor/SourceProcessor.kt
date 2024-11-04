@@ -559,7 +559,7 @@ class SourceProcessor(
         val ioExceptionPredicate = continueIf<Throwable> {
             val failure = it.failure
             val isContinue = failure is IOException
-            if (isContinue) {
+            if (isContinue && it.number > 0) {
                 log.warn(
                     "第{}次重试失败, {}, message:{}",
                     it.number,

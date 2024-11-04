@@ -188,8 +188,9 @@ class CoreApplication(
 
     companion object {
 
-        val log = LoggerFactory.getLogger("CoreApplication")
+        private val log = LoggerFactory.getLogger("CoreApplication")
 
+        // 预留给springboot的gradle插件, 后面可以去掉
         @JvmStatic
         fun main(args: Array<String>) {
 

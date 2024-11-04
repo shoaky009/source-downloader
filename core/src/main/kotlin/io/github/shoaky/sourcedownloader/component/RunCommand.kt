@@ -1,9 +1,9 @@
 package io.github.shoaky.sourcedownloader.component
 
-import io.github.shoaky.sourcedownloader.CoreApplication.Companion.log
 import io.github.shoaky.sourcedownloader.sdk.ItemContent
 import io.github.shoaky.sourcedownloader.sdk.ProcessContext
 import io.github.shoaky.sourcedownloader.sdk.component.ProcessListener
+import org.slf4j.LoggerFactory
 
 /**
  * 执行命令
@@ -41,6 +41,11 @@ class RunCommand(
 
     fun run(itemContent: ItemContent): Process {
         return process(itemContent)
+    }
+
+    companion object {
+
+        private val log = LoggerFactory.getLogger(RunCommand::class.java)
     }
 }
 

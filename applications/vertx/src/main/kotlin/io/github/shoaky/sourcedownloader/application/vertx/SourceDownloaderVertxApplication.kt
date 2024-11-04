@@ -156,7 +156,6 @@ class SourceDownloaderVertxApplication {
                     WebhookTriggerSupplier(VertxWebhookAdapter(webhookRouter))
                 )
             )
-            val storage = ExposedProcessingStorage()
 
             configOperator.init()
             stopWatch.stop()
@@ -173,9 +172,9 @@ class SourceDownloaderVertxApplication {
                 props,
                 ComponentService(componentManager, configOperator),
                 ProcessorService(processorManager, configOperator, processingStorage),
-                ProcessingContentService(storage, processorManager),
+                ProcessingContentService(processingStorage, processorManager),
                 application,
-                storage,
+                processingStorage,
                 webhookRouter
             )
         }
