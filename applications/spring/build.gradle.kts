@@ -21,9 +21,9 @@ dependencies {
     api(platform(libs.spring.boot.dependencies))
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.data:spring-data-commons")
-    implementation("org.springframework.boot:spring-boot-starter-actuator")
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
     implementation(libs.exposed.spring.boot.stater)
+    implementation(libs.spring.boot.admin.client)
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
     runtimeOnly(libs.kotlinx.coroutines.reactor)
 }
 
