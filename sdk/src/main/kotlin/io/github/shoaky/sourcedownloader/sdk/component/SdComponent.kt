@@ -82,7 +82,7 @@ interface Source<SP : SourcePointer> : SdComponent {
     fun headers(sourceItem: SourceItem): Map<String, String> = emptyMap()
 
     /**
-     * 当有限流控制需要分组处理
+     * 当有限流控制需要分组处理，在被触发时调用会根据该值进行串行化调用
      */
     fun group(): String? {
         return null

@@ -2,6 +2,7 @@ package io.github.shoaky.sourcedownloader.core
 
 import com.fasterxml.jackson.annotation.JsonAlias
 import com.fasterxml.jackson.annotation.JsonFormat
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer
@@ -79,10 +80,12 @@ data class ProcessorConfig(
         val channelBufferSize: Int = 20,
         // 下载
         val downloadOptions: DownloadOptions = DownloadOptions(),
-        val manualSources: List<ComponentId> = emptyList(),
-        // 其他
+    ) {
+
+        // 暂时不提供配置
+        @JsonIgnore
         val expression: ExpressionType = ExpressionType.CEL
-    )
+    }
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     data class FileGroupingConfig(
