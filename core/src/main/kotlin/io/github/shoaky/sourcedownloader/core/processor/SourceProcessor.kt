@@ -1,6 +1,7 @@
 package io.github.shoaky.sourcedownloader.core.processor
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.node.NullNode
 import com.github.michaelbull.retry.policy.*
 import com.github.michaelbull.retry.retry
 import io.github.shoaky.sourcedownloader.component.NeverReplace
@@ -1115,9 +1116,11 @@ class SourceProcessor(
                         val before = Jackson.convert<JsonNode>(lastP)
                         val current = Jackson.convert<JsonNode>(currP)
                         val difference = JsonComparator.findDifference(before, current)
-                        log.info("Processor:'{}' sourcePointer changed:{}", name, difference)
+                        if (difference !is NullNode) {
+                            log.info("Processor:'{}' source pointer changed:{}", name, difference)
+                        }
                     } catch (e: Exception) {
-                        log.warn("Processor:'{}' sourcePointer find diff error", name, e)
+                        log.warn("Processor:'{}' source pointer find diff error", name, e)
                     }
                 }
                 val save = processingStorage.save(currentSourceState)
