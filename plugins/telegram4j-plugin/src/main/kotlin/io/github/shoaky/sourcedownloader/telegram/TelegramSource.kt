@@ -55,7 +55,7 @@ class TelegramSource(
         val chatId = chatPointer.parseChatId()
         val link = URI("tg://privatepost?channel=$chatId&post=$messageId")
         val downloadUri = URI("tg://privatepost?channel=${chatPointer.chatId}&post=$messageId")
-        val messageDateTime = Instant.ofEpochSecond(message.date().toLong()).atZone(zoneId).toLocalDateTime()
+        val messageDateTime = Instant.ofEpochSecond(message.date().toLong()).atZone(zoneId)
         val media = message.media()
         val attrs = mutableMapOf(
             "messageId" to messageId,

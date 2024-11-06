@@ -1,8 +1,7 @@
 package io.github.shoaky.sourcedownloader.external.pixiv
 
-import com.fasterxml.jackson.annotation.JsonFormat
 import java.net.URI
-import java.time.LocalDateTime
+import java.time.ZonedDateTime
 
 data class PixivUser(
     val userId: Long,
@@ -21,8 +20,7 @@ data class Illustration(
     val url: URI,
     val restrict: Int,
     val xRestrict: Int,
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX", timezone = "Asia/Tokyo")
-    val createDate: LocalDateTime,
+    val createDate: ZonedDateTime,
     val bookmarkData: Bookmark? = null,
     val isMasked: Boolean = false
 )

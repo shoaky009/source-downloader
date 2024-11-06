@@ -12,6 +12,7 @@ import io.github.shoaky.sourcedownloader.sdk.util.queryMap
 import org.slf4j.LoggerFactory
 import java.net.URI
 import java.time.LocalDateTime
+import java.time.ZoneId
 
 /**
  * 通过Mikan的RSS源获取资源
@@ -44,7 +45,7 @@ class MikanSource(
         }
 
         val latestItems = sourceItems
-            .filter { it.datetime.isAfter(pointer.latest) }
+            .filter { it.datetime.isAfter(pointer.latest.atZone(MIKANANI_ZONE_ID)) }
             .sortedBy { it.datetime }
 
         // 解决新番更新和添加顺序不一致的问题
@@ -79,12 +80,12 @@ class MikanSource(
 
             val result = fansubItems
                 .map {
-                    PointedItem(it, FansubPointer(bangumiId, subGroupId, it.datetime))
+                    PointedItem(it, FansubPointer(bangumiId, subGroupId, it.datetime.toLocalDateTime()))
                 }
                 .filter {
                     val key = it.pointer.key()
                     val date = pointer.shows[key]
-                    date == null || it.sourceItem.datetime.isAfter(date)
+                    date == null || it.sourceItem.datetime.toLocalDateTime().isAfter(date)
                 }
             if (log.isDebugEnabled) {
                 log.debug("Fetch fansub items:{}", result)
@@ -96,6 +97,7 @@ class MikanSource(
     private companion object {
 
         private val log = LoggerFactory.getLogger(MikanSource::class.java)
+        private val MIKANANI_ZONE_ID = ZoneId.of("Asia/Shanghai")
 
         private fun fromRssItem(rssItem: Item): SourceItem {
             val enclosure = rssItem.enclosure.get()

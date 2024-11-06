@@ -10,6 +10,8 @@ import io.github.shoaky.sourcedownloader.sdk.component.ComponentException
 import io.github.shoaky.sourcedownloader.sdk.util.http.httpClient
 import java.net.URI
 import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.jvm.optionals.getOrDefault
@@ -21,7 +23,8 @@ class RssSource(
     private val url: String,
     private val tags: List<String> = emptyList(),
     private val attributes: Map<String, String> = emptyMap(),
-    private val dateFormat: DateTimeFormatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME
+    private val dateFormat: DateTimeFormatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME,
+    private val zoneId: ZoneId = ZoneId.systemDefault()
 ) : AlwaysLatestSource() {
 
     private val rssReader = RssExtReader()
@@ -43,6 +46,9 @@ class RssSource(
     override fun fetch(): Iterable<SourceItem> {
         return rssReader.read(url)
             .map { item ->
+                val datetime = item.pubDate.map {
+                    LocalDateTime.parse(it, dateFormat).atZone(zoneId)
+                }.getOrDefault(ZonedDateTime.now())
                 val enclosure = item.enclosure.getOrDefault(defaultEnclosure)
                 SourceItem(
                     item.title.orElseThrow {
@@ -51,9 +57,7 @@ class RssSource(
                     URI(item.link.orElseThrow {
                         ComponentException.processing("$url link is null")
                     }),
-                    item.pubDate.map {
-                        LocalDateTime.parse(it, dateFormat)
-                    }.getOrDefault(LocalDateTime.now()),
+                    datetime,
                     enclosure.type,
                     URI(
                         UrlEscapers.urlFragmentEscaper().escape(

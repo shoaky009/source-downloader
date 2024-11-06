@@ -180,7 +180,7 @@ class DefaultProcessorManager(
         componentManager.getAllTrigger().forEach {
             val removed = it.component.removeTask(safeTask)
             if (removed) {
-                log.info("Processor:'$processorName' removed from trigger:'${it::class.simpleName}'")
+                log.info("Processor:'$processorName' removed from trigger:${it.name}")
             }
         }
         processor.close()

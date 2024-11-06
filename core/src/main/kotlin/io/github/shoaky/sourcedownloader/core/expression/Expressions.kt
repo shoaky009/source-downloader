@@ -5,7 +5,7 @@ import io.github.shoaky.sourcedownloader.sdk.ItemContent
 import io.github.shoaky.sourcedownloader.sdk.SourceFile
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import java.time.Instant
-import java.time.ZoneOffset
+import java.time.ZonedDateTime
 import kotlin.io.path.extension
 import kotlin.io.path.name
 
@@ -71,7 +71,7 @@ data class SourceItemVariables(
 
     constructor(sourceItem: SourceItem) : this(
         sourceItem.title,
-        sourceItem.datetime.toInstant(ZoneOffset.UTC),
+        sourceItem.datetime.toInstant(),
         sourceItem.datetime.toLocalDate().toString(),
         sourceItem.datetime.year,
         sourceItem.datetime.month.value,
@@ -100,7 +100,7 @@ data class SourceFileVariables(
 
 data class ItemContentVariables(
     val title: String,
-    val datetime: Instant,
+    val datetime: ZonedDateTime,
     val date: String,
     val year: Int,
     val month: Int,
@@ -115,7 +115,7 @@ data class ItemContentVariables(
 
     constructor(itemContent: ItemContent) : this(
         itemContent.sourceItem.title,
-        itemContent.sourceItem.datetime.toInstant(ZoneOffset.UTC),
+        itemContent.sourceItem.datetime,
         itemContent.sourceItem.datetime.toLocalDate().toString(),
         itemContent.sourceItem.datetime.year,
         itemContent.sourceItem.datetime.month.value,

@@ -8,7 +8,7 @@ components:
           - item:
               title: "test1"
               link: "file://test1"
-              date: "2022-01-01T00:00:00"
+              datetime: "2022-01-01T00:00:00"
               contentType: "file"
               downloadUri: "file://test1"
             files:
@@ -16,7 +16,7 @@ components:
           - item:
               title: "test2"
               link: "file://test2"
-              date: "2022-01-01T00:00:00"
+              datetime: "2022-01-01T00:00:00"
               contentType: "file"
               downloadUri: "file://test2"
             files:
@@ -24,7 +24,7 @@ components:
           - item:
               title: "test-dir"
               link: "file://test-dir"
-              date: "2022-01-01T00:00:00"
+              datetime: "2022-01-01T00:00:00"
               contentType: "file"
               downloadUri: "file://test-dir"
             files:
@@ -37,7 +37,7 @@ components:
           - item:
               title: "error"
               link: "file://error"
-              date: "2022-01-01T00:00:00"
+              datetime: "2022-01-01T00:00:00"
               contentType: "file"
               downloadUri: "file://test1"
             files:

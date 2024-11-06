@@ -49,7 +49,7 @@ class PatreonIntegration(
             val sourceItem = SourceItem(
                 post.attributes.title,
                 post.attributes.url,
-                post.attributes.publishedAt.toLocalDateTime(),
+                post.attributes.publishedAt,
                 post.attributes.postType,
                 post.attributes.url,
                 buildMap {
