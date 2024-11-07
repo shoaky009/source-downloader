@@ -27,7 +27,7 @@ object EmbyImageTagger : FileTagger {
             return null
         }
 
-        val image = ImageIO.read(sourceFile.path.toFile())
+        val image = ImageIO.read(sourceFile.path.toFile()) ?: return null
         if (image.width >= image.height) {
             return "thumb"
         }
