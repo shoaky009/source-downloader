@@ -33,6 +33,7 @@ kotlin {
     jvmToolchain(21)
 }
 
+tasks.jib.get().dependsOn("setupContainerDirs")
 jib {
     from {
         image = "azul/zulu-openjdk-alpine:21-jre"
@@ -57,14 +58,14 @@ jib {
             "TZ" to "Asia/Shanghai",
             "SOURCE_DOWNLOADER_DATA_LOCATION" to "/app/data/",
             "SOURCE_DOWNLOADER_PLUGIN_LOCATION" to "/app/plugins/",
-            "JDK_JAVA_OPTIONS" to ""
         )
         appRoot = "/app"
         workingDirectory = "/app"
         ports = listOf("8080")
         volumes = listOf("/tmp")
-        extraClasspath = listOf("/app/libs/*", "/app/plugins/*", "/app/plugins/lib/*")
+        extraClasspath = listOf("/app/plugins/*", "/app/plugins/lib/*")
     }
+    extraDirectories.setPaths(layout.buildDirectory.dir("generated/container"))
 
     pluginExtensions {
         pluginExtension {

@@ -12,7 +12,14 @@ subprojects {
         implementation(project(":core"))
         resolveBuildInPlugins()
     }
-
+    tasks.create("setupContainerDirs", Copy::class) {
+        project.mkdir(
+            layout.buildDirectory.dir("generated/container/app/data")
+        )
+        project.mkdir(
+            layout.buildDirectory.dir("generated/container/app/plugins")
+        )
+    }
 }
 
 fun DependencyHandlerScope.resolveBuildInPlugins() {
