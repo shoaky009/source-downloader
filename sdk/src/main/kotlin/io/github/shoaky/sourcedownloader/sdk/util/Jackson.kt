@@ -36,7 +36,7 @@ object Jackson {
             .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
             .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
             .setSerializationInclusion(JsonInclude.Include.NON_NULL)
-            .addHandler(DefaultHandler)
+            .addHandler(AdaptabilityHandler)
     }
 
     fun <T : Any> fromJson(json: String, type: KClass<T>): T {
@@ -85,7 +85,7 @@ object Jackson {
 
 }
 
-private object DefaultHandler : DeserializationProblemHandler() {
+object AdaptabilityHandler : DeserializationProblemHandler() {
 
     private val ZONE_ID = ZoneId.systemDefault()
 

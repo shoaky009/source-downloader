@@ -1,6 +1,5 @@
 package io.github.shoaky.sourcedownloader.core
 
-import com.fasterxml.jackson.annotation.JsonAlias
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonInclude
@@ -22,10 +21,8 @@ data class ProcessorConfig(
     val name: String,
     val triggers: List<ComponentId> = emptyList(),
     val source: ComponentId,
-    @JsonAlias("file-resolver")
     val itemFileResolver: ComponentId,
     val downloader: ComponentId,
-    @JsonAlias("mover")
     val fileMover: ComponentId = ComponentId("mover:general"),
     @JsonSerialize(using = ToStringSerializer::class)
     val savePath: Path,

@@ -1,10 +1,8 @@
 package io.github.shoaky.sourcedownloader.application.vertx
 
-import com.fasterxml.jackson.databind.module.SimpleModule
-import com.fasterxml.jackson.databind.ser.std.ToStringSerializer
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer
-import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.zaxxer.hikari.HikariDataSource
 import io.github.shoaky.sourcedownloader.CoreApplication
@@ -23,6 +21,7 @@ import io.github.shoaky.sourcedownloader.core.processor.DefaultProcessorManager
 import io.github.shoaky.sourcedownloader.core.processor.ProcessorManager
 import io.github.shoaky.sourcedownloader.core.processor.log
 import io.github.shoaky.sourcedownloader.repo.exposed.ExposedProcessingStorage
+import io.github.shoaky.sourcedownloader.sdk.util.AdaptabilityHandler
 import io.github.shoaky.sourcedownloader.service.ComponentService
 import io.github.shoaky.sourcedownloader.service.ProcessingContentService
 import io.github.shoaky.sourcedownloader.service.ProcessorService
@@ -38,9 +37,6 @@ import io.vertx.kotlin.core.vertxOptionsOf
 import io.vertx.kotlin.micrometer.micrometerMetricsOptionsOf
 import io.vertx.kotlin.micrometer.vertxJmxMetricsOptionsOf
 import org.jetbrains.exposed.sql.Database
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
 class SourceDownloaderVertxApplication {
 
@@ -75,26 +71,12 @@ class SourceDownloaderVertxApplication {
         }
 
         private fun setupObjectMapper() {
-            val simpleModule = SimpleModule()
-                .addSerializer(
-                    ToStringSerializer(LocalDateTime::class.java)
-                )
-                .addSerializer(
-                    ToStringSerializer(LocalDate::class.java)
-                )
-                .addDeserializer(
-                    LocalDate::class.java,
-                    LocalDateDeserializer(DateTimeFormatter.BASIC_ISO_DATE)
-                )
-                .addDeserializer(
-                    LocalDateTime::class.java,
-                    LocalDateTimeDeserializer(DateTimeFormatter.BASIC_ISO_DATE)
-                )
-            LocalDateTime.now().toString()
             DatabindCodec.mapper()
                 .registerKotlinModule()
                 .registerModule(JavaTimeModule())
-                .registerModule(simpleModule)
+                .disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
+                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .addHandler(AdaptabilityHandler)
         }
 
         private fun vertx(): Vertx {
