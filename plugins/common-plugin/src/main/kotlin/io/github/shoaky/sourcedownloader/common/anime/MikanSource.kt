@@ -32,9 +32,10 @@ class MikanSource(
         if (cleanPointer) {
             pointer.cleanMonthly()
         }
+        val mikananiZoneId = ZoneId.of("Asia/Shanghai")
         val sourceItems = rssReader.read(url)
             .map {
-                fromRssItem(it)
+                fromRssItem(it, mikananiZoneId)
             }
             .toList()
 
@@ -44,8 +45,9 @@ class MikanSource(
             }.toList()
         }
 
+        val systemZoneId = ZoneId.systemDefault()
         val latestItems = sourceItems
-            .filter { it.datetime.isAfter(pointer.latest.atZone(MIKANANI_ZONE_ID)) }
+            .filter { it.datetime.isAfter(pointer.latest.atZone(systemZoneId)) }
             .sortedBy { it.datetime }
 
         // 解决新番更新和添加顺序不一致的问题
@@ -67,7 +69,7 @@ class MikanSource(
             val subGroupId = fansubQuery["subgroupid"] ?: error("subgroupid is null")
             var fansubItems = rssReader.read(fansubRss)
                 .map {
-                    fromRssItem(it)
+                    fromRssItem(it, mikananiZoneId)
                 }
                 .toList()
                 .sortedBy { it.datetime }
@@ -97,14 +99,13 @@ class MikanSource(
     private companion object {
 
         private val log = LoggerFactory.getLogger(MikanSource::class.java)
-        private val MIKANANI_ZONE_ID = ZoneId.of("Asia/Shanghai")
 
-        private fun fromRssItem(rssItem: Item): SourceItem {
+        private fun fromRssItem(rssItem: Item, zoneId: ZoneId): SourceItem {
             val enclosure = rssItem.enclosure.get()
             return SourceItem(
                 rssItem.title.get(),
                 URI(rssItem.link.get()),
-                parseTime(rssItem.pubDate.get()),
+                parseTime(rssItem.pubDate.get()).atZone(zoneId),
                 enclosure.type,
                 URI(enclosure.url)
             )
