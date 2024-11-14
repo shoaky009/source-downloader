@@ -590,13 +590,13 @@ class SourceProcessor(
         protected suspend fun processItems() {
             secondaryFileMover.releaseAll()
             val stat = context.stat
-            stat.stopWatch.start("fetchItems")
+            stat.stopWatch.start("fetch-items")
 
-            val itemIterable = retry(getRetryPolicy("FetchSourceItems")) {
+            val itemIterable = retry(getRetryPolicy("fetch-source-items")) {
                 source.fetch(sourcePointer, options.fetchLimit)
             }
             stat.stopWatch.stop()
-            stat.stopWatch.start("processItems")
+            stat.stopWatch.start("process-items")
 
             val semaphore = Semaphore(options.parallelism, true)
             // 处理Source的迭代器返回重复的Item
@@ -619,15 +619,15 @@ class SourceProcessor(
                     itemSet.add(sourceItem)
                     launch {
                         log.trace("Processor:'{}' start process item:{}", name, pointed)
-                        val itemOptions = selectItemOptions(pointed)
-                        val filtered = filterItem(itemOptions, pointed)
-                        if (filtered) {
-                            itemSet.remove(sourceItem)
-                            stat.incFilterCounting()
-                            semaphore.release()
-                            return@launch
-                        }
                         val processingContent = runCatching {
+                            val itemOptions = selectItemOptions(pointed)
+                            val filtered = filterItem(itemOptions, pointed)
+                            if (filtered) {
+                                itemSet.remove(sourceItem)
+                                stat.incFilterCounting()
+                                semaphore.release()
+                                return@launch
+                            }
                             val ct = processWithRetry(pointed, itemOptions)
                             context.touch(ct)
                             onItemSuccess(pointed, ct)
