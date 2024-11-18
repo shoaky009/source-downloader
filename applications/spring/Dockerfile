@@ -20,6 +20,7 @@ WORKDIR /app
 COPY --from=builder dependencies/BOOT-INF /app
 COPY --from=builder snapshot-dependencies/BOOT-INF /app
 COPY --from=builder source-downloader-plugins/BOOT-INF/lib /app/lib
+COPY --from=builder source-downloader-core/BOOT-INF /app
 COPY --from=builder application/BOOT-INF/classes /app
 COPY --from=builder application/META-INF /app/META-INF
 

@@ -47,6 +47,11 @@ tasks.bootJar {
             intoLayer("source-downloader-plugins") {
                 include("io.github.shoaky:*-plugin:*")
             }
+            intoLayer("source-downloader-core") {
+                include("io.github.shoaky:core:*")
+                include("io.github.shoaky:sdk:*")
+                include("io.github.shoaky:common:*")
+            }
             intoLayer("snapshot-dependencies") {
                 include("*:*:*SNAPSHOT")
             }
@@ -56,6 +61,7 @@ tasks.bootJar {
             "dependencies",
             "spring-boot-loader",
             "snapshot-dependencies",
+            "source-downloader-core",
             "source-downloader-plugins",
             "application"
         )
