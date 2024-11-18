@@ -179,26 +179,6 @@ class DefaultComponentManager(
         return config
     }
 
-    // 后面要调整
-    private val _componentDescriptions by lazy {
-        val descriptor = DescriptionLoader.load()
-        val descriptionMapping = descriptor.component.associateBy { it.id }
-        componentSuppliers.values.distinct()
-            .map { supplier ->
-                val name = supplier::class.java.name
-                val description = descriptionMapping[name] ?: ComponentDescription(name)
-                description.apply {
-                    this.rules = ruleDescriptors(supplier)
-                    this.types = componentTypeDescriptors(supplier)
-                }
-                description
-            }
-    }
-
-    override fun getComponentDescriptions(): List<ComponentDescription> {
-        return _componentDescriptions
-    }
-
     override fun destroy(type: ComponentType, name: String) {
         val instanceName = type.instanceName(name)
         if (objectContainer.contains(instanceName).not()) {
@@ -219,23 +199,6 @@ class DefaultComponentManager(
             }
         Events.unregister(wrapper)
     }
-
-    private fun componentTypeDescriptors(supplier: ComponentSupplier<*>) =
-        supplier.supplyTypes().map { type ->
-            ComponentTypeDescriptor(
-                type.type,
-                type.typeName
-            )
-        }
-
-    private fun ruleDescriptors(supplier: ComponentSupplier<*>) =
-        supplier.rules().map { rule ->
-            RuleDescriptor(
-                if (rule.isAllow) "允许" else "禁止",
-                rule.type.primaryName,
-                rule.value.jvmName
-            )
-        }
 
     override fun destroy() {
         val components = getAllComponent()

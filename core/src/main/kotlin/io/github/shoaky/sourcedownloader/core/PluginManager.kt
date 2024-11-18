@@ -50,8 +50,3 @@ class PluginManager(
         private val log = LoggerFactory.getLogger(PluginManager::class.java)
     }
 }
-
-interface PluginLoader {
-
-    fun loadPlugins(classLoader: ClassLoader? = null): List<Plugin>
-}

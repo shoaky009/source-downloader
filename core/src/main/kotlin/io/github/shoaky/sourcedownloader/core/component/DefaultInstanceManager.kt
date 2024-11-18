@@ -67,8 +67,3 @@ class DefaultInstanceManager(
         private val log = LoggerFactory.getLogger("InstanceManager")
     }
 }
-
-interface InstanceConfigStorage {
-
-    fun getInstanceProps(name: String): Properties
-}
