@@ -14,36 +14,3 @@ interface SourcePointer {
      */
     fun update(itemPointer: ItemPointer)
 }
-
-object NullPointer : SourcePointer, ItemPointer {
-
-    override fun toString(): String {
-        return "null"
-    }
-
-    override fun update(itemPointer: ItemPointer) {
-        // Do nothing
-    }
-
-    override fun equals(other: Any?): Boolean {
-        return other is NullPointer
-    }
-}
-
-/**
- * 用于标识[Source]中的一个Item
- */
-interface ItemPointer {
-
-    companion object {
-
-        fun of(id: String, value: Any): ItemPointer {
-            return SimpleItemPointer(id, value)
-        }
-    }
-}
-
-data class SimpleItemPointer<T>(
-    val id: String,
-    val value: T
-) : ItemPointer

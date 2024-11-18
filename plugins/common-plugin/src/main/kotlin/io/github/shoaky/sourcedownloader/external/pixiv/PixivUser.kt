@@ -1,7 +1,7 @@
 package io.github.shoaky.sourcedownloader.external.pixiv
 
 import java.net.URI
-import java.time.ZonedDateTime
+import java.time.OffsetDateTime
 
 data class PixivUser(
     val userId: Long,
@@ -20,7 +20,7 @@ data class Illustration(
     val url: URI,
     val restrict: Int,
     val xRestrict: Int,
-    val createDate: ZonedDateTime,
+    val createDate: OffsetDateTime,
     val bookmarkData: Bookmark? = null,
     val isMasked: Boolean = false
 )

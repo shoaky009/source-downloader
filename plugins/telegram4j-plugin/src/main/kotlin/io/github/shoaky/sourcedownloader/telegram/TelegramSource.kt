@@ -9,7 +9,6 @@ import telegram4j.tl.*
 import java.net.URI
 import java.time.Duration
 import java.time.Instant
-import java.time.ZoneId
 
 /**
  * 从头迭代Telegram给定的chatId的文件消息
@@ -55,7 +54,7 @@ class TelegramSource(
         val chatId = chatPointer.parseChatId()
         val link = URI("tg://privatepost?channel=$chatId&post=$messageId")
         val downloadUri = URI("tg://privatepost?channel=${chatPointer.chatId}&post=$messageId")
-        val messageDateTime = Instant.ofEpochSecond(message.date().toLong()).atZone(zoneId)
+        val messageDateTime = Instant.ofEpochSecond(message.date().toLong()).atOffset(SourceItem.DEFAULT_OFFSET)
         val media = message.media()
         val attrs = mutableMapOf(
             "messageId" to messageId,
@@ -135,7 +134,6 @@ class TelegramSource(
 
     companion object {
 
-        private val zoneId = ZoneId.systemDefault()
         private val timeout: Duration = Duration.ofSeconds(5L)
         const val MEDIA_TYPE_ATTR = "mediaType"
     }

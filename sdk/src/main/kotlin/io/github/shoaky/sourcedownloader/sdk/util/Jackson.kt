@@ -14,8 +14,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import java.io.InputStream
 import java.nio.file.Path
 import java.time.LocalDateTime
-import java.time.ZoneId
-import java.time.ZonedDateTime
+import java.time.OffsetDateTime
 import kotlin.reflect.KClass
 
 @Suppress("unused")
@@ -87,7 +86,7 @@ object Jackson {
 
 object AdaptabilityHandler : DeserializationProblemHandler() {
 
-    private val ZONE_ID = ZoneId.systemDefault()
+    private val ZONE_OFFSET = OffsetDateTime.now().offset
 
     override fun handleInstantiationProblem(
         ctxt: DeserializationContext, instClass: Class<*>, argument: Any, t: Throwable
@@ -104,11 +103,11 @@ object AdaptabilityHandler : DeserializationProblemHandler() {
         valueToConvert: String,
         failureMsg: String?
     ): Any {
-        if (targetType != ZonedDateTime::class.java) {
+        if (targetType != OffsetDateTime::class.java) {
             return super.handleWeirdStringValue(ctxt, targetType, valueToConvert, failureMsg)
         }
-        // SourceItem.datetime 为 ZonedDateTime 类型的兼容处理
-        return LocalDateTime.parse(valueToConvert).atZone(ZONE_ID)
+        // SourceItem.datetime 为 OffsetDateTime 类型的兼容处理
+        return LocalDateTime.parse(valueToConvert).atOffset(ZONE_OFFSET)
     }
 
     override fun handleUnexpectedToken(
@@ -118,19 +117,19 @@ object AdaptabilityHandler : DeserializationProblemHandler() {
         p: JsonParser,
         failureMsg: String?
     ): Any {
-        if (targetType != ZonedDateTime::class.java) {
+        if (targetType != OffsetDateTime::class.java) {
             return super.handleUnexpectedToken(ctxt, targetType, t, p, failureMsg)
         }
 
         if (t != JsonToken.START_ARRAY) {
             return super.handleUnexpectedToken(ctxt, targetType, t, p, failureMsg)
         }
-        // SourceItem.datetime 为 ZonedDateTime 类型的兼容处理
+        // SourceItem.datetime 为 OffsetDateTime 类型的兼容处理
         val numbers: MutableList<Int> = mutableListOf()
         while (p.nextToken() != JsonToken.END_ARRAY) {
             numbers.add(p.intValue)
         }
-        return Jackson.convert<LocalDateTime>(numbers).atZone(ZONE_ID)
+        return Jackson.convert<LocalDateTime>(numbers).atOffset(ZONE_OFFSET)
     }
 }
 

@@ -11,8 +11,8 @@ import io.github.shoaky.sourcedownloader.sdk.util.IterationResult
 import io.github.shoaky.sourcedownloader.sdk.util.queryMap
 import org.slf4j.LoggerFactory
 import java.net.URI
-import java.time.LocalDateTime
-import java.time.ZoneId
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 
 /**
  * 通过Mikan的RSS源获取资源
@@ -32,10 +32,10 @@ class MikanSource(
         if (cleanPointer) {
             pointer.cleanMonthly()
         }
-        val mikananiZoneId = ZoneId.of("Asia/Shanghai")
+        val mikananiZoneOffset = ZoneOffset.ofHours(8)
         val sourceItems = rssReader.read(url)
             .map {
-                fromRssItem(it, mikananiZoneId)
+                fromRssItem(it, mikananiZoneOffset)
             }
             .toList()
 
@@ -45,9 +45,8 @@ class MikanSource(
             }.toList()
         }
 
-        val systemZoneId = ZoneId.systemDefault()
         val latestItems = sourceItems
-            .filter { it.datetime.isAfter(pointer.latest.atZone(systemZoneId)) }
+            .filter { it.datetime.isAfter(pointer.latest) }
             .sortedBy { it.datetime }
 
         // 解决新番更新和添加顺序不一致的问题
@@ -69,7 +68,7 @@ class MikanSource(
             val subGroupId = fansubQuery["subgroupid"] ?: error("subgroupid is null")
             var fansubItems = rssReader.read(fansubRss)
                 .map {
-                    fromRssItem(it, mikananiZoneId)
+                    fromRssItem(it, mikananiZoneOffset)
                 }
                 .toList()
                 .sortedBy { it.datetime }
@@ -82,12 +81,12 @@ class MikanSource(
 
             val result = fansubItems
                 .map {
-                    PointedItem(it, FansubPointer(bangumiId, subGroupId, it.datetime.toLocalDateTime()))
+                    PointedItem(it, FansubPointer(bangumiId, subGroupId, it.datetime))
                 }
                 .filter {
                     val key = it.pointer.key()
                     val date = pointer.shows[key]
-                    date == null || it.sourceItem.datetime.toLocalDateTime().isAfter(date)
+                    date == null || it.sourceItem.datetime.isAfter(date)
                 }
             if (log.isDebugEnabled) {
                 log.debug("Fetch fansub items:{}", result)
@@ -100,12 +99,12 @@ class MikanSource(
 
         private val log = LoggerFactory.getLogger(MikanSource::class.java)
 
-        private fun fromRssItem(rssItem: Item, zoneId: ZoneId): SourceItem {
+        private fun fromRssItem(rssItem: Item, offset: ZoneOffset): SourceItem {
             val enclosure = rssItem.enclosure.get()
             return SourceItem(
                 rssItem.title.get(),
                 URI(rssItem.link.get()),
-                parseTime(rssItem.pubDate.get()).atZone(zoneId),
+                parseTime(rssItem.pubDate.get()).atOffset(offset),
                 enclosure.type,
                 URI(enclosure.url)
             )
@@ -118,8 +117,8 @@ class MikanSource(
 }
 
 data class MikanPointer(
-    var latest: LocalDateTime = LocalDateTime.MIN,
-    val shows: MutableMap<String, LocalDateTime> = mutableMapOf(),
+    var latest: OffsetDateTime = OffsetDateTime.MIN,
+    val shows: MutableMap<String, OffsetDateTime> = mutableMapOf(),
 ) : SourcePointer {
 
     override fun update(itemPointer: ItemPointer) {
@@ -130,7 +129,8 @@ data class MikanPointer(
     }
 
     fun cleanMonthly() {
-        val range = LocalDateTime.now().minusMonths(1L).rangeUntil(LocalDateTime.MAX)
+        val range = OffsetDateTime.now().minusMonths(1L)
+            .rangeUntil(OffsetDateTime.MAX)
         shows.entries.removeIf {
             range.contains(it.value).not()
         }
@@ -140,7 +140,7 @@ data class MikanPointer(
 data class FansubPointer(
     val bangumiId: String,
     val subGroupId: String,
-    val date: LocalDateTime
+    val date: OffsetDateTime
 ) : ItemPointer {
 
     fun key(): String {

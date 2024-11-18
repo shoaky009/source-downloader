@@ -5,13 +5,13 @@ import com.google.common.hash.Hashing
 import io.github.shoaky.sourcedownloader.sdk.util.Jackson
 import java.net.URI
 import java.time.LocalDateTime
-import java.time.ZoneId
-import java.time.ZonedDateTime
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
 
 data class SourceItem @JvmOverloads constructor(
     val title: String,
     val link: URI,
-    val datetime: ZonedDateTime,
+    val datetime: OffsetDateTime,
     val contentType: String,
     /**
      * 该字段在某些场景下有些歧义, 例如:实际Item是会解析成多个HTTP的时候
@@ -24,7 +24,7 @@ data class SourceItem @JvmOverloads constructor(
     constructor(
         title: String,
         link: String,
-        datetime: ZonedDateTime,
+        datetime: OffsetDateTime,
         contentType: String,
         downloadUri: String,
     ) : this(title, URI(link), datetime, contentType, URI(downloadUri))
@@ -35,7 +35,7 @@ data class SourceItem @JvmOverloads constructor(
         datetime: LocalDateTime,
         contentType: String,
         downloadUri: String,
-    ) : this(title, URI(link), datetime.atZone(ZoneId.systemDefault()), contentType, URI(downloadUri))
+    ) : this(title, URI(link), datetime.atOffset(DEFAULT_OFFSET), contentType, URI(downloadUri))
 
     constructor(
         title: String,
@@ -48,7 +48,7 @@ data class SourceItem @JvmOverloads constructor(
         downloadUri: URI,
         attrs: Map<String, Any> = emptyMap(),
         tags: Set<String> = emptySet(),
-    ) : this(title, link, datetime.atZone(ZoneId.systemDefault()), contentType, downloadUri, attrs, tags)
+    ) : this(title, link, datetime.atOffset(DEFAULT_OFFSET), contentType, downloadUri, attrs, tags)
 
     fun hashing(): String {
         return Hashing.murmur3_128()
@@ -64,5 +64,10 @@ data class SourceItem @JvmOverloads constructor(
 
     inline fun <reified T> requireAttr(key: String): T {
         return getAttr(key) ?: throw IllegalArgumentException("Attr $key not found")
+    }
+
+    companion object {
+
+        val DEFAULT_OFFSET: ZoneOffset = OffsetDateTime.now().offset
     }
 }

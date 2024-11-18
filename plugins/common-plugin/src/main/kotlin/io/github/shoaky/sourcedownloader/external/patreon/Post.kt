@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.JsonNode
 import io.github.shoaky.sourcedownloader.sdk.util.Jackson
 import java.net.URI
-import java.time.ZonedDateTime
+import java.time.OffsetDateTime
 
 data class Post(
     val attributes: PostAttrs,
@@ -42,7 +42,7 @@ data class PostAttrs(
     val postType: String,
     @JsonProperty("published_at")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "GMT")
-    val publishedAt: ZonedDateTime,
+    val publishedAt: OffsetDateTime,
     val thumbnail: Any? = null,
     val title: String,
     val url: URI,
