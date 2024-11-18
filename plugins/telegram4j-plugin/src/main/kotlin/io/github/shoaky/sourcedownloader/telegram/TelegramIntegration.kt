@@ -50,6 +50,7 @@ class TelegramIntegration(
     private val progresses: MutableMap<Path, ProgressiveChannel> = ConcurrentHashMap()
     private val downloadedCounting = AtomicInteger(0)
     private val hashingPathMapping = ConcurrentHashMap<String, Path>()
+    private var closed = false
 
     override fun resolveFiles(sourceItem: SourceItem): List<SourceFile> {
         if (sourceItem.contentType == "message") {
@@ -134,8 +135,11 @@ class TelegramIntegration(
         hashingPathMapping[hashing] = fileDownloadPath
 
         log.info("Start downloading file: $fileDownloadPath")
-        createFilePartStream(fileReferenceId, monitoredChannel, fileDownloadPath)
+        val stream = createFilePartStream(fileReferenceId, monitoredChannel, fileDownloadPath)
             .collect({ monitoredChannel }, { fc, filePart ->
+                if (closed) {
+                    throw IllegalStateException("Downloader closed")
+                }
                 fc.write(filePart.bytes.nioBuffer())
             })
             .doOnSuccess {
@@ -163,7 +167,7 @@ class TelegramIntegration(
                 }
                 hashingPathMapping.remove(hashing)
             }
-            .block()
+        stream.block()
         return true
     }
 
@@ -257,6 +261,7 @@ class TelegramIntegration(
     }
 
     override fun close() {
+        closed = true
         progresses.forEach { (path, _) ->
             runCatching {
                 closePath(path)
