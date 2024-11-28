@@ -16,12 +16,6 @@ class SourceDownloaderSpringApplication(
 
     @EventListener(ApplicationReadyEvent::class)
     fun onReady() {
-        // log.info(
-        //     "Database file located:${
-        //         environment.getProperty("spring.datasource.url")
-        //             ?.removePrefix("jdbc:sqlite:")
-        //     }"
-        // )
         coreApplication.start()
     }
 
