@@ -100,7 +100,8 @@ class TelegramIntegration(
             chatPointer.createId(), listOf(
                 ImmutableInputMessageID.of(messageId)
             )
-        ).retryWhen(MTProtoRetrySpec.max(2))
+        )
+            .retryWhen(MTProtoRetrySpec.max(2))
             .mapNotNull { it.messages.firstOrNull()?.media?.getOrNull() as? MessageMedia.Document }
             .mapNotNull { it?.document?.get() }
             .blockOptional(Duration.ofSeconds(5L))
@@ -179,8 +180,7 @@ class TelegramIntegration(
         val offset = monitoredChannel.getDownloadedBytes()
         log.info("Create file part stream for file: {}, offset:{}", fileDownloadPath, offset)
         return client.downloadFile(fileReferenceId, monitoredChannel.getDownloadedBytes(), MAX_FILE_PART_SIZE, true)
-            .publishOn(Schedulers.fromExecutor(Executors.newVirtualThreadPerTaskExecutor()))
-            .timeout(Duration.ofMinutes(1))
+            .timeout(Duration.ofMinutes(1), Schedulers.single())
             .onErrorResume(RpcException::class.java) {
                 val error = it.error
                 if (monitoredChannel.isDone().not() && retryErrorCodes.contains(error.errorCode())) {
@@ -283,6 +283,7 @@ class TelegramIntegration(
         private const val FLOOD_WAIT_CODE = 420
         private const val MAX_FILE_PART_SIZE = 1024 * 1024
         private const val DEFAULT_INTERVAL_SEC = 5L
+        private val scheduler = Schedulers.fromExecutor(Executors.newVirtualThreadPerTaskExecutor())
         private val retryErrorCodes = setOf(
             TIMEOUT_CODE,
             FLOOD_WAIT_CODE
