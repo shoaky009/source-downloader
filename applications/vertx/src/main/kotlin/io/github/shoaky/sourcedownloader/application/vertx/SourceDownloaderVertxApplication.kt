@@ -7,7 +7,6 @@ import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.zaxxer.hikari.HikariDataSource
 import io.github.shoaky.sourcedownloader.CoreApplication
 import io.github.shoaky.sourcedownloader.component.supplier.WebhookTriggerSupplier
-import io.github.shoaky.sourcedownloader.component.trigger.WebhookTrigger
 import io.github.shoaky.sourcedownloader.config.SourceDownloaderProperties
 import io.github.shoaky.sourcedownloader.core.PluginManager
 import io.github.shoaky.sourcedownloader.core.ProcessingStorage
@@ -28,7 +27,6 @@ import io.github.shoaky.sourcedownloader.service.ProcessorService
 import io.github.shoaky.sourcedownloader.util.StopWatch
 import io.vertx.core.Handler
 import io.vertx.core.Vertx
-import io.vertx.core.http.HttpMethod
 import io.vertx.core.json.jackson.DatabindCodec
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.RoutingContext
@@ -172,21 +170,4 @@ fun createRouteCoHandler(block: suspend (ctx: RoutingContext) -> Unit): suspend 
     return { context: RoutingContext ->
         block.invoke(context)
     }
-}
-
-class VertxWebhookAdapter(
-    private val router: Router
-) : WebhookTrigger.Adapter {
-
-    override fun registerEndpoint(path: String, method: String, handler: () -> Unit) {
-        router.route(HttpMethod.valueOf(method), path)
-            .blockingHandler(createRouteHandler { handler.invoke() })
-    }
-
-    override fun unregisterEndpoint(path: String, method: String) {
-        router.route(HttpMethod.valueOf(method), path)
-            .remove()
-    }
-
-
 }

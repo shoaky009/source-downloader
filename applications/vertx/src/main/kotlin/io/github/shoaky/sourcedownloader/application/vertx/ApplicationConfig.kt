@@ -2,8 +2,6 @@ package io.github.shoaky.sourcedownloader.application.vertx
 
 import com.zaxxer.hikari.HikariConfig
 import io.vertx.core.http.HttpServerOptions
-import java.nio.file.Path
-import kotlin.io.path.Path
 
 data class ApplicationConfig(
     val server: HttpServerOptions = HttpServerOptions().also {
@@ -24,10 +22,3 @@ data class ApplicationConfig(
             }
     }
 }
-
-data class SourceDownloaderConfig(
-    val dataLocation: Path = run {
-        val path = System.getenv("SOURCE_DOWNLOADER_DATA_LOCATION") ?: ""
-        Path(path)
-    }
-)
