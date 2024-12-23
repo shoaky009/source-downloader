@@ -1,10 +1,8 @@
 package io.github.shoaky.sourcedownloader.common.torrent
 
 import io.github.shoaky.sourcedownloader.external.transmission.*
-import io.github.shoaky.sourcedownloader.sdk.DownloadTask
-import io.github.shoaky.sourcedownloader.sdk.ItemContent
-import io.github.shoaky.sourcedownloader.sdk.SourceFile
-import io.github.shoaky.sourcedownloader.sdk.SourceItem
+import io.github.shoaky.sourcedownloader.sdk.*
+import io.github.shoaky.sourcedownloader.sdk.component.BatchMoveResult
 import io.github.shoaky.sourcedownloader.sdk.component.TorrentDownloader
 import org.slf4j.LoggerFactory
 import java.nio.file.Path
@@ -60,10 +58,11 @@ class TransmissionDownloader(
         if (stopDownloadFiles.isEmpty()) {
             return true
         }
-        client.execute(TorrentSet(
-            listOf(torrentHash),
-            stopDownloadFiles.map { it.first }
-        ))
+        client.execute(
+            TorrentSet(
+                listOf(torrentHash),
+                stopDownloadFiles.map { it.first }
+            ))
         return true
     }
 
@@ -77,7 +76,7 @@ class TransmissionDownloader(
         log.info("cancel item:{} status:{} body:{}", sourceItem, response.statusCode(), response.body())
     }
 
-    override fun move(itemContent: ItemContent): Boolean {
+    override fun batchMove(itemContent: ItemContent): BatchMoveResult {
         // https://github.com/transmission/transmission/issues/3216
         // NOTE 目前Transmission的API无法完全满足命名种子内部的文件，重命名参数不能包含文件夹
         val torrentHash = getInfoHashV1(itemContent.sourceItem)
@@ -88,6 +87,7 @@ class TransmissionDownloader(
             log.warn("TargetPaths has multiple parent paths, but transmission doesn't support them.")
         }
         val (location, files) = grouping.maxBy { it.value.size }
+        val failedFiles: MutableList<FileContent> = mutableListOf()
         val allSuccess = files.map {
             val torrentRelativePath = it.downloadPath.relativize(it.fileDownloadPath)
             val targetPath = it.targetPath()
@@ -99,6 +99,7 @@ class TransmissionDownloader(
             val isSuccess = renameFileResponse.body().isSuccess()
             if (isSuccess.not()) {
                 log.error("Rename file failed, hash:$torrentHash code:${renameFileResponse.statusCode()} body:${renameFileResponse.body()}")
+                failedFiles.add(it)
             }
             isSuccess
         }.all { it }
@@ -111,7 +112,7 @@ class TransmissionDownloader(
         if (isSuccess.not()) {
             log.error("Set location failed,hash:$torrentHash code:${setLocationResponse.statusCode()} body:${setLocationResponse.body()}")
         }
-        return allSuccess && isSuccess
+        return BatchMoveResult(allSuccess && isSuccess, failedFiles)
     }
 
     companion object {

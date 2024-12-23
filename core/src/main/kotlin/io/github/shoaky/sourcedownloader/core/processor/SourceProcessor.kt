@@ -449,6 +449,7 @@ class SourceProcessor(
             log.debug("Processor:'{}' no available files to rename, item:'{}'", name, content.sourceItem)
             return true
         }
+        
         movableFiles.map { it.saveDirectoryPath() }
             .distinct()
             .forEach {
@@ -462,9 +463,12 @@ class SourceProcessor(
                 }
             }
         }
-        return fileMover.move(
-            content.copy(fileContents = movableFiles)
-        )
+
+        return if (fileMover is BatchFileMover) {
+            fileMover.batchMove(content.copy(fileContents = movableFiles)).success
+        } else {
+            movableFiles.all { fileMover.move(content.sourceItem, it) }
+        }
     }
 
     private fun replaceFiles(itemContent: CoreItemContent): Boolean {

@@ -4,10 +4,8 @@ import bt.bencoding.serializers.BEParser
 import bt.metainfo.MetadataService
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import io.github.shoaky.sourcedownloader.external.qbittorrent.*
-import io.github.shoaky.sourcedownloader.sdk.DownloadTask
-import io.github.shoaky.sourcedownloader.sdk.ItemContent
-import io.github.shoaky.sourcedownloader.sdk.SourceFile
-import io.github.shoaky.sourcedownloader.sdk.SourceItem
+import io.github.shoaky.sourcedownloader.sdk.*
+import io.github.shoaky.sourcedownloader.sdk.component.BatchMoveResult
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentException
 import io.github.shoaky.sourcedownloader.sdk.component.TorrentDownloader
 import io.github.shoaky.sourcedownloader.sdk.component.TorrentDownloader.Companion.tryParseTorrentHash
@@ -61,11 +59,11 @@ class QbittorrentDownloader(
             val fileResponse = client.execute(TorrentFilesRequest(torrentHash))
             if (fileResponse.statusCode() == StatusCodes.NOT_FOUND) {
                 val infoHashV1 = getInfoHashV1(task.sourceItem, true)
-                val fileResponse = client.execute(TorrentFilesRequest(infoHashV1))
+                val retFileResponse = client.execute(TorrentFilesRequest(infoHashV1))
                 return@retryWhen Triple(
-                    fileResponse.statusCode() == StatusCodes.OK,
+                    retFileResponse.statusCode() == StatusCodes.OK,
                     infoHashV1,
-                    fileResponse.body()
+                    retFileResponse.body()
                 )
             }
             Triple(fileResponse.statusCode() == StatusCodes.OK, torrentHash, fileResponse.body())
@@ -85,11 +83,11 @@ class QbittorrentDownloader(
         val stopDownloadFiles = torrentFiles.filter {
             relativePaths.contains(it.name).not()
         }
-        log.debug("torrent:{} set prio 0 files: {}", infoHash, stopDownloadFiles)
         if (stopDownloadFiles.isEmpty()) {
             return true
         }
 
+        log.debug("Torrent:{} set priority 0 files: {}", infoHash, stopDownloadFiles)
         client.execute(
             TorrentFilePrioRequest(
                 infoHash,
@@ -134,6 +132,47 @@ class QbittorrentDownloader(
         log.info("Cancel item:{} status:{} body:{}", sourceItem, response.statusCode(), response.body())
     }
 
+    override fun batchMove(itemContent: ItemContent): BatchMoveResult {
+        val torrentHash = getInfoHash(itemContent.sourceItem)
+        val fileContents = itemContent.fileContents
+
+        val firstFile = fileContents.first()
+        val saveItemFileRootDirectory = firstFile.fileSaveRootDirectory()
+        val itemLocation = saveItemFileRootDirectory ?: firstFile.saveDirectoryPath()
+
+        val failedFiles: MutableList<FileContent> = mutableListOf()
+        val allSuccess = fileContents.map {
+            val torrentRelativePath = it.downloadPath.relativize(it.fileDownloadPath).toString()
+            val targetRelativePath = itemLocation.relativize(it.targetPath()).toString()
+            val renameFile = client.execute(
+                TorrentsRenameFileRequest(torrentHash, torrentRelativePath, targetRelativePath)
+            )
+            val success = renameFile.statusCode() == StatusCodes.OK
+            if (success.not()) {
+                failedFiles.add(it)
+                log.error("Rename file failed, hash:$torrentHash code:${renameFile.statusCode()} body:${renameFile.body()}")
+            }
+            success
+        }.all { it }
+
+        if (allSuccess.not()) {
+            return BatchMoveResult(false, failedFiles)
+        }
+        val setLocationResponse = client.execute(
+            TorrentsSetLocationRequest(
+                listOf(torrentHash),
+                itemLocation.toString()
+            )
+        )
+        if (setLocationResponse.statusCode() != StatusCodes.OK) {
+            log.error("set location failed,hash:$torrentHash code:${setLocationResponse.statusCode()} body:${setLocationResponse.body()}")
+        }
+        return BatchMoveResult(
+            allSuccess && setLocationResponse.statusCode() == StatusCodes.OK,
+            emptyList()
+        )
+    }
+
     override fun getTorrentFiles(infoHash: String): List<Path> {
         val torrentInfo =
             client.execute(TorrentInfoRequest(hashes = infoHash)).body().firstOrNull() ?: return emptyList()
@@ -155,42 +194,6 @@ class QbittorrentDownloader(
         val torrent = client.execute(TorrentInfoRequest(hashes = torrentHash))
         val torrents = torrent.body()
         return torrents.map { it.progress >= 1.0f }.firstOrNull()
-    }
-
-    override fun move(itemContent: ItemContent): Boolean {
-        val torrentHash = getInfoHash(itemContent.sourceItem)
-        val sourceFiles = itemContent.fileContents
-
-        val firstFile = sourceFiles.first()
-        val saveItemFileRootDirectory = firstFile.fileSaveRootDirectory()
-        val itemLocation = saveItemFileRootDirectory ?: firstFile.saveDirectoryPath()
-
-        val allSuccess = sourceFiles.map {
-            val torrentRelativePath = it.downloadPath.relativize(it.fileDownloadPath).toString()
-            val targetRelativePath = itemLocation.relativize(it.targetPath()).toString()
-            val renameFile = client.execute(
-                TorrentsRenameFileRequest(torrentHash, torrentRelativePath, targetRelativePath)
-            )
-            val success = renameFile.statusCode() == StatusCodes.OK
-            if (success.not()) {
-                log.error("Rename file failed, hash:$torrentHash code:${renameFile.statusCode()} body:${renameFile.body()}")
-            }
-            success
-        }.all { it }
-
-        if (allSuccess.not()) {
-            return false
-        }
-        val setLocationResponse = client.execute(
-            TorrentsSetLocationRequest(
-                listOf(torrentHash),
-                itemLocation.toString()
-            )
-        )
-        if (setLocationResponse.statusCode() != StatusCodes.OK) {
-            log.error("set location failed,hash:$torrentHash code:${setLocationResponse.statusCode()} body:${setLocationResponse.body()}")
-        }
-        return allSuccess && setLocationResponse.statusCode() == StatusCodes.OK
     }
 
     private fun getInfoHash(sourceItem: SourceItem): String {

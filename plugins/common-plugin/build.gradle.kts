@@ -18,6 +18,7 @@ dependencies {
     implementation(libs.jsoup)
     implementation(libs.fuzzywuzzy)
     implementation(libs.commons.text)
+    implementation(libs.kotlin.retry)
 }
 
 tasks.nativeCompile {

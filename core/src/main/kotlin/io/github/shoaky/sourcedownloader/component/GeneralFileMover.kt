@@ -1,6 +1,7 @@
 package io.github.shoaky.sourcedownloader.component
 
-import io.github.shoaky.sourcedownloader.sdk.ItemContent
+import io.github.shoaky.sourcedownloader.sdk.FileContent
+import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.FileMover
 import kotlin.io.path.moveTo
 
@@ -9,12 +10,9 @@ import kotlin.io.path.moveTo
  */
 object GeneralFileMover : FileMover {
 
-    override fun move(itemContent: ItemContent): Boolean {
-        itemContent.fileContents
-            .forEach {
-                it.fileDownloadPath.moveTo(it.targetPath())
-            }
+    override fun move(sourceItem: SourceItem, file: FileContent): Boolean {
+        file.fileDownloadPath.moveTo(file.targetPath())
         return true
     }
-}
 
+}

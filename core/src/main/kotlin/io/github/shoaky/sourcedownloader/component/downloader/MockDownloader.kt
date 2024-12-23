@@ -4,6 +4,7 @@ import io.github.shoaky.sourcedownloader.sdk.DownloadTask
 import io.github.shoaky.sourcedownloader.sdk.ItemContent
 import io.github.shoaky.sourcedownloader.sdk.SourceFile
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
+import io.github.shoaky.sourcedownloader.sdk.component.BatchMoveResult
 import io.github.shoaky.sourcedownloader.sdk.component.TorrentDownloader
 import java.nio.file.Files
 import java.nio.file.Path
@@ -43,12 +44,12 @@ class MockDownloader(
         // Do nothing
     }
 
-    override fun move(itemContent: ItemContent): Boolean {
+    override fun batchMove(itemContent: ItemContent): BatchMoveResult {
         itemContent.fileContents
             .forEach {
                 it.fileDownloadPath.moveTo(it.targetPath())
             }
-        return true
+        return BatchMoveResult(true, emptyList())
     }
 
     override fun replace(itemContent: ItemContent): Boolean {

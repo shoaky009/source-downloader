@@ -1,8 +1,10 @@
 package io.github.shoaky.sourcedownloader.common
 
 import io.github.shoaky.sourcedownloader.external.webdav.*
+import io.github.shoaky.sourcedownloader.sdk.FileContent
 import io.github.shoaky.sourcedownloader.sdk.ItemContent
 import io.github.shoaky.sourcedownloader.sdk.SourceFile
+import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.FileMover
 import io.github.shoaky.sourcedownloader.sdk.http.StatusCodes
 import org.slf4j.LoggerFactory
@@ -18,35 +20,32 @@ open class WebdavFileMover(
     private val deleteSource: Boolean = true,
 ) : FileMover {
 
-    override fun move(itemContent: ItemContent): Boolean {
+    override fun move(sourceItem: SourceItem, file: FileContent): Boolean {
         if (uploadFileMode) {
-            return uploadFile(itemContent)
+            return uploadFile(file)
         }
 
         val webdavPath = webdavClient.webdavPath
-        return itemContent.fileContents.map {
-            val src = it.fileDownloadPath.toString()
-            val dst = it.targetPath().toString()
-            val moveFile = MoveFile("$webdavPath$src", "$webdavPath$dst")
-            webdavClient.execute(moveFile)
-        }.all { it.statusCode() == StatusCodes.CREATED }
+        val src = file.fileDownloadPath.toString()
+        val dst = file.targetPath().toString()
+        val moveFile = MoveFile("$webdavPath$src", "$webdavPath$dst")
+        val resp = webdavClient.execute(moveFile)
+        return resp.statusCode() == StatusCodes.CREATED
     }
 
-    private fun uploadFile(itemContent: ItemContent): Boolean {
+    private fun uploadFile(file: FileContent): Boolean {
         val webdavPath = webdavClient.webdavPath
-        return itemContent.fileContents.map {
-            val target = it.targetPath().toString()
-            val uploadFile = UploadFile("$webdavPath$target", it.fileDownloadPath)
-            val resp = webdavClient.execute(uploadFile)
-            if (resp.statusCode() != StatusCodes.CREATED) {
-                log.error("Failed to create file: {}, code: {} body:{}", it.targetPath(), resp.statusCode(), resp.body())
-                return@map false
-            }
-            if (deleteSource) {
-                it.fileDownloadPath.deleteIfExists()
-            }
-            true
-        }.all { it }
+        val target = file.targetPath().toString()
+        val uploadFile = UploadFile("$webdavPath$target", file.fileDownloadPath)
+        val resp = webdavClient.execute(uploadFile)
+        if (resp.statusCode() != StatusCodes.CREATED) {
+            log.error("Failed to create file: {}, code: {} body:{}", file.targetPath(), resp.statusCode(), resp.body())
+            return false
+        }
+        if (deleteSource) {
+            file.fileDownloadPath.deleteIfExists()
+        }
+        return true
     }
 
     override fun exists(paths: List<Path>): List<Boolean> {
@@ -64,7 +63,10 @@ open class WebdavFileMover(
     }
 
     override fun replace(itemContent: ItemContent): Boolean {
-        return move(itemContent)
+        itemContent.fileContents.forEach {
+            move(itemContent.sourceItem, it)
+        }
+        return true
     }
 
     override fun listPath(path: Path): List<Path> {

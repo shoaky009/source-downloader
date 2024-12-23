@@ -1,8 +1,10 @@
 package io.github.shoaky.sourcedownloader.foreign.component
 
 import io.github.shoaky.sourcedownloader.foreign.ForeignStateClient
+import io.github.shoaky.sourcedownloader.sdk.FileContent
 import io.github.shoaky.sourcedownloader.sdk.ItemContent
 import io.github.shoaky.sourcedownloader.sdk.SourceFile
+import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.FileMover
 import java.nio.file.Path
 
@@ -10,7 +12,7 @@ class ForeignFileMover(
     private val client: ForeignStateClient,
 ) : FileMover {
 
-    override fun move(itemContent: ItemContent): Boolean {
+    override fun move(sourceItem: SourceItem, file: FileContent): Boolean {
         TODO("Not yet implemented")
     }
 

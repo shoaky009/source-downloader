@@ -170,9 +170,9 @@ interface VariableProvider : SdComponent {
 interface FileMover : SdComponent {
 
     /**
-     * @param itemContent the [ItemContent] to be moved
+     * @param file the [FileContent] to be moved
      */
-    fun move(itemContent: ItemContent): Boolean
+    fun move(sourceItem: SourceItem, file: FileContent): Boolean
 
     /**
      * @param paths the paths
