@@ -8,7 +8,7 @@ import io.github.shoaky.sourcedownloader.sdk.util.Jackson
 data class PersistentPointer(
     @get:JsonUnwrapped
     @get:JsonAnyGetter
-    val values: MutableMap<String, Any>
+    val values: MutableMap<String, Any> = mutableMapOf()
 ) {
 
     @JsonAnySetter
