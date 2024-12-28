@@ -727,6 +727,10 @@ class SourceProcessor(
         private fun releasePaths(processingContent: ProcessingContent) {
             val sourceItem = processingContent.itemContent.sourceItem
             context.removeItemPaths(sourceItem)
+            if (processingContent.status == FAILURE) {
+                secondaryFileMover.release(sourceItem)
+                return
+            }
             val paths = processingContent.itemContent.downloadableFiles().map {
                 it.targetPath()
             }
