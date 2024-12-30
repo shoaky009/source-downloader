@@ -148,10 +148,11 @@ interface VariableProvider : SdComponent {
     }
 
     /**
+     * @param sourceItem given extra information
      * @param text to extract
      * @return the extracted value
      */
-    fun extractFrom(text: String): PatternVariables? {
+    fun extractFrom(sourceItem: SourceItem, text: String): PatternVariables? {
         return null
     }
 

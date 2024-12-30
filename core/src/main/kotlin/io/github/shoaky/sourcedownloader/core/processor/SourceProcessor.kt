@@ -272,7 +272,7 @@ class SourceProcessor(
                     fileOption?.filenamePattern ?: itemOptions.filenamePattern ?: filenamePattern,
                     file
                 )
-                val fileContent = renamer.createFileContent(rawFileContent, itemRenameVariables)
+                val fileContent = renamer.createFileContent(sourceItem, rawFileContent, itemRenameVariables)
                 fileContent to fileOption
             }
         }.filter { (fileContent, fileOption) ->

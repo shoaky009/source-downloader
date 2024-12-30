@@ -36,7 +36,7 @@ class TmdbVariableProvider(
         return "originalName"
     }
 
-    override fun extractFrom(text: String): PatternVariables? {
+    override fun extractFrom(sourceItem: SourceItem, text: String): PatternVariables? {
         val result = cache.get(text).getOrNull()
         if (result != null) {
             return result.resultToVars()

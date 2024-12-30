@@ -94,7 +94,7 @@ class DlsiteVariableProvider(
         return info.copy(title = suggestWorkName)
     }
 
-    override fun extractFrom(text: String): PatternVariables? {
+    override fun extractFrom(sourceItem: SourceItem, text: String): PatternVariables? {
         val dlsiteId = DlsiteClient.parseDlsiteId(text)
         if (dlsiteId == null && onlyExtractId) {
             return null

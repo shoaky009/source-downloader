@@ -125,7 +125,7 @@ class AnimeVariableProvider(
         }
     }
 
-    override fun extractFrom(text: String): PatternVariables? {
+    override fun extractFrom(sourceItem: SourceItem, text: String): PatternVariables? {
         return searchCache.get(text)
     }
 

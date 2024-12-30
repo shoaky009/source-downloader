@@ -30,7 +30,7 @@ class RegexVariableProvider(
         }
     }
 
-    override fun extractFrom(text: String): PatternVariables? {
+    override fun extractFrom(sourceItem: SourceItem, text: String): PatternVariables? {
         val variables = regexes.mapNotNull { regexVariable ->
             val find = regexVariable.regex.find(text)
             find?.let { regexVariable.name to it.value }

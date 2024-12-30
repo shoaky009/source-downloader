@@ -20,10 +20,11 @@ class Renamer(
 ) {
 
     fun createFileContent(
+        sourceItem: SourceItem,
         file: RawFileContent,
         extraVariables: RenameVariables,
     ): CoreFileContent {
-        val variables = fileRenameVariables(file, extraVariables)
+        val variables = fileRenameVariables(sourceItem, file, extraVariables)
         val dirResult = saveDirectoryPath(file, variables)
         val filenameResult = targetFilename(file, variables)
         val errors = mutableListOf<String>()
@@ -151,7 +152,7 @@ class Renamer(
         val replacedItemVars = itemVariables.variables().replaceVariables()
         vars.putAll(replacedItemVars)
         vars["item"] = buildSourceItemRenameVariables(sourceItem)
-        val (variables, _) = processVariable(vars, false)
+        val (variables, _) = processVariable(sourceItem, vars, false)
         return RenameVariables(vars, variables.replaceVariables(), replacedItemVars)
     }
 
@@ -169,13 +170,17 @@ class Renamer(
     /**
      * @param extraVariables 优先级比file低
      */
-    private fun fileRenameVariables(file: RawFileContent, extraVariables: RenameVariables): RenameVariables {
+    private fun fileRenameVariables(
+        sourceItem: SourceItem,
+        file: RawFileContent,
+        extraVariables: RenameVariables
+    ): RenameVariables {
         val renameVars = mutableMapOf<String, Any>()
         val filePatternVars = file.patternVariables.variables().replaceVariables()
         renameVars.putAll(filePatternVars)
 
         renameVars["file"] = buildSourceFileRenameVariables(file)
-        val (variables, processed) = processVariable(renameVars)
+        val (variables, processed) = processVariable(sourceItem, renameVars)
         if (processed) {
             for ((key, value) in extraVariables.processedVariables.entries) {
                 variables.putIfAbsent(key, value)
@@ -204,7 +209,9 @@ class Renamer(
      * @return processed variables and whether processed
      */
     private fun processVariable(
-        variables: Map<String, Any>, withCondition: Boolean = true
+        sourceItem: SourceItem,
+        variables: Map<String, Any>,
+        withCondition: Boolean = true
     ): Pair<MutableMap<String, String>, Boolean> {
         if (variableProcessChain.isEmpty()) {
             return mutableMapOf<String, String>() to false
@@ -226,7 +233,7 @@ class Renamer(
                 return@forEach
             }
             log.debug("Process variable '{}' with value '{}'", process.input, value)
-            val processed = process.process(value, variables)
+            val processed = process.process(sourceItem, value, variables)
             if (processed.isNotEmpty()) {
                 processedVariables.putAll(processed)
                 for ((key, processedValue) in processed) {

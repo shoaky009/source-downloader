@@ -57,7 +57,7 @@ class KeywordVariableProvider(
         return matchedWord
     }
 
-    override fun extractFrom(text: String): PatternVariables? {
+    override fun extractFrom(sourceItem: SourceItem, text: String): PatternVariables? {
         val w = matchWord(text)
         val res = w?.alias ?: w?.value
         return res?.let {

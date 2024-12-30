@@ -86,7 +86,7 @@ object EpisodeVariableProvider : VariableProvider {
         return str.padStart(length, '0')
     }
 
-    override fun extractFrom(text: String): PatternVariables? {
+    override fun extractFrom(sourceItem: SourceItem, text: String): PatternVariables? {
         return parserChain.firstNotNullOfOrNull {
             it.parse(text)
         }?.let {
