@@ -30,6 +30,7 @@ import java.nio.ByteBuffer
 import java.nio.charset.CodingErrorAction
 import java.nio.file.Files
 import java.nio.file.Path
+import java.time.Instant
 import java.time.LocalDateTime
 import java.util.*
 import java.util.concurrent.Executors
@@ -95,7 +96,7 @@ class SourceProcessor(
     }
     private val itemChannel = Channel<Process>(options.channelBufferSize)
     private val processorCoroutineScope = CoroutineScope(Dispatchers.Default)
-    private var lastTriggerTime: Long? = null
+    private val runtime: ProcessorRuntime = ProcessorRuntime(Instant.now())
 
     init {
         scheduleRenameTask()
@@ -129,12 +130,20 @@ class SourceProcessor(
     }
 
     override fun run() {
-        lastTriggerTime = System.currentTimeMillis()
-        NormalProcess().run()
+        val normalProcess = NormalProcess()
+        runtime.startProcessTime()
+        runCatching {
+            normalProcess.run()
+        }.onSuccess {
+            runtime.lastProcessFailedMessage = null
+        }.onFailure {
+            runtime.lastProcessFailedMessage = it.message
+        }
+        runtime.endProcessTime()
     }
 
-    fun getLastTriggerTime(): Long? {
-        return lastTriggerTime
+    fun getRuntimeSnapshot(): ProcessorRuntime.Snapshot {
+        return runtime.snapshot()
     }
 
     fun dryRun(options: DryRunOptions = DryRunOptions()): List<ProcessingContent> {
@@ -449,7 +458,7 @@ class SourceProcessor(
             log.debug("Processor:'{}' no available files to rename, item:'{}'", name, content.sourceItem)
             return true
         }
-        
+
         movableFiles.map { it.saveDirectoryPath() }
             .distinct()
             .forEach {
@@ -1090,6 +1099,7 @@ class SourceProcessor(
         }
 
         override fun onItemError(item: SourceItem, throwable: Throwable) {
+            runtime
             invokeListeners {
                 this.onItemError(context, item, throwable)
             }

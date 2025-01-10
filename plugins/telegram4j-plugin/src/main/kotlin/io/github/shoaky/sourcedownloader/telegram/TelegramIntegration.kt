@@ -178,7 +178,7 @@ class TelegramIntegration(
         fileDownloadPath: Path
     ): Flux<FilePart> {
         val offset = monitoredChannel.getDownloadedBytes()
-        log.info("Create file part stream for file: {}, offset:{}", fileDownloadPath, offset)
+        log.debug("Create file part stream for file: {}, offset:{}", fileDownloadPath, offset)
         return client.downloadFile(fileReferenceId, monitoredChannel.getDownloadedBytes(), MAX_FILE_PART_SIZE, true)
             .timeout(Duration.ofMinutes(1), Schedulers.single())
             .onErrorResume(RpcException::class.java) {

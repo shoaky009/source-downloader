@@ -11,7 +11,6 @@ import io.github.shoaky.sourcedownloader.core.processor.ProcessorManager
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.throwComponentException
 import kotlinx.coroutines.flow.Flow
-import java.time.Instant
 import java.util.concurrent.Executors
 
 class ProcessorService(
@@ -34,15 +33,13 @@ class ProcessorService(
             .drop(pageable.pageNumber * pageable.pageSize)
             .take(pageable.pageSize)
             .map { config ->
-                val instant = if (config.enabled) {
+                val snapshot = if (config.enabled) {
                     processorManager.getProcessor(config.name).get()
-                        .getLastTriggerTime()?.let {
-                            Instant.ofEpochMilli(it)
-                        }
+                        .getRuntimeSnapshot()
                 } else {
                     null
                 }
-                ProcessorInfo(config.name, config.enabled, config.category, config.tags, instant)
+                ProcessorInfo(config.name, config.enabled, config.category, config.tags, snapshot)
             }
     }
 

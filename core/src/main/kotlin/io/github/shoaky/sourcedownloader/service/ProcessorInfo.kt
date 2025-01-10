@@ -1,11 +1,11 @@
 package io.github.shoaky.sourcedownloader.service
 
-import java.time.Instant
+import io.github.shoaky.sourcedownloader.core.processor.ProcessorRuntime
 
 data class ProcessorInfo(
     val name: String,
     val enabled: Boolean,
     val category: String?,
     val tags: Set<String>,
-    val lastTriggerTime: Instant?,
+    val runtime: ProcessorRuntime.Snapshot?,
 )
