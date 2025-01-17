@@ -10,21 +10,21 @@ import java.net.URI
 import java.nio.file.Path
 
 data class SourceFile @JvmOverloads constructor(
-    @JsonSerialize(using = ToStringSerializer::class)
     /**
      * The path of the file.
      * From [ItemFileResolver], it's a relative path.
      * In the context of submitting a task, it's an absolute path.
      */
+    @JsonSerialize(using = ToStringSerializer::class)
     val path: Path,
     /**
      * The attributes of the file.
      */
     val attrs: Map<String, Any> = emptyMap(),
-    @JsonAlias("fileUri")
     /**
      * The URI of the file, provided for use by a downloader, but the specifics depend on the implementation of the downloader.
      */
+    @JsonAlias("fileUri")
     val downloadUri: URI? = null,
     /**
      * The tags of the file.

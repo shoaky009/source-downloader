@@ -13,7 +13,7 @@ import kotlin.io.path.walk
  * SourceItem本身就是文件，则解析自身为单个文件
  */
 object SystemFileResolver : ItemFileResolver {
-    @OptIn(ExperimentalPathApi::class)
+    
     override fun resolveFiles(sourceItem: SourceItem): List<SourceFile> {
         val path = sourceItem.downloadUri.toPath()
         if (path.isDirectory()) {

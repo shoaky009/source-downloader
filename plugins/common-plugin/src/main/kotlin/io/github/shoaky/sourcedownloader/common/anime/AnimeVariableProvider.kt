@@ -11,11 +11,13 @@ import io.github.shoaky.sourcedownloader.external.bangumi.BgmTvApiClient
 import io.github.shoaky.sourcedownloader.external.bangumi.SearchSubjectRequest
 import io.github.shoaky.sourcedownloader.external.bangumi.SubjectItem
 import io.github.shoaky.sourcedownloader.sdk.PatternVariables
+import io.github.shoaky.sourcedownloader.sdk.SourceFile
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.VariableProvider
 import io.github.shoaky.sourcedownloader.sdk.util.TextClear
 import me.xdrop.fuzzywuzzy.FuzzySearch
 import org.slf4j.LoggerFactory
+import kotlin.io.path.Path
 
 /**
  * 从SourceItem.title中提取和清洗标题给anilist或bgmtv进行搜索获取对应元数据，
@@ -39,9 +41,32 @@ class AnimeVariableProvider(
         return create(sourceItem)
     }
 
+    override fun fileVariables(
+        sourceItem: SourceItem,
+        itemVariables: PatternVariables,
+        sourceFiles: List<SourceFile>
+    ): List<PatternVariables> {
+        return sourceFiles.map {
+            resolveFromFile(sourceItem, itemVariables, it)
+        }
+    }
+
+    private fun resolveFromFile(
+        sourceItem: SourceItem,
+        itemVariables: PatternVariables,
+        sourceFile: SourceFile
+    ): PatternVariables {
+        if (sourceFile.path.isAbsolute) {
+            return PatternVariables.EMPTY
+        }
+        
+        sourceFile.path
+        return PatternVariables.EMPTY
+    }
+
     private fun create(sourceItem: SourceItem): Anime {
         val title = extractTitle(sourceItem)
-        return searchCache.get(title)
+        return searchCache[title]
     }
 
     /**
