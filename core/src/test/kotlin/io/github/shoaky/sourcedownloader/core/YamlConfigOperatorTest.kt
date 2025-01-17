@@ -10,12 +10,14 @@ import kotlin.io.path.Path
 import kotlin.test.assertEquals
 
 class YamlConfigOperatorTest {
+
     private val path = Path("src", "test", "resources", "config-test2.yaml")
     private val storage = YamlConfigOperator(path)
 
     @BeforeEach
     fun restore() {
-        Files.writeString(path, """
+        Files.writeString(
+            path, """
 instances:
   - name: client1
     props:
@@ -37,7 +39,8 @@ processors:
     save-path: "test-path"
     options:
       rename-task-interval: "PT1M40S"
-        """.trimIndent())
+        """.trimIndent()
+        )
     }
 
     @Test
@@ -63,18 +66,20 @@ processors:
 
     @Test
     fun write_processor() {
-        storage.save("test-normal-case", ProcessorConfig(
-            "test-normal-case",
-            listOf(ComponentId("test")),
-            ComponentId("test"),
-            ComponentId("test"),
-            ComponentId("test"),
-            ComponentId("test"),
-            Path(""),
-            options = ProcessorConfig.Options(
-                renameTaskInterval = Duration.ofSeconds(100L)
+        storage.save(
+            "test-normal-case", ProcessorConfig(
+                "test-normal-case",
+                listOf(ComponentId("test")),
+                ComponentId("test"),
+                ComponentId("test"),
+                ComponentId("test"),
+                ComponentId("test"),
+                "",
+                options = ProcessorConfig.Options(
+                    renameTaskInterval = Duration.ofSeconds(100L)
+                )
             )
-        ))
+        )
 
         val processor = storage.getAllProcessorConfig().first()
         assertEquals(Duration.ofSeconds(100L), processor.options.renameTaskInterval)

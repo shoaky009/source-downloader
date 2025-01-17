@@ -3,8 +3,6 @@ package io.github.shoaky.sourcedownloader.core
 import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.databind.annotation.JsonSerialize
-import com.fasterxml.jackson.databind.ser.std.ToStringSerializer
 import io.github.shoaky.sourcedownloader.core.component.ComponentId
 import io.github.shoaky.sourcedownloader.core.component.ListenerConfig
 import io.github.shoaky.sourcedownloader.core.expression.ExpressionType
@@ -13,7 +11,6 @@ import io.github.shoaky.sourcedownloader.core.file.VariableErrorStrategy
 import io.github.shoaky.sourcedownloader.core.processor.VariableConflictStrategy
 import io.github.shoaky.sourcedownloader.core.processor.VariableProcessOutput
 import io.github.shoaky.sourcedownloader.sdk.DownloadOptions
-import java.nio.file.Path
 import java.time.Duration
 
 @JsonInclude(JsonInclude.Include.NON_DEFAULT)
@@ -24,8 +21,7 @@ data class ProcessorConfig(
     val itemFileResolver: ComponentId,
     val downloader: ComponentId,
     val fileMover: ComponentId = ComponentId("mover:general"),
-    @JsonSerialize(using = ToStringSerializer::class)
-    val savePath: Path,
+    val savePath: String,
     val options: Options = Options(),
     val enabled: Boolean = true,
     val category: String? = null,

@@ -40,4 +40,8 @@ data class ComponentId(
         val otherSplit = other.id.split(":")
         return split.first() == otherSplit.first() && split.last() == otherSplit.last()
     }
+
+    override fun hashCode(): Int {
+        return javaClass.hashCode()
+    }
 }

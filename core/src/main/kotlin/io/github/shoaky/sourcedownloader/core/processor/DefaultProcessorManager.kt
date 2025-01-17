@@ -14,6 +14,7 @@ import io.github.shoaky.sourcedownloader.sdk.component.*
 import io.github.shoaky.sourcedownloader.throwComponentException
 import io.github.shoaky.sourcedownloader.util.addToCollection
 import org.slf4j.LoggerFactory
+import kotlin.io.path.Path
 
 class DefaultProcessorManager(
     private val processingStorage: ProcessingStorage,
@@ -93,7 +94,7 @@ class DefaultProcessorManager(
             resolver,
             downloader,
             mover,
-            config.savePath,
+            Path(config.savePath),
             processingStorage,
             config.category,
             config.tags,
