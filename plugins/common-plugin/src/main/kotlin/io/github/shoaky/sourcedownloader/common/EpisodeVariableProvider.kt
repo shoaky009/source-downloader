@@ -42,7 +42,7 @@ object EpisodeVariableProvider : VariableProvider {
             Regex("x(?:264|265)", RegexOption.IGNORE_CASE) to "",
             Regex("flacx2|ma10p|hi10p|yuv420p10|10bit|hevc10|aacx2|flac|4k", RegexOption.IGNORE_CASE) to "",
             Regex("\\b[A-Fa-f0-9]{8}\\b|CRC32.*[0-9A-F]{8}", RegexOption.IGNORE_CASE) to "",
-            Regex("v\\d+|(\\d){5,}") to "",
+            Regex("(?i)v\\d+|(\\d){5,}") to "",
             Regex("FIN", RegexOption.IGNORE_CASE) to "",
             Regex("1st|2nd|3rd|[4-9]th", RegexOption.IGNORE_CASE) to ""
         )
