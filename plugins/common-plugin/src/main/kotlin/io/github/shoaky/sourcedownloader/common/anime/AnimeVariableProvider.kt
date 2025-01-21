@@ -17,13 +17,13 @@ import io.github.shoaky.sourcedownloader.sdk.component.VariableProvider
 import io.github.shoaky.sourcedownloader.sdk.util.TextClear
 import me.xdrop.fuzzywuzzy.FuzzySearch
 import org.slf4j.LoggerFactory
-import kotlin.io.path.Path
+import kotlin.io.path.name
 
 /**
  * 从SourceItem.title中提取和清洗标题给anilist或bgmtv进行搜索获取对应元数据，
  * 会自动根据title中的语言来决定用哪个网站进行搜索
  */
-@Deprecated("需要拆分")
+// TODO 重构成可扩展的
 class AnimeVariableProvider(
     private val bgmTvApiClient: BgmTvApiClient,
     private val anilistClient: AnilistClient,
@@ -59,13 +59,24 @@ class AnimeVariableProvider(
         if (sourceFile.path.isAbsolute) {
             return PatternVariables.EMPTY
         }
-        
-        sourceFile.path
-        return PatternVariables.EMPTY
+        // 获取第二级，并且还要进行一些过滤
+        val targetPathIndex = 1
+        val subPath = sourceFile.path.toList().getOrNull(targetPathIndex)
+        if (subPath == sourceFile.path.fileName || subPath == null) {
+            return PatternVariables.EMPTY
+        }
+        val name = subPath.name
+        // 先简单过滤后面根据情况添加
+        if (name.length < 10) {
+            return PatternVariables.EMPTY
+        }
+
+        val title = extractTitle(name)
+        return searchCache[title]
     }
 
     private fun create(sourceItem: SourceItem): Anime {
-        val title = extractTitle(sourceItem)
+        val title = extractTitle(sourceItem.title)
         return searchCache[title]
     }
 
@@ -175,8 +186,8 @@ class AnimeVariableProvider(
         )
         private val bracketsRegex = Regex("\\[.*?]")
 
-        fun extractTitle(sourceItem: SourceItem): String {
-            val text = textClear.input(sourceItem.title)
+        fun extractTitle(rawTitle: String): String {
+            val text = textClear.input(rawTitle)
             val removedBucket = text.replace(bracketsRegex, "").trim()
             if (removedBucket.length > 12) {
                 val sp = listOf("/", "|").firstOrNull {

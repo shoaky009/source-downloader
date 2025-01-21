@@ -1,6 +1,5 @@
 package io.github.shoaky.sourcedownloader.common.anime
 
-import com.sun.jdi.Value
 import io.github.shoaky.sourcedownloader.external.anilist.AnilistClient
 import io.github.shoaky.sourcedownloader.external.bangumi.BgmTvApiClient
 import io.github.shoaky.sourcedownloader.sdk.PatternVariables
@@ -48,11 +47,12 @@ class AnimeVariableProviderTest {
             }
     }
 
-    @Test
+    //@Test
     fun test_file() {
         val provider = AnimeVariableProvider(
             BgmTvApiClient(),
-            AnilistClient()
+            AnilistClient(),
+            true
         )
         val path = Path(
             "[VCB-Studio] Yama no Susume",

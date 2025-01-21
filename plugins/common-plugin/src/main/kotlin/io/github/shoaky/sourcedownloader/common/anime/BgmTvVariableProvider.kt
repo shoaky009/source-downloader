@@ -38,7 +38,7 @@ class BgmTvVariableProvider(
     }
 
     override fun itemVariables(sourceItem: SourceItem): PatternVariables {
-        val title = AnimeVariableProvider.extractTitle(sourceItem)
+        val title = AnimeVariableProvider.extractTitle(sourceItem.title)
         return searchCache.get(title)
     }
 
