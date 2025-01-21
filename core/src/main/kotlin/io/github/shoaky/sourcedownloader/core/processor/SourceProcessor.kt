@@ -270,9 +270,13 @@ class SourceProcessor(
         val fileContents = resolvedFiles.groupBy {
             options.matchFileOption(it)
         }.flatMap { (fileOption, files) ->
-            val fileVariables = variableProvider.fileVariables(sourceItem, itemVariables, files)
-            checkFileVariables(files, fileVariables)
-            files.mapIndexed { index, file ->
+            val relativizeFiles = files.map {
+                it.takeIf { it.path.isAbsolute.not() }
+                    ?: it.copy(path = downloadPath.relativize(it.path))
+            }
+            val fileVariables = variableProvider.fileVariables(sourceItem, itemVariables, relativizeFiles)
+            checkFileVariables(relativizeFiles, fileVariables)
+            relativizeFiles.mapIndexed { index, file ->
                 val rawFileContent = RawFileContent(
                     sourceSavePath,
                     downloadPath,

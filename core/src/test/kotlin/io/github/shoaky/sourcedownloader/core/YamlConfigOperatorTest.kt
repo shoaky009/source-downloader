@@ -74,7 +74,7 @@ processors:
                 ComponentId("test"),
                 ComponentId("test"),
                 ComponentId("test"),
-                "",
+                "./",
                 options = ProcessorConfig.Options(
                     renameTaskInterval = Duration.ofSeconds(100L)
                 )
