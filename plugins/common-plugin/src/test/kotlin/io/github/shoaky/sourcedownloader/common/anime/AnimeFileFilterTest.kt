@@ -9,6 +9,7 @@ class AnimeFileFilterTest {
 
     // false 表示过滤
     private val data = listOf(
+        "[VCB-Studio] Yama no Susume/[VCB-Studio] Yama no Susume Third Season [Ma10p_1080p]/Scans/Production Materials/[C95][ヤマノススメ 3期 設定資料 制作資料][268p].7z" to false,
         "[UHA-WINGS&VCB-Studio] Karakai Jouzu no Takagi-san 2 [PV02][Ma10p_1080p][x265_flac].mkv" to false,
         "[UHA-WINGS&VCB-Studio] Karakai Jouzu no Takagi-san 2 [NCOP][Ma10p_1080p][x265_flac].mkv" to false,
         "[UHA-WINGS&VCB-Studio] Karakai Jouzu no Takagi-san 2 [NCED_EP12][Ma10p_1080p][x265_flac].mkv" to false,

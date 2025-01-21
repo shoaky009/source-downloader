@@ -5,7 +5,6 @@ import io.github.shoaky.sourcedownloader.sdk.component.FileContentFilter
 import io.github.shoaky.sourcedownloader.sdk.util.TextClear
 import io.github.shoaky.sourcedownloader.sdk.util.replaces
 import org.slf4j.LoggerFactory
-import java.nio.file.Path
 import kotlin.io.path.name
 import kotlin.io.path.nameWithoutExtension
 
@@ -15,7 +14,7 @@ import kotlin.io.path.nameWithoutExtension
 object AnimeFileFilter : FileContentFilter {
 
     private val replaces = listOf("-", "_", "[", "]", "(", ")", ".")
-
+    private val mustFilterDirNames = setOf("ncop", "nced", "trailer", "menu", "pv", "cm", "cd", "cds", "scan", "scans")
     private val specialDirNames = setOf(
         "sps", "sp", "special", "ncop", "nced", "menu", "pv", "cm", "cd", "cds", "scan", "scans", "extra", "特典"
     )
@@ -50,7 +49,11 @@ object AnimeFileFilter : FileContentFilter {
 
     override fun test(content: FileContent): Boolean {
         val path = content.fileDownloadPath
-        val isInSpecialDir = isInSpecialDir(path)
+        if (isFileInDir(content, mustFilterDirNames)) {
+            return false
+        }
+
+        val isInSpecialDir = isFileInDir(content, specialDirNames)
         val regexes = if (isInSpecialDir) {
             spRegexes
         } else {
@@ -68,9 +71,13 @@ object AnimeFileFilter : FileContentFilter {
         }
     }
 
-    private fun isInSpecialDir(path: Path): Boolean {
-        val parenName = path.parent?.name
-        return parenName != null && specialDirNames.contains(parenName.lowercase())
+    private fun isFileInDir(content: FileContent, dirNames: Set<String>): Boolean {
+        val relativeParentPath = content.fileDownloadRelativeParentDirectory() ?: return false
+        val parenNames = relativeParentPath.map { it.name.lowercase() }
+        if (parenNames.isEmpty()) {
+            return false
+        }
+        return parenNames.any { dirNames.contains(it) }
     }
 
     private val log = LoggerFactory.getLogger(AnimeFileFilter::class.java)

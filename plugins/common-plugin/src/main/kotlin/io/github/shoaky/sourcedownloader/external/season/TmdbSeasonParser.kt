@@ -27,7 +27,7 @@ class TmdbSeasonParser(
                 val search = split.first()
                 // 这里不需要lang因为tmdb支持多语言搜索
                 val results = tmdbClient.execute(SearchTvShow(search)).body().results
-                val firstSearchResult = results.firstOrNull() ?: return -1
+                val firstSearchResult = results.firstOrNull() ?: return INVALID_SEASON
 
                 val lang = getLanguage(content)
                 val tvShow = tmdbClient.execute(GetTvShow(firstSearchResult.id, lang)).body()
@@ -36,9 +36,14 @@ class TmdbSeasonParser(
                 }
 
                 val last = split.last()
-                return tvShow.seasons.map { it.copy(name = it.name.replace(" ", "")) }
+                val season = tvShow.seasons.map { it.copy(name = it.name.replace(" ", "")) }
                     .filter { it.name.contains(last) }
-                    .map { it.seasonNumber }.firstOrNull() ?: -1
+                    .map { it.seasonNumber }.firstOrNull() ?: INVALID_SEASON
+
+                if (season < 1) {
+                    log.info("从TMDB获取季度失败name:{}", content)
+                }
+                return season
             }
 
             private fun getLanguage(content: String): String {
@@ -54,7 +59,6 @@ class TmdbSeasonParser(
     override fun input(subject: String): SeasonResult? {
         val season = tmdbCache.get(subject)
         if (season < 1) {
-            log.info("从TMDB获取季度失败name:{}", subject)
             return null
         }
         log.debug("从TMDB获取季度成功name:{},season:{}", subject, season)
@@ -63,13 +67,16 @@ class TmdbSeasonParser(
 
     companion object {
 
+        private const val INVALID_SEASON = -1
         private val languageDetector = LanguageDetectorBuilder.create(NgramExtractors.standard())
             .withProfiles(LanguageProfileReader().read(listOf("zh-CN", "zh-TW", "ja")))
-            .languagePriorities(mapOf(
-                LdLocale.fromString("ja") to 10.0,
-                LdLocale.fromString("zh-CN") to .1,
-                LdLocale.fromString("zh-TW") to .3
-            ))
+            .languagePriorities(
+                mapOf(
+                    LdLocale.fromString("ja") to 10.0,
+                    LdLocale.fromString("zh-CN") to .1,
+                    LdLocale.fromString("zh-TW") to .3
+                )
+            )
             .minimalConfidence(0.4)
             .build()
         private val log = LoggerFactory.getLogger(TmdbSeasonParser::class.java)
