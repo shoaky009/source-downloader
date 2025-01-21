@@ -689,15 +689,16 @@ class SourceProcessor(
             processJob.join()
 
             secondaryFileMover.releaseAll()
-            if (processJob.isCancelled) {
-                val ex = processJob.getCancellationException()
-                log.info("Processor:'{}' process job cancelled, message:{}", name, ex.message)
-            }
-
             stat.stopWatch.stop()
             onProcessCompleted(context)
             if (stat.hasChange()) {
                 log.info("Processor:{}", stat)
+            }
+
+            if (processJob.isCancelled) {
+                val ex = processJob.getCancellationException().cause ?: processJob.getCancellationException()
+                log.info("Processor:'{}' process job cancelled, message:{}", name, ex.message)
+                throw ex
             }
         }
 
