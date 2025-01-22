@@ -6,9 +6,11 @@ import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.time.Duration
+import java.util.concurrent.Executors
 
 val defaultCookieManager = CookieManager()
 val httpClient: HttpClient = HttpClient.newBuilder()
+    .executor(Executors.newVirtualThreadPerTaskExecutor())
     .cookieHandler(defaultCookieManager)
     .connectTimeout(Duration.ofSeconds(10))
     .build()

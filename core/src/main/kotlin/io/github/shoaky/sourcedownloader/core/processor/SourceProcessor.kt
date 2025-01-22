@@ -95,7 +95,7 @@ class SourceProcessor(
         Executors.newScheduledThreadPool(1, factory)
     }
     private val itemChannel = Channel<Process>(options.channelBufferSize)
-    private val processorCoroutineScope = CoroutineScope(Dispatchers.Default)
+    private val processorCoroutineScope = CoroutineScope(processDispatcher)
     private val runtime: ProcessorRuntime = ProcessorRuntime(Instant.now())
 
     init {

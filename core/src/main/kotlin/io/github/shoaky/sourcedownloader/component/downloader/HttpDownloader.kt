@@ -18,6 +18,7 @@ import java.nio.ByteBuffer
 import java.nio.file.Path
 import java.time.Instant
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.Executors
 import kotlin.io.path.createDirectories
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.notExists
@@ -33,8 +34,9 @@ class HttpDownloader(
 
     private val progresses: MutableMap<Path, Downloading> = ConcurrentHashMap()
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private val dispatchers = Dispatchers.IO.limitedParallelism(parallelism)
+    private val dispatchers = Executors
+        .newFixedThreadPool(parallelism, Thread.ofVirtual().name("HTTP-Download", 1).factory())
+        .asCoroutineDispatcher()
 
     override fun submit(task: DownloadTask): Boolean {
         runBlocking(dispatchers) {
