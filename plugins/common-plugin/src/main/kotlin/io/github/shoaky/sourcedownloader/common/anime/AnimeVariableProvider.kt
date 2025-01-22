@@ -258,4 +258,12 @@ private val log = LoggerFactory.getLogger(AnimeVariableProvider::class.java)
 data class Anime(
     val romajiName: String? = null,
     val nativeName: String? = null
-) : PatternVariables
+) : PatternVariables {
+
+    override fun variables(): Map<String, String> {
+        return mapOf(
+            "romajiName" to romajiName.orEmpty(),
+            "nativeName" to nativeName.orEmpty()
+        )
+    }
+}

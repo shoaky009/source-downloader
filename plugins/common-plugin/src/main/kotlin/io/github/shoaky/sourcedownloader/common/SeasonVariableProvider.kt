@@ -71,4 +71,9 @@ object SeasonVariableProvider : VariableProvider {
 
 private class Season(
     val season: String
-) : PatternVariables
+) : PatternVariables {
+
+    override fun variables(): Map<String, String> {
+        return mapOf("season" to season)
+    }
+}

@@ -3,6 +3,7 @@ package io.github.shoaky.sourcedownloader.core.component
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import com.google.common.base.Throwables
+import io.github.shoaky.sourcedownloader.core.CachedVariableProvider
 import io.github.shoaky.sourcedownloader.core.DefaultCoreContext
 import io.github.shoaky.sourcedownloader.core.ObjectWrapperContainer
 import io.github.shoaky.sourcedownloader.core.processor.SourceProcessor
@@ -64,12 +65,17 @@ class DefaultComponentManager(
                 type,
                 id.toString(),
             )
-            val component = try {
+            var component = try {
                 supplier.apply(context, props)
             } catch (e: ComponentException) {
                 val rootCause = Throwables.getRootCause(e).message
                 throw ComponentException.other("Component $primaryTypeBeanName ${e.message} failed cause by $rootCause")
             }
+
+            if (component is VariableProvider) {
+                component = CachedVariableProvider(component)
+            }
+
             val wrapper = ComponentWrapper(
                 primaryType,
                 targetName,
