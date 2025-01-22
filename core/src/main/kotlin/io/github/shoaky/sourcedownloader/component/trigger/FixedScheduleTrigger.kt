@@ -1,9 +1,11 @@
 package io.github.shoaky.sourcedownloader.component.trigger
 
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.consumeEach
+import kotlinx.coroutines.channels.ticker
 import org.slf4j.LoggerFactory
 import java.time.Duration
-import java.util.*
-import kotlin.concurrent.timerTask
+import java.util.concurrent.ForkJoinPool
 
 /**
  * 固定时间间隔触发器
@@ -13,15 +15,27 @@ class FixedScheduleTrigger(
     private val onStartRunTasks: Boolean = false,
 ) : HoldingTaskTrigger() {
 
-    private val timer = Timer("fixed-schedule:$interval")
+    @OptIn(ObsoleteCoroutinesApi::class)
+    private val tickerChannel = ticker(interval.toMillis(), interval.toMillis())
+    private var job: Job? = null
 
     override fun stop() {
-        timer.cancel()
-        timer.purge()
+        tickerChannel.cancel()
+        job?.cancel()
     }
 
     override fun start() {
-        timer.scheduleAtFixedRate(timerTask(), interval.toMillis(), interval.toMillis())
+        job = CoroutineScope(ForkJoinPool.commonPool().asCoroutineDispatcher()).launch {
+            tickerChannel.consumeEach {
+                getSourceGroupingTasks().forEach { task ->
+                    Thread.ofVirtual().name("fixed-schedule-$interval")
+                        .start(task)
+                        .setUncaughtExceptionHandler { _, e ->
+                            log.error("任务处理发生异常:{}", task, e)
+                        }
+                }
+            }
+        }
         if (onStartRunTasks) {
             getSourceGroupingTasks().forEach {
                 Thread.ofVirtual().name("onstart-up-$interval")
@@ -29,16 +43,6 @@ class FixedScheduleTrigger(
                         it.run()
                     }
             }
-        }
-    }
-
-    private fun timerTask() = timerTask {
-        getSourceGroupingTasks().forEach { task ->
-            Thread.ofVirtual().name("fixed-schedule-$interval")
-                .start(task)
-                .setUncaughtExceptionHandler { _, e ->
-                    log.error("任务处理发生异常:{}", task, e)
-                }
         }
     }
 
