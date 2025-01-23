@@ -1066,7 +1066,7 @@ class SourceProcessor(
     private inner class NormalProcess : Process() {
 
         override fun onProcessCompleted(processContext: ProcessContext) {
-            if (processContext.processedItems().isNotEmpty()) {
+            if (processContext.processedItems().isNotEmpty() && downloader !is AsyncDownloader) {
                 invokeListeners(ListenerMode.BATCH) {
                     this.onProcessCompleted(processContext)
                 }
