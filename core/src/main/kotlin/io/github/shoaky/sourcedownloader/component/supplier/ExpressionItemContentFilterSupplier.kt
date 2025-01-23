@@ -14,12 +14,15 @@ object ExpressionItemContentFilterSupplier : ComponentSupplier<ExpressionItemCon
         return expressions(exclusions, inclusions)
     }
 
-    fun expressions(exclusions: List<String> = emptyList(), inclusions: List<String> = emptyList()): ExpressionItemContentFilter {
+    fun expressions(
+        exclusions: List<String> = emptyList(),
+        inclusions: List<String> = emptyList()
+    ): ExpressionItemContentFilter {
         return ExpressionItemContentFilter(exclusions, inclusions)
     }
 
     override fun supplyTypes(): List<ComponentType> {
-        return listOf(ComponentType.contentFilter("expression"))
+        return listOf(ComponentType.itemContentFilter("expression"))
     }
 
 }

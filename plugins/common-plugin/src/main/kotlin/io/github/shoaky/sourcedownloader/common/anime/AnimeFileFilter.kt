@@ -1,7 +1,7 @@
 package io.github.shoaky.sourcedownloader.common.anime
 
-import io.github.shoaky.sourcedownloader.sdk.FileContent
-import io.github.shoaky.sourcedownloader.sdk.component.FileContentFilter
+import io.github.shoaky.sourcedownloader.sdk.SourceFile
+import io.github.shoaky.sourcedownloader.sdk.component.SourceFileFilter
 import io.github.shoaky.sourcedownloader.sdk.util.TextClear
 import io.github.shoaky.sourcedownloader.sdk.util.replaces
 import org.slf4j.LoggerFactory
@@ -11,7 +11,7 @@ import kotlin.io.path.nameWithoutExtension
 /**
  * 针对动画资源的过滤器，默认排除NCOP、NCED、OP、ED、映像特典、PV、CM、Fonts、Scan、Event、Lecture、Preview等文件
  */
-object AnimeFileFilter : FileContentFilter {
+object AnimeFileFilter : SourceFileFilter {
 
     private val replaces = listOf("-", "_", "[", "]", "(", ")", ".")
     private val mustFilterDirNames = setOf("ncop", "nced", "trailer", "menu", "pv", "cm", "cd", "cds", "scan", "scans")
@@ -47,20 +47,19 @@ object AnimeFileFilter : FileContentFilter {
         )
     )
 
-    override fun test(content: FileContent): Boolean {
-        val path = content.fileDownloadPath
-        if (isFileInDir(content, mustFilterDirNames)) {
+    override fun test(file: SourceFile): Boolean {
+        if (isFileInDir(file, mustFilterDirNames)) {
             return false
         }
 
-        val isInSpecialDir = isFileInDir(content, specialDirNames)
+        val isInSpecialDir = isFileInDir(file, specialDirNames)
         val regexes = if (isInSpecialDir) {
             spRegexes
         } else {
             normalRegexes
         }
         val name = textClear.input(
-            path.nameWithoutExtension.replaces(replaces, " ")
+            file.path.nameWithoutExtension.replaces(replaces, " ")
         )
         return regexes.none {
             val containsMatchIn = it.containsMatchIn(name)
@@ -71,9 +70,9 @@ object AnimeFileFilter : FileContentFilter {
         }
     }
 
-    private fun isFileInDir(content: FileContent, dirNames: Set<String>): Boolean {
-        val relativeParentPath = content.fileDownloadRelativeParentDirectory() ?: return false
-        val parenNames = relativeParentPath.map { it.name.lowercase() }
+    private fun isFileInDir(file: SourceFile, dirNames: Set<String>): Boolean {
+        val parent = file.path.parent ?: return false
+        val parenNames = parent.map { it.name.lowercase() }
         if (parenNames.isEmpty()) {
             return false
         }

@@ -213,14 +213,14 @@ processors:
       variable-providers:
         - "sequence"
       save-path-pattern: "{item.title}"
-      file-expression-exclusions:
+      file-content-expression-exclusions:
         - "true"
       file-grouping:
         - expression-matching: "file.name == 'test3.jpg'"
-          file-expression-exclusions:
+          file-content-expression-exclusions:
             - "false"
         - expression-matching: "file.name == 'test1.jpg'"
-          file-expression-inclusions:
+          file-content-expression-inclusions:
             - "true"
     enabled: true
   - name: "FileGroupingSeqVariableCase"
@@ -242,9 +242,10 @@ processors:
           matched-expression: null
           filename-pattern: "{sequence}"
           save-path-pattern: "{item.title}"
-          file-filters: [ ]
-          file-expression-exclusions: [ ]
-          file-expression-inclusions: [ ]
+          source-file-filters: [ ]
+          file-content-filters: [ ]
+          file-content-expression-exclusions: [ ]
+          file-content-expression-inclusions: [ ]
           file-replacement-decider: null
     enabled: true
   - name: "DryRunCase"

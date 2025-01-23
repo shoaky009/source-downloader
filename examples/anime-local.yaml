@@ -40,9 +40,9 @@ processors:
       file-grouping:
         - tags: [ "subtitle" ]
           filename-pattern: "{title} S{season}E{episode}:{' - ' + source}:{'.' + language}"
-      file-filters:
+      source-file-filters:
         - "anime"
-      file-expression-exclusions:
+      file-content-expression-exclusions:
         - "file.extension in ['torrent', 'md5', 'txt']"
         - "file.tags.containsAny(['image'], true)"
         - "file.paths.containsAny(['extra', 'special', 'others', '映像特典'], true)"

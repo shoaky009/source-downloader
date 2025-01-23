@@ -70,8 +70,9 @@ class SourceProcessor(
     private val savePathPattern = options.savePathPattern
     private var renameTaskFuture: ScheduledFuture<*>? = null
     private val sourceItemFilters: List<SourceItemFilter> = options.itemFilters
+    private val sourceFileFilters: List<SourceFileFilter> = options.sourceFileFilters
     private val itemContentFilters: List<ItemContentFilter> = options.itemContentFilters
-    private val fileContentFilters: List<FileContentFilter> = options.fileFilters
+    private val fileContentFilters: List<FileContentFilter> = options.fileContentFilters
     private val variableProviders = options.variableProviders
     private val processListeners: Map<ListenerMode, List<ProcessListener>> = options.processListeners
     private val taggers: List<FileTagger> = options.fileTaggers
@@ -234,28 +235,41 @@ class SourceProcessor(
         }
     }
 
-    private fun createItemContent(sourceItem: SourceItem, itemOptions: ItemSelectedOptions): CoreItemContent {
-        val resolvedFiles = itemFileResolver.resolveFiles(sourceItem).map { file ->
-            val tags = taggers.mapNotNull { it.tag(file) }.toMutableSet()
-            if (tags.isEmpty() && file.tags.isEmpty()) {
-                return@map file
-            }
-            tags.addAll(file.tags)
-            file.copy(tags = tags)
-        }.map {
-            val path = cuttingFilename(it.path, maxFilenameLength)
-            if (it.path == path) {
-                return@map it
-            }
-            log.info(
-                "Processor:'{}' item:'{}' filename:'{}' is too long, cutting to:'{}'",
-                name,
-                sourceItem.title,
-                it.path,
-                path
-            )
-            it.copy(path)
+    private fun filterSourceFile(
+        sf: SourceFile,
+    ): Boolean {
+        val filterBy = sourceFileFilters.firstOrNull { it.test(sf).not() }
+        if (filterBy != null) {
+            log.debug("{} filtered file:{}", filterBy::class.simpleName, sf)
+            return true
         }
+        return false
+    }
+
+    private fun createItemContent(sourceItem: SourceItem, itemOptions: ItemSelectedOptions): CoreItemContent {
+        val resolvedFiles = itemFileResolver.resolveFiles(sourceItem)
+            .filter { filterSourceFile(it).not() }
+            .map { file ->
+                val tags = taggers.mapNotNull { it.tag(file) }.toMutableSet()
+                if (tags.isEmpty() && file.tags.isEmpty()) {
+                    return@map file
+                }
+                tags.addAll(file.tags)
+                file.copy(tags = tags)
+            }.map {
+                val path = cuttingFilename(it.path, maxFilenameLength)
+                if (it.path == path) {
+                    return@map it
+                }
+                log.info(
+                    "Processor:'{}' item:'{}' filename:'{}' is too long, cutting to:'{}'",
+                    name,
+                    sourceItem.title,
+                    it.path,
+                    path
+                )
+                it.copy(path)
+            }
         checkResolvedFiles(sourceItem, resolvedFiles)
 
         val variableProvider = VariableProvidersAggregation(
@@ -289,7 +303,7 @@ class SourceProcessor(
                 fileContent to fileOption
             }
         }.filter { (fileContent, fileOption) ->
-            val filters = fileOption?.fileFilters ?: fileContentFilters
+            val filters = fileOption?.fileContentFilters ?: fileContentFilters
             val filter = filters.all { it.test(fileContent) }
             if (filter.not()) {
                 log.trace("Filtered file:{}", fileContent.fileDownloadPath)

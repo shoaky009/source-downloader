@@ -47,7 +47,7 @@ components:
   item-filter:
   #省略...
   #SourceFile过滤器
-  file-filter:
+  source-file-filter:
   #省略..
 
 processors:
@@ -108,11 +108,11 @@ processors:
       item-expression-inclusions:
         - "item.datetime > timestamp('2023-03-30T00:00:00Z')"
       #CEL表达式过滤sourceFile,任意一个为true则过滤,支持filename,size,contentType
-      file-expression-exclusions:
+      file-content-expression-exclusions:
         #文件大小小于1MB的
         - "item.attrs.size > 1024 * 1024"
       #CEL表达式过滤sourceFile,任意一个为false则过滤
-      file-expression-inclusions:
+      file-content-expression-inclusions:
         #文件名包含test的
         - "file.name.contains('test')"
       #定义的模板变量不存在时的处理策略,默认:USE_ORIGINAL_FILENAME
@@ -144,8 +144,11 @@ processors:
       #SourceItem过滤器，使用组件引用的方式
       item-filters:
         - "test"
+      #SourceFile过滤器，使用组件引用的方式
+      source-file-filters:
+        - "anime"
       #FileContent过滤器，使用组件引用的方式
-      file-filters:
+      file-content-filters:
         - "anime"
       #替换变量提供者的变量名
       variable-name-replace:

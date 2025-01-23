@@ -14,7 +14,7 @@ object AnimeFileFilterSupplier : ComponentSupplier<AnimeFileFilter> {
 
     override fun supplyTypes(): List<ComponentType> {
         return listOf(
-            ComponentType.fileFilter("anime")
+            ComponentType.sourceFileFilter("anime")
         )
     }
 

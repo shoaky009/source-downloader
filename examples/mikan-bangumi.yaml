@@ -80,7 +80,7 @@ processors:
           - "mikan-bangumi"
       item-expression-exclusions:
         - "item.title.matches('720(?i)P|中文配音|CR |1280X720')"
-      file-expression-exclusions:
+      file-content-expression-exclusions:
         - "file.tags in ['image'] || file.extension in ['zip', 'rar']"
       file-replacement-decider: anime
       file-exists-detector: 'media-type'

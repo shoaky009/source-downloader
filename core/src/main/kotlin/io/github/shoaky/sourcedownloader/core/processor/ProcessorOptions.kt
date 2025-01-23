@@ -17,8 +17,9 @@ data class ProcessorOptions(
     val variableProviders: List<VariableProvider> = emptyList(),
     val processListeners: Map<ListenerMode, List<ProcessListener>> = emptyMap(),
     val itemFilters: List<SourceItemFilter> = emptyList(),
+    val sourceFileFilters: List<SourceFileFilter> = emptyList(),
     val itemContentFilters: List<ItemContentFilter> = emptyList(),
-    val fileFilters: List<FileContentFilter> = emptyList(),
+    val fileContentFilters: List<FileContentFilter> = emptyList(),
     val fileTaggers: List<FileTagger> = emptyList(),
     val variableReplacers: List<VariableReplacer> = emptyList(),
     val fileReplacementDecider: FileReplacementDecider = NeverReplace,
@@ -98,7 +99,7 @@ data class VariableProcessOutput(
 data class FileOption(
     val savePathPattern: CorePathPattern? = null,
     val filenamePattern: CorePathPattern? = null,
-    val fileFilters: List<FileContentFilter>? = null,
+    val fileContentFilters: List<FileContentFilter>? = null,
 )
 
 data class ItemOption(

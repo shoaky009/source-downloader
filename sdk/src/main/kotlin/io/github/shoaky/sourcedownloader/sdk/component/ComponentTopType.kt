@@ -23,13 +23,17 @@ enum class ComponentTopType(
         SourceItemFilter::class,
         listOf("item-filter", "source-item-filter", "sourceItemFilter", "itemFilter")
     ),
+    SOURCE_FILE_FILTER(
+        SourceFileFilter::class,
+        listOf("source-file-filter", "sourceFileFilter")
+    ),
     ITEM_CONTENT_FILTER(
         ItemContentFilter::class,
         listOf("item-content-filter", "itemContentFilter")
     ),
     FILE_CONTENT_FILTER(
         FileContentFilter::class,
-        listOf("file-filter", "file-content-filter", "fileContentFilter", "fileFilter")
+        listOf("file-content-filter", "fileContentFilter", "fileFilter")
     ),
     TAGGER(FileTagger::class, listOf("file-tagger", "tagger")),
     FILE_REPLACEMENT_DECIDER(

@@ -36,16 +36,19 @@ data class ComponentType(
         fun itemFilter(typeName: String) = ComponentType(SOURCE_ITEM_FILTER, typeName)
 
         @JvmStatic
-        fun contentFilter(typeName: String) = ComponentType(ITEM_CONTENT_FILTER, typeName)
+        fun itemContentFilter(typeName: String) = ComponentType(ITEM_CONTENT_FILTER, typeName)
 
         @JvmStatic
         fun trigger(typeName: String) = ComponentType(TRIGGER, typeName)
 
         @JvmStatic
         fun listener(typeName: String) = ComponentType(PROCESS_LISTENER, typeName)
+        
+        @JvmStatic
+        fun sourceFileFilter(typeName: String) = ComponentType(SOURCE_FILE_FILTER, typeName)
 
         @JvmStatic
-        fun fileFilter(typeName: String) = ComponentType(FILE_CONTENT_FILTER, typeName)
+        fun fileContentFilter(typeName: String) = ComponentType(FILE_CONTENT_FILTER, typeName)
 
         @JvmStatic
         fun fileTagger(typeName: String): ComponentType = ComponentType(TAGGER, typeName)

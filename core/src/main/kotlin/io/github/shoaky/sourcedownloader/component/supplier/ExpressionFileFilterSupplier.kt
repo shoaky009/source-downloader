@@ -25,7 +25,7 @@ object ExpressionFileFilterSupplier : ComponentSupplier<ExpressionFileFilter> {
 
     override fun supplyTypes(): List<ComponentType> {
         return listOf(
-            ComponentType.fileFilter("expression")
+            ComponentType.fileContentFilter("expression")
         )
     }
 

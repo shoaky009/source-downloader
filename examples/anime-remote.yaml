@@ -44,13 +44,13 @@ processors:
       file-grouping:
         - tags: [ "subtitle" ]
           filename-pattern: "{title} S{season}E{episode}:{' - ' + source}:{'.' + language}"
-      file-filters:
+      source-file-filters:
         - "anime"
       item-expression-exclusions:
         - "item.title.matches('剧场版') || item.title.matches('BDMV') || item.title.matches('劇場版')"
       content-expression-exclusions:
         - "files.filter(x, 'video' in x.tags).size() < 3"
-      file-expression-exclusions:
+      file-content-expression-exclusions:
         - "file.extension in ['torrent', 'md5', 'txt', 'rar', 'zip']"
         - "file.tags.containsAny(['image'], true)"
         - "file.paths.containsAny(['extra', 'special', 'others', '映像特典', 'cd', 'cds'], true)"

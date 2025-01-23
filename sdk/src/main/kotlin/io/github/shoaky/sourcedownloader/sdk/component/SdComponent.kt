@@ -266,6 +266,11 @@ interface ProcessListener : SdComponent {
 interface SourceItemFilter : SdComponent, Predicate<SourceItem>
 
 /**
+ * @return true if the file should be processed
+ */
+interface SourceFileFilter : SdComponent, Predicate<SourceFile>
+
+/**
  * @return true if the item should be processed
  */
 interface ItemContentFilter : SdComponent, Predicate<ItemContent>

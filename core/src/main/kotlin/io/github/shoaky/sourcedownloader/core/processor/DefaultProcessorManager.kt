@@ -226,11 +226,11 @@ class DefaultProcessorManager(
         )
 
         val itemContentFilters = mutableListOf<ItemContentFilter>()
-        if (options.contentExpressionExclusions.isNotEmpty() || options.contentExpressionInclusions.isNotEmpty()) {
+        if (options.itemContentExpressionExclusions.isNotEmpty() || options.itemContentExpressionInclusions.isNotEmpty()) {
             itemContentFilters.add(
                 ExpressionItemContentFilter(
-                    options.contentExpressionExclusions,
-                    options.contentExpressionInclusions,
+                    options.itemContentExpressionExclusions,
+                    options.itemContentExpressionInclusions,
                     expressionFactory
                 )
             )
@@ -246,21 +246,32 @@ class DefaultProcessorManager(
         )
 
         val fileContentFilters = mutableListOf<FileContentFilter>()
-        if (options.fileExpressionExclusions.isNotEmpty() || options.fileExpressionInclusions.isNotEmpty()) {
+        if (options.fileContentExpressionExclusions.isNotEmpty() || options.fileContentExpressionInclusions.isNotEmpty()) {
             fileContentFilters.add(
                 ExpressionFileFilter(
-                    options.fileExpressionExclusions,
-                    options.fileExpressionInclusions,
+                    options.fileContentExpressionExclusions,
+                    options.fileContentExpressionInclusions,
                     expressionFactory
                 )
             )
         }
         fileContentFilters.addAll(
-            config.options.fileFilters.map {
+            config.options.fileContentFilters.map {
                 componentManager.getComponent(
                     ComponentTopType.FILE_CONTENT_FILTER,
                     it,
                     fileContentFilterTypeRef,
+                ).getAndMarkRef(config.name)
+            }
+        )
+
+        val sourceFileFilters = mutableListOf<SourceFileFilter>()
+        sourceFileFilters.addAll(
+            config.options.sourceFileFilters.map {
+                componentManager.getComponent(
+                    ComponentTopType.SOURCE_FILE_FILTER,
+                    it,
+                    sourceFileFilterTypeRef,
                 ).getAndMarkRef(config.name)
             }
         )
@@ -341,6 +352,7 @@ class DefaultProcessorManager(
             providers,
             listeners,
             sourceItemFilter,
+            sourceFileFilters,
             itemContentFilters,
             fileContentFilters,
             taggers,
@@ -402,18 +414,18 @@ class DefaultProcessorManager(
         for (fileOption in options.fileGrouping) {
             var addFlag = false
             val fileContentFilters = mutableListOf<FileContentFilter>()
-            if (fileOption.fileExpressionExclusions != null || fileOption.fileExpressionInclusions != null) {
+            if (fileOption.fileContentExpressionExclusions != null || fileOption.fileContentExpressionInclusions != null) {
                 fileContentFilters.add(
                     ExpressionFileFilter(
-                        fileOption.fileExpressionExclusions ?: emptyList(),
-                        fileOption.fileExpressionInclusions ?: emptyList(),
+                        fileOption.fileContentExpressionExclusions ?: emptyList(),
+                        fileOption.fileContentExpressionInclusions ?: emptyList(),
                         expressionFactory
                     )
                 )
                 addFlag = true
             }
 
-            val filters = fileOption.fileFilters?.map {
+            val filters = fileOption.fileContentFilters?.map {
                 componentManager.getComponent(
                     ComponentTopType.FILE_CONTENT_FILTER,
                     it,

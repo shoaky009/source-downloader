@@ -13,6 +13,8 @@ processors:
     source: "test"
     item-file-resolver: "test"
     downloader: "test"
+    variable-providers:
+      - "test"
     file-mover: "test"
     save-path: "test-path"
     options:
