@@ -30,8 +30,10 @@ object EpisodeVariableProvider : VariableProvider {
         RegexValueParser("#(\\d+)".toRegex()),
         RangeEpisodeValueParser,
         CommonEpisodeValueParser,
-        //[01(56)]
+        // [01(56)]
         RegexValueParser("\\[(\\d{2})\\(\\d{2}\\)]".toRegex()),
+        // 06.5(OVA)
+        RegexValueParser("(\\d{2}.\\d)?.(?i)(oad|ova)".toRegex(), 1),
     )
 
     private val textClear = TextClear(
@@ -105,11 +107,16 @@ private interface ValueParser {
 }
 
 private class RegexValueParser(
-    private val regex: Regex
+    private val regex: Regex,
+    private val takeGroupIndex: Int? = null
 ) : ValueParser {
 
     override fun parse(value: String): Number? {
-        val string = regex.find(value)?.groupValues?.lastOrNull() ?: return null
+        val string = if (takeGroupIndex != null) {
+            regex.find(value)?.groupValues?.getOrNull(takeGroupIndex) ?: return null
+        } else {
+            regex.find(value)?.groupValues?.lastOrNull() ?: return null
+        }
         if (string.contains(".")) {
             return string.toFloat()
         }
