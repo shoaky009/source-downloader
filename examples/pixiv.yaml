@@ -23,16 +23,19 @@ components:
 
 processors:
   - name: pixiv
+    enabled: true
     triggers:
       - fixed:6hour
       #- cron:free-time-every20min
     source: pixiv
     downloader: http
     item-file-resolver: pixiv
-    mover: general
+    file-mover: general
     save-path: /mnt/doujin/pixiv
+    tags: ["同人"]
     options:
       variable-providers:
         - "sequence"
       save-path-pattern: "{item.attrs.username}"
       filename-pattern: "{item.date}_{item.title}_{item.attrs.illustrationId}_{sequence}"
+      tags: ["同人插画"]

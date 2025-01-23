@@ -58,18 +58,21 @@ processors:
   - name: mikan-bangumi
     triggers:
       - fixed:20min
+      #- cron:every-00-20-40
     source: mikan
     item-file-resolver: torrent
     downloader: qbittorrent
-    mover: qbittorrent
+    file-mover: qbittorrent
     save-path: /mnt/bangumi
-    tags: [ "新番" ]
+    tags: ["新番"]
     options:
       variable-providers:
         - "mikan"
         - "episode"
       process-listeners:
         - http:telegram-message-webhook
+        # 触发完成后发送一个http请求，同步下载器处理完后调用，异步下载器定时重命名后调用
+        # - "http:refresh-bangumi-library": BATCH
       save-path-pattern: "{name}/Season {season}/"
       filename-pattern: "{nameCn} - S{season}E{episode}"
       rename-task-interval: PT2M
@@ -86,10 +89,3 @@ processors:
       file-exists-detector: 'media-type'
       file-taggers:
         - "simple"
-      parallelism: 5
-      variable-process:
-        - input: name
-          chain: [ "season" ]
-          output:
-            key-mapping:
-              name: season

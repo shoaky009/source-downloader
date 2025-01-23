@@ -66,7 +66,7 @@ processors:
     source: telegram
     downloader: "composite:telegram-message"
     item-file-resolver: "composite:telegram-message"
-    mover: general
+    file-mover: general
     save-path: /mnt/telegram
     options:
       save-path-pattern: "{item.attrs.chatName}-{item.attrs.chatId}"

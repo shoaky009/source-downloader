@@ -20,11 +20,12 @@ processors:
     source: fanbox
     downloader: http
     item-file-resolver: fanbox
-    mover: general
+    file-mover: general
     save-path: /mnt/doujin/fanbox
+    tags: [ "同人" ]
     options:
       variable-providers:
-        - item.title
+        - sequence
       save-path-pattern: "{item.attrs.username}/{item.date} {item.title}-{item.attrs.postId}"
       filename-pattern: "{sequence}"
       item-error-continue: false

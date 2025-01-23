@@ -11,41 +11,57 @@ components:
 
 processors:
   - name: 'anime-local'
-    triggers:
-      - webhook:anime-local
+    # 手动触发
+    triggers: [ ]
     source: system-file:anime-temp-path
     downloader: system-file:anime-temp-path
     item-file-resolver: system-file
-    mover: general
+    file-mover: general
     save-path: /mnt/temp-media/anime
     options:
+      parallelism: 5
       variable-providers:
-        - "anime"
+        - "anime:preferBgmTv"
         - "season"
         - "anitom"
         - "episode"
         - "language"
       save-path-pattern: "{nativeName}/Season {season}"
-      filename-pattern: "{title} S{season}E{episode}:{' - ' + source}"
+      filename-pattern: "{title} S{season}E{episode}:{' - '+source}"
+      source-file-filters:
+        - "anime"
+      save-processing-content: false
       variable-name-replace:
         episodeNumber: episode
-        animeTitle: title
         episodeNumberAlt: episode
         romajiName: title
+      process-listeners:
+        - "delete-empty-directory"
+      file-content-expression-inclusions: [ ]
+      file-content-expression-exclusions:
+        - "file.paths.containsAny(['extra', 'others', 'special'], true)"
+      file-taggers:
+        - "simple"
+        - "anime"
+      file-grouping:
+        - tags: [ "subtitle" ]
+          filename-pattern: "{title} S{season}E{episode}:{' - '+source}:{'.'+language}"
+        - tags: [ "special" ]
+          save-path: "{nativeName}/Season 00"
+          filename-pattern: "{title} S00E{episode}"
+        - tags: [ "ova" ]
+          save-path-pattern: "{nativeName}/Season 00/"
+          filename-pattern: "{title} OVA S00E{episode}"
+        - tags: [ "oad" ]
+          save-path-pattern: "{nativeName}/Season 00/"
+          filename-pattern: "{title} OAD S00E{episode}"
       regex-variable-replacers:
         - regex: "(?i)^BDRIP$"
           replacement: BD
-      file-taggers:
-        - "simple"
-      file-grouping:
-        - tags: [ "subtitle" ]
-          filename-pattern: "{title} S{season}E{episode}:{' - ' + source}:{'.' + language}"
-      source-file-filters:
-        - "anime"
-      file-content-expression-exclusions:
-        - "file.extension in ['torrent', 'md5', 'txt']"
-        - "file.tags.containsAny(['image'], true)"
-        - "file.paths.containsAny(['extra', 'special', 'others', '映像特典'], true)"
-      save-processing-content: false
-      process-listeners:
-        - "delete-empty-directory"
+      variable-process:
+        - input: "nativeName"
+          chain: [ "season" ]
+          condition-expression: "file.originalLayout != 'SPs'"
+          output:
+            key-mapping:
+              "nativeName": "season"

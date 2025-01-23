@@ -15,12 +15,12 @@ components:
 
 processors:
   - name: 'anime-remote'
-    triggers:
-      - webhook:anime-remote
+    # 手动触发
+    triggers: [ ]
     source: rss:vcb-7acg
     downloader: qbittorrent
     item-file-resolver: torrent
-    mover: qbittorrent
+    file-mover: qbittorrent
     save-path: /mnt/temp-media/anime
     options:
       variable-providers:
@@ -33,7 +33,6 @@ processors:
       filename-pattern: "{title} S{season}E{episode}:{' - ' + source}"
       variable-name-replace:
         episodeNumber: episode
-        animeTitle: title
         episodeNumberAlt: episode
         romajiName: title
       regex-variable-replacers:
@@ -41,16 +40,31 @@ processors:
           replacement: BD
       file-taggers:
         - "simple"
+        - "anime"
       file-grouping:
         - tags: [ "subtitle" ]
-          filename-pattern: "{title} S{season}E{episode}:{' - ' + source}:{'.' + language}"
+          filename-pattern: "{title} S{season}E{episode}:{' - '+source}:{'.'+language}"
+        - tags: [ "special" ]
+          save-path: "{nativeName}/Season 00"
+          filename-pattern: "{title} S00E{episode}"
+        - tags: [ "ova" ]
+          save-path-pattern: "{nativeName}/Season 00/"
+          filename-pattern: "{title} OVA S00E{episode}"
+        - tags: [ "oad" ]
+          save-path-pattern: "{nativeName}/Season 00/"
+          filename-pattern: "{title} OAD S00E{episode}"
       source-file-filters:
         - "anime"
       item-expression-exclusions:
         - "item.title.matches('剧场版') || item.title.matches('BDMV') || item.title.matches('劇場版')"
-      content-expression-exclusions:
-        - "files.filter(x, 'video' in x.tags).size() < 3"
+      item-content-expression-exclusions:
+        - "item.files.filter(x, 'video' in x.tags).size() < 3"
       file-content-expression-exclusions:
-        - "file.extension in ['torrent', 'md5', 'txt', 'rar', 'zip']"
-        - "file.tags.containsAny(['image'], true)"
-        - "file.paths.containsAny(['extra', 'special', 'others', '映像特典', 'cd', 'cds'], true)"
+        - "file.paths.containsAny(['extra', 'others', 'special'], true)"
+      variable-process:
+        - input: "nativeName"
+          chain: [ "season" ]
+          condition-expression: "file.originalLayout != 'SPs'"
+          output:
+            key-mapping:
+              "nativeName": "season"
