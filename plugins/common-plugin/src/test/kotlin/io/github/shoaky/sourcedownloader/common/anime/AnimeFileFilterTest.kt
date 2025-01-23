@@ -23,7 +23,7 @@ class AnimeFileFilterTest {
         "Menu (Vol.1).mkv" to false,
         "[ANK-Raws] Another Info05 (BDrip 1920x1080 HEVC-YUV420P10 FLAC)" to false,
         "[Yousei-raws] Sakamichi no Apollon (Episode 12 Preview) [BDrip 1920x1080 x264 FLAC]" to false,
-        "Special/[ReinForce] Sekai de Ichiban Tsuyoku Naritai! - SP1 (BDRip 1920x1080 x264 FLAC)" to true,
+        "Special/[ReinForce] Sekai de Ichiban Tsuyoku Naritai! - SP1 (BDRip 1920x1080 x264 FLAC).mp4" to true,
         "[ReinForce] Sekai de Ichiban Tsuyoku Naritai! - Creditless ED2 (BDRip 1920x1080 x264 FLAC)" to false,
         "[ReinForce] Sekai de Ichiban Tsuyoku Naritai! - Creditless OP2 (BDRip 1920x1080 x264 FLAC)" to false,
         "[Moozzi2] A-Channel OVA [SP01] NCOP (BD 1920x1080 x.264 Flac).mkv" to false,

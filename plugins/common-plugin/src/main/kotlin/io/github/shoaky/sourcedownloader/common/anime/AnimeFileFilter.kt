@@ -5,19 +5,53 @@ import io.github.shoaky.sourcedownloader.sdk.component.SourceFileFilter
 import io.github.shoaky.sourcedownloader.sdk.util.TextClear
 import io.github.shoaky.sourcedownloader.sdk.util.replaces
 import org.slf4j.LoggerFactory
+import kotlin.io.path.extension
 import kotlin.io.path.name
 import kotlin.io.path.nameWithoutExtension
 
 /**
- * 针对动画资源的过滤器，默认排除NCOP、NCED、OP、ED、映像特典、PV、CM、Fonts、Scan、Event、Lecture、Preview等文件
+ * 针对动画资源的过滤器，默认排除NCOP、NCED、OP、ED、映像特典、PV、CM、Fonts、Scan、Event、Lecture、Preview等文件，
+ * 目标是只留下相关的视频和字幕文件
  */
 object AnimeFileFilter : SourceFileFilter {
 
     private val replaces = listOf("-", "_", "[", "]", "(", ")", ".")
-    private val mustFilterDirNames = setOf("ncop", "nced", "trailer", "menu", "pv", "cm", "cd", "cds", "scan", "scans")
+    private val mustFilterDirNames =
+        setOf(
+            "ncop",
+            "nced",
+            "trailer",
+            "menu",
+            "pv",
+            "cm",
+            "cd",
+            "cds",
+            "scan",
+            "scans",
+            "ed",
+            "op",
+            "fonts",
+            "audio commentary",
+            "preview",
+            "event",
+            "lecture",
+            "making"
+        )
     private val specialDirNames = setOf(
         "sps", "sp", "special", "ncop", "nced", "menu", "pv", "cm", "cd", "cds", "scan", "scans", "extra", "特典"
     )
+    private val videoExt = setOf(
+        "mkv", "mp4", "webm", "avi", "flv", "mov", "wmv", "ts", "m2ts", "m4v", "rmvb", "mpg", "mpeg", "vob", "divx",
+        "xvid", "3gp", "3g2", "asf", "ogm", "ogv", "rm", "ram", "swf", "f4v", "dat", "m2v", "m2p", "m2t", "m2ts", "mts",
+        "mxf", "iso", "img", "bin", "cue", "nrg", "ccd", "sub", "idx",
+    )
+    private val archiveExt = setOf(
+        "zip", "rar", "7z", "tar", "gz"
+    )
+    private val subtitleExt = setOf(
+        "ass", "srt", "ssa", "vtt"
+    )
+    private val allowExt = videoExt + archiveExt + subtitleExt
 
     /**
      * 如果在special中的文件夹下，匹配规则可以宽松些
@@ -26,6 +60,7 @@ object AnimeFileFilter : SourceFileFilter {
         "NCOP|NCED|MENU|Fonts|Scan|Event|Lecture|Preview|特典|Other".toRegex(RegexOption.IGNORE_CASE),
         "PV|CM|IV|Info|INFO|OP|ED|Cast| Program | MV |Making".toRegex()
     )
+    private val subtitleRegex = "subtitle|字幕".toRegex(RegexOption.IGNORE_CASE)
 
     // SPECIAL CD
     // SP
@@ -48,6 +83,16 @@ object AnimeFileFilter : SourceFileFilter {
     )
 
     override fun test(file: SourceFile): Boolean {
+        val extension = file.path.extension.lowercase()
+        if (extension.isEmpty() || extension !in allowExt) {
+            return false
+        }
+
+        if (extension in archiveExt) {
+            val name = file.path.name
+            return name.contains(subtitleRegex)
+        }
+        
         if (isFileInDir(file, mustFilterDirNames)) {
             return false
         }
