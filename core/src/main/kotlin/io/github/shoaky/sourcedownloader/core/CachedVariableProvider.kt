@@ -16,7 +16,7 @@ class CachedVariableProvider(
     private val itemCache = CacheBuilder.newBuilder()
         .maximumSize(1000)
         .expireAfterAccess(Duration.ofDays(1))
-        .build<String, PatternVariables?>()
+        .build<String, PatternVariables>()
 
     private val fileCache = CacheBuilder.newBuilder()
         .maximumSize(1000)
@@ -57,7 +57,7 @@ class CachedVariableProvider(
 
     override fun extractFrom(sourceItem: SourceItem, text: String): PatternVariables? {
         return itemCache.get(sourceItem.hashing() + text) {
-            variableProvider.extractFrom(sourceItem, text)
+            variableProvider.extractFrom(sourceItem, text) ?: PatternVariables.EMPTY
         }
     }
 
