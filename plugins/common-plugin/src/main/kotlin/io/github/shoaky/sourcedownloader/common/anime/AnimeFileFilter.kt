@@ -35,7 +35,8 @@ object AnimeFileFilter : SourceFileFilter {
             "preview",
             "event",
             "lecture",
-            "making"
+            "making",
+            "teaser"
         )
     private val specialDirNames = setOf(
         "sps", "sp", "special", "ncop", "nced", "menu", "pv", "cm", "cd", "cds", "scan", "scans", "extra", "特典"
@@ -57,7 +58,7 @@ object AnimeFileFilter : SourceFileFilter {
      * 如果在special中的文件夹下，匹配规则可以宽松些
      */
     private val spRegexes = listOf(
-        "NCOP|NCED|MENU|Fonts|Scan|Event|Lecture|Preview|特典|Other".toRegex(RegexOption.IGNORE_CASE),
+        "NCOP|NCED|MENU|Fonts|Scan|Event|Lecture|Preview|特典|Other|Teaser".toRegex(RegexOption.IGNORE_CASE),
         "PV|CM|IV|Info|INFO|OP|ED|Cast| Program | MV |Making".toRegex()
     )
     private val subtitleRegex = "subtitle|字幕".toRegex(RegexOption.IGNORE_CASE)
