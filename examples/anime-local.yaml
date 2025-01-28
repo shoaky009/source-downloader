@@ -8,7 +8,11 @@ components:
   downloader:
     - name: anime-temp-path
       type: system-file
-
+  variable-provider:
+    - name: preferBgmTv
+      type: anime
+      props:
+        prefer-bgm-tv: true
 processors:
   - name: 'anime-local'
     # 手动触发
