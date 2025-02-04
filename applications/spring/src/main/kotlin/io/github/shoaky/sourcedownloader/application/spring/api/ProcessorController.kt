@@ -154,10 +154,15 @@ private class ProcessorController(
         return processorService.getState(processorName)
     }
 
-    // @PutMapping("/{processorName}/pointer")
-    fun modifyPointer(@PathVariable processorName: String, jsonPath: String) {
-        processorService.modifyPointer(processorName, jsonPath)
+    @PutMapping("/{processorName}/pointer")
+    fun modifyPointer(@PathVariable processorName: String, @RequestBody payload: PointerPayload) {
+        processorService.modifyPointer(processorName, payload.sourceId, payload.pointer)
     }
+
+    data class PointerPayload(
+        val sourceId: String,
+        val pointer: Map<String, Any>
+    )
 
     // @ResponseStatus(HttpStatus.NO_CONTENT)
     // @PostMapping("/{processorName}/enable")

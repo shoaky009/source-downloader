@@ -167,14 +167,13 @@ class ProcessorService(
         return state
     }
 
-    // @PutMapping("/{processorName}/pointer")
-    fun modifyPointer(processorName: String, jsonPath: String) {
-        val processor = processorManager.getProcessor(processorName).get()
-
+    fun modifyPointer(processorName: String, sourceId: String, payload: Map<String, Any>) {
+        val state = processingStorage.findProcessorSourceState(processorName, sourceId)
+            ?: throw NotFoundException("Processor $processorName with source $sourceId not found")
+        state.lastPointer.values.putAll(payload)
+        processingStorage.save(state)
     }
 
-    // @ResponseStatus(HttpStatus.NO_CONTENT)
-    // @PostMapping("/{processorName}/enable")
     fun enableProcessor(processorName: String) {
         val config = configOperator.getProcessorConfig(processorName)
         if (config.enabled) return
@@ -185,8 +184,6 @@ class ProcessorService(
         processorManager.createProcessor(enabled)
     }
 
-    // @ResponseStatus(HttpStatus.NO_CONTENT)
-    // @PostMapping("/{processorName}/disable")
     fun disableProcessor(processorName: String) {
         val config = configOperator.getProcessorConfig(processorName)
         if (config.enabled.not()) return
