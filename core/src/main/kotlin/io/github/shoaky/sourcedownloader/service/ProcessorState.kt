@@ -7,6 +7,7 @@ import java.time.LocalDateTime
  * Processor状态
  */
 data class ProcessorState(
+    val sourceId:String,
     /**
      * Source当前处理的未知
      */
@@ -14,5 +15,6 @@ data class ProcessorState(
     /**
      * 最后一次活跃时间
      */
-    val lastActiveTime: LocalDateTime? = null
+    val lastActiveTime: LocalDateTime? = null,
+    val retryTimes: Int = 0,
 )

@@ -162,8 +162,8 @@ class ProcessorService(
         val config = configOperator.getProcessorConfig(processorName)
         val state = processingStorage.findProcessorSourceState(processorName, config.source.id)
             ?.let {
-                ProcessorState(it.lastPointer, it.lastActiveTime)
-            } ?: ProcessorState(PersistentPointer(mutableMapOf()), null)
+                ProcessorState(it.sourceId, it.lastPointer, it.lastActiveTime, it.retryTimes)
+            } ?: ProcessorState(config.source.id, PersistentPointer(mutableMapOf()), null)
         return state
     }
 
