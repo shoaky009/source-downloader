@@ -2,7 +2,6 @@ package io.github.shoaky.sourcedownloader.sdk.http
 
 import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import com.google.common.net.MediaType
-import com.google.common.net.UrlEscapers
 import io.github.shoaky.sourcedownloader.sdk.util.Jackson
 import io.github.shoaky.sourcedownloader.sdk.util.appendPrefix
 import io.github.shoaky.sourcedownloader.sdk.util.http.BodyMappingException
@@ -37,7 +36,7 @@ abstract class HookedApiClient(
         val path = request.path.appendPrefix('/')
 
         val uriString = StringBuilder(endpoint.toString().removeSuffix("/"))
-            .append(UrlEscapers.urlFragmentEscaper().escape(path))
+            .append(path)
             .toString()
         val uri = URI(uriString)
         val queryString = buildQueryString(request, uri)
