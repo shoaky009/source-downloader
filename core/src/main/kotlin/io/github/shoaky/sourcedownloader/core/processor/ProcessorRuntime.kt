@@ -3,10 +3,10 @@ package io.github.shoaky.sourcedownloader.core.processor
 import java.time.Instant
 
 class ProcessorRuntime(
-    private val createdAt: Instant,
+    val createdAt: Instant,
     var lastProcessFailedMessage: String? = null,
-    private var lastStartProcessTime: Instant? = null,
-    private var lastEndProcessTime: Instant? = null,
+    var lastStartProcessTime: Instant? = null,
+    var lastEndProcessTime: Instant? = null,
 ) {
 
     fun startProcessTime() {
@@ -23,6 +23,7 @@ class ProcessorRuntime(
         val lastProcessFailedMessage: String?,
         val lastStartProcessTime: Instant?,
         val lastEndProcessTime: Instant?,
+        val processing: Boolean
     ) {
 
         fun lastProcessDuration(): Long? {
@@ -33,7 +34,4 @@ class ProcessorRuntime(
         }
     }
 
-    fun snapshot(): Snapshot {
-        return Snapshot(createdAt, lastProcessFailedMessage, lastStartProcessTime, lastEndProcessTime)
-    }
 }

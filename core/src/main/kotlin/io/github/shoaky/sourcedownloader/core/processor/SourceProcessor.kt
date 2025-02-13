@@ -98,6 +98,7 @@ class SourceProcessor(
     private val itemChannel = Channel<Process>(options.channelBufferSize)
     private val processorCoroutineScope = CoroutineScope(processDispatcher)
     private val runtime: ProcessorRuntime = ProcessorRuntime(Instant.now())
+    private var currentProcessScope: CoroutineScope? = null
 
     init {
         scheduleRenameTask()
@@ -140,11 +141,18 @@ class SourceProcessor(
         }.onFailure {
             runtime.lastProcessFailedMessage = it.message
         }
+        currentProcessScope = null
         runtime.endProcessTime()
     }
 
     fun getRuntimeSnapshot(): ProcessorRuntime.Snapshot {
-        return runtime.snapshot()
+        return ProcessorRuntime.Snapshot(
+            runtime.createdAt,
+            runtime.lastProcessFailedMessage,
+            runtime.lastStartProcessTime,
+            runtime.lastEndProcessTime,
+            currentProcessScope != null
+        )
     }
 
     fun dryRun(options: DryRunOptions = DryRunOptions()): List<ProcessingContent> {
@@ -532,6 +540,7 @@ class SourceProcessor(
         renameTaskFuture?.cancel(false)
         renameScheduledExecutor.shutdown()
         processorCoroutineScope.cancel("Processor:$name closed")
+        currentProcessScope?.cancel("Processor:$name closed")
         itemChannel.close()
     }
 
@@ -836,7 +845,9 @@ class SourceProcessor(
             checkNotNull(processingContent)
 
             if (shouldDownload) {
-                log.info("Processor:'{}' start download item:{}", name, sourceItem)
+                if (downloader !is SystemFileSource) {
+                    log.info("Processor:'{}' start download item:{}", name, sourceItem)
+                }
                 val success = doDownload(processingContent, replaceFiles)
                 if (success && downloader !is AsyncDownloader) {
                     log.trace("Processor:'{}' start rename item:{}", name, sourceItem)
@@ -1064,6 +1075,10 @@ class SourceProcessor(
     }
 
     private inner class NormalProcess : Process() {
+
+        init {
+            currentProcessScope = processScope
+        }
 
         override fun onProcessCompleted(processContext: ProcessContext) {
             if (processContext.processedItems().isNotEmpty() && downloader !is AsyncDownloader) {
