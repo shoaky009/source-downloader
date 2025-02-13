@@ -39,7 +39,6 @@ class SystemFileSource(
         }
     }
 
-    @OptIn(ExperimentalPathApi::class)
     private fun createEachFileSourceItems(): List<SourceItem> {
         return path.walk()
             .filter { it.isHidden().not() }

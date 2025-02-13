@@ -13,9 +13,9 @@ internal object DlsiteVariableProviderSupplier : ComponentSupplier<DlsiteVariabl
         return DlsiteVariableProvider(
             DlsiteClient(),
             props.getOrDefault("locale", "ja-jp"),
-            props.getOrDefault("onlyExtractId", false),
-            searchWorkTypeCategories = props.getOrDefault("searchWorkTypeCategories", emptyList()),
-            preferSuggest = props.getOrDefault("preferSuggest", true),
+            props.getOrDefault("only-extract-id", false),
+            searchWorkTypeCategories = props.getOrDefault("search-work-type-categories", emptyList()),
+            preferSuggest = props.getOrDefault("prefer-suggest", true),
         )
     }
 
