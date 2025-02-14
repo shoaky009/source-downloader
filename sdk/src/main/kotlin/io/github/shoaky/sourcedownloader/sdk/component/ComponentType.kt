@@ -43,7 +43,7 @@ data class ComponentType(
 
         @JvmStatic
         fun listener(typeName: String) = ComponentType(PROCESS_LISTENER, typeName)
-        
+
         @JvmStatic
         fun sourceFileFilter(typeName: String) = ComponentType(SOURCE_FILE_FILTER, typeName)
 
@@ -61,6 +61,8 @@ data class ComponentType(
 
         @JvmStatic
         fun variableReplacer(typeName: String): ComponentType = ComponentType(VARIABLE_REPLACER, typeName)
+
+        fun trimmer(typeName: String): ComponentType = ComponentType(TRIMMER, typeName)
 
         @JvmStatic
         fun manualSource(typeName: String): ComponentType = ComponentType(MANUAL_SOURCE, typeName)

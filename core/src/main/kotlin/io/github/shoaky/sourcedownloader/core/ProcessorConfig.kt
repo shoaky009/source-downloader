@@ -74,6 +74,9 @@ data class ProcessorConfig(
         val channelBufferSize: Int = 20,
         // 下载
         val downloadOptions: DownloadOptions = DownloadOptions(),
+        val trimming: List<TrimmingConfig> = emptyList(),
+        // 这个限制后面需要根据路径来判断文件系统最大的长度，暂时先手动配置
+        val pathNameLengthLimit: Int = 255
     ) {
 
         // 暂时不提供配置
@@ -118,4 +121,8 @@ data class ProcessorConfig(
         val replacement: String
     )
 
+    data class TrimmingConfig(
+        val variableName: String,
+        val trimmers: List<String>
+    )
 }

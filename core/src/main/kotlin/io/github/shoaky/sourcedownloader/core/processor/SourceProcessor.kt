@@ -26,9 +26,6 @@ import kotlinx.coroutines.flow.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.IOException
-import java.nio.ByteBuffer
-import java.nio.charset.CodingErrorAction
-import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Instant
 import java.time.LocalDateTime
@@ -39,9 +36,6 @@ import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.locks.Lock
 import java.util.concurrent.locks.ReentrantLock
-import kotlin.io.path.extension
-import kotlin.io.path.nameWithoutExtension
-import kotlin.io.path.notExists
 import kotlin.reflect.jvm.jvmName
 import kotlin.time.measureTime
 
@@ -56,7 +50,7 @@ class SourceProcessor(
     private val itemFileResolver: ItemFileResolver,
     private val downloader: Downloader,
     private val fileMover: FileMover,
-    sourceSavePath: Path,
+    val savePath: Path,
     private val processingStorage: ProcessingStorage,
     private val category: String?,
     private val tags: Set<String>,
@@ -65,7 +59,7 @@ class SourceProcessor(
 
     private val directDownloader = DirectDownloader(downloader)
     private val downloadPath = downloader.defaultDownloadPath().toAbsolutePath()
-    private val sourceSavePath: Path = sourceSavePath.toAbsolutePath()
+    private val absSavePath: Path = savePath.toAbsolutePath()
     private val filenamePattern = options.filenamePattern
     private val savePathPattern = options.savePathPattern
     private var renameTaskFuture: ScheduledFuture<*>? = null
@@ -86,7 +80,9 @@ class SourceProcessor(
     private val renamer: Renamer = Renamer(
         options.variableErrorStrategy,
         options.variableReplacers,
-        options.variableProcessChain
+        options.variableProcessChain,
+        options.trimming,
+        options.pathNameLengthLimit
     )
     private val safeRunner by lazy {
         ProcessorSafeRunner(this)
@@ -112,14 +108,6 @@ class SourceProcessor(
         }
         log.debug("Processor:'{}' listeners{}", name, processListeners)
         listenChannel()
-    }
-
-    private val maxFilenameLength = run {
-        if (downloadPath.notExists()) {
-            -1
-        } else {
-            fsMaxFilenameLengthMapping[Files.getFileStore(downloadPath).type()] ?: -1
-        }
     }
 
     private fun listenChannel() {
@@ -208,7 +196,7 @@ class SourceProcessor(
             "ItemContentFilter" to itemContentFilters.map { it::class.simpleName },
             "Listeners" to processListeners.map { it::class.simpleName },
             "DownloadPath" to downloadPath,
-            "SourceSavePath" to sourceSavePath,
+            "SourceSavePath" to absSavePath,
             "FileContentFilter" to fileContentFilters.map { it::class.simpleName },
             "Taggers" to taggers.map { it::class.simpleName },
             "Options" to options,
@@ -219,7 +207,7 @@ class SourceProcessor(
         return ProcessorInfo(
             name,
             downloadPath,
-            sourceSavePath,
+            absSavePath,
             tags.toList(),
             category,
             // 有空加
@@ -264,19 +252,6 @@ class SourceProcessor(
                 }
                 tags.addAll(file.tags)
                 file.copy(tags = tags)
-            }.map {
-                val path = cuttingFilename(it.path, maxFilenameLength)
-                if (it.path == path) {
-                    return@map it
-                }
-                log.info(
-                    "Processor:'{}' item:'{}' filename:'{}' is too long, cutting to:'{}'",
-                    name,
-                    sourceItem.title,
-                    it.path,
-                    path
-                )
-                it.copy(path)
             }
         checkResolvedFiles(sourceItem, resolvedFiles)
 
@@ -300,7 +275,7 @@ class SourceProcessor(
             checkFileVariables(relativizeFiles, fileVariables)
             relativizeFiles.mapIndexed { index, file ->
                 val rawFileContent = RawFileContent(
-                    sourceSavePath,
+                    absSavePath,
                     downloadPath,
                     MapPatternVariables(fileVariables[index]),
                     fileOption?.savePathPattern ?: itemOptions.savePathPattern ?: savePathPattern,
@@ -485,25 +460,24 @@ class SourceProcessor(
             return true
         }
 
-        movableFiles.map { it.saveDirectoryPath() }
-            .distinct()
-            .forEach {
-                fileMover.createDirectories(it)
-            }
-
-        if (log.isDebugEnabled) {
-            movableFiles.forEach {
-                if (log.isDebugEnabled) {
-                    log.debug("Move file:'${it.fileDownloadPath}' to '${it.targetPath()}'")
+        try {
+            movableFiles.map { it.saveDirectoryPath() }
+                .distinct()
+                .forEach {
+                    fileMover.createDirectories(it)
                 }
+            return if (fileMover is BatchFileMover) {
+                fileMover.batchMove(content.copy(fileContents = movableFiles)).success
+            } else {
+                movableFiles.all { fileMover.move(content.sourceItem, it) }
             }
+        } catch (e: FileSystemException) {
+            if (options.trimming.isEmpty()) {
+                log.error("Processor:'{}' 文件名过长, 请配置trimming选项指定变量的修剪方式 ${e.file}", name)
+            }
+            throw e
         }
 
-        return if (fileMover is BatchFileMover) {
-            fileMover.batchMove(content.copy(fileContents = movableFiles)).success
-        } else {
-            movableFiles.all { fileMover.move(content.sourceItem, it) }
-        }
     }
 
     private fun replaceFiles(itemContent: CoreItemContent): Boolean {
@@ -565,28 +539,7 @@ class SourceProcessor(
         private val processDispatcher = Executors.newThreadPerTaskExecutor(
             Thread.ofVirtual().name("process-task", 1).factory()
         ).asCoroutineDispatcher()
-
         private val filteredStatuses = setOf(FILTERED, TARGET_ALREADY_EXISTS)
-        private val fsMaxFilenameLengthMapping = mapOf(
-            "zfs" to 250
-        )
-
-        fun cuttingFilename(path: Path, limitByteSize: Int): Path {
-            if (limitByteSize <= 0) {
-                return path
-            }
-            val filenameBytes = path.nameWithoutExtension.toByteArray(Charsets.UTF_8)
-            if (filenameBytes.size <= limitByteSize) {
-                return path
-            }
-
-            val decoder = Charsets.UTF_8.newDecoder()
-            decoder.onMalformedInput(CodingErrorAction.IGNORE)
-            decoder.reset()
-            val buf = ByteBuffer.wrap(filenameBytes, 0, limitByteSize)
-            val decode = decoder.decode(buf)
-            return path.resolveSibling("$decode.${path.extension}")
-        }
     }
 
     private data class ItemSelectedOptions(

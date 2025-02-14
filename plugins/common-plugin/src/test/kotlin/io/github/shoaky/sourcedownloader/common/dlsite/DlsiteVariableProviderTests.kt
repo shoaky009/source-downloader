@@ -33,7 +33,7 @@ class DlsiteVariableProviderTests {
         val prop = Properties.fromJson(
             """
             {
-                "onlyExtractId": true
+                "only-extract-id": true
             }
         """.trimIndent()
         )

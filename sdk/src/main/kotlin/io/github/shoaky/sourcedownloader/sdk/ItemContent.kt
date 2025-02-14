@@ -14,7 +14,11 @@ interface PathPattern {
     val pattern: String
 
     fun depth(): Int {
-        return pattern.split("/").size
+        return segment().size
+    }
+
+    fun segment(): List<String> {
+        return pattern.split("/")
     }
 
     data class ParseResult(

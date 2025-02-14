@@ -41,6 +41,8 @@ data class ProcessorOptions(
     val retryBackoffMills: Long = 5000L,
     val taskGroup: String? = null,
     val variableProcessChain: List<VariableProcessChain> = emptyList(),
+    val trimming: Map<String, List<Trimmer>> = emptyMap(),
+    val pathNameLengthLimit: Int = 255,
 ) {
 
     fun matchFileOption(sourceFile: SourceFile): FileOption? {

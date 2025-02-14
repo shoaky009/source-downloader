@@ -346,6 +346,16 @@ class DefaultProcessorManager(
 
         val variableProcessChain = buildVariableProcessChains(options, config, expressionFactory)
 
+        val trimmers = options.trimming.associateBy({ it.variableName }) { cfg ->
+            cfg.trimmers.map {
+                componentManager.getComponent(
+                    ComponentTopType.TRIMMER,
+                    ComponentId(it),
+                    trimmerTypeRef,
+                ).getAndMarkRef(config.name)
+            }
+        }
+
         return ProcessorOptions(
             CorePathPattern(options.savePathPattern, expressionFactory),
             CorePathPattern(options.filenamePattern, expressionFactory),
@@ -375,7 +385,9 @@ class DefaultProcessorManager(
             options.parallelism,
             options.retryBackoffMills,
             options.taskGroup ?: group ?: config.source.typeName(),
-            variableProcessChain
+            variableProcessChain,
+            trimmers,
+            options.pathNameLengthLimit
         )
     }
 

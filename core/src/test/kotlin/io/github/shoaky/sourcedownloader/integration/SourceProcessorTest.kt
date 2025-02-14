@@ -17,7 +17,6 @@ import io.github.shoaky.sourcedownloader.integration.support.TestDirErrorDownloa
 import io.github.shoaky.sourcedownloader.repo.ProcessingQuery
 import io.github.shoaky.sourcedownloader.repo.exposed.ExposedProcessingStorage
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentTopType
-import io.github.shoaky.sourcedownloader.sdk.util.Jackson
 import io.github.shoaky.sourcedownloader.testResourcePath
 import io.github.shoaky.sourcedownloader.util.RestorableConfigOperator
 import org.flywaydb.core.Flyway
@@ -164,10 +163,6 @@ class SourceProcessorTest {
         processor.run()
         processor.runRename()
 
-        val contents = processingStorage.queryAllContent(ProcessingQuery(name))
-            .associateBy { it.itemContent.sourceItem.title }
-        println(Jackson.toJsonString(contents))
-
         assert(selfPath.resolve(Path("test1", "test1.jpg")).exists())
         assert(selfPath.resolve(Path("test2", "test2.jpg")).notExists())
         assert(selfPath.resolve(Path("test-dir", "test3.jpg")).exists())
@@ -261,7 +256,8 @@ class SourceProcessorTest {
         val processor = processorManager.getProcessor(processorName).get()
         processor.run()
         val contents =
-            processingStorage.queryAllContent(ProcessingQuery(processorName)).associateBy { it.itemContent.sourceItem.title }
+            processingStorage.queryAllContent(ProcessingQuery(processorName))
+                .associateBy { it.itemContent.sourceItem.title }
         assertEquals(ProcessingContent.Status.WAITING_TO_RENAME, contents.getValue("test1").status)
         assertEquals(ProcessingContent.Status.TARGET_ALREADY_EXISTS, contents.getValue("test2").status)
     }
@@ -346,7 +342,6 @@ class SourceProcessorTest {
 
         val contents = processingStorage.queryAllContent(ProcessingQuery(processorName))
             .associateBy { it.itemContent.sourceItem.title }
-        println(Jackson.toJsonString(contents))
 
         val fileContent1 = contents.getValue("test-replace1").itemContent.fileContents.first()
         val fileContent2 = contents.getValue("test-replace2").itemContent.fileContents.first()
@@ -359,6 +354,16 @@ class SourceProcessorTest {
             assertEquals(FileContentStatus.REPLACED, fileContent1.status)
         }
         assert(fileContent2.status in listOf(FileContentStatus.NORMAL, FileContentStatus.READY_REPLACE))
+    }
+
+    @Test
+    fun too_long_variable_trimming_case() {
+        val processorName = "TooLongVariableTrimmingCase"
+        val processor = processorManager.getProcessor(processorName).get()
+        val file = processor.dryRun().first().itemContent.fileContents.first()
+        for (path in processor.savePath.absolute().relativize(file.targetPath())) {
+            assert(path.toString().toByteArray().size <= 20)
+        }
     }
 
     // 待测试场景

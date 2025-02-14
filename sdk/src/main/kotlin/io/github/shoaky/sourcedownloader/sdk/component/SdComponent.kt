@@ -115,7 +115,7 @@ interface Downloader : SdComponent {
 interface ItemFileResolver : SdComponent {
 
     /**
-     * Resolve files from item, must not duplicate
+     * Resolve files from item, must not duplicate and file name not too long
      * @return Relative paths
      */
     fun resolveFiles(sourceItem: SourceItem): List<SourceFile>
@@ -323,6 +323,16 @@ interface VariableReplacer : SdComponent {
 
     fun replace(key: String, value: String): String
 
+}
+
+interface Trimmer : SdComponent {
+
+    /**
+     * Trim the filename if it exceeds the maximum length
+     * @param expectLength The expect length of the value
+     * @return The trimmed filename, length can be great than to the expect length
+     */
+    fun trim(value: String, expectLength: Int): String
 }
 
 interface ManualSource : SdComponent {

@@ -48,6 +48,10 @@ enum class ComponentTopType(
         VariableReplacer::class,
         listOf("variable-replacer", "variableReplacer")
     ),
+    TRIMMER(
+        Trimmer::class,
+        listOf("trimmer")
+    ),
     MANUAL_SOURCE(
         ManualSource::class,
         listOf("manual-source")

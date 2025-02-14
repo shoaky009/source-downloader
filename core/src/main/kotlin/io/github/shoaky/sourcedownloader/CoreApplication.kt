@@ -99,7 +99,9 @@ class CoreApplication(
             UriSourceSupplier,
             UrlDownloaderSupplier,
             UrlFileResolverSupplier,
-            WindowsPathReplacerSupplier
+            WindowsPathReplacerSupplier,
+            ForceTrimmerSupplier,
+            RegexTrimmerSupplier
         )
         val types = componentManager.getSuppliers()
             .map { it.supplyTypes() }

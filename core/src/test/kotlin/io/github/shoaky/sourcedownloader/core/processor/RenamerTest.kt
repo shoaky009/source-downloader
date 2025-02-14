@@ -2,6 +2,7 @@
 
 package io.github.shoaky.sourcedownloader.core.processor
 
+import io.github.shoaky.sourcedownloader.component.ForceTrimmer
 import io.github.shoaky.sourcedownloader.component.provider.RegexVariable
 import io.github.shoaky.sourcedownloader.component.provider.RegexVariableProvider
 import io.github.shoaky.sourcedownloader.component.replacer.RegexVariableReplacer
@@ -17,10 +18,7 @@ import io.github.shoaky.sourcedownloader.testResourcePath
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
-import kotlin.io.path.ExperimentalPathApi
-import kotlin.io.path.Path
-import kotlin.io.path.deleteRecursively
-import kotlin.io.path.nameWithoutExtension
+import kotlin.io.path.*
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
@@ -554,6 +552,31 @@ class RenamerTest {
         )
         val fileContent = defaultRenamer.createFileContent(sourceItem(), file, RenameVariables.EMPTY)
         assertEquals("test", fileContent.targetFilename)
+    }
+
+    @Test
+    fun given_too_long_variables_should_trim() {
+        val raw = createRawFileContent(
+            patternVariables = MapPatternVariables(
+                // 生成大于255的长度
+                mapOf("title" to (1..150).joinToString(separator = "") { it.toString() })
+            ),
+            savePathPattern = CorePathPattern("test/111111112222222222{title}"),
+            filenamePattern = CorePathPattern("{title}"),
+        )
+
+        val renamer = Renamer(trimming = mapOf("title" to listOf(ForceTrimmer)))
+        val itemVars = renamer.itemRenameVariables(
+            sourceItem(),
+            PatternVariables.EMPTY
+        )
+        val content = renamer.createFileContent(sourceItem(), raw, itemVars)
+        val expectSize = 255
+        assert(content.targetFilename.toByteArray().size <= expectSize)
+        assert(content.patternVariables.getVariables()["trimmed_title"] != null)
+        val variablePathSize = sourceSavePath.relativize(content.saveDirectoryPath()).getName(1).name.toByteArray().size
+        assert(variablePathSize <= expectSize)
+        assertEquals(expectSize, variablePathSize)
     }
 
     companion object {

@@ -1,9 +1,11 @@
 package io.github.shoaky.sourcedownloader.core.file
 
+import com.jayway.jsonpath.DocumentContext
 import com.jayway.jsonpath.JsonPath
 import com.jayway.jsonpath.PathNotFoundException
 import io.github.shoaky.sourcedownloader.core.processor.VariableProcessChain
 import io.github.shoaky.sourcedownloader.sdk.*
+import io.github.shoaky.sourcedownloader.sdk.component.Trimmer
 import io.github.shoaky.sourcedownloader.sdk.component.VariableReplacer
 import org.slf4j.LoggerFactory
 import java.nio.file.Path
@@ -16,7 +18,9 @@ import kotlin.io.path.nameWithoutExtension
 class Renamer(
     private val variableErrorStrategy: VariableErrorStrategy = VariableErrorStrategy.STAY,
     private val variableReplacers: List<VariableReplacer> = emptyList(),
-    private val variableProcessChain: List<VariableProcessChain> = emptyList()
+    private val variableProcessChain: List<VariableProcessChain> = emptyList(),
+    private val trimming: Map<String, List<Trimmer>> = emptyMap(),
+    private val pathNameLengthLimit: Int = 255
 ) {
 
     fun createFileContent(
@@ -24,9 +28,9 @@ class Renamer(
         file: RawFileContent,
         extraVariables: RenameVariables,
     ): CoreFileContent {
-        val variables = fileRenameVariables(sourceItem, file, extraVariables)
-        val dirResult = saveDirectoryPath(file, variables)
-        val filenameResult = targetFilename(file, variables)
+        var variables = fileRenameVariables(sourceItem, file, extraVariables)
+        var dirResult = saveDirectoryPath(file, variables)
+        var filenameResult = targetFilename(file, variables)
         val errors = mutableListOf<String>()
         errors.addAll(dirResult.result.failedExpression())
         errors.addAll(filenameResult.result.failedExpression())
@@ -37,7 +41,60 @@ class Renamer(
                 fileDownloadPath.parent, fileDownloadPath.name, errors, variables.processedVariables
             )
         }
+
+        if (trimming.isNotEmpty()) {
+            // 在这里修剪对后续流程处理比较简单，但是每次多一次toByteArray内存会多点但其实还好
+            // 然后有一些是看字符数的不是看bytes后面再说
+            if (filenameResult.value.toByteArray().size > pathNameLengthLimit) {
+                val trimVariables = mutableMapOf<String, String>()
+                val filenamePattern = file.filenamePattern
+                val doc = variables.document
+                executeTrim(filenamePattern.pattern, filenameResult.value, doc, trimVariables, file)
+                variables = variables.copy(trimVariables = trimVariables)
+                filenameResult = targetFilename(file, variables)
+            }
+
+            for ((index, path) in file.sourceSavePath.relativize(dirResult.value).withIndex()) {
+                val doc = variables.document
+                if (path.toString().toByteArray().size > pathNameLengthLimit) {
+                    val trimVariables = variables.trimVariables.toMutableMap()
+                    val segment = file.savePathPattern.segment()
+                    executeTrim(segment[index], path.name, doc, trimVariables, file)
+                    variables = variables.copy(trimVariables = trimVariables)
+                    dirResult = saveDirectoryPath(file, variables)
+                }
+            }
+        }
         return file.createContent(dirResult.value, filenameResult.value, errors, variables.processedVariables)
+    }
+
+    private fun executeTrim(
+        pattern: String,
+        pathName: String,
+        doc: DocumentContext,
+        trimVariables: MutableMap<String, String>,
+        file: RawFileContent
+    ) {
+        for ((variableName, replacers) in trimming) {
+            if (pattern.contains(variableName).not()) continue
+            val variable = doc.read<String>("$.${variableName}")
+            // 暂时不每次都更新size
+            val expectSize = expectVariableByteSize(pathName, variable)
+            val trimValue = replacers.fold(variable) { acc, trimmer ->
+                trimmer.trim(acc, expectSize)
+            }
+            trimVariables[variableName] = trimValue
+            // 这里严谨的话要判断pattern是不是一样的，一样的才可以直接使用不一样的话得加个序号自增
+            // 因为哪怕是同一个变量但是pattern不一样修剪的长度也不一样，暂时先这样不影响使用只是展示的数据上会比较奇怪
+            file.patternVariables.addVariable("trimmed_$variableName", trimValue)
+        }
+    }
+
+    private fun expectVariableByteSize(tooLongPath: String, variable: String): Int {
+        // 如果一个模板里面有多个要修剪的变量，暂时不考虑因为流程上就不通配置也不好定义
+        val withoutVariable = tooLongPath.replace(variable, "")
+        val withoutVariableByteSize = withoutVariable.toByteArray().size
+        return pathNameLengthLimit - withoutVariableByteSize
     }
 
     private fun targetFilename(file: RawFileContent, variables: RenameVariables): ResultWrapper<String> {

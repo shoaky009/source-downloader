@@ -46,6 +46,6 @@ val fileTaggerTypeRef = componentTypeRef<FileTagger>()
 val fileReplacementDeciderRef = componentTypeRef<FileReplacementDecider>()
 val fileExistsDetectorTypeRef = componentTypeRef<FileExistsDetector>()
 val variableReplacerTypeRef = componentTypeRef<VariableReplacer>()
-val manualSourceRef = componentTypeRef<ManualSource>()
+val trimmerTypeRef = componentTypeRef<Trimmer>()
 val processorTypeRef = jacksonTypeRef<ProcessorWrapper>()
 
