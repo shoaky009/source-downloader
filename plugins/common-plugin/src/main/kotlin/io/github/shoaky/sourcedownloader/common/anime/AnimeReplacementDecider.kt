@@ -9,7 +9,7 @@ import io.github.shoaky.sourcedownloader.sdk.component.FileReplacementDecider
  */
 object AnimeReplacementDecider : FileReplacementDecider {
 
-    private val versionRegex = Regex("\\[v(\\d+)]", RegexOption.IGNORE_CASE)
+    private val versionRegex = Regex("\\[\\d{0,4}(?i)v(\\d+)]")
 
     override fun isReplace(current: ItemContent, before: ItemContent?, existingFile: SourceFile): Boolean {
         val title = current.sourceItem.title

@@ -16,18 +16,22 @@ class AnimeFileReplacerTest {
                 sourceItem(title = "[DMG&VCB-S][Saki Zenkoku Hen][02][Hi10p_1080p][x264_flac].mkv"),
                 emptyList()
             )
-        assertEquals(false, AnimeReplacementDecider.isReplace(
-            content1, null, SourceFile(Path(""))
-        ))
+        assertEquals(
+            false, AnimeReplacementDecider.isReplace(
+                content1, null, SourceFile(Path(""))
+            )
+        )
 
         val content2 =
             FixedItemContent(
                 sourceItem(title = "[DMG&VCB-S][Saki Zenkoku Hen][02][v2][Hi10p_1080p][x264_flac].mkv"),
                 emptyList()
             )
-        assertEquals(true, AnimeReplacementDecider.isReplace(
-            content2, null, SourceFile(Path(""))
-        ))
+        assertEquals(
+            true, AnimeReplacementDecider.isReplace(
+                content2, null, SourceFile(Path(""))
+            )
+        )
     }
 
     @Test
@@ -58,7 +62,7 @@ class AnimeFileReplacerTest {
     fun given_current_and_before_version() {
         val current =
             FixedItemContent(
-                sourceItem(title = "[DMG&VCB-S][Saki Zenkoku Hen][02][v2].mkv"),
+                sourceItem(title = "[DMG&VCB-S][Saki Zenkoku Hen][02V2].mkv"),
                 emptyList()
             )
         val before =
