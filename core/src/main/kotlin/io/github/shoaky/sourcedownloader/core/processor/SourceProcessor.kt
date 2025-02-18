@@ -632,7 +632,7 @@ class SourceProcessor(
             val stat = context.stat
             stat.stopWatch.start("fetch-items")
 
-            val itemIterable = retry(getRetryPolicy("fetch-source-items")) {
+            val itemIterable = customIterable ?: retry(getRetryPolicy("fetch-source-items")) {
                 source.fetch(sourcePointer, options.fetchLimit)
             }
             stat.stopWatch.stop()
