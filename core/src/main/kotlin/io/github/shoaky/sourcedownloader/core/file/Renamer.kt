@@ -200,6 +200,8 @@ class Renamer(
         return mapOf(
             "name" to file.fileDownloadPath.nameWithoutExtension.replaceVariable("file.name"),
             "attrs" to file.sourceFile.attrs.mapValues { it.value.toString() }.replaceVariables(),
+            "vars" to file.patternVariables.variables(),
+            "tags" to file.sourceFile.tags.toList(),
             "originalLayout" to file.getPathOriginalLayout()
                 .joinToString("/") { it.replaceVariable("file.originalLayout") }
         )
