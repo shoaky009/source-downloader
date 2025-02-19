@@ -14,7 +14,7 @@ import kotlin.io.path.nameWithoutExtension
  */
 object AnimeTagger : FileTagger {
 
-    private val sp = listOf("特别篇")
+    private val sp = listOf("特别篇", "[SP]", "[sp]", "special")
 
     override fun tag(sourceFile: SourceFile): String? {
         val filename = sourceFile.path.nameWithoutExtension
