@@ -57,7 +57,8 @@ object EpisodeVariableProvider : VariableProvider {
         itemVariables: PatternVariables,
         sourceFiles: List<SourceFile>,
     ): List<PatternVariables> {
-        return sourceFiles.map { file ->
+        var counter = 0
+        val result = sourceFiles.map { file ->
             val string = textClear.input(file.path.nameWithoutExtension)
             val episode = parserChain.firstNotNullOfOrNull {
                 val value = it.parse(string)
@@ -70,9 +71,20 @@ object EpisodeVariableProvider : VariableProvider {
             val vars = MapPatternVariables()
             padNumber(episode)?.run {
                 vars.addVariable("episode", this)
+                counter++
             }
             vars
         }
+
+        if (counter > 100) {
+            val padLength = counter.toString().length
+            for (variables in result) {
+                val episode = variables.getVariables()["episode"] ?: continue
+                val padNumber = padNumber(episode, padLength) ?: continue
+                variables.addVariable("episode", padNumber)
+            }
+        }
+        return result
     }
 
     override val accuracy: Int = 3

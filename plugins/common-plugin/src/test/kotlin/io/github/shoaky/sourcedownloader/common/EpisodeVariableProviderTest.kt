@@ -1,8 +1,6 @@
 package io.github.shoaky.sourcedownloader.common
 
-import io.github.shoaky.sourcedownloader.common.supplier.EpisodeVariableProviderSupplier
-import io.github.shoaky.sourcedownloader.sdk.CoreContext
-import io.github.shoaky.sourcedownloader.sdk.Properties
+import io.github.shoaky.sourcedownloader.sdk.PatternVariables
 import io.github.shoaky.sourcedownloader.sdk.SourceFile
 import io.github.shoaky.sourcedownloader.sourceItem
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -14,10 +12,7 @@ class EpisodeVariableProviderTest {
 
     @Test
     fun should_all_expected() {
-        val provider = EpisodeVariableProviderSupplier.apply(
-            CoreContext.empty,
-            Properties.empty
-        )
+        val provider = EpisodeVariableProvider
         val item = sourceItem()
         Files.readAllLines(Path("src", "test", "resources", "episode-test-data.csv"))
             .filter { it.isNullOrBlank().not() }
@@ -31,5 +26,13 @@ class EpisodeVariableProviderTest {
                 val file = provider.fileVariables(item, group, listOf(sf)).first()
                 assertEquals(episode, file.variables().getOrDefault("episode", ""), "name: $name")
             }
+    }
+
+    @Test
+    fun test_episode_padding_by_files_length() {
+        val provider = EpisodeVariableProvider
+        val files = (1..150).map { SourceFile(Path(it.toString())) }
+        val variables = provider.fileVariables(sourceItem(), PatternVariables.EMPTY, files)
+        assertEquals("001", variables.first().variables()["episode"])
     }
 }
