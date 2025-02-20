@@ -7,6 +7,7 @@ import io.github.shoaky.sourcedownloader.external.dlsite.DlsiteWorkInfo
 import io.github.shoaky.sourcedownloader.sdk.PatternVariables
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.VariableProvider
+import org.jsoup.HttpStatusException
 import org.slf4j.LoggerFactory
 import java.util.*
 import kotlin.jvm.optionals.getOrNull
@@ -89,7 +90,14 @@ class DlsiteVariableProvider(
      * suggest的名称暂时没有和谐优先使用
      */
     private fun fromDlsiteId(dlsiteId: String, suggestWorkName: String? = null): DlsiteWorkInfo {
-        val info = dlistClient.getWorkInfo(dlsiteId, locale)
+        val info = try {
+            dlistClient.getWorkInfo(dlsiteId, locale)
+        } catch (e: HttpStatusException) {
+            if (e.statusCode == 404) {
+                return DlsiteWorkInfo(dlsiteId)
+            }
+            throw e
+        }
         if (suggestWorkName == null) return info
         return info.copy(title = suggestWorkName)
     }

@@ -17,4 +17,6 @@ object DoujinTitleTrimmerSupplier : ComponentSupplier<DoujinTitleTrimmer> {
             ComponentType.trimmer("doujin")
         )
     }
+
+    override fun supportNoArgs(): Boolean = true
 }
