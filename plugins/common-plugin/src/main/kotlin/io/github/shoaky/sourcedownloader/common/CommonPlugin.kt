@@ -25,6 +25,7 @@ internal class CommonPlugin : Plugin {
             BgmTvVariableProviderSupplier(pluginContext),
             BilibiliSourceSupplier,
             // CommonManualSourceSupplier,
+            DoujinTitleTrimmerSupplier,
             DlsiteVariableProviderSupplier,
             EmbyImageTaggerSupplier,
             EpisodeVariableProviderSupplier,
