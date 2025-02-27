@@ -1,12 +1,12 @@
-FROM azul/zulu-openjdk-alpine:21-jre AS builder
+FROM openjdk:24-rc-jdk-bullseye AS builder
 
 COPY applications/spring/build/libs/source-downloader-spring-*.jar application.jar
 RUN java -Djarmode=layertools -jar application.jar extract
 
-FROM azul/zulu-openjdk-alpine:21-jre
+FROM openjdk:24-rc-jdk-bullseye
 VOLUME /tmp
 
-ENV JAVA_OPTS="-Xmx512m -Xms64m"
+ENV JAVA_OPTS="-Xmx512m -Xms64m -XX:+UnlockExperimentalVMOptions -XX:+UseCompactObjectHeaders"
 ENV SPRINGBOOT_OPTS="--spring.profiles.active=production"
 ENV TZ=Asia/Shanghai
 ENV SOURCE_DOWNLOADER_DATA_LOCATION=/app/data/
