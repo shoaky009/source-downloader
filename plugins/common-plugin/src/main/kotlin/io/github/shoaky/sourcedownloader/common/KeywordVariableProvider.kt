@@ -6,6 +6,8 @@ import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.VariableProvider
 import org.slf4j.LoggerFactory
 import java.nio.file.Path
+import java.nio.file.StandardWatchEventKinds
+import java.nio.file.WatchService
 import kotlin.io.path.readLines
 
 /**
@@ -15,22 +17,31 @@ class KeywordVariableProvider(
     private val keywords: List<String> = emptyList(),
     private val keywordsFile: Path? = null,
     private val regexPattern: String = "[()\\[](@keyword)[()\\]]",
-) : VariableProvider {
+) : VariableProvider, AutoCloseable {
 
-    private val words = buildList {
-        addAll(keywords)
-        addAll(keywordsFile?.readLines() ?: emptyList())
-    }.map {
-        // "keyword" 匹配的字符串
-        // "mode" 0:默认 [value]不包含括号时如果前后没有括号不则不匹配, [value]包含括号时则不检查括号
-        // "alias" 如果不为空优先使用该值作为匹配结果的变量
-        // "keyword|mode|alias"
-        val split = it.split("|")
-        val word = split.first()
-        val mode = split.getOrElse(1) { "0" }
-        val alias = split.getOrElse(2) { null }
-        Word(word, mode.toIntOrNull() ?: 0, alias)
-    }.toSet()
+    private var words: List<Word> = parseKeywords()
+    private var stop: Boolean = false
+
+    init {
+        startWatchFile()
+    }
+
+    private fun parseKeywords(): List<Word> {
+        return buildList {
+            addAll(keywords)
+            addAll(keywordsFile?.readLines() ?: emptyList())
+        }.map {
+            // "keyword" 匹配的字符串
+            // "mode" 0:默认 [value]不包含括号时如果前后没有括号不则不匹配, [value]包含括号时则不检查括号
+            // "alias" 如果不为空优先使用该值作为匹配结果的变量
+            // "keyword|mode|alias"
+            val split = it.split("|")
+            val word = split.first()
+            val mode = split.getOrElse(1) { "0" }.toIntOrNull() ?: 0
+            val alias = split.getOrElse(2) { null }
+            Word(word, mode, alias)
+        }.distinct()
+    }
 
     override fun itemVariables(sourceItem: SourceItem): PatternVariables {
         val title = sourceItem.title
@@ -71,11 +82,57 @@ class KeywordVariableProvider(
         return "keyword"
     }
 
+    private fun startWatchFile() {
+        if (keywordsFile == null) {
+            return
+        }
+        val parent = keywordsFile.parent ?: return
+        val watchService = keywordsFile.fileSystem.newWatchService()
+        parent.register(watchService, StandardWatchEventKinds.ENTRY_MODIFY)
+
+        val fileName = keywordsFile.fileName
+        Thread.ofVirtual().start {
+            log.info("Start watch $keywordsFile")
+            while (!stop) {
+                handleEvent(watchService, fileName)
+            }
+            watchService.close()
+        }
+    }
+
+    private fun handleEvent(watchService: WatchService, fileName: Path) {
+        val key = watchService.take()
+        for (event in key.pollEvents()) {
+            if (event.kind() != StandardWatchEventKinds.ENTRY_MODIFY) {
+                continue
+            }
+            val context = event.context()
+            if (context !is Path) {
+                continue
+            }
+            try {
+                if (context == fileName) {
+                    log.info("Reload keywords from $keywordsFile")
+                    words = parseKeywords()
+                }
+            } catch (e: Exception) {
+                log.error("Fail to reload keywords from $keywordsFile", e)
+            }
+        }
+        key.reset()
+    }
+
+    override fun close() {
+        log.info("Closing watch service")
+        stop = true
+    }
+
     companion object {
 
         private val log = LoggerFactory.getLogger(KeywordVariableProvider::class.java)
 
     }
+
 }
 
 private data class Word(
