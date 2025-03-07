@@ -137,6 +137,11 @@ components:
       props:
         mapping:
           test3.jpg: "test3"
+  variable-provider:
+    - name: keyword
+      type: "keyword"
+      props:
+        keywords: ["11", "22"]
 processors:
   - name: "NormalCase"
     source: "fixed:normal-case"

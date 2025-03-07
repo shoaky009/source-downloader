@@ -40,19 +40,15 @@ class DefaultComponentManager(
 
         val supplier = getSupplier(targetComponentType)
         val supplyTypes = supplier.supplyTypes()
+        val (declaraType, declaraTypeConfig) = findDeclaraTypeConfig(supplyTypes, targetName, supplier.supportNoArgs())
+
         val typesWithProp = supplyTypes.associateBy({ it }) {
-            val config = findConfig(it.type, it.typeName, targetName)
-            if (config == null && supplier.supportNoArgs()) {
-                Properties.empty
+            if (it == declaraType) {
+                Properties.fromMap(declaraTypeConfig.props)
             } else {
-                val values = config?.props
-                    ?: throwComponentException(
-                        "No component config found for ${it.type}:${it.typeName}:$targetName",
-                        ComponentFailureType.DEFINITION_NOT_FOUND
-                    )
-                Properties.fromMap(values)
+                Properties.empty
             }
-        }
+        }.toMutableMap()
 
         val (primaryType, props) = selectPrimaryType(supplier, typesWithProp)
         val primaryTypeBeanName = primaryType.instanceName(targetName)
@@ -116,6 +112,29 @@ class DefaultComponentManager(
 
         @Suppress("UNCHECKED_CAST")
         return componentWrapper as ComponentWrapper<T>
+    }
+
+    private fun findDeclaraTypeConfig(
+        supplyTypes: List<ComponentType>,
+        targetName: String,
+        noArgs: Boolean
+    ): Pair<ComponentType, ComponentConfig> {
+        for (type in supplyTypes) {
+            val config = findConfig(type.type, type.typeName, targetName)
+            if (config != null) {
+                return Pair(type, config)
+            }
+        }
+
+        val type = supplyTypes.first()
+        if (noArgs) {
+            return Pair(type, ComponentConfig(type.typeName, type.typeName))
+        }
+
+        throwComponentException(
+            "No component config found for ${type.type}:${type.typeName}:$targetName",
+            ComponentFailureType.DEFINITION_NOT_FOUND
+        )
     }
 
     private fun selectPrimaryType(
