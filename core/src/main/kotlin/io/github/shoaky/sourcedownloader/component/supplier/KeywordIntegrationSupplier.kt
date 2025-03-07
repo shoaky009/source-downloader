@@ -1,6 +1,6 @@
-package io.github.shoaky.sourcedownloader.common.supplier
+package io.github.shoaky.sourcedownloader.component.supplier
 
-import io.github.shoaky.sourcedownloader.common.KeywordIntegration
+import io.github.shoaky.sourcedownloader.component.KeywordIntegration
 import io.github.shoaky.sourcedownloader.sdk.CoreContext
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier

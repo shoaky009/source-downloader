@@ -1,4 +1,4 @@
-package io.github.shoaky.sourcedownloader.common
+package io.github.shoaky.sourcedownloader.component
 
 import io.github.shoaky.sourcedownloader.sdk.MapPatternVariables
 import io.github.shoaky.sourcedownloader.sdk.PatternVariables

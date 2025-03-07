@@ -101,7 +101,8 @@ class CoreApplication(
             UrlFileResolverSupplier,
             WindowsPathReplacerSupplier,
             ForceTrimmerSupplier,
-            RegexTrimmerSupplier
+            RegexTrimmerSupplier,
+            KeywordIntegrationSupplier
         )
         val types = componentManager.getSuppliers()
             .map { it.supplyTypes() }

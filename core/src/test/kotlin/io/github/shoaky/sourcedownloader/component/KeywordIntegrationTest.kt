@@ -1,4 +1,4 @@
-package io.github.shoaky.sourcedownloader.common
+package io.github.shoaky.sourcedownloader.component
 
 import io.github.shoaky.sourcedownloader.sourceItem
 import org.junit.jupiter.api.Assertions.assertEquals
