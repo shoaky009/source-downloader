@@ -4,11 +4,11 @@ import io.github.shoaky.sourcedownloader.sourceItem
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-class KeywordVariableProviderTest {
+class KeywordIntegrationTest {
 
     @Test
     fun given_prefixes_and_suffixes() {
-        val provider = KeywordVariableProvider(
+        val provider = KeywordIntegration(
             listOf("1111")
         )
 
@@ -21,7 +21,7 @@ class KeywordVariableProviderTest {
 
     @Test
     fun given_no_prefixes_and_suffixes() {
-        val provider = KeywordVariableProvider(
+        val provider = KeywordIntegration(
             listOf("1111")
         )
 
@@ -31,7 +31,7 @@ class KeywordVariableProviderTest {
 
     @Test
     fun given_keyword_and_mode() {
-        val provider = KeywordVariableProvider(
+        val provider = KeywordIntegration(
             listOf("2222|1")
         )
         val group2 = provider.itemVariables(sourceItem("2222zxcvbnm"))
@@ -40,7 +40,7 @@ class KeywordVariableProviderTest {
 
     @Test
     fun given_alias_keyword_and_mode() {
-        val provider = KeywordVariableProvider(
+        val provider = KeywordIntegration(
             listOf("2222|1|abc222")
         )
         val group2 = provider.itemVariables(sourceItem("2222zxcvbnm"))

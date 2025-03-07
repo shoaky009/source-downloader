@@ -33,7 +33,7 @@ internal class CommonPlugin : Plugin {
             GetchuVariableProviderSupplier,
             HtmlFileResolverSupplier,
             JackettSourceSupplier,
-            KeywordVariableProviderSupplier,
+            KeywordIntegrationSupplier,
             LanguageVariableProviderSupplier,
             MediaTypeExistsDetectorSupplier,
             MikanSourceSupplier(pluginContext),

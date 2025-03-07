@@ -1,27 +1,27 @@
 package io.github.shoaky.sourcedownloader.common.supplier
 
-import io.github.shoaky.sourcedownloader.common.KeywordVariableProvider
+import io.github.shoaky.sourcedownloader.common.KeywordIntegration
 import io.github.shoaky.sourcedownloader.sdk.CoreContext
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
 import java.nio.file.Path
 
-object KeywordVariableProviderSupplier : ComponentSupplier<KeywordVariableProvider> {
+object KeywordIntegrationSupplier : ComponentSupplier<KeywordIntegration> {
 
-    override fun apply(context: CoreContext, props: Properties): KeywordVariableProvider {
+    override fun apply(context: CoreContext, props: Properties): KeywordIntegration {
         val keywords = props.getOrDefault<List<String>>("keywords", emptyList())
         val keywordsFile = props.getOrNull<Path>("keywords-file")
-        return KeywordVariableProvider(
+        return KeywordIntegration(
             keywords,
-            keywordsFile,
-
-            )
+            keywordsFile
+        )
     }
 
     override fun supplyTypes(): List<ComponentType> {
         return listOf(
-            ComponentType.variableProvider("keyword")
+            ComponentType.variableProvider("keyword"),
+            ComponentType.itemFilter("keyword"),
         )
     }
 }

@@ -3,6 +3,7 @@ package io.github.shoaky.sourcedownloader.common
 import io.github.shoaky.sourcedownloader.sdk.MapPatternVariables
 import io.github.shoaky.sourcedownloader.sdk.PatternVariables
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
+import io.github.shoaky.sourcedownloader.sdk.component.SourceItemFilter
 import io.github.shoaky.sourcedownloader.sdk.component.VariableProvider
 import org.slf4j.LoggerFactory
 import java.nio.file.Path
@@ -13,11 +14,11 @@ import kotlin.io.path.readLines
 /**
  *
  */
-class KeywordVariableProvider(
+class KeywordIntegration(
     private val keywords: List<String> = emptyList(),
     private val keywordsFile: Path? = null,
     private val regexPattern: String = "[()\\[](@keyword)[()\\]]",
-) : VariableProvider, AutoCloseable {
+) : VariableProvider, SourceItemFilter, AutoCloseable {
 
     private var words: List<Word> = parseKeywords()
     private var stop: Boolean = false
@@ -87,16 +88,26 @@ class KeywordVariableProvider(
             return
         }
         val parent = keywordsFile.parent ?: return
-        val watchService = keywordsFile.fileSystem.newWatchService()
+        val watchService = try {
+            keywordsFile.fileSystem.newWatchService()
+        } catch (e: Exception) {
+            log.error("Error creating watch service", e)
+            return
+        }
         parent.register(watchService, StandardWatchEventKinds.ENTRY_MODIFY)
 
         val fileName = keywordsFile.fileName
         Thread.ofVirtual().start {
-            log.info("Start watch $keywordsFile")
+            log.info("Start watch {}", keywordsFile)
             while (!stop) {
-                handleEvent(watchService, fileName)
+                try {
+                    handleEvent(watchService, fileName)
+                } catch (e: Exception) {
+                    log.error("Fail to reload keywords from {}", keywordsFile, e)
+                }
             }
             watchService.close()
+            log.info("Stop watch {}", keywordsFile)
         }
     }
 
@@ -110,29 +121,29 @@ class KeywordVariableProvider(
             if (context !is Path) {
                 continue
             }
-            try {
-                if (context == fileName) {
-                    log.info("Reload keywords from $keywordsFile")
-                    words = parseKeywords()
-                }
-            } catch (e: Exception) {
-                log.error("Fail to reload keywords from $keywordsFile", e)
+            if (context == fileName) {
+                log.info("Reload keywords from {}", keywordsFile)
+                words = parseKeywords()
             }
         }
         key.reset()
     }
 
     override fun close() {
-        log.info("Closing watch service")
         stop = true
+    }
+
+    override fun test(t: SourceItem): Boolean {
+        val title = t.title
+        val matchedWord = matchWord(title)
+        return matchedWord != null
     }
 
     companion object {
 
-        private val log = LoggerFactory.getLogger(KeywordVariableProvider::class.java)
+        private val log = LoggerFactory.getLogger(KeywordIntegration::class.java)
 
     }
-
 }
 
 private data class Word(
