@@ -65,7 +65,7 @@ class KeywordIntegration(
                 .toRegex(RegexOption.IGNORE_CASE)
             regex.find(title) != null
         }
-        log.info("Keyword $matchedWord match: $title")
+        log.debug("Keyword {} match: {}", matchedWord, title)
         return matchedWord
     }
 
