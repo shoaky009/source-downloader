@@ -16,6 +16,10 @@ object DeleteEmptyDirectory : ProcessListener {
         if (singleFile(itemContent)) {
             val fileContent = itemContent.fileContents.first()
             val parent = fileContent.fileDownloadPath.parent
+            if (parent == null || parent.notExists()) {
+                return
+            }
+
             val isEmpty = Files.newDirectoryStream(parent).use { it.none() }
             if (isEmpty) {
                 parent.deleteIfExists()
