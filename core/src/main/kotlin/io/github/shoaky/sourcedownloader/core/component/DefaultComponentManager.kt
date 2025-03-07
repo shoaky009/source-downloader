@@ -31,7 +31,9 @@ class DefaultComponentManager(
 
         val targetInstanceName = id.getInstanceName(type)
         if (objectContainer.contains(targetInstanceName)) {
-            return objectContainer.get(targetInstanceName, typeReference)
+            val wrapper = objectContainer.get(targetInstanceName, typeReference)
+            
+            return wrapper
         }
 
         val targetTypeName = id.typeName()
@@ -83,14 +85,14 @@ class DefaultComponentManager(
             Events.register(wrapper)
             wrapper
         }
-        if (targetComponentType == primaryType) {
+        if (supplyTypes.size == 1) {
             @Suppress("UNCHECKED_CAST")
             return primaryComponentWrapper as ComponentWrapper<T>
         }
 
         // Create sub components
         val singletonNames = objectContainer.getAllObjectNames()
-        val componentWrapper = typesWithProp.filter { it.key != primaryType }
+        val subComponentWrapper = typesWithProp.filter { it.key != primaryType }
             .mapNotNull { (type, props) ->
                 val typeBeanName = type.instanceName(targetName)
                 if (singletonNames.contains(typeBeanName)) {
@@ -108,10 +110,13 @@ class DefaultComponentManager(
                 log.info("Successfully created component ${type.instanceName(id.name())}")
                 Events.register(componentWrapper)
                 componentWrapper
-            }.first { it.type == targetComponentType }
-
+            }
+        if (targetComponentType == primaryType) {
+            @Suppress("UNCHECKED_CAST")
+            return primaryComponentWrapper as ComponentWrapper<T>
+        }
         @Suppress("UNCHECKED_CAST")
-        return componentWrapper as ComponentWrapper<T>
+        return subComponentWrapper.first { it.type == targetComponentType } as ComponentWrapper<T>
     }
 
     private fun findDeclaraTypeConfig(

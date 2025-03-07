@@ -33,7 +33,8 @@ class ProcessorService(
             .drop(pageable.pageNumber * pageable.pageSize)
             .take(pageable.pageSize)
             .map { config ->
-                val snapshot = if (config.enabled) {
+                val exists = processorManager.exists(config.name)
+                val snapshot = if (exists) {
                     processorManager.getProcessor(config.name).get()
                         .getRuntimeSnapshot()
                 } else {

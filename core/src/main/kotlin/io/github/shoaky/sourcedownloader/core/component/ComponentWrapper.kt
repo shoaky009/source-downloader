@@ -1,8 +1,10 @@
 package io.github.shoaky.sourcedownloader.core.component
 
+import io.github.shoaky.sourcedownloader.core.DelegateComponent
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
 import io.github.shoaky.sourcedownloader.sdk.component.SdComponent
+import kotlin.reflect.KClass
 
 data class ComponentWrapper<T : SdComponent>(
     val type: ComponentType,
@@ -18,9 +20,14 @@ data class ComponentWrapper<T : SdComponent>(
         return component
     }
 
-    fun getAndMarkRef(ref: String): T {
+    fun getAndMarkRef(ref: String, type: KClass<out SdComponent>): T {
+        var res = component
+        if (res is DelegateComponent && !type.isInstance(res)) {
+            @Suppress("UNCHECKED_CAST")
+            res = res.getDelegate() as T
+        }
         addRef(ref)
-        return component
+        return res
     }
 
     fun addRef(ref: String) {

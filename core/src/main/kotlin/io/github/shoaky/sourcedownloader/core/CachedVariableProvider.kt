@@ -4,6 +4,7 @@ import com.google.common.cache.CacheBuilder
 import io.github.shoaky.sourcedownloader.sdk.PatternVariables
 import io.github.shoaky.sourcedownloader.sdk.SourceFile
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
+import io.github.shoaky.sourcedownloader.sdk.component.SdComponent
 import io.github.shoaky.sourcedownloader.sdk.component.VariableProvider
 import org.slf4j.LoggerFactory
 import java.time.Duration
@@ -11,7 +12,7 @@ import java.util.zip.CRC32
 
 class CachedVariableProvider(
     private val variableProvider: VariableProvider,
-) : VariableProvider by variableProvider {
+) : VariableProvider by variableProvider, DelegateComponent {
 
     private val itemCache = CacheBuilder.newBuilder()
         .maximumSize(1000)
@@ -65,4 +66,14 @@ class CachedVariableProvider(
 
         private val log = LoggerFactory.getLogger(CachedVariableProvider::class.java)
     }
+
+    override fun getDelegate(): SdComponent {
+        return variableProvider
+    }
+}
+
+interface DelegateComponent {
+
+    fun getDelegate(): SdComponent
+
 }

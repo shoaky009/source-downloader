@@ -42,28 +42,28 @@ class DefaultProcessorManager(
             config.source,
             sourceTypeRef,
         )
-        val source = sourceW.getAndMarkRef(processorName)
+        val source = sourceW.getAndMarkRef(processorName, Source::class)
 
         val downloaderW = componentManager.getComponent(
             ComponentTopType.DOWNLOADER,
             config.downloader,
             downloaderTypeRef,
         )
-        val downloader = downloaderW.getAndMarkRef(processorName)
+        val downloader = downloaderW.getAndMarkRef(processorName, Downloader::class)
 
         val moverW = componentManager.getComponent(
             ComponentTopType.FILE_MOVER,
             config.fileMover,
             fileMoverTypeRef,
         )
-        val mover = moverW.getAndMarkRef(processorName)
+        val mover = moverW.getAndMarkRef(processorName, FileMover::class)
 
         val resolverW = componentManager.getComponent(
             ComponentTopType.ITEM_FILE_RESOLVER,
             config.itemFileResolver,
             fileResolverTypeRef,
         )
-        val resolver = resolverW.getAndMarkRef(processorName)
+        val resolver = resolverW.getAndMarkRef(processorName, ItemFileResolver::class)
 
         val checkTypes = mutableListOf(
             config.source.getComponentType(ComponentTopType.SOURCE),
@@ -110,7 +110,7 @@ class DefaultProcessorManager(
                 ComponentTopType.TRIGGER,
                 it,
                 triggerTypeRef,
-            ).getAndMarkRef(processorName)
+            ).getAndMarkRef(processorName, Trigger::class)
         }.forEach {
             it.addTask(processor.safeTask())
         }
@@ -221,7 +221,7 @@ class DefaultProcessorManager(
                     ComponentTopType.SOURCE_ITEM_FILTER,
                     it,
                     sourceItemFilterTypeRef,
-                ).getAndMarkRef(config.name)
+                ).getAndMarkRef(config.name, SourceItemFilter::class)
             }
         )
 
@@ -241,7 +241,7 @@ class DefaultProcessorManager(
                     ComponentTopType.ITEM_CONTENT_FILTER,
                     it,
                     itemContentFilterTypeRef,
-                ).getAndMarkRef(config.name)
+                ).getAndMarkRef(config.name, ItemContentFilter::class)
             }
         )
 
@@ -261,7 +261,7 @@ class DefaultProcessorManager(
                     ComponentTopType.FILE_CONTENT_FILTER,
                     it,
                     fileContentFilterTypeRef,
-                ).getAndMarkRef(config.name)
+                ).getAndMarkRef(config.name, FileContentFilter::class)
             }
         )
 
@@ -272,7 +272,7 @@ class DefaultProcessorManager(
                     ComponentTopType.SOURCE_FILE_FILTER,
                     it,
                     sourceFileFilterTypeRef,
-                ).getAndMarkRef(config.name)
+                ).getAndMarkRef(config.name, SourceFileFilter::class)
             }
         )
 
@@ -281,7 +281,7 @@ class DefaultProcessorManager(
                 ComponentTopType.PROCESS_LISTENER,
                 it.id,
                 processListenerTypeRef,
-            ).getAndMarkRef(config.name)
+            ).getAndMarkRef(config.name, ProcessListener::class)
             NamedProcessListener(it.id, cp)
         }).toMutableMap()
         if (options.deleteEmptyDirectory) {
@@ -298,7 +298,7 @@ class DefaultProcessorManager(
                 ComponentTopType.TAGGER,
                 it,
                 fileTaggerTypeRef,
-            ).getAndMarkRef(config.name)
+            ).getAndMarkRef(config.name, FileTagger::class)
         }
 
         val providers = config.options.variableProviders.map {
@@ -306,21 +306,21 @@ class DefaultProcessorManager(
                 ComponentTopType.VARIABLE_PROVIDER,
                 it,
                 variableProviderTypeRef,
-            ).getAndMarkRef(config.name)
+            ).getAndMarkRef(config.name, VariableProvider::class)
         }.toMutableList()
 
         val fileReplacementDecider = componentManager.getComponent(
             ComponentTopType.FILE_REPLACEMENT_DECIDER,
             options.fileReplacementDecider,
             fileReplacementDeciderRef,
-        ).getAndMarkRef(config.name)
+        ).getAndMarkRef(config.name, FileReplacementDecider::class)
 
         val fileExistsDetector = options.fileExistsDetector?.let {
             componentManager.getComponent(
                 ComponentTopType.FILE_EXISTS_DETECTOR,
                 it,
                 fileExistsDetectorTypeRef,
-            ).getAndMarkRef(config.name)
+            ).getAndMarkRef(config.name, FileExistsDetector::class)
         } ?: SimpleFileExistsDetector
 
         val cpReplacers = options.variableReplacers.map {
@@ -328,7 +328,7 @@ class DefaultProcessorManager(
                 ComponentTopType.VARIABLE_REPLACER,
                 it.id,
                 variableReplacerTypeRef,
-            ).getAndMarkRef(config.name)
+            ).getAndMarkRef(config.name, VariableReplacer::class)
             KeyFilterVariableReplacer(cp, it.keys)
         }
         val replacers = buildSet {
@@ -352,7 +352,7 @@ class DefaultProcessorManager(
                     ComponentTopType.TRIMMER,
                     ComponentId(it),
                     trimmerTypeRef,
-                ).getAndMarkRef(config.name)
+                ).getAndMarkRef(config.name, Trimmer::class)
             }
         }
 
@@ -402,7 +402,7 @@ class DefaultProcessorManager(
                     ComponentTopType.VARIABLE_PROVIDER,
                     it,
                     variableProviderTypeRef
-                ).getAndMarkRef(config.name)
+                ).getAndMarkRef(config.name, VariableProvider::class)
             }
             val condition = cfg.conditionExpression?.let {
                 expressionFactory.create(it, Boolean::class.java, fileContentDefs())
@@ -442,7 +442,7 @@ class DefaultProcessorManager(
                     ComponentTopType.FILE_CONTENT_FILTER,
                     it,
                     fileContentFilterTypeRef,
-                ).getAndMarkRef(config.name)
+                ).getAndMarkRef(config.name, FileContentFilter::class)
             }
             if (filters != null) {
                 fileContentFilters.addAll(filters)
@@ -498,7 +498,7 @@ class DefaultProcessorManager(
                     ComponentTopType.SOURCE_ITEM_FILTER,
                     it,
                     sourceItemFilterTypeRef,
-                ).getAndMarkRef(config.name)
+                ).getAndMarkRef(config.name, SourceItemFilter::class)
             }
 
             val matcher = if (itemOption.tags.isNotEmpty()) {
@@ -513,7 +513,7 @@ class DefaultProcessorManager(
 
             val providers = itemOption.variableProviders?.map {
                 componentManager.getComponent(ComponentTopType.VARIABLE_PROVIDER, it, variableProviderTypeRef)
-                    .getAndMarkRef(config.name)
+                    .getAndMarkRef(config.name, VariableProvider::class)
             }
 
             if (expressionFilters != null || sourceItemFilters != null) {
