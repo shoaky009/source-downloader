@@ -17,6 +17,7 @@ object CelCompiledExpressionFactory : CompiledExpressionFactory {
             when (variableType) {
                 VariableType.STRING -> Decls.newVar(variableName, Decls.String)
                 VariableType.BOOLEAN -> Decls.newVar(variableName, Decls.Bool)
+                VariableType.INT -> Decls.newVar(variableName, Decls.Int)
                 VariableType.MAP -> Decls.newVar(variableName, Decls.newMapType(Decls.String, Decls.Dyn))
                 VariableType.ARRAY -> Decls.newVar(variableName, Decls.newListType(Decls.Dyn))
                 VariableType.ANY -> Decls.newVar(variableName, Decls.Dyn)

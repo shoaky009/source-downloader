@@ -6,7 +6,7 @@ import io.github.shoaky.sourcedownloader.sdk.SourceFile
 
 interface SourceFilePartition {
 
-    fun match(sourceFile: SourceFile): Boolean
+    fun match(sourceFile: SourceFile, fileCount: Int): Boolean
 
 }
 
@@ -14,8 +14,9 @@ class ExpressionSourceFilePartition(
     private val expression: CompiledExpression<Boolean>
 ) : SourceFilePartition {
 
-    override fun match(sourceFile: SourceFile): Boolean {
-        return expression.execute(sourceFile.variables())
+    override fun match(sourceFile: SourceFile, fileCount: Int): Boolean {
+        val variables = sourceFile.variables(fileCount)
+        return expression.execute(variables)
     }
 }
 
@@ -23,7 +24,7 @@ class TagSourceFilePartition(
     private val tags: Set<String>
 ) : SourceFilePartition {
 
-    override fun match(sourceFile: SourceFile): Boolean {
+    override fun match(sourceFile: SourceFile, fileCount: Int): Boolean {
         return sourceFile.tags.containsAll(tags)
     }
 }

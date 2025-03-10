@@ -45,9 +45,9 @@ data class ProcessorOptions(
     val pathNameLengthLimit: Int = 255,
 ) {
 
-    fun matchFileOption(sourceFile: SourceFile): FileOption? {
+    fun matchFileOption(sourceFile: SourceFile, fileCount: Int): FileOption? {
         return fileGrouping.firstNotNullOfOrNull {
-            if (it.key.match(sourceFile)) it else null
+            if (it.key.match(sourceFile, fileCount)) it else null
         }?.value
     }
 

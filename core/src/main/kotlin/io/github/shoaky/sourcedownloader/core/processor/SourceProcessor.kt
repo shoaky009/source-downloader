@@ -265,7 +265,7 @@ class SourceProcessor(
         val itemRenameVariables = renamer.itemRenameVariables(sourceItem, itemVariables)
         log.trace("Processor:'{}' item:{} variables:{}", name, sourceItem, itemVariables)
         val fileContents = resolvedFiles.groupBy {
-            options.matchFileOption(it)
+            options.matchFileOption(it, resolvedFiles.size)
         }.flatMap { (fileOption, files) ->
             val relativizeFiles = files.map {
                 it.takeIf { it.path.isAbsolute.not() }

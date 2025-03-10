@@ -14,5 +14,6 @@ enum class VariableType {
      */
     ARRAY,
     DATE,
+    INT,
     ANY
 }

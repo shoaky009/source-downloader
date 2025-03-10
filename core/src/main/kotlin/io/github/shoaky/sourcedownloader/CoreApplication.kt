@@ -109,7 +109,12 @@ class CoreApplication(
             .flatten()
             .distinct()
             .groupBy({ it.type.klass.simpleName }, { it.typeName })
-        log.info("Component supplier registration completed:$types")
+
+        val builder = StringBuilder()
+        for ((type, names) in types) {
+            builder.appendLine("$type: $names")
+        }
+        log.info("Component supplier registration completed:{}", builder.toString())
     }
 
     fun start() {

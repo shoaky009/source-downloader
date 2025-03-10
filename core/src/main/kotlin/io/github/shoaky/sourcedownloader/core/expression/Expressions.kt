@@ -25,12 +25,14 @@ fun SourceItem.variables(): Map<String, Any> {
 fun sourceFileDefs(): Map<String, VariableType> {
     return mapOf(
         "file" to VariableType.ANY,
+        "fileCount" to VariableType.INT,
     )
 }
 
-fun SourceFile.variables(): Map<String, Any> {
-    return mapOf(
-        "file" to SourceFileVariables(this)
+fun SourceFile.variables(fileCount: Int): Map<String, Any> {
+    return mutableMapOf(
+        "file" to SourceFileVariables(this),
+        "fileCount" to fileCount
     )
 }
 
