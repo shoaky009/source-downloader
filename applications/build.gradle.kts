@@ -27,7 +27,7 @@ fun DependencyHandlerScope.resolveBuildInPlugins() {
         val sdPlugins = project.property("sdPlugins").toString()
         println("Prepare built-in plugins: $sdPlugins")
         if (sdPlugins == "all") {
-            project(":plugins").dependencyProject.childProjects.map { it.key }
+            listOf("common", "telegram4j", "foreign")
         } else {
             sdPlugins.split(",")
                 .filter { it.isNotBlank() }

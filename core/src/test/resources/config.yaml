@@ -98,17 +98,6 @@ components:
               downloadUri: "file://test1"
             files:
               - path: "test1.jpg"
-  file-resolver:
-    - name: "normal-case"
-      type: "fixed"
-    - name: "error-item"
-      type: "fixed"
-    - name: "replace-case"
-      type: "fixed"
-    - name: "media-type-case"
-      type: "fixed"
-    - name: "long-title"
-      type: "fixed"
   downloader:
     - name: "mock"
       type: "mock"

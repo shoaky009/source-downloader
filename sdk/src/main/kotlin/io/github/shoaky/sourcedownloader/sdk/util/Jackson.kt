@@ -112,12 +112,12 @@ object AdaptabilityHandler : DeserializationProblemHandler() {
 
     override fun handleUnexpectedToken(
         ctxt: DeserializationContext,
-        targetType: Class<*>,
+        targetType: JavaType,
         t: JsonToken,
         p: JsonParser,
         failureMsg: String?
     ): Any {
-        if (targetType != OffsetDateTime::class.java) {
+        if (targetType.rawClass != OffsetDateTime::class.java) {
             return super.handleUnexpectedToken(ctxt, targetType, t, p, failureMsg)
         }
 
@@ -131,6 +131,7 @@ object AdaptabilityHandler : DeserializationProblemHandler() {
         }
         return Jackson.convert<LocalDateTime>(numbers).atOffset(ZONE_OFFSET)
     }
+
 }
 
 class JoinStringSerializer : StdSerializer<Collection<*>>(Collection::class.java) {

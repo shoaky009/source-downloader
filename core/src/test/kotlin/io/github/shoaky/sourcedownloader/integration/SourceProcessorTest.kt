@@ -218,6 +218,7 @@ class SourceProcessorTest {
         processor.run()
         val contents = processingStorage.queryAllContent(ProcessingQuery(processorName))
             .associateBy { it.itemContent.sourceItem.title }
+        println(contents)
         // 如果实现了对被替换文件的状态更新，这里需要断言REPLACED
         assertEquals(
             FileContentStatus.NORMAL, contents.getValue("test-replace1")
