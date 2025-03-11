@@ -32,14 +32,3 @@ dependencies {
     testImplementation(libs.spring.jdbc)
     testRuntimeOnly(project(":plugins:common-plugin"))
 }
-//
-// tasks.testCodeCoverageReport {
-//     this.reports {
-//         html.required.set(false)
-//         csv.required.set(false)
-//         xml.required.set(true)
-//         xml.outputLocation.set(
-//             rootProject.layout.buildDirectory.file("reports/jacoco/testCodeCoverageReport.xml")
-//         )
-//     }
-// }

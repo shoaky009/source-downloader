@@ -20,8 +20,6 @@ jobs:
           distribution: 'zulu'
           java-version: '21'
           cache: 'gradle'
-          cache-dependency-path: |
-            gradle/wrapper
       - name: Run Test with Gradle
         run: ./gradlew test jacocoTestReport testCodeCoverageReport --no-daemon
       - name: Store reports
@@ -36,5 +34,4 @@ jobs:
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          directory: build/reports/jacoco/
-          files: testCodeCoverageReport.xml
+          directory: ./build/reports/jacoco/

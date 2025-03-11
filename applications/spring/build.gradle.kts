@@ -120,6 +120,17 @@ jib {
     extraDirectories.setPaths(layout.buildDirectory.dir("generated/container"))
 }
 
+tasks.testCodeCoverageReport {
+    reports {
+        xml.required.set(true)
+        html.required.set(false)
+        csv.required.set(false)
+        xml.outputLocation.set(
+            rootProject.layout.buildDirectory.file("reports/jacoco/jacocoTestReport.xml")
+        )
+    }
+}
+
 // graalvmNative {
 //     agent {
 //         metadataCopy {
