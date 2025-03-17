@@ -111,6 +111,7 @@ class CoreApplication(
             .groupBy({ it.type.klass.simpleName }, { it.typeName })
 
         val builder = StringBuilder()
+        builder.appendLine()
         for ((type, names) in types) {
             builder.appendLine("$type: $names")
         }

@@ -87,7 +87,7 @@ object TelegramClientInstanceFactory : InstanceFactory<TelegramClientWrapper> {
             .doOnError {
                 log.error("Error while connecting to Telegram", it)
             }
-            .blockOptional(Duration.ofSeconds(5L)).get()
+            .blockOptional(Duration.ofSeconds(config.timeout)).get()
         return TelegramClientWrapper(client)
     }
 
@@ -122,5 +122,6 @@ private data class ClientConfig(
     @JsonAlias("ping-interval")
     val pingInterval: Long = 30L,
     @JsonAlias("reconnection-interval")
-    val reconnectionInterval: Long = 15L
+    val reconnectionInterval: Long = 15L,
+    val timeout: Long = 5L,
 )
