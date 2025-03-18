@@ -17,9 +17,6 @@ components:
       type: http
       props:
         download-path: /downloads
-  item-file-resolver:
-    - name: pixiv
-      type: pixiv
 
 processors:
   - name: pixiv

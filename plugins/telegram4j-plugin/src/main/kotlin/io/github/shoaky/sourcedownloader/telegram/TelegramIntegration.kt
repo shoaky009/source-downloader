@@ -16,7 +16,6 @@ import telegram4j.core.`object`.MessageMedia
 import telegram4j.core.`object`.Photo
 import telegram4j.core.`object`.Video
 import telegram4j.core.`object`.media.PhotoThumbnail
-import telegram4j.core.util.Id
 import telegram4j.mtproto.MTProtoRetrySpec
 import telegram4j.mtproto.RpcException
 import telegram4j.mtproto.file.FilePart
@@ -70,9 +69,12 @@ class TelegramIntegration(
         val chatId = queryMap["channel"]?.toLong() ?: return emptyList()
         val messageId = queryMap["post"]?.toInt() ?: return emptyList()
 
-        val messageIdPeer = listOf(ImmutableInputMessageID.of(messageId))
-        val chatIdPeer = Id.ofChannel(chatId)
-        val message = client.getMessages(chatIdPeer, messageIdPeer)
+        val chatPointer = ChatPointer(chatId)
+        val message = client.getMessages(
+            chatPointer.createId(), listOf(
+                ImmutableInputMessageID.of(messageId)
+            )
+        )
             .retryWhen(MTProtoRetrySpec.max(2))
             .block(Duration.ofSeconds(5L))
             ?.messages?.firstOrNull() ?: return emptyList()

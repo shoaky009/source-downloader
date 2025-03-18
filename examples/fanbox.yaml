@@ -9,9 +9,6 @@ components:
       type: http
       props:
         download-path: /downloads
-  item-file-resolver:
-    - name: fanbox
-      type: fanbox
 
 processors:
   - name: fanbox

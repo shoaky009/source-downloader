@@ -42,8 +42,6 @@ components:
           - expression: "has(item.attrs.site) && item.attrs.site == 'Telegraph'"
             component: http
   item-file-resolver:
-    - name: telegram
-      type: telegram
     - name: telegraph
       type: html
       props:
