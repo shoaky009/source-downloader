@@ -216,11 +216,12 @@ class Renamer(
     private fun buildSourceItemRenameVariables(sourceItem: SourceItem): Map<String, Any> {
         return mapOf(
             "title" to sourceItem.title.replaceVariable("item.title"),
+            "datetime" to sourceItem.datetime.toInstant(),
             "date" to sourceItem.datetime.toLocalDate().toString().replaceVariable("item.date"),
             "year" to sourceItem.datetime.year.toString().replaceVariable("item.year"),
             "month" to sourceItem.datetime.monthValue.toString().replaceVariable("item.month"),
             "contentType" to sourceItem.contentType.replaceVariable("item.contentType"),
-            "attrs" to sourceItem.attrs.mapValues { it.value.toString() }.replaceVariables()
+            "attrs" to sourceItem.attrs.mapValues { it.value.toString() }.replaceVariables(),
         )
     }
 
