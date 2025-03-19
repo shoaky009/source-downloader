@@ -56,11 +56,20 @@ class TelegramSource(
         val downloadUri = URI("tg://privatepost?channel=${chatPointer.chatId}&post=$messageId")
         val messageDateTime = Instant.ofEpochSecond(message.date().toLong()).atOffset(SourceItem.DEFAULT_OFFSET)
         val media = message.media()
+        val fromId = when (val p = message.fromId()) {
+            is PeerChannel -> p.channelId()
+            is PeerUser -> p.userId()
+            is PeerChat -> p.chatId()
+            else -> null
+        }
         val attrs = mutableMapOf(
             "messageId" to messageId,
             "chatId" to chatId,
-            "chatName" to chatName
+            "chatName" to chatName,
         )
+        if (fromId != null) {
+            attrs["fromId"] = fromId
+        }
         if (includeNonMedia && media == null) {
             return SourceItem(
                 "message-$messageId",
