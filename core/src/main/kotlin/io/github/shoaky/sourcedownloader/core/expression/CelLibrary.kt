@@ -5,8 +5,10 @@ import org.projectnessie.cel.Library
 import org.projectnessie.cel.ProgramOption
 import org.projectnessie.cel.checker.Decls
 import org.projectnessie.cel.common.types.BoolT
+import org.projectnessie.cel.common.types.IntT
 import org.projectnessie.cel.common.types.StringT
 import org.projectnessie.cel.interpreter.functions.Overload
+import java.time.Instant
 
 class CelLibrary : Library {
 
@@ -42,6 +44,16 @@ class CelLibrary : Library {
                         Decls.String,
                     ),
                     Decls.String
+                )
+            ),
+            Decls.newFunction(
+                TO_EPOCH_SECOND,
+                Decls.newInstanceOverload(
+                    "timestamp_to_epoch_second",
+                    listOf(
+                        Decls.newListType(Decls.Timestamp),
+                    ),
+                    Decls.Int
                 )
             )
         )
@@ -83,6 +95,17 @@ class CelLibrary : Library {
                     val prefix = vals[2].convertToNative(String::class.java)
                     StringT.stringOf(joinIgnoreNull(collection, separator, prefix))
                 }
+            ),
+
+            Overload.overload(
+                TO_EPOCH_SECOND,
+                null,
+                { a ->
+                    val instant = a.convertToNative(Instant::class.java)
+                    IntT.intOf(instant.epochSecond)
+                },
+                null,
+                null
             )
         )
 
@@ -96,6 +119,7 @@ class CelLibrary : Library {
 
         private const val CONTAINS_ANY = "containsAny"
         private const val JOIN_IGNORE_NULL = "joinIgnoreNull"
+        private const val TO_EPOCH_SECOND = "epochSecond"
 
         @JvmStatic
         fun containsAny(source: Collection<String>, target: Collection<String>, ignoreCase: Boolean = false): Boolean {
