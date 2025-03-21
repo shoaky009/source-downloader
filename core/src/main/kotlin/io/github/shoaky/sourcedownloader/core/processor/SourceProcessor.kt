@@ -420,11 +420,8 @@ class SourceProcessor(
     }
 
     private fun saveTargetPaths(sourceItem: SourceItem, paths: List<Path>) {
-        val processingTargetPaths = if (fileReplacementDecider == NeverReplace) {
-            paths.map { ProcessingTargetPath(it, null, sourceItem.hashing()) }
-        } else {
-            paths.map { ProcessingTargetPath(it, name, sourceItem.hashing()) }
-        }
+        val hashing = sourceItem.hashing()
+        val processingTargetPaths = paths.map { ProcessingTargetPath(it, name, hashing) }
         processingStorage.saveTargetPaths(processingTargetPaths)
     }
 
