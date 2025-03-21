@@ -322,6 +322,18 @@ class ExposedProcessingStorage : ProcessingStorage {
         }
     }
 
+    override fun deleteProcessingContentByProcessorName(processorName: String): Int {
+        return transaction {
+            Processings.deleteWhere { Processings.processorName eq processorName }
+        }
+    }
+
+    override fun deleteTargetPathByProcessorName(processorName: String): Int {
+        return transaction {
+            TargetPaths.deleteWhere { TargetPaths.processorName eq processorName }
+        }
+    }
+
     private fun Query.applyConditions(query: ProcessingQuery) {
         if (query.id != null) this.andWhere { Processings.id inList query.id }
         if (query.processorName != null) this.andWhere { Processings.processorName inList query.processorName }

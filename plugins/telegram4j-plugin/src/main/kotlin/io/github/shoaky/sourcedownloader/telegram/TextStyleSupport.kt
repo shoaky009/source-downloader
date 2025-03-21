@@ -2,7 +2,7 @@ package io.github.shoaky.sourcedownloader.telegram
 
 import telegram4j.core.`object`.MessageEntity
 
-object TextStyleSupport {
+internal object TextStyleSupport {
 
     fun styled(content: String, entities: List<MessageEntity>, style: String = "markdown"): String {
         if (entities.isEmpty()) {

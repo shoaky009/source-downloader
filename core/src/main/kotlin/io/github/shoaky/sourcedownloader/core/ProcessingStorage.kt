@@ -38,4 +38,8 @@ interface ProcessingStorage {
     fun queryAllContent(query: ProcessingQuery): List<ProcessingContent>
 
     fun queryContents(query: ProcessingQuery, limit: Int, maxId: Long): List<ProcessingContent>
+
+    fun deleteProcessingContentByProcessorName(processorName: String): Int
+
+    fun deleteTargetPathByProcessorName(processorName: String): Int
 }

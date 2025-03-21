@@ -193,4 +193,13 @@ class ProcessorService(
         configOperator.save(processorName, enabled)
         processorManager.destroyProcessor(processorName)
     }
+
+    fun deleteContents(processorName: String): Map<String, Int> {
+        val count1 = processingStorage.deleteProcessingContentByProcessorName(processorName)
+        val count2 = processingStorage.deleteTargetPathByProcessorName(processorName)
+        return mapOf(
+            "processingContent" to count1,
+            "targetPath" to count2
+        )
+    }
 }

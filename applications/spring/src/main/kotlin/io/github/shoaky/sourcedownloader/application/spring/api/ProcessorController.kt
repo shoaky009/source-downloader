@@ -4,10 +4,7 @@ import io.github.shoaky.sourcedownloader.core.ProcessingContent
 import io.github.shoaky.sourcedownloader.core.ProcessorConfig
 import io.github.shoaky.sourcedownloader.core.processor.DryRunOptions
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
-import io.github.shoaky.sourcedownloader.service.PageRequest
-import io.github.shoaky.sourcedownloader.service.ProcessorInfo
-import io.github.shoaky.sourcedownloader.service.ProcessorService
-import io.github.shoaky.sourcedownloader.service.ProcessorState
+import io.github.shoaky.sourcedownloader.service.*
 import kotlinx.coroutines.flow.Flow
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -19,7 +16,8 @@ import org.springframework.web.bind.annotation.*
 @RestController
 @RequestMapping("/api/processor")
 private class ProcessorController(
-    private val processorService: ProcessorService
+    private val processorService: ProcessorService,
+    private val service: ProcessingContentService
 ) {
 
     /**
@@ -157,6 +155,11 @@ private class ProcessorController(
     @PutMapping("/{processorName}/pointer")
     fun modifyPointer(@PathVariable processorName: String, @RequestBody payload: PointerPayload) {
         processorService.modifyPointer(processorName, payload.sourceId, payload.pointer)
+    }
+
+    @DeleteMapping("/{processorName}/contents")
+    fun deleteContents(@PathVariable processorName: String): Any {
+        return processorService.deleteContents(processorName)
     }
 
     data class PointerPayload(
