@@ -21,21 +21,21 @@ class SpringObjectWrapperContainer(
         applicationContext.registerSingleton(name, value)
     }
 
-    override fun <T : Any, W : ObjectWrapper<T>> get(name: String, type: TypeReference<W>): W {
+    override fun <T : Any, W : ObjectWrapper<T>> get(name: String, typeRef: TypeReference<W>): W {
         @Suppress("UNCHECKED_CAST")
         return try {
             applicationContext.getBean(name) as? W
-                ?: throw IllegalArgumentException("Bean $name cannot be cast to ${type.type}")
+                ?: throw IllegalArgumentException("Bean $name cannot be cast to ${typeRef.type}")
         } catch (e: BeansException) {
             throwComponentException("No bean named $name available", ComponentFailureType.INSTANCE_NOT_FOUND)
         }
     }
 
-    override fun <T : Any, W : ObjectWrapper<T>> getObjectsOfType(type: TypeReference<W>): Map<String, W> {
-        val names = applicationContext.getBeanNamesForType(ResolvableType.forType(type.type))
+    override fun <T : Any, W : ObjectWrapper<T>> getObjectsOfType(typeRef: TypeReference<W>): Map<String, W> {
+        val names = applicationContext.getBeanNamesForType(ResolvableType.forType(typeRef.type))
         @Suppress("UNCHECKED_CAST")
-        return applicationContext.getBeansOfType(ResolvableType.forType(type.type).resolve()) as? Map<String, W>
-            ?: throw IllegalArgumentException("Bean $names cannot be cast to ${type.type}")
+        return applicationContext.getBeansOfType(ResolvableType.forType(typeRef.type).resolve()) as? Map<String, W>
+            ?: throw IllegalArgumentException("Bean $names cannot be cast to ${typeRef.type}")
     }
 
     override fun remove(name: String) {

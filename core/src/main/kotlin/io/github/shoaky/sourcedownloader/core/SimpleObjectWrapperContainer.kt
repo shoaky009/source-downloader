@@ -18,10 +18,10 @@ class SimpleObjectWrapperContainer : ObjectWrapperContainer {
         objects[name] = value
     }
 
-    override fun <T : Any, W : ObjectWrapper<T>> get(name: String, type: TypeReference<W>): W {
+    override fun <T : Any, W : ObjectWrapper<T>> get(name: String, typeRef: TypeReference<W>): W {
         @Suppress("UNCHECKED_CAST")
         return objects[name] as? W
-            ?: throw IllegalArgumentException("Object $name cannot be cast to ${type.type}")
+            ?: throw IllegalArgumentException("Object $name cannot be cast to ${typeRef.type}")
     }
 
     override fun <T : Any, W : ObjectWrapper<T>> getObjectsOfType(typeRef: TypeReference<W>): Map<String, W> {

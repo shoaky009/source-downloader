@@ -18,9 +18,9 @@ interface ObjectWrapperContainer {
         return get(name, jacksonTypeRef())
     }
 
-    fun <T : Any, W : ObjectWrapper<T>> get(name: String, type: TypeReference<W>): W
+    fun <T : Any, W : ObjectWrapper<T>> get(name: String, typeRef: TypeReference<W>): W
 
-    fun <T : Any, W : ObjectWrapper<T>> getObjectsOfType(type: TypeReference<W>): Map<String, W>
+    fun <T : Any, W : ObjectWrapper<T>> getObjectsOfType(typeRef: TypeReference<W>): Map<String, W>
 
     fun remove(name: String)
 
