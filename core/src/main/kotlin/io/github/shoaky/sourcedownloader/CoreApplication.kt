@@ -39,7 +39,7 @@ class CoreApplication(
         componentManager.getAllTrigger()
             .forEach {
                 log.info("Starting trigger ${it.componentName()}")
-                it.component.start()
+                it.get().start()
             }
     }
 
@@ -48,7 +48,7 @@ class CoreApplication(
         componentManager.getAllTrigger()
             .forEach {
                 log.info("Stopping trigger ${it.componentName()}")
-                it.component.stop()
+                it.get().stop()
             }
         destroyAllProcessor()
         destroyAllComponent()
@@ -65,55 +65,18 @@ class CoreApplication(
             *componentSupplier.toTypedArray()
         )
         componentManager.registerSupplier(
-            // *getObjectSuppliers(
-            //     "io.github.shoaky.sourcedownloader.component.supplier",
-            // )
-            AlwaysReplaceSupplier,
-            CompositeItemFileResolverSupplier,
-            CompositeDownloaderSupplier,
-            CronTriggerSupplier,
-            DeleteEmptyDirectorySupplier,
-            ExpressionFileFilterSupplier,
-            ExpressionItemContentFilterSupplier,
-            ExpressionItemFilterSupplier,
-            FileSizeReplacementDeciderSupplier,
-            FixedScheduleTriggerSupplier,
-            FixedSourceSupplier,
-            FullWidthReplacerSupplier,
-            GeneralFileMoverSupplier,
-            HardlinkFileMoverSupplier,
-            HttpDownloaderSupplier,
-            ItemDirectoryExistsDetectorSupplier,
-            MappedFileTaggerSupplier,
-            MockDownloaderSupplier,
-            NeverReplaceSupplier,
-            NoneDownloaderSupplier,
-            RegexVariableProviderSupplier,
-            RegexVariableReplacerSupplier,
-            RunCommandSupplier,
-            SendHttpRequestSupplier,
-            SequenceVariableProviderSupplier,
-            SystemFileResolverSupplier,
-            SystemFileSourceSupplier,
-            TouchItemDirectorySupplier,
-            UriSourceSupplier,
-            UrlDownloaderSupplier,
-            UrlFileResolverSupplier,
-            WindowsPathReplacerSupplier,
-            ForceTrimmerSupplier,
-            RegexTrimmerSupplier,
-            KeywordIntegrationSupplier
+            *coreSupplierBundle()
         )
         val types = componentManager.getSuppliers()
             .map { it.supplyTypes() }
             .flatten()
             .distinct()
-            .groupBy({ it.type.klass.simpleName }, { it.typeName })
+            .groupBy({ it.type.primaryName }, { it.typeName })
 
         val builder = StringBuilder()
         builder.appendLine()
         for ((type, names) in types) {
-            builder.appendLine("$type: $names")
+            builder.appendLine("${type}: $names")
         }
         log.info("Component supplier registration completed:{}", builder.toString())
     }
@@ -203,6 +166,46 @@ class CoreApplication(
         @JvmStatic
         fun main(args: Array<String>) {
 
+        }
+
+        fun coreSupplierBundle(): Array<ComponentSupplier<*>> {
+            return arrayOf(
+                AlwaysReplaceSupplier,
+                CompositeItemFileResolverSupplier,
+                CompositeDownloaderSupplier,
+                CronTriggerSupplier,
+                DeleteEmptyDirectorySupplier,
+                ExpressionFileFilterSupplier,
+                ExpressionItemContentFilterSupplier,
+                ExpressionItemFilterSupplier,
+                FileSizeReplacementDeciderSupplier,
+                FixedScheduleTriggerSupplier,
+                FixedSourceSupplier,
+                FullWidthReplacerSupplier,
+                GeneralFileMoverSupplier,
+                HardlinkFileMoverSupplier,
+                HttpDownloaderSupplier,
+                ItemDirectoryExistsDetectorSupplier,
+                MappedFileTaggerSupplier,
+                MockDownloaderSupplier,
+                NeverReplaceSupplier,
+                NoneDownloaderSupplier,
+                RegexVariableProviderSupplier,
+                RegexVariableReplacerSupplier,
+                RunCommandSupplier,
+                SendHttpRequestSupplier,
+                SequenceVariableProviderSupplier,
+                SystemFileResolverSupplier,
+                SystemFileSourceSupplier,
+                TouchItemDirectorySupplier,
+                UriSourceSupplier,
+                UrlDownloaderSupplier,
+                UrlFileResolverSupplier,
+                WindowsPathReplacerSupplier,
+                ForceTrimmerSupplier,
+                RegexTrimmerSupplier,
+                KeywordIntegrationSupplier
+            )
         }
     }
 

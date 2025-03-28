@@ -33,14 +33,23 @@ class ProcessorService(
             .drop(pageable.pageNumber * pageable.pageSize)
             .take(pageable.pageSize)
             .map { config ->
-                val exists = processorManager.exists(config.name)
-                val snapshot = if (exists) {
+                val wrapper = runCatching {
+                    processorManager.getProcessor(config.name)
+                }.getOrNull()
+                val snapshot = if (wrapper?.processor != null) {
                     processorManager.getProcessor(config.name).get()
                         .getRuntimeSnapshot()
                 } else {
                     null
                 }
-                ProcessorInfo(config.name, config.enabled, config.category, config.tags, snapshot)
+                ProcessorInfo(
+                    config.name,
+                    config.enabled,
+                    config.category,
+                    config.tags,
+                    snapshot,
+                    wrapper?.errorMessage
+                )
             }
     }
 
@@ -125,7 +134,7 @@ class ProcessorService(
         options: DryRunOptions?
     ): Flow<ProcessingContent> {
         val sourceProcessor = processorManager.getProcessor(processorName)
-        return sourceProcessor.processor.dryRunStream(options ?: DryRunOptions())
+        return sourceProcessor.get().dryRunStream(options ?: DryRunOptions())
     }
 
     /**
@@ -143,7 +152,7 @@ class ProcessorService(
      */
     fun rename(processorName: String) {
         val sourceProcessor = processorManager.getProcessor(processorName)
-        sourceProcessor.processor.runRename()
+        sourceProcessor.get().runRename()
     }
 
     /**

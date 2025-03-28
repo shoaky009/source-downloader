@@ -32,15 +32,23 @@ class SimpleObjectWrapperContainer : ObjectWrapperContainer {
         }
 
         @Suppress("UNCHECKED_CAST")
-        return objects.filterValues {
+        return objects.filterValues { wrapper ->
             if (actualTypeArguments == null) {
-                return@filterValues it::class.java == rawType
+                return@filterValues wrapper::class.java == rawType
             }
             if (actualTypeArguments.size > 1) {
                 throw NotImplementedError("Multiple type arguments not implemented")
             }
-            if (actualTypeArguments.size == 1 && it::class.java == (typeRef.type as ParameterizedType).rawType) {
-                return@filterValues (actualTypeArguments[0] as Class<*>).isInstance(it.get())
+            if (actualTypeArguments.size == 1 && wrapper::class.java == (typeRef.type as ParameterizedType).rawType) {
+                val typeArgs = actualTypeArguments[0]
+                if (typeArgs is ParameterizedType && typeArgs.rawType is Class<*>) {
+                    val klass = typeArgs.rawType as Class<*>
+                    return@filterValues klass.isAssignableFrom(wrapper.type())
+                }
+                if (typeArgs is Class<*>) {
+                    return@filterValues typeArgs.isAssignableFrom(wrapper.type())
+                }
+                throw NotImplementedError("Multiple type arguments not implemented")
             }
             return@filterValues false
         } as Map<String, W>

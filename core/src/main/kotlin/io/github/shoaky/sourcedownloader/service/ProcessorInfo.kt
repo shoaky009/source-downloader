@@ -8,4 +8,5 @@ data class ProcessorInfo(
     val category: String?,
     val tags: Set<String>,
     val runtime: ProcessorRuntime.Snapshot?,
+    val errorMessage: String?
 )

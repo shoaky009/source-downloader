@@ -12,4 +12,5 @@ data class ComponentInfo(
     val running: Boolean,
     val refs: Set<String>?,
     val modifiable: Boolean = true,
+    val errorMessage: String? = null
 )

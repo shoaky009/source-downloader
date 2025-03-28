@@ -13,6 +13,8 @@ import io.github.shoaky.sourcedownloader.throwComponentException
 import io.github.shoaky.sourcedownloader.util.Events
 import org.slf4j.LoggerFactory
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.reflect.full.memberFunctions
+import kotlin.reflect.jvm.jvmErasure
 import kotlin.reflect.jvm.jvmName
 
 class DefaultComponentManager(
@@ -32,7 +34,6 @@ class DefaultComponentManager(
         val targetInstanceName = id.getInstanceName(type)
         if (objectContainer.contains(targetInstanceName)) {
             val wrapper = objectContainer.get(targetInstanceName, typeReference)
-            
             return wrapper
         }
 
@@ -63,25 +64,33 @@ class DefaultComponentManager(
                 type,
                 id.toString(),
             )
-            var component = try {
-                supplier.apply(context, props)
-            } catch (e: ComponentException) {
-                val rootCause = Throwables.getRootCause(e).message
-                throw ComponentException.other("Component $primaryTypeBeanName ${e.message} failed cause by $rootCause")
+            var (component, errorMessage) = try {
+                supplier.apply(context, props) to null
+            } catch (e: Exception) {
+                // 看情况是否要用exception
+                log.error("Failed to create component {}", targetInstanceName, e)
+                val message = Throwables.getRootCause(e).message
+                null to message
             }
 
             if (component is VariableProvider) {
                 component = CachedVariableProvider(component)
             }
 
+            val returnType = getReturnType(supplier)
             val wrapper = ComponentWrapper(
                 primaryType,
                 targetName,
                 props,
-                component
+                component,
+                true,
+                returnType,
+                errorMessage,
             )
             objectContainer.put(primaryTypeBeanName, wrapper)
-            log.info("Successfully created component $targetInstanceName")
+            if (errorMessage == null && component != null) {
+                log.info("Successfully created component {}", targetInstanceName)
+            }
             Events.register(wrapper)
             wrapper
         }
@@ -90,6 +99,7 @@ class DefaultComponentManager(
             return primaryComponentWrapper as ComponentWrapper<T>
         }
 
+        val returnType = getReturnType(supplier)
         // Create sub components
         val singletonNames = objectContainer.getAllObjectNames()
         val subComponentWrapper = typesWithProp.filter { it.key != primaryType }
@@ -102,12 +112,14 @@ class DefaultComponentManager(
                     type,
                     targetName,
                     props,
-                    primaryComponentWrapper.get(),
-                    false
+                    primaryComponentWrapper.component,
+                    false,
+                    returnType,
+                    null
                 )
                 objectContainer.put(typeBeanName, componentWrapper)
 
-                log.info("Successfully created component ${type.instanceName(id.name())}")
+                log.info("Successfully created companion component {}", type.instanceName(id.name()))
                 Events.register(componentWrapper)
                 componentWrapper
             }
@@ -117,6 +129,15 @@ class DefaultComponentManager(
         }
         @Suppress("UNCHECKED_CAST")
         return subComponentWrapper.first { it.type == targetComponentType } as ComponentWrapper<T>
+    }
+
+    private fun getReturnType(supplier: ComponentSupplier<*>): Class<*> {
+        val returnType = supplier::class
+            .memberFunctions.first { it.name == ComponentSupplier<*>::apply.name }
+            .returnType
+            .jvmErasure
+            .java
+        return returnType
     }
 
     private fun findDeclaraTypeConfig(
@@ -170,11 +191,17 @@ class DefaultComponentManager(
     }
 
     override fun getSupplier(type: ComponentType): ComponentSupplier<*> {
-        return componentSuppliers[type]
-            ?: throwComponentException(
-                "组件${type.type}:${type.typeName} Supplier未注册进应用中",
-                ComponentFailureType.SUPPLIER_NOT_FOUND
-            )
+        val supplier = componentSuppliers[type]
+        if (supplier != null) {
+            return supplier
+        }
+
+        val currentTypes = componentSuppliers.filterKeys { it.type == type.type }
+            .map { (key, _) -> key.typeName }
+        throwComponentException(
+            "组件类型${type.type.primaryName}:${type.typeName}未注册进应用中, 目前注册的类型有$currentTypes",
+            ComponentFailureType.SUPPLIER_NOT_FOUND
+        )
     }
 
     override fun getSuppliers(): List<ComponentSupplier<*>> {
@@ -216,7 +243,12 @@ class DefaultComponentManager(
         }
 
         val wrapper = objectContainer.get(instanceName)
-        val obj = wrapper.get()
+        val obj = try {
+            wrapper.get()
+        } catch (e: Exception) {
+            // just ignore
+            null
+        }
         if (obj is AutoCloseable) {
             obj.close()
         }

@@ -10,18 +10,27 @@ data class ComponentWrapper<T : SdComponent>(
     val type: ComponentType,
     val name: String,
     val props: Properties,
-    val component: T,
-    val primary: Boolean = true
+    val component: T?,
+    val primary: Boolean = true,
+    val returnType: Class<*>,
+    val errorMessage: String?
 ) : ObjectWrapper<T> {
 
     private val processorRef = mutableSetOf<String>()
 
     override fun get(): T {
-        return component
+        if (component != null) {
+            return component
+        }
+        throw RuntimeException("Component ${type.fullName()} creation failed: $errorMessage")
+    }
+
+    override fun type(): Class<*> {
+        return returnType
     }
 
     fun getAndMarkRef(ref: String, type: KClass<out SdComponent>): T {
-        var res = component
+        var res = get()
         if (res is DelegateComponent && !type.isInstance(res)) {
             @Suppress("UNCHECKED_CAST")
             res = res.getDelegate() as T

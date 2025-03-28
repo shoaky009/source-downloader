@@ -1,9 +1,6 @@
 package io.github.shoaky.sourcedownloader.service
 
-import io.github.shoaky.sourcedownloader.core.component.ComponentConfig
-import io.github.shoaky.sourcedownloader.core.component.ComponentId
-import io.github.shoaky.sourcedownloader.core.component.ComponentManager
-import io.github.shoaky.sourcedownloader.core.component.ConfigOperator
+import io.github.shoaky.sourcedownloader.core.component.*
 import io.github.shoaky.sourcedownloader.core.componentTypeRef
 import io.github.shoaky.sourcedownloader.sdk.component.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -46,7 +43,7 @@ class ComponentService(
                     .filter { it.name matchesNullOrEqual name }
                     .map { config ->
                         val wrapper = instances[config.instanceName(topType)]
-                        val state = if (wrapper?.primary == true) {
+                        val state = if (wrapper?.primary == true && wrapper.component != null) {
                             wrapper.get().stateDetail()
                         } else {
                             null
@@ -59,12 +56,26 @@ class ComponentService(
                             state,
                             wrapper?.primary ?: true,
                             wrapper != null,
-                            wrapper?.getRefs()
+                            wrapper?.getRefs(),
+                            errorMessage = errorMessage(wrapper)
                         )
                     }
             }.sortedBy {
                 it.type
             }
+    }
+
+    private fun errorMessage(wrapper: ComponentWrapper<SdComponent>?): String? {
+        if (wrapper == null) {
+            return null
+        }
+        if (wrapper.component != null) {
+            return null
+        }
+        if (wrapper.errorMessage != null) {
+            return wrapper.errorMessage
+        }
+        return "创建失败，未给出具体错误信息"
     }
 
     private fun SdComponent.stateDetail(): Any? {
