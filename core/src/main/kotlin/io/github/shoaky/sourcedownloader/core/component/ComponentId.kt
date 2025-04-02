@@ -44,4 +44,11 @@ data class ComponentId(
     override fun hashCode(): Int {
         return javaClass.hashCode()
     }
+
+    companion object {
+
+        fun from(typeName: String, name: String): ComponentId {
+            return ComponentId("${typeName}:${name}")
+        }
+    }
 }

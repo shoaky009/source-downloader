@@ -5,11 +5,14 @@ import io.github.shoaky.sourcedownloader.core.ProcessingContent
 import io.github.shoaky.sourcedownloader.core.ProcessingStorage
 import io.github.shoaky.sourcedownloader.core.ProcessorConfig
 import io.github.shoaky.sourcedownloader.core.component.ComponentFailureType
+import io.github.shoaky.sourcedownloader.core.component.ComponentReloadEvent
 import io.github.shoaky.sourcedownloader.core.component.ConfigOperator
 import io.github.shoaky.sourcedownloader.core.processor.DryRunOptions
 import io.github.shoaky.sourcedownloader.core.processor.ProcessorManager
+import io.github.shoaky.sourcedownloader.core.processor.log
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.throwComponentException
+import io.github.shoaky.sourcedownloader.util.InternalEventBus
 import kotlinx.coroutines.flow.Flow
 import java.util.concurrent.Executors
 
@@ -18,6 +21,12 @@ class ProcessorService(
     private val configOperator: ConfigOperator,
     private val processingStorage: ProcessingStorage
 ) {
+
+    init {
+        InternalEventBus.register(ComponentReloadEvent.ADDRESS, ComponentReloadEvent::class.java) {
+            handleReload(it)
+        }
+    }
 
     private val manualTriggerExecutor = Executors.newThreadPerTaskExecutor(
         Thread.ofVirtual().name("manual-trigger", 0).factory()
@@ -210,5 +219,22 @@ class ProcessorService(
             "processingContent" to count1,
             "targetPath" to count2
         )
+    }
+
+    @Synchronized
+    private fun handleReload(event: ComponentReloadEvent) {
+        for (ref in event.refs) {
+            val notExists = processorManager.exists(ref).not()
+            if (notExists) {
+                continue
+            }
+            log.info(
+                "Reloading processor {} due to component {}:{}",
+                ref,
+                event.componentType.fullName(),
+                event.componentName
+            )
+            reload(ref)
+        }
     }
 }

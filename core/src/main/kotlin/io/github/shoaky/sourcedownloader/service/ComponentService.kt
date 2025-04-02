@@ -3,6 +3,7 @@ package io.github.shoaky.sourcedownloader.service
 import io.github.shoaky.sourcedownloader.core.component.*
 import io.github.shoaky.sourcedownloader.core.componentTypeRef
 import io.github.shoaky.sourcedownloader.sdk.component.*
+import io.github.shoaky.sourcedownloader.util.InternalEventBus
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
@@ -138,8 +139,19 @@ class ComponentService(
         name: String,
     ) {
         val componentType = ComponentType.of(type, typeName)
+        val id = ComponentId.from(typeName, name)
+        val wrapper = componentManager.getComponent(type, id, componentTypeRef())
+        val beforeRefs = wrapper.getRefs()
         componentManager.destroy(componentType, name)
-        componentManager.getComponent(type, ComponentId("$typeName:$name"), componentTypeRef())
+        componentManager.getComponent(type, id, componentTypeRef())
+        InternalEventBus.post(
+            ComponentReloadEvent.ADDRESS,
+            ComponentReloadEvent(
+                componentType,
+                name,
+                beforeRefs
+            )
+        )
     }
 
     /**

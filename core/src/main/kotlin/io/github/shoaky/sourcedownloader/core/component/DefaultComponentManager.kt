@@ -10,7 +10,6 @@ import io.github.shoaky.sourcedownloader.core.processor.SourceProcessor
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.component.*
 import io.github.shoaky.sourcedownloader.throwComponentException
-import io.github.shoaky.sourcedownloader.util.Events
 import org.slf4j.LoggerFactory
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.reflect.full.memberFunctions
@@ -30,7 +29,6 @@ class DefaultComponentManager(
         id: ComponentId,
         typeReference: TypeReference<ComponentWrapper<T>>,
     ): ComponentWrapper<T> {
-
         val targetInstanceName = id.getInstanceName(type)
         if (objectContainer.contains(targetInstanceName)) {
             val wrapper = objectContainer.get(targetInstanceName, typeReference)
@@ -91,7 +89,6 @@ class DefaultComponentManager(
             if (errorMessage == null && component != null) {
                 log.info("Successfully created component {}", targetInstanceName)
             }
-            Events.register(wrapper)
             wrapper
         }
         if (supplyTypes.size == 1) {
@@ -120,7 +117,6 @@ class DefaultComponentManager(
                 objectContainer.put(typeBeanName, componentWrapper)
 
                 log.info("Successfully created companion component {}", type.instanceName(id.name()))
-                Events.register(componentWrapper)
                 componentWrapper
             }
         if (targetComponentType == primaryType) {
@@ -259,7 +255,6 @@ class DefaultComponentManager(
             .forEach {
                 destroy(it, name)
             }
-        Events.unregister(wrapper)
     }
 
     override fun destroy() {
