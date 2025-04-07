@@ -36,6 +36,10 @@ object TorrentFileResolver : ItemFileResolver {
 
     override fun resolveFiles(sourceItem: SourceItem): List<SourceFile> {
         val downloadUri = sourceItem.downloadUri
+        return resolveFiles(downloadUri)
+    }
+
+    fun resolveFiles(downloadUri: URI): List<SourceFile> {
         val torrent = if (downloadUri.scheme == "magnet") {
             val pureMagnet = removeBlankParams(downloadUri)
             // 试运行，这个不太稳
@@ -87,8 +91,12 @@ object TorrentFileResolver : ItemFileResolver {
             }
         }
         val parent = Path(torrent.name)
+        val notAllowRegex = Regex("如果您看到此文件，请升级到BitComet|_____padding_file_")
         return torrent.files
-            .filter { it.size > 0 && it.pathElements.last().contains("如果您看到此文件，请升级到BitComet").not() }
+            .filter {
+                it.size > 0 && it.pathElements.last()
+                    .contains(notAllowRegex).not()
+            }
             .map {
                 val path = parent.resolve(it.pathElements.joinToString("/"))
                 SourceFile(path, mapOf("size" to it.size))

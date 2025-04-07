@@ -79,6 +79,8 @@ class QbittorrentDownloader(
         }
 
         val torrentFiles = body.parseJson(jacksonTypeRef<List<TorrentFile>>())
+        // 如果FileResolver解析和qBittorrent解析规则不一致会导致种子的文件优先级都为0(不下载)
+        // 暂时没有机制去处理这种情况
         val relativePaths = task.relativePaths()
         val stopDownloadFiles = torrentFiles.filter {
             relativePaths.contains(it.name).not()
