@@ -39,6 +39,13 @@ data class ComponentWrapper<T : SdComponent>(
         return res
     }
 
+    fun getOriginal(): SdComponent? {
+        if (component is DelegateComponent) {
+            return component.getDelegate()
+        }
+        return component
+    }
+
     fun addRef(ref: String) {
         processorRef.add(ref)
     }

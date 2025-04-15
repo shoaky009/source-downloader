@@ -6,6 +6,7 @@ import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.SourceItemFilter
 import io.github.shoaky.sourcedownloader.sdk.component.VariableProvider
 import org.slf4j.LoggerFactory
+import java.nio.file.ClosedWatchServiceException
 import java.nio.file.Path
 import java.nio.file.StandardWatchEventKinds
 import java.nio.file.WatchService
@@ -16,12 +17,13 @@ import kotlin.io.path.readLines
  */
 class KeywordIntegration(
     private val keywords: List<String> = emptyList(),
-    private val keywordsFile: Path? = null,
+    private val keywordFile: Path? = null,
     private val regexPattern: String = "[()\\[](@keyword)[()\\]]",
 ) : VariableProvider, SourceItemFilter, AutoCloseable {
 
     private var words: List<Word> = parseKeywords()
     private var stop: Boolean = false
+    private var keywordFileWatchService: WatchService? = null
 
     init {
         startWatchFile()
@@ -30,7 +32,7 @@ class KeywordIntegration(
     private fun parseKeywords(): List<Word> {
         return buildList {
             addAll(keywords)
-            addAll(keywordsFile?.readLines() ?: emptyList())
+            addAll(keywordFile?.readLines() ?: emptyList())
         }.map {
             // "keyword" 匹配的字符串
             // "mode" 0:默认 [value]不包含括号时如果前后没有括号不则不匹配, [value]包含括号时则不检查括号
@@ -84,35 +86,39 @@ class KeywordIntegration(
     }
 
     private fun startWatchFile() {
-        if (keywordsFile == null) {
+        if (keywordFile == null) {
             return
         }
-        val parent = keywordsFile.parent ?: return
+        val parent = keywordFile.parent ?: return
         val watchService = try {
-            keywordsFile.fileSystem.newWatchService()
+            keywordFile.fileSystem.newWatchService()
         } catch (e: Exception) {
             log.error("Error creating watch service", e)
             return
         }
+        keywordFileWatchService = watchService
         parent.register(watchService, StandardWatchEventKinds.ENTRY_MODIFY)
 
-        val fileName = keywordsFile.fileName
+        val fileName = keywordFile.fileName
         Thread.ofVirtual().start {
-            log.info("Start watch {}", keywordsFile)
+            log.info("Start watch {}", keywordFile)
             while (!stop) {
                 try {
                     handleEvent(watchService, fileName)
-                } catch (e: Exception) {
-                    log.error("Fail to reload keywords from {}", keywordsFile, e)
+                } catch (e: Throwable) {
+                    log.error("Fail to reload keywords from {}", keywordFile, e)
                 }
             }
-            watchService.close()
-            log.info("Stop watch {}", keywordsFile)
         }
     }
 
     private fun handleEvent(watchService: WatchService, fileName: Path) {
-        val key = watchService.take()
+        val key = try {
+            watchService.take()
+        } catch (e: ClosedWatchServiceException) {
+            // ignore
+            return
+        }
         for (event in key.pollEvents()) {
             if (event.kind() != StandardWatchEventKinds.ENTRY_MODIFY) {
                 continue
@@ -122,7 +128,7 @@ class KeywordIntegration(
                 continue
             }
             if (context == fileName) {
-                log.info("Reload keywords from {}", keywordsFile)
+                log.info("Reload keywords from {}", keywordFile)
                 words = parseKeywords()
             }
         }
@@ -131,6 +137,8 @@ class KeywordIntegration(
 
     override fun close() {
         stop = true
+        keywordFileWatchService?.close()
+        log.info("Stop watch {}", keywordFile)
     }
 
     override fun test(t: SourceItem): Boolean {

@@ -11,10 +11,10 @@ object KeywordIntegrationSupplier : ComponentSupplier<KeywordIntegration> {
 
     override fun apply(context: CoreContext, props: Properties): KeywordIntegration {
         val keywords = props.getOrDefault<List<String>>("keywords", emptyList())
-        val keywordsFile = props.getOrNull<Path>("keywords-file")
+        val keywordFile = props.getOrNull<Path>("keyword-file")
         return KeywordIntegration(
             keywords,
-            keywordsFile
+            keywordFile
         )
     }
 

@@ -239,8 +239,12 @@ class DefaultComponentManager(
         }
 
         val wrapper = objectContainer.get(instanceName)
+        if (wrapper !is ComponentWrapper<*>) {
+            // should not happen
+            throw ComponentException.other("Component $instanceName is not a component wrapper")
+        }
         val obj = try {
-            wrapper.get()
+            wrapper.getOriginal()
         } catch (e: Exception) {
             // just ignore
             null
