@@ -88,7 +88,8 @@ class AnimeVariableProvider(
         val hasChinese = hasLanguage(title, Character.UnicodeScript.HAN)
         var anilistResult: Title? = null
         if (hasJp || hasChinese.not()) {
-            val response = anilistClient.execute(Search(title)).body()
+            val anilistSearchText = reformatAnilistSearch(title)
+            val response = anilistClient.execute(Search(anilistSearchText)).body()
             if (response.errors.isNotEmpty()) {
                 return Anime()
             }
@@ -142,10 +143,24 @@ class AnimeVariableProvider(
         )
     }
 
+    private fun reformatAnilistSearch(title: String): String {
+        val lastChar = title.lastOrNull()
+        if (lastChar == null || !lastChar.isDigit()) {
+            return title
+        }
+        // if number before is not space, insert space
+        val beforeNumber = title.getOrNull(title.length - 2)
+        if (beforeNumber == ' ') {
+            return title
+        }
+        return StringBuilder(title).insert(title.length - 1, ' ').toString()
+    }
+
     private fun List<SubjectItem>.getHighestScoreSubjectItem(keyword: String): SubjectItem {
         val hasJp = hasLanguage(keyword, Character.UnicodeScript.HIRAGANA, Character.UnicodeScript.KATAKANA)
+        if (hasJp) return this.first()
         val hasChinese = hasLanguage(keyword, Character.UnicodeScript.HAN)
-        val choices = if (hasJp || hasChinese.not()) {
+        val choices = if (hasChinese.not()) {
             this.map { it.name }
         } else {
             this.map { it.nameCn }
