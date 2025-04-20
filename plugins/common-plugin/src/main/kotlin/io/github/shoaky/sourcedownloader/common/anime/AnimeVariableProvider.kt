@@ -8,8 +8,9 @@ import io.github.shoaky.sourcedownloader.external.anilist.AnilistClient
 import io.github.shoaky.sourcedownloader.external.anilist.Search
 import io.github.shoaky.sourcedownloader.external.anilist.Title
 import io.github.shoaky.sourcedownloader.external.bangumi.BgmTvApiClient
-import io.github.shoaky.sourcedownloader.external.bangumi.SearchSubjectRequest
+import io.github.shoaky.sourcedownloader.external.bangumi.SearchSubjectV0Request
 import io.github.shoaky.sourcedownloader.external.bangumi.SubjectItem
+import io.github.shoaky.sourcedownloader.external.bangumi.SubjectV0Item
 import io.github.shoaky.sourcedownloader.sdk.PatternVariables
 import io.github.shoaky.sourcedownloader.sdk.SourceFile
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
@@ -106,16 +107,16 @@ class AnimeVariableProvider(
             )
         }
 
-        val request = SearchSubjectRequest(anilistResult?.native ?: title)
+        val request = SearchSubjectV0Request(anilistResult?.native ?: title)
         val body = bgmTvApiClient.execute(
             request
         ).body()
 
-        if (body.list.isEmpty()) {
+        if (body.data.isEmpty()) {
             log.warn("bgmtv searching anime: $title no result")
             return Anime()
         }
-        val subjectItem = body.list.getHighestScoreSubjectItem(request.keyword)
+        val subjectItem = body.data.getHighestScoreSubjectItem(request.keyword)
 
         if (anilistResult != null) {
             return Anime(
@@ -157,6 +158,20 @@ class AnimeVariableProvider(
     }
 
     private fun List<SubjectItem>.getHighestScoreSubjectItem(keyword: String): SubjectItem {
+        val hasJp = hasLanguage(keyword, Character.UnicodeScript.HIRAGANA, Character.UnicodeScript.KATAKANA)
+        if (hasJp) return this.first()
+        val hasChinese = hasLanguage(keyword, Character.UnicodeScript.HAN)
+        val choices = if (hasChinese.not()) {
+            this.map { it.name }
+        } else {
+            this.map { it.nameCn }
+        }
+        val result = FuzzySearch.extractOne(keyword, choices)
+        log.debug("Get highest score subject item: {} -- {}", this[result.index], keyword)
+        return this[result.index]
+    }
+
+    private fun List<SubjectV0Item>.getHighestScoreSubjectItem(keyword: String): SubjectV0Item {
         val hasJp = hasLanguage(keyword, Character.UnicodeScript.HIRAGANA, Character.UnicodeScript.KATAKANA)
         if (hasJp) return this.first()
         val hasChinese = hasLanguage(keyword, Character.UnicodeScript.HAN)
@@ -276,9 +291,13 @@ data class Anime(
 ) : PatternVariables {
 
     override fun variables(): Map<String, String> {
-        return mapOf(
-            "romajiName" to romajiName.orEmpty(),
-            "nativeName" to nativeName.orEmpty()
-        )
+        val map = mutableMapOf<String, String>()
+        if (romajiName != null) {
+            map["romajiName"] = romajiName
+        }
+        if (nativeName != null) {
+            map["nativeName"] = nativeName
+        }
+        return map
     }
 }
