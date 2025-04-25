@@ -2,7 +2,7 @@ package io.github.shoaky.sourcedownloader.core.component
 
 import com.fasterxml.jackson.annotation.JsonValue
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentException
-import io.github.shoaky.sourcedownloader.sdk.component.ComponentTopType
+import io.github.shoaky.sourcedownloader.sdk.component.ComponentRootType
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
 
 data class ComponentId(
@@ -10,11 +10,11 @@ data class ComponentId(
     val id: String,
 ) {
 
-    fun getInstanceName(topType: ComponentTopType): String {
+    fun getInstanceName(topType: ComponentRootType): String {
         return getComponentType(topType).instanceName(name())
     }
-
-    fun getComponentType(topType: ComponentTopType): ComponentType {
+w
+    fun getComponentType(topType: ComponentRootType): ComponentType {
         return ComponentType(topType, typeName())
     }
 

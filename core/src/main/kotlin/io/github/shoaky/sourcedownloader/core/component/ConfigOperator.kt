@@ -2,7 +2,7 @@ package io.github.shoaky.sourcedownloader.core.component
 
 import io.github.shoaky.sourcedownloader.core.ProcessorConfig
 import io.github.shoaky.sourcedownloader.core.ProcessorConfigStorage
-import io.github.shoaky.sourcedownloader.sdk.component.ComponentTopType
+import io.github.shoaky.sourcedownloader.sdk.component.ComponentRootType
 
 interface ConfigOperator : ProcessorConfigStorage, ComponentConfigStorage, InstanceConfigStorage {
 
@@ -10,7 +10,7 @@ interface ConfigOperator : ProcessorConfigStorage, ComponentConfigStorage, Insta
 
     fun save(name: String, processorConfig: ProcessorConfig)
 
-    fun deleteComponent(topType: ComponentTopType, type: String, name: String): Boolean
+    fun deleteComponent(topType: ComponentRootType, type: String, name: String): Boolean
 
     fun deleteProcessor(name: String): Boolean
 }

@@ -1,10 +1,10 @@
 package io.github.shoaky.sourcedownloader.sdk.component
 
 import com.google.common.base.CaseFormat
-import io.github.shoaky.sourcedownloader.sdk.component.ComponentTopType.*
+import io.github.shoaky.sourcedownloader.sdk.component.ComponentRootType.*
 
 data class ComponentType(
-    val type: ComponentTopType,
+    val type: ComponentRootType,
     val typeName: String,
 ) {
 
@@ -73,7 +73,7 @@ data class ComponentType(
         }
 
         @JvmStatic
-        fun of(topType: ComponentTopType, typeName: String): ComponentType {
+        fun of(topType: ComponentRootType, typeName: String): ComponentType {
             return ComponentType(topType, typeName)
         }
 

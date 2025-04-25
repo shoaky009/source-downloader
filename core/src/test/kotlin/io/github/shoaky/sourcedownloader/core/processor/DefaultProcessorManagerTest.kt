@@ -8,7 +8,7 @@ import io.github.shoaky.sourcedownloader.core.SimpleObjectWrapperContainer
 import io.github.shoaky.sourcedownloader.core.component.ComponentConfig
 import io.github.shoaky.sourcedownloader.core.component.ComponentId
 import io.github.shoaky.sourcedownloader.core.component.DefaultComponentManager
-import io.github.shoaky.sourcedownloader.sdk.component.ComponentTopType
+import io.github.shoaky.sourcedownloader.sdk.component.ComponentRootType
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 
@@ -47,10 +47,10 @@ class DefaultProcessorManagerTest {
 
         // simulate after redefine
         operator.save(
-            ComponentTopType.SOURCE.primaryName,
+            ComponentRootType.SOURCE.primaryName,
             ComponentConfig("test", "fixed", mapOf("content" to emptyList<Any>()))
         )
-        operator.save(ComponentTopType.ITEM_FILE_RESOLVER.primaryName, ComponentConfig("test", "fixed"))
+        operator.save(ComponentRootType.ITEM_FILE_RESOLVER.primaryName, ComponentConfig("test", "fixed"))
 
         processorManager.destroyProcessor(processorName)
         processorManager.createProcessor(config)

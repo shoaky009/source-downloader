@@ -3,7 +3,7 @@ package io.github.shoaky.sourcedownloader.core
 import io.github.shoaky.sourcedownloader.core.component.ComponentConfig
 import io.github.shoaky.sourcedownloader.core.component.ConfigOperator
 import io.github.shoaky.sourcedownloader.sdk.Properties
-import io.github.shoaky.sourcedownloader.sdk.component.ComponentTopType
+import io.github.shoaky.sourcedownloader.sdk.component.ComponentRootType
 
 class MemoryConfigOperator : ConfigOperator {
 
@@ -25,7 +25,7 @@ class MemoryConfigOperator : ConfigOperator {
         processors[name] = processorConfig
     }
 
-    override fun deleteComponent(topType: ComponentTopType, type: String, name: String): Boolean {
+    override fun deleteComponent(topType: ComponentRootType, type: String, name: String): Boolean {
         val configs = components[topType.primaryName]
         if (configs != null) {
             val removed = configs.filter { it.type == type && it.name == name }

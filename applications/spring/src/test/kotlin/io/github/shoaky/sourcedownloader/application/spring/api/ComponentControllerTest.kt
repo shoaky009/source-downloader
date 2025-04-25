@@ -2,7 +2,7 @@ package io.github.shoaky.sourcedownloader.application.spring.api
 
 import io.github.shoaky.sourcedownloader.core.component.ComponentManager
 import io.github.shoaky.sourcedownloader.core.component.ConfigOperator
-import io.github.shoaky.sourcedownloader.sdk.component.ComponentTopType
+import io.github.shoaky.sourcedownloader.sdk.component.ComponentRootType
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -47,7 +47,7 @@ class ComponentControllerTest {
                 ).contentType(MediaType.APPLICATION_JSON)
         ).andExpect(status().is2xxSuccessful)
             .andExpect {
-                configOperator.getComponentConfig(ComponentTopType.SOURCE, "system-file", "api-create")
+                configOperator.getComponentConfig(ComponentRootType.SOURCE, "system-file", "api-create")
             }
     }
 
@@ -61,7 +61,7 @@ class ComponentControllerTest {
         ).andExpect(status().is2xxSuccessful)
             .andExpect {
                 val component = componentManager.getComponent(
-                    ComponentType(ComponentTopType.SOURCE, "system-file"),
+                    ComponentType(ComponentRootType.SOURCE, "system-file"),
                     "api-create2"
                 )
                 component != null
@@ -72,7 +72,7 @@ class ComponentControllerTest {
         ).andExpect(status().is2xxSuccessful)
             .andExpect {
                 val component = componentManager.getComponent(
-                    ComponentType(ComponentTopType.SOURCE, "system-file"),
+                    ComponentType(ComponentRootType.SOURCE, "system-file"),
                     "api-create2"
                 )
                 component != null

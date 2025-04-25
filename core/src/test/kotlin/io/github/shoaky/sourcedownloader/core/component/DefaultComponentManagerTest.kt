@@ -3,7 +3,7 @@ package io.github.shoaky.sourcedownloader.core.component
 import io.github.shoaky.sourcedownloader.component.supplier.KeywordIntegrationSupplier
 import io.github.shoaky.sourcedownloader.component.supplier.RegexVariableProviderSupplier
 import io.github.shoaky.sourcedownloader.core.*
-import io.github.shoaky.sourcedownloader.sdk.component.ComponentTopType
+import io.github.shoaky.sourcedownloader.sdk.component.ComponentRootType
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
 import io.github.shoaky.sourcedownloader.sdk.component.SourceItemFilter
 import io.github.shoaky.sourcedownloader.sdk.component.VariableProvider
@@ -25,14 +25,14 @@ class DefaultComponentManagerTest {
         manager.registerSupplier(KeywordIntegrationSupplier)
 
         val providerWp = manager.getComponent(
-            ComponentTopType.VARIABLE_PROVIDER,
+            ComponentRootType.VARIABLE_PROVIDER,
             ComponentId("keyword"),
             variableProviderTypeRef
         )
         assertEquals(2, container.getAllObjectNames().size)
 
         val filterWp = manager.getComponent(
-            ComponentTopType.SOURCE_ITEM_FILTER,
+            ComponentRootType.SOURCE_ITEM_FILTER,
             ComponentId("keyword"),
             sourceItemFilterTypeRef
         )
@@ -57,7 +57,7 @@ class DefaultComponentManagerTest {
     fun given_error_component_test_whole_lifecycle() {
         val configStorage = MemoryConfigOperator()
         configStorage.save(
-            ComponentTopType.VARIABLE_PROVIDER.primaryName,
+            ComponentRootType.VARIABLE_PROVIDER.primaryName,
             ComponentConfig("error-props", "regex")
         )
 
@@ -67,7 +67,7 @@ class DefaultComponentManagerTest {
         manager.registerSupplier(RegexVariableProviderSupplier)
 
         val providerWp = manager.getComponent(
-            ComponentTopType.VARIABLE_PROVIDER,
+            ComponentRootType.VARIABLE_PROVIDER,
             ComponentId("regex:error-props"),
             variableProviderTypeRef
         )
@@ -80,7 +80,7 @@ class DefaultComponentManagerTest {
 
         // test reload lifecycle
         configStorage.save(
-            ComponentTopType.VARIABLE_PROVIDER.primaryName,
+            ComponentRootType.VARIABLE_PROVIDER.primaryName,
             ComponentConfig(
                 "error-props", "regex", mapOf(
                     "regexes" to listOf(
@@ -95,7 +95,7 @@ class DefaultComponentManagerTest {
 
         manager.destroy(ComponentType.variableProvider("regex"), "error-props")
         val providerWp2 = manager.getComponent(
-            ComponentTopType.VARIABLE_PROVIDER,
+            ComponentRootType.VARIABLE_PROVIDER,
             ComponentId("regex:error-props"),
             variableProviderTypeRef
         )

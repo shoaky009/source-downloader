@@ -10,6 +10,12 @@ plugins {
 //     )
 // }
 
+configurations.all {
+    resolutionStrategy {
+        cacheChangingModulesFor(0, TimeUnit.SECONDS)
+    }
+}
+
 dependencies {
     implementation(project(":sdk"))
     implementation(project(":common"))

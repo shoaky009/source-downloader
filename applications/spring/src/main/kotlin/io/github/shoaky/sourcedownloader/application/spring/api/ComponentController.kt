@@ -1,7 +1,7 @@
 package io.github.shoaky.sourcedownloader.application.spring.api
 
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentMetadata
-import io.github.shoaky.sourcedownloader.sdk.component.ComponentTopType
+import io.github.shoaky.sourcedownloader.sdk.component.ComponentRootType
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
 import io.github.shoaky.sourcedownloader.service.ComponentCreateBody
 import io.github.shoaky.sourcedownloader.service.ComponentInfo
@@ -30,7 +30,7 @@ private class ComponentController(
      */
     @GetMapping
     fun queryComponents(
-        type: ComponentTopType?, typeName: String?, name: String?,
+        type: ComponentRootType?, typeName: String?, name: String?,
     ): List<ComponentInfo> {
         return componentService.queryComponents(type, typeName, name)
     }
@@ -53,7 +53,7 @@ private class ComponentController(
     @DeleteMapping("/{type}/{typeName}/{name}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun deleteComponent(
-        @PathVariable type: ComponentTopType,
+        @PathVariable type: ComponentRootType,
         @PathVariable typeName: String,
         @PathVariable name: String,
     ) {
@@ -68,7 +68,7 @@ private class ComponentController(
      */
     @GetMapping("/{type}/{typeName}/{name}/reload")
     fun reload(
-        @PathVariable type: ComponentTopType,
+        @PathVariable type: ComponentRootType,
         @PathVariable typeName: String,
         @PathVariable name: String,
     ) {
@@ -88,13 +88,13 @@ private class ComponentController(
     }
 
     @GetMapping("/types")
-    fun getTypes(type: ComponentTopType?): List<ComponentType> {
+    fun getTypes(type: ComponentRootType?): List<ComponentType> {
         return componentService.getTypes(type)
     }
 
     @GetMapping("/{type}/{typeName}/metadata")
     fun getSchema(
-        @PathVariable type: ComponentTopType,
+        @PathVariable type: ComponentRootType,
         @PathVariable typeName: String
     ): ComponentMetadata? {
         return componentService.getSchema(type, typeName)

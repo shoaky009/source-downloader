@@ -8,7 +8,7 @@ import io.github.shoaky.sourcedownloader.sdk.CoreContext
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentRule
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
-import io.github.shoaky.sourcedownloader.sdk.component.ComponentTopType
+import io.github.shoaky.sourcedownloader.sdk.component.ComponentRootType
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
 
 object BbDownIntegrationSupplier : ComponentSupplier<BbDownIntegration> {
@@ -30,7 +30,7 @@ object BbDownIntegrationSupplier : ComponentSupplier<BbDownIntegration> {
 
     override fun rules(): List<ComponentRule> {
         return listOf(
-            ComponentRule.allow(ComponentTopType.SOURCE, BilibiliSource::class)
+            ComponentRule.allow(ComponentRootType.SOURCE, BilibiliSource::class)
         )
     }
 }

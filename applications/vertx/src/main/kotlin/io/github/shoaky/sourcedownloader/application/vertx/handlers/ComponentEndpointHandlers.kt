@@ -4,7 +4,7 @@ import io.github.shoaky.sourcedownloader.application.vertx.createRouteCoHandler
 import io.github.shoaky.sourcedownloader.application.vertx.createRouteHandler
 import io.github.shoaky.sourcedownloader.application.vertx.dataToJsonString
 import io.github.shoaky.sourcedownloader.core.processor.log
-import io.github.shoaky.sourcedownloader.sdk.component.ComponentTopType
+import io.github.shoaky.sourcedownloader.sdk.component.ComponentRootType
 import io.github.shoaky.sourcedownloader.service.ComponentCreateBody
 import io.github.shoaky.sourcedownloader.service.ComponentService
 import io.vertx.core.Handler
@@ -22,7 +22,7 @@ class ComponentEndpointHandlers(
     fun queryComponents(): Handler<RoutingContext> {
         return createRouteHandler { ctx ->
             val request = ctx.request()
-            val type = request.getParam("type")?.let { ComponentTopType.valueOf(it.uppercase()) }
+            val type = request.getParam("type")?.let { ComponentRootType.valueOf(it.uppercase()) }
             val typeName = request.getParam("typeName")
             val name = request.getParam("name")
             val data = componentService.queryComponents(type, typeName, name)
@@ -45,8 +45,8 @@ class ComponentEndpointHandlers(
 
     fun deleteComponent(): Handler<RoutingContext> {
         return createRouteHandler { ctx ->
-            val type: ComponentTopType = ctx.pathParams().getValue("type").let {
-                ComponentTopType.valueOf(it.uppercase())
+            val type: ComponentRootType = ctx.pathParams().getValue("type").let {
+                ComponentRootType.valueOf(it.uppercase())
             }
             val typeName = ctx.pathParams().getValue("typeName")
             val name: String = ctx.pathParams().getValue("name")
@@ -58,8 +58,8 @@ class ComponentEndpointHandlers(
 
     fun reload(): Handler<RoutingContext> {
         return createRouteHandler { ctx ->
-            val type: ComponentTopType = ctx.pathParams().getValue("type").let {
-                ComponentTopType.valueOf(it.uppercase())
+            val type: ComponentRootType = ctx.pathParams().getValue("type").let {
+                ComponentRootType.valueOf(it.uppercase())
             }
             val typeName = ctx.pathParams().getValue("typeName")
             val name: String = ctx.pathParams().getValue("name")
@@ -101,7 +101,7 @@ class ComponentEndpointHandlers(
 
     fun getTypes(): Handler<RoutingContext> {
         return createRouteHandler { ctx ->
-            val type = ctx.request().getParam("type")?.let { ComponentTopType.valueOf(it.uppercase()) }
+            val type = ctx.request().getParam("type")?.let { ComponentRootType.valueOf(it.uppercase()) }
             componentService.getTypes(type)
             ctx.response().end()
         }
@@ -109,7 +109,7 @@ class ComponentEndpointHandlers(
 
     fun getSchema(): Handler<RoutingContext> {
         return createRouteHandler { ctx ->
-            val type = ctx.request().getParam("type").let { ComponentTopType.valueOf(it.uppercase()) }
+            val type = ctx.request().getParam("type").let { ComponentRootType.valueOf(it.uppercase()) }
             val typeName = ctx.request().getParam("typeName")
             val data = componentService.getSchema(type, typeName)
             ctx.response().end(

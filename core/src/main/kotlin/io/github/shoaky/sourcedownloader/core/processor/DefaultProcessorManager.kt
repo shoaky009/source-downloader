@@ -53,7 +53,7 @@ class DefaultProcessorManager(
         }
         config.triggers.map {
             componentManager.getComponent(
-                ComponentTopType.TRIGGER,
+                ComponentRootType.TRIGGER,
                 it,
                 triggerTypeRef,
             ).getAndMarkRef(processorName, Trigger::class)
@@ -67,50 +67,50 @@ class DefaultProcessorManager(
         processorName: String
     ): SourceProcessor {
         val sourceW = componentManager.getComponent(
-            ComponentTopType.SOURCE,
+            ComponentRootType.SOURCE,
             config.source,
             sourceTypeRef,
         )
         val source = sourceW.getAndMarkRef(processorName, Source::class)
 
         val downloaderW = componentManager.getComponent(
-            ComponentTopType.DOWNLOADER,
+            ComponentRootType.DOWNLOADER,
             config.downloader,
             downloaderTypeRef,
         )
         val downloader = downloaderW.getAndMarkRef(processorName, Downloader::class)
 
         val moverW = componentManager.getComponent(
-            ComponentTopType.FILE_MOVER,
+            ComponentRootType.FILE_MOVER,
             config.fileMover,
             fileMoverTypeRef,
         )
         val mover = moverW.getAndMarkRef(processorName, FileMover::class)
 
         val resolverW = componentManager.getComponent(
-            ComponentTopType.ITEM_FILE_RESOLVER,
+            ComponentRootType.ITEM_FILE_RESOLVER,
             config.itemFileResolver,
             fileResolverTypeRef,
         )
         val resolver = resolverW.getAndMarkRef(processorName, ItemFileResolver::class)
 
         val checkTypes = mutableListOf(
-            config.source.getComponentType(ComponentTopType.SOURCE),
-            config.downloader.getComponentType(ComponentTopType.DOWNLOADER),
-            config.fileMover.getComponentType(ComponentTopType.FILE_MOVER),
-            config.itemFileResolver.getComponentType(ComponentTopType.ITEM_FILE_RESOLVER),
+            config.source.getComponentType(ComponentRootType.SOURCE),
+            config.downloader.getComponentType(ComponentRootType.DOWNLOADER),
+            config.fileMover.getComponentType(ComponentRootType.FILE_MOVER),
+            config.itemFileResolver.getComponentType(ComponentRootType.ITEM_FILE_RESOLVER),
         )
         checkTypes.addAll(
             config.options.variableProviders.map {
-                it.getComponentType(ComponentTopType.VARIABLE_PROVIDER)
+                it.getComponentType(ComponentRootType.VARIABLE_PROVIDER)
             }
         )
 
         val componentToCheck = mapOf(
-            ComponentTopType.SOURCE to sourceW,
-            ComponentTopType.DOWNLOADER to downloaderW,
-            ComponentTopType.FILE_MOVER to moverW,
-            ComponentTopType.ITEM_FILE_RESOLVER to resolverW,
+            ComponentRootType.SOURCE to sourceW,
+            ComponentRootType.DOWNLOADER to downloaderW,
+            ComponentRootType.FILE_MOVER to moverW,
+            ComponentRootType.ITEM_FILE_RESOLVER to resolverW,
         )
         checkTypes.forEach {
             check(it, componentToCheck)
@@ -154,7 +154,7 @@ class DefaultProcessorManager(
 
     private fun check(
         subjectType: ComponentType,
-        componentToCheck: Map<ComponentTopType, ComponentWrapper<out SdComponent>>,
+        componentToCheck: Map<ComponentRootType, ComponentWrapper<out SdComponent>>,
     ) {
         val supplier = componentManager.getSupplier(subjectType)
         val compatibilities = supplier.rules().groupBy { it.type }
@@ -240,7 +240,7 @@ class DefaultProcessorManager(
         sourceItemFilter.addAll(
             config.options.itemFilters.map {
                 componentManager.getComponent(
-                    ComponentTopType.SOURCE_ITEM_FILTER,
+                    ComponentRootType.SOURCE_ITEM_FILTER,
                     it,
                     sourceItemFilterTypeRef,
                 ).getAndMarkRef(config.name, SourceItemFilter::class)
@@ -260,7 +260,7 @@ class DefaultProcessorManager(
         itemContentFilters.addAll(
             config.options.itemContentFilters.map {
                 componentManager.getComponent(
-                    ComponentTopType.ITEM_CONTENT_FILTER,
+                    ComponentRootType.ITEM_CONTENT_FILTER,
                     it,
                     itemContentFilterTypeRef,
                 ).getAndMarkRef(config.name, ItemContentFilter::class)
@@ -280,7 +280,7 @@ class DefaultProcessorManager(
         fileContentFilters.addAll(
             config.options.fileContentFilters.map {
                 componentManager.getComponent(
-                    ComponentTopType.FILE_CONTENT_FILTER,
+                    ComponentRootType.FILE_CONTENT_FILTER,
                     it,
                     fileContentFilterTypeRef,
                 ).getAndMarkRef(config.name, FileContentFilter::class)
@@ -291,7 +291,7 @@ class DefaultProcessorManager(
         sourceFileFilters.addAll(
             config.options.sourceFileFilters.map {
                 componentManager.getComponent(
-                    ComponentTopType.SOURCE_FILE_FILTER,
+                    ComponentRootType.SOURCE_FILE_FILTER,
                     it,
                     sourceFileFilterTypeRef,
                 ).getAndMarkRef(config.name, SourceFileFilter::class)
@@ -300,7 +300,7 @@ class DefaultProcessorManager(
 
         val listeners = options.processListeners.groupBy({ it.mode }, {
             val cp = componentManager.getComponent(
-                ComponentTopType.PROCESS_LISTENER,
+                ComponentRootType.PROCESS_LISTENER,
                 it.id,
                 processListenerTypeRef,
             ).getAndMarkRef(config.name, ProcessListener::class)
@@ -317,7 +317,7 @@ class DefaultProcessorManager(
 
         val taggers = options.fileTaggers.map {
             componentManager.getComponent(
-                ComponentTopType.TAGGER,
+                ComponentRootType.TAGGER,
                 it,
                 fileTaggerTypeRef,
             ).getAndMarkRef(config.name, FileTagger::class)
@@ -325,21 +325,21 @@ class DefaultProcessorManager(
 
         val providers = config.options.variableProviders.map {
             componentManager.getComponent(
-                ComponentTopType.VARIABLE_PROVIDER,
+                ComponentRootType.VARIABLE_PROVIDER,
                 it,
                 variableProviderTypeRef,
             ).getAndMarkRef(config.name, VariableProvider::class)
         }.toMutableList()
 
         val fileReplacementDecider = componentManager.getComponent(
-            ComponentTopType.FILE_REPLACEMENT_DECIDER,
+            ComponentRootType.FILE_REPLACEMENT_DECIDER,
             options.fileReplacementDecider,
             fileReplacementDeciderRef,
         ).getAndMarkRef(config.name, FileReplacementDecider::class)
 
         val fileExistsDetector = options.fileExistsDetector?.let {
             componentManager.getComponent(
-                ComponentTopType.FILE_EXISTS_DETECTOR,
+                ComponentRootType.FILE_EXISTS_DETECTOR,
                 it,
                 fileExistsDetectorTypeRef,
             ).getAndMarkRef(config.name, FileExistsDetector::class)
@@ -347,7 +347,7 @@ class DefaultProcessorManager(
 
         val cpReplacers = options.variableReplacers.map {
             val cp = componentManager.getComponent(
-                ComponentTopType.VARIABLE_REPLACER,
+                ComponentRootType.VARIABLE_REPLACER,
                 it.id,
                 variableReplacerTypeRef,
             ).getAndMarkRef(config.name, VariableReplacer::class)
@@ -371,7 +371,7 @@ class DefaultProcessorManager(
         val trimmers = options.trimming.associateBy({ it.variableName }) { cfg ->
             cfg.trimmers.map {
                 componentManager.getComponent(
-                    ComponentTopType.TRIMMER,
+                    ComponentRootType.TRIMMER,
                     ComponentId(it),
                     trimmerTypeRef,
                 ).getAndMarkRef(config.name, Trimmer::class)
@@ -421,7 +421,7 @@ class DefaultProcessorManager(
         return options.variableProcess.map { cfg ->
             val chain = cfg.chain.map {
                 componentManager.getComponent(
-                    ComponentTopType.VARIABLE_PROVIDER,
+                    ComponentRootType.VARIABLE_PROVIDER,
                     it,
                     variableProviderTypeRef
                 ).getAndMarkRef(config.name, VariableProvider::class)
@@ -461,7 +461,7 @@ class DefaultProcessorManager(
 
             val filters = fileOption.fileContentFilters?.map {
                 componentManager.getComponent(
-                    ComponentTopType.FILE_CONTENT_FILTER,
+                    ComponentRootType.FILE_CONTENT_FILTER,
                     it,
                     fileContentFilterTypeRef,
                 ).getAndMarkRef(config.name, FileContentFilter::class)
@@ -517,7 +517,7 @@ class DefaultProcessorManager(
 
             val sourceItemFilters = itemOption.sourceFilters?.map {
                 componentManager.getComponent(
-                    ComponentTopType.SOURCE_ITEM_FILTER,
+                    ComponentRootType.SOURCE_ITEM_FILTER,
                     it,
                     sourceItemFilterTypeRef,
                 ).getAndMarkRef(config.name, SourceItemFilter::class)
@@ -534,7 +534,7 @@ class DefaultProcessorManager(
             }
 
             val providers = itemOption.variableProviders?.map {
-                componentManager.getComponent(ComponentTopType.VARIABLE_PROVIDER, it, variableProviderTypeRef)
+                componentManager.getComponent(ComponentRootType.VARIABLE_PROVIDER, it, variableProviderTypeRef)
                     .getAndMarkRef(config.name, VariableProvider::class)
             }
 

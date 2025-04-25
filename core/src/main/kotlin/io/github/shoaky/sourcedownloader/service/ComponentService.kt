@@ -14,7 +14,7 @@ class ComponentService(
 ) {
 
     fun queryComponents(
-        type: ComponentTopType?, typeName: String?, name: String?,
+        type: ComponentRootType?, typeName: String?, name: String?,
     ): List<ComponentInfo> {
         // 后面调整有点麻烦
         val instances = componentManager.getAllComponent().associateBy {
@@ -30,11 +30,11 @@ class ComponentService(
             .groupBy({ it.key }) { entry -> entry.value.map { it.second } }
             .mapValues { it.value.flatten() }
 
-        val declConfigs = configOperator.getAllComponentConfig().mapKeys { ComponentTopType.fromName(it.key) }
+        val declConfigs = configOperator.getAllComponentConfig().mapKeys { ComponentRootType.fromName(it.key) }
             .mapNotNullKeys()
 
         // merge list
-        val allComponents: Map<ComponentTopType, List<ComponentConfig>> = defaults + declConfigs
+        val allComponents: Map<ComponentRootType, List<ComponentConfig>> = defaults + declConfigs
 
         return allComponents
             .filter { it.key matchesNullOrEqual type }
@@ -112,7 +112,7 @@ class ComponentService(
      * @param name Component名称
      */
     fun deleteComponent(
-        type: ComponentTopType,
+        type: ComponentRootType,
         typeName: String,
         name: String,
     ) {
@@ -134,7 +134,7 @@ class ComponentService(
      * @param name Component名称
      */
     fun reload(
-        type: ComponentTopType,
+        type: ComponentRootType,
         typeName: String,
         name: String,
     ) {
@@ -177,7 +177,7 @@ class ComponentService(
         }.flatMapConcat { it.asFlow() }
     }
 
-    fun getTypes(type: ComponentTopType?): List<ComponentType> {
+    fun getTypes(type: ComponentRootType?): List<ComponentType> {
         return componentManager.getSuppliers()
             .map { it.supplyTypes() }
             .flatten()
@@ -186,7 +186,7 @@ class ComponentService(
     }
 
     fun getSchema(
-        type: ComponentTopType, typeName: String
+        type: ComponentRootType, typeName: String
     ): ComponentMetadata? {
         val supplier = componentManager.getSupplier(ComponentType.of(type, typeName))
         return supplier.metadata()

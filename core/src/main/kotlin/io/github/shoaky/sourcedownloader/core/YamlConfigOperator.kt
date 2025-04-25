@@ -5,7 +5,7 @@ import com.google.common.cache.CacheLoader
 import io.github.shoaky.sourcedownloader.core.component.ComponentConfig
 import io.github.shoaky.sourcedownloader.core.component.ConfigOperator
 import io.github.shoaky.sourcedownloader.sdk.Properties
-import io.github.shoaky.sourcedownloader.sdk.component.ComponentTopType
+import io.github.shoaky.sourcedownloader.sdk.component.ComponentRootType
 import io.github.shoaky.sourcedownloader.util.jackson.yamlMapper
 import org.slf4j.LoggerFactory
 import java.nio.file.Path
@@ -75,7 +75,7 @@ class YamlConfigOperator(
     }
 
     @Synchronized
-    override fun deleteComponent(topType: ComponentTopType, type: String, name: String): Boolean {
+    override fun deleteComponent(topType: ComponentRootType, type: String, name: String): Boolean {
         val config = yamlMapper.readValue(configPath.inputStream(), AllDeclaredConfig::class.java)
         val components = config.components
         val configs = components[topType.primaryName] ?: mutableListOf()

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonValue
 import kotlin.reflect.KClass
 import kotlin.reflect.full.isSuperclassOf
 
-enum class ComponentTopType(
+enum class ComponentRootType(
     val klass: KClass<out SdComponent>,
     val alias: List<String>,
 ) {
@@ -63,11 +63,11 @@ enum class ComponentTopType(
 
     companion object {
 
-        private val nameMapping: Map<String, ComponentTopType> = entries.flatMap {
+        private val nameMapping: Map<String, ComponentRootType> = entries.flatMap {
             it.alias.map { name -> name to it }
         }.toMap()
 
-        fun fromClass(klass: KClass<out SdComponent>): List<ComponentTopType> {
+        fun fromClass(klass: KClass<out SdComponent>): List<ComponentRootType> {
             if (klass == SdComponent::class) {
                 throw ComponentException.other("can not create instance of SdComponent.class")
             }
@@ -77,7 +77,7 @@ enum class ComponentTopType(
             }
         }
 
-        fun fromName(name: String): ComponentTopType? {
+        fun fromName(name: String): ComponentRootType? {
             return nameMapping[name]
         }
 

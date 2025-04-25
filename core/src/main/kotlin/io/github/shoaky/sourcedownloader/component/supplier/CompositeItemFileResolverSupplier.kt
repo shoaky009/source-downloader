@@ -19,7 +19,7 @@ object CompositeItemFileResolverSupplier : ComponentSupplier<CompositeItemFileRe
         val selector = createSelector(
             context,
             props,
-            ComponentTopType.ITEM_FILE_RESOLVER,
+            ComponentRootType.ITEM_FILE_RESOLVER,
             object : TypeReference<ItemFileResolver>() {})
         return CompositeItemFileResolver(selector)
     }
@@ -38,7 +38,7 @@ object CompositeDownloaderSupplier : ComponentSupplier<CompositeDownloader> {
         val selector = createSelector(
             context,
             props,
-            ComponentTopType.DOWNLOADER,
+            ComponentRootType.DOWNLOADER,
             object : TypeReference<Downloader>() {})
         return CompositeDownloader(selector)
     }
@@ -54,7 +54,7 @@ object CompositeDownloaderSupplier : ComponentSupplier<CompositeDownloader> {
 private fun <T : SdComponent> createSelector(
     context: CoreContext,
     props: Properties,
-    type: ComponentTopType,
+    type: ComponentRootType,
     typeReference: TypeReference<T>,
     expressionFactory: CompiledExpressionFactory = CelCompiledExpressionFactory
 ): ComponentSelector<T> {

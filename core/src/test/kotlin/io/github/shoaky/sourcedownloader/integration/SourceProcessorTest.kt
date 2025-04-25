@@ -16,7 +16,7 @@ import io.github.shoaky.sourcedownloader.integration.support.Item2ReplaceDecider
 import io.github.shoaky.sourcedownloader.integration.support.TestDirErrorDownloaderSupplier
 import io.github.shoaky.sourcedownloader.repo.ProcessingQuery
 import io.github.shoaky.sourcedownloader.repo.exposed.ExposedProcessingStorage
-import io.github.shoaky.sourcedownloader.sdk.component.ComponentTopType
+import io.github.shoaky.sourcedownloader.sdk.component.ComponentRootType
 import io.github.shoaky.sourcedownloader.testResourcePath
 import io.github.shoaky.sourcedownloader.util.RestorableConfigOperator
 import org.flywaydb.core.Flyway
@@ -306,7 +306,7 @@ class SourceProcessorTest {
         processor.run()
 
         val downloader = componentManager.getComponent(
-            ComponentTopType.DOWNLOADER,
+            ComponentRootType.DOWNLOADER,
             ComponentId("delay-item"),
             jacksonTypeRef<ComponentWrapper<DelayItemDownloader>>()
         ).get()

@@ -6,7 +6,7 @@ import kotlin.reflect.full.isSuperclassOf
 @Suppress("UNUSED")
 data class ComponentRule(
     val isAllow: Boolean,
-    val type: ComponentTopType,
+    val type: ComponentRootType,
     val value: KClass<out SdComponent>
 ) {
 
@@ -38,66 +38,66 @@ data class ComponentRule(
     companion object {
 
         @JvmStatic
-        fun allow(type: ComponentTopType, value: KClass<out SdComponent>) = ComponentRule(true, type, value)
+        fun allow(type: ComponentRootType, value: KClass<out SdComponent>) = ComponentRule(true, type, value)
 
         @JvmStatic
-        fun notAllow(type: ComponentTopType, value: KClass<out SdComponent>) = ComponentRule(false, type, value)
+        fun notAllow(type: ComponentRootType, value: KClass<out SdComponent>) = ComponentRule(false, type, value)
 
         @JvmStatic
-        fun allowSource(value: KClass<out SdComponent>) = ComponentRule(true, ComponentTopType.SOURCE, value)
+        fun allowSource(value: KClass<out SdComponent>) = ComponentRule(true, ComponentRootType.SOURCE, value)
 
         @JvmStatic
-        fun notAllowSource(value: KClass<out SdComponent>) = ComponentRule(false, ComponentTopType.SOURCE, value)
+        fun notAllowSource(value: KClass<out SdComponent>) = ComponentRule(false, ComponentRootType.SOURCE, value)
 
         @JvmStatic
-        fun allowDownloader(value: KClass<out SdComponent>) = ComponentRule(true, ComponentTopType.DOWNLOADER, value)
+        fun allowDownloader(value: KClass<out SdComponent>) = ComponentRule(true, ComponentRootType.DOWNLOADER, value)
 
         @JvmStatic
         fun notAllowDownloader(value: KClass<out SdComponent>) =
-            ComponentRule(false, ComponentTopType.DOWNLOADER, value)
+            ComponentRule(false, ComponentRootType.DOWNLOADER, value)
 
         @JvmStatic
         fun allowProvider(value: KClass<out SdComponent>) =
-            ComponentRule(true, ComponentTopType.VARIABLE_PROVIDER, value)
+            ComponentRule(true, ComponentRootType.VARIABLE_PROVIDER, value)
 
         @JvmStatic
         fun allowFileResolver(value: KClass<out SdComponent>) =
-            ComponentRule(true, ComponentTopType.ITEM_FILE_RESOLVER, value)
+            ComponentRule(true, ComponentRootType.ITEM_FILE_RESOLVER, value)
 
         @JvmStatic
         fun notAllowFileResolver(value: KClass<out SdComponent>) =
-            ComponentRule(false, ComponentTopType.ITEM_FILE_RESOLVER, value)
+            ComponentRule(false, ComponentRootType.ITEM_FILE_RESOLVER, value)
 
         @JvmStatic
         fun notAllowProvider(value: KClass<out SdComponent>) =
-            ComponentRule(false, ComponentTopType.VARIABLE_PROVIDER, value)
+            ComponentRule(false, ComponentRootType.VARIABLE_PROVIDER, value)
 
         @JvmStatic
-        fun allowTrigger(value: KClass<out SdComponent>) = ComponentRule(true, ComponentTopType.TRIGGER, value)
+        fun allowTrigger(value: KClass<out SdComponent>) = ComponentRule(true, ComponentRootType.TRIGGER, value)
 
         @JvmStatic
-        fun notAllowTrigger(value: KClass<out SdComponent>) = ComponentRule(false, ComponentTopType.TRIGGER, value)
+        fun notAllowTrigger(value: KClass<out SdComponent>) = ComponentRule(false, ComponentRootType.TRIGGER, value)
 
         @JvmStatic
-        fun allowMover(value: KClass<out SdComponent>) = ComponentRule(true, ComponentTopType.FILE_MOVER, value)
+        fun allowMover(value: KClass<out SdComponent>) = ComponentRule(true, ComponentRootType.FILE_MOVER, value)
 
         @JvmStatic
-        fun notAllowMover(value: KClass<out SdComponent>) = ComponentRule(false, ComponentTopType.FILE_MOVER, value)
+        fun notAllowMover(value: KClass<out SdComponent>) = ComponentRule(false, ComponentRootType.FILE_MOVER, value)
 
         @JvmStatic
         fun allowRunAfterCompletion(value: KClass<out SdComponent>) =
-            ComponentRule(true, ComponentTopType.PROCESS_LISTENER, value)
+            ComponentRule(true, ComponentRootType.PROCESS_LISTENER, value)
 
         @JvmStatic
         fun notAllowRunAfterCompletion(value: KClass<out SdComponent>) =
-            ComponentRule(false, ComponentTopType.PROCESS_LISTENER, value)
+            ComponentRule(false, ComponentRootType.PROCESS_LISTENER, value)
 
         @JvmStatic
         fun allowSourceFilter(value: KClass<out SdComponent>) =
-            ComponentRule(true, ComponentTopType.SOURCE_ITEM_FILTER, value)
+            ComponentRule(true, ComponentRootType.SOURCE_ITEM_FILTER, value)
 
         @JvmStatic
         fun notAllowSourceFilter(value: KClass<out SdComponent>) =
-            ComponentRule(false, ComponentTopType.SOURCE_ITEM_FILTER, value)
+            ComponentRule(false, ComponentRootType.SOURCE_ITEM_FILTER, value)
     }
 }

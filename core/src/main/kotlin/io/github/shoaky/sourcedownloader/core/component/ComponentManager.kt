@@ -11,7 +11,7 @@ import io.github.shoaky.sourcedownloader.sdk.component.*
 interface ComponentManager {
 
     fun <T : SdComponent> getComponent(
-        type: ComponentTopType,
+        type: ComponentRootType,
         id: ComponentId,
         typeReference: TypeReference<ComponentWrapper<T>>,
     ): ComponentWrapper<T>
@@ -32,7 +32,7 @@ interface ComponentManager {
 
     fun getAllTrigger(): List<ComponentWrapper<Trigger>> {
         return getAllComponent()
-            .filter { it.type.type == ComponentTopType.TRIGGER }
+            .filter { it.type.type == ComponentRootType.TRIGGER }
             .filterIsInstance<ComponentWrapper<Trigger>>()
     }
 
@@ -53,7 +53,7 @@ interface ComponentManager {
     }
 
     fun getAllManualSource(): List<ComponentWrapper<ManualSource>> {
-        return getAllComponent().filter { it.type.type == ComponentTopType.MANUAL_SOURCE }
+        return getAllComponent().filter { it.type.type == ComponentRootType.MANUAL_SOURCE }
             .filterIsInstance<ComponentWrapper<ManualSource>>()
     }
 

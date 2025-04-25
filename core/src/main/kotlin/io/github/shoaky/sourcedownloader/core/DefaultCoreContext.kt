@@ -6,17 +6,17 @@ import io.github.shoaky.sourcedownloader.core.component.ComponentManager
 import io.github.shoaky.sourcedownloader.core.component.ComponentWrapper
 import io.github.shoaky.sourcedownloader.sdk.CoreContext
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentException
-import io.github.shoaky.sourcedownloader.sdk.component.ComponentTopType
+import io.github.shoaky.sourcedownloader.sdk.component.ComponentRootType
 import io.github.shoaky.sourcedownloader.sdk.component.SdComponent
 
 class DefaultCoreContext(
     private val componentManager: ComponentManager,
-    private val type: ComponentTopType,
+    private val type: ComponentRootType,
     private val self: String
 ) : CoreContext {
 
     override fun <T : SdComponent> getComponent(
-        type: ComponentTopType,
+        type: ComponentRootType,
         componentId: String,
         typeReference: TypeReference<T>
     ): T {

@@ -25,7 +25,7 @@ class DefaultComponentManager(
 
     @Synchronized
     override fun <T : SdComponent> getComponent(
-        type: ComponentTopType,
+        type: ComponentRootType,
         id: ComponentId,
         typeReference: TypeReference<ComponentWrapper<T>>,
     ): ComponentWrapper<T> {
@@ -225,7 +225,7 @@ class DefaultComponentManager(
         return type.keys
     }
 
-    private fun findConfig(type: ComponentTopType, typeName: String, name: String): ComponentConfig? {
+    private fun findConfig(type: ComponentRootType, typeName: String, name: String): ComponentConfig? {
         val config = configStorages.firstNotNullOfOrNull {
             it.findComponentConfig(type, typeName, name)
         }
