@@ -13,7 +13,7 @@ data class ComponentId(
     fun getInstanceName(topType: ComponentRootType): String {
         return getComponentType(topType).instanceName(name())
     }
-w
+
     fun getComponentType(topType: ComponentRootType): ComponentType {
         return ComponentType(topType, typeName())
     }

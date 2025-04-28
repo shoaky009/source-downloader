@@ -7,9 +7,9 @@ data class Subject(
     val id: Long,
     val name: String,
     @JsonProperty("name_cn")
-    val nameCn: String,
-    val date: LocalDate,
+    val nameCn: String?,
+    val date: LocalDate?,
     @JsonProperty("total_episodes")
-    val totalEpisodes: Int,
+    val totalEpisodes: Int?,
     val nsfw: Boolean = false
 )
