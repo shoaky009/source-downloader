@@ -9,7 +9,6 @@ import io.github.shoaky.sourcedownloader.external.anilist.Search
 import io.github.shoaky.sourcedownloader.external.anilist.Title
 import io.github.shoaky.sourcedownloader.external.bangumi.BgmTvApiClient
 import io.github.shoaky.sourcedownloader.external.bangumi.SearchSubjectV0Request
-import io.github.shoaky.sourcedownloader.external.bangumi.SubjectItem
 import io.github.shoaky.sourcedownloader.external.bangumi.SubjectV0Item
 import io.github.shoaky.sourcedownloader.sdk.PatternVariables
 import io.github.shoaky.sourcedownloader.sdk.SourceFile
@@ -107,7 +106,8 @@ class AnimeVariableProvider(
             )
         }
 
-        val request = SearchSubjectV0Request(anilistResult?.native ?: title)
+        val bgmTvSearchText = (anilistResult?.native ?: title).replace("-", "")
+        val request = SearchSubjectV0Request(bgmTvSearchText)
         val body = bgmTvApiClient.execute(
             request
         ).body()
@@ -145,31 +145,28 @@ class AnimeVariableProvider(
     }
 
     private fun reformatAnilistSearch(title: String): String {
-        val lastChar = title.lastOrNull()
-        if (lastChar == null || !lastChar.isDigit()) {
+        val regex = Regex("\\d+$")
+        val matchResult = regex.find(title) ?: return title
+        val digitStartIndex = matchResult.range.first
+        if (digitStartIndex > 0 && title[digitStartIndex - 1] == ' ') {
             return title
         }
-        // if number before is not space, insert space
-        val beforeNumber = title.getOrNull(title.length - 2)
-        if (beforeNumber == ' ') {
-            return title
-        }
-        return StringBuilder(title).insert(title.length - 1, ' ').toString()
+        return StringBuilder(title).insert(digitStartIndex, ' ').toString()
     }
 
-    private fun List<SubjectItem>.getHighestScoreSubjectItem(keyword: String): SubjectItem {
-        val hasJp = hasLanguage(keyword, Character.UnicodeScript.HIRAGANA, Character.UnicodeScript.KATAKANA)
-        if (hasJp) return this.first()
-        val hasChinese = hasLanguage(keyword, Character.UnicodeScript.HAN)
-        val choices = if (hasChinese.not()) {
-            this.map { it.name }
-        } else {
-            this.map { it.nameCn }
-        }
-        val result = FuzzySearch.extractOne(keyword, choices)
-        log.debug("Get highest score subject item: {} -- {}", this[result.index], keyword)
-        return this[result.index]
-    }
+    // private fun List<SubjectItem>.getHighestScoreSubjectItem(keyword: String): SubjectItem {
+    //     val hasJp = hasLanguage(keyword, Character.UnicodeScript.HIRAGANA, Character.UnicodeScript.KATAKANA)
+    //     if (hasJp) return this.first()
+    //     val hasChinese = hasLanguage(keyword, Character.UnicodeScript.HAN)
+    //     val choices = if (hasChinese.not()) {
+    //         this.map { it.name }
+    //     } else {
+    //         this.map { it.nameCn }
+    //     }
+    //     val result = FuzzySearch.extractOne(keyword, choices)
+    //     log.debug("Get highest score subject item: {} -- {}", this[result.index], keyword)
+    //     return this[result.index]
+    // }
 
     private fun List<SubjectV0Item>.getHighestScoreSubjectItem(keyword: String): SubjectV0Item {
         val hasJp = hasLanguage(keyword, Character.UnicodeScript.HIRAGANA, Character.UnicodeScript.KATAKANA)
