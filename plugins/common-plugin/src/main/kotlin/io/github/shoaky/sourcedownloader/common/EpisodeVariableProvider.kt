@@ -129,10 +129,13 @@ private class RegexValueParser(
         } else {
             regex.find(value)?.groupValues?.lastOrNull() ?: return null
         }
+        if (string.isBlank()) {
+            return null
+        }
         if (string.contains(".")) {
             return string.toFloat()
         }
-        return string.toInt()
+        return string.toIntOrNull()
     }
 
     override fun toString(): String {
