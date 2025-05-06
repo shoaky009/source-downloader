@@ -1,6 +1,7 @@
 package io.github.shoaky.sourcedownloader.telegram
 
 import io.github.shoaky.sourcedownloader.sdk.PointedItem
+import io.github.shoaky.sourcedownloader.sdk.Sleepable
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.sdk.component.Source
 import io.github.shoaky.sourcedownloader.sdk.util.ExpandIterator
@@ -18,7 +19,7 @@ class TelegramSource(
     private val chats: List<ChatConfig>,
     private val sites: Set<String> = setOf("Telegraph"),
     private val includeNonMedia: Boolean = false
-) : Source<TelegramPointer> {
+) : Source<TelegramPointer>, Sleepable {
 
     override fun fetch(pointer: TelegramPointer, limit: Int): Iterable<PointedItem<ChatPointer>> {
         pointer.refreshChats(chats.map { it.chatId })
@@ -26,7 +27,6 @@ class TelegramSource(
         val chatPointers = pointer.chatLastMessageIds.map { (chatId, messageId) ->
             ChatPointer(chatId, messageId)
         }
-        val telegramClient = messageFetcher.client
         return ExpandIterator(chatPointers, limit) { chatPointer ->
             val beginDate = chatMapping[chatPointer.chatId]?.beginDate
             val messages = messageFetcher.fetchMessages(chatPointer, limit, timeout)
@@ -34,7 +34,7 @@ class TelegramSource(
                 return@ExpandIterator IterationResult(emptyList(), true)
             }
 
-            val chat = telegramClient.getChatMinById(ChatPointer(chatPointer.chatId).createId())
+            val chat = messageFetcher.getChatMinById(ChatPointer(chatPointer.chatId).createId())
                 .blockOptional(timeout).get()
             val items = messages.mapNotNull { message ->
                 val sourceItem = mediaMessageToSourceItem(message, chatPointer, chat.name) ?: return@mapNotNull null
@@ -149,5 +149,17 @@ class TelegramSource(
 
     override fun defaultPointer(): TelegramPointer {
         return TelegramPointer()
+    }
+
+    override fun inUse(): Boolean {
+        return messageFetcher.wrapper.inUse()
+    }
+
+    override fun use(source: String) {
+        messageFetcher.wrapper.use(source)
+    }
+
+    override fun release(source: String) {
+        messageFetcher.wrapper.release(source)
     }
 }

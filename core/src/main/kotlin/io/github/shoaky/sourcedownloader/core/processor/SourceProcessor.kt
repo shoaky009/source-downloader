@@ -72,6 +72,12 @@ class SourceProcessor(
     private val taggers: List<FileTagger> = options.fileTaggers
     private val fileReplacementDecider: FileReplacementDecider = options.fileReplacementDecider
     private val fileExistsDetector: FileExistsDetector = options.fileExistsDetector
+    private val sleepableComponent = setOf(
+        source,
+        itemFileResolver,
+        downloader,
+        fileMover
+    ).filterIsInstance<Sleepable>()
     private val secondaryFileMover = IncludingTargetPathsFileMover(
         ReadonlyFileMover(fileMover),
         processingStorage,
@@ -539,6 +545,10 @@ class SourceProcessor(
         private val filteredStatuses = setOf(FILTERED, TARGET_ALREADY_EXISTS)
     }
 
+    private fun uniqueName(): String {
+        return "Processor:$name"
+    }
+
     private data class ItemSelectedOptions(
         val filters: List<SourceItemFilter>,
         val variableProviders: List<VariableProvider>,
@@ -667,6 +677,7 @@ class SourceProcessor(
 
             secondaryFileMover.releaseAll()
             stat.stopWatch.stop()
+            processComplete()
             onProcessCompleted(context)
             if (stat.hasChange()) {
                 log.info("Processor:{}", stat)
@@ -676,6 +687,13 @@ class SourceProcessor(
                 val ex = processJob.getCancellationException().cause ?: processJob.getCancellationException()
                 log.info("Processor:'{}' process job cancelled, message:{}", name, ex.message)
                 throw ex
+            }
+        }
+
+        private fun processComplete() {
+            for (sleepable in sleepableComponent) {
+                log.info("Processor:'{}' release sleepable component:{}", name, sleepable)
+                sleepable.release(uniqueName())
             }
         }
 
@@ -972,12 +990,22 @@ class SourceProcessor(
         }
 
         fun run() {
+            prepareForRun()
             runBlocking {
                 processItems()
             }
         }
 
+        private fun prepareForRun() {
+            // wake up all sleepable components
+            for (sleepable in sleepableComponent) {
+                log.info("Processor:'{}' use sleepable component:{}", name, sleepable)
+                sleepable.use(uniqueName())
+            }
+        }
+
         suspend fun runAsync() {
+            prepareForRun()
             processItems()
         }
     }

@@ -1,9 +1,6 @@
 package io.github.shoaky.sourcedownloader.telegram
 
-import io.github.shoaky.sourcedownloader.sdk.DownloadTask
-import io.github.shoaky.sourcedownloader.sdk.ProcessingException
-import io.github.shoaky.sourcedownloader.sdk.SourceFile
-import io.github.shoaky.sourcedownloader.sdk.SourceItem
+import io.github.shoaky.sourcedownloader.sdk.*
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentStateful
 import io.github.shoaky.sourcedownloader.sdk.component.Downloader
 import io.github.shoaky.sourcedownloader.sdk.component.ItemFileResolver
@@ -27,7 +24,6 @@ import java.nio.file.Path
 import java.nio.file.StandardOpenOption
 import java.time.Duration
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.io.path.*
 import kotlin.jvm.optionals.getOrDefault
@@ -37,11 +33,9 @@ import kotlin.jvm.optionals.getOrNull
  * Telegram集成，提供下载、解析文件、变量提供
  */
 class TelegramIntegration(
-    wrapper: TelegramClientWrapper,
+    private val wrapper: TelegramClientWrapper,
     private val downloadPath: Path,
-) : ItemFileResolver, Downloader, ComponentStateful, AutoCloseable {
-
-    private val client = wrapper.client
+) : ItemFileResolver, Downloader, ComponentStateful, AutoCloseable, Sleepable {
 
     /**
      * Key is the path of the file downloading.
@@ -70,7 +64,7 @@ class TelegramIntegration(
         val messageId = queryMap["post"]?.toInt() ?: return emptyList()
 
         val chatPointer = ChatPointer(chatId)
-        val message = client.getMessages(
+        val message = wrapper.getClient().getMessages(
             chatPointer.createId(), listOf(
                 ImmutableInputMessageID.of(messageId)
             )
@@ -98,7 +92,7 @@ class TelegramIntegration(
         }
 
         val chatPointer = ChatPointer(chatId)
-        val documentOp = client.getMessages(
+        val documentOp = wrapper.getClient().getMessages(
             chatPointer.createId(), listOf(
                 ImmutableInputMessageID.of(messageId)
             )
@@ -181,7 +175,8 @@ class TelegramIntegration(
     ): Flux<FilePart> {
         val offset = monitoredChannel.getDownloadedBytes()
         log.debug("Create file part stream for file: {}, offset:{}", fileDownloadPath, offset)
-        return client.downloadFile(fileReferenceId, monitoredChannel.getDownloadedBytes(), MAX_FILE_PART_SIZE, true)
+        return wrapper.getClient()
+            .downloadFile(fileReferenceId, monitoredChannel.getDownloadedBytes(), MAX_FILE_PART_SIZE, true)
             .timeout(Duration.ofMinutes(1), Schedulers.single())
             .onErrorResume(RpcException::class.java) {
                 val error = it.error
@@ -216,7 +211,7 @@ class TelegramIntegration(
             // 最清晰的
             is Video -> document.fileReferenceId.withThumbSizeType(' ')
             is Photo -> {
-                client.refresh(document.fileReferenceId)
+                wrapper.getClient().refresh(document.fileReferenceId)
                     .blockOptional(Duration.ofSeconds(5L)).get()
             }
 
@@ -285,11 +280,22 @@ class TelegramIntegration(
         private const val FLOOD_WAIT_CODE = 420
         private const val MAX_FILE_PART_SIZE = 1024 * 1024
         private const val DEFAULT_INTERVAL_SEC = 5L
-        private val scheduler = Schedulers.fromExecutor(Executors.newVirtualThreadPerTaskExecutor())
         private val retryErrorCodes = setOf(
             TIMEOUT_CODE,
             FLOOD_WAIT_CODE
         )
+    }
+
+    override fun inUse(): Boolean {
+        return wrapper.inUse()
+    }
+
+    override fun use(source: String) {
+        wrapper.use(source)
+    }
+
+    override fun release(source: String) {
+        wrapper.use(source)
     }
 
 }

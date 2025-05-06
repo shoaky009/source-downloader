@@ -1,5 +1,8 @@
 package io.github.shoaky.sourcedownloader.telegram
 
+import reactor.core.publisher.Mono
+import telegram4j.core.`object`.chat.Chat
+import telegram4j.core.util.Id
 import telegram4j.mtproto.MTProtoRetrySpec
 import telegram4j.tl.*
 import telegram4j.tl.messages.BaseMessages
@@ -8,10 +11,8 @@ import telegram4j.tl.request.messages.ImmutableGetHistory
 import java.time.Duration
 
 class TelegramMessageFetcher(
-    wrapper: TelegramClientWrapper,
+    val wrapper: TelegramClientWrapper,
 ) {
-
-    val client = wrapper.client
 
     fun fetchMessages(chatPointer: ChatPointer, limit: Int, timeout: Duration): List<BaseMessage> {
         val isChannel = chatPointer.isChannel()
@@ -24,6 +25,7 @@ class TelegramMessageFetcher(
             .hash(0)
             .offsetDate(0)
 
+        val client = wrapper.getClient()
         val inputPeer: InputPeer = if (isChannel) {
             val user = client.getUserMinById(client.selfId)
                 .onErrorMap {
@@ -34,15 +36,18 @@ class TelegramMessageFetcher(
                 .channelId(chatPointer.parseChatId())
                 .accessHash(user.id.accessHash.get())
                 .build()
-            val channel =
+            val channel = try {
                 client.serviceHolder.chatService.getChannel(inputChannel)
                     .onErrorMap {
                         wrapRetryableExceptionIfNeeded(it)
                     }
                     .blockOptional(timeout).get() as Channel
+            } catch (e: Exception) {
+                throw IllegalStateException("Failed to get channel info for ${chatPointer.chatId}", e)
+            }
             InputPeerChannel.builder()
                 .channelId(channel.id())
-                .accessHash(channel.accessHash()!!)
+                .accessHash(channel.accessHash() ?: throw IllegalStateException("Access hash missing"))
                 .build()
         } else {
             InputPeerChat.builder()
@@ -62,6 +67,10 @@ class TelegramMessageFetcher(
             return historyMessage.messages().filterIsInstance<BaseMessage>().reversed()
         }
         return emptyList()
+    }
+
+    fun getChatMinById(id: Id): Mono<Chat> {
+        return wrapper.getClient().getChatMinById(id)
     }
 
 }
