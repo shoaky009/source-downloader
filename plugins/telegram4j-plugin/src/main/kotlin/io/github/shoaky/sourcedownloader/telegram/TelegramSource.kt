@@ -106,7 +106,8 @@ class TelegramSource(
                     messageDateTime,
                     document.mimeType(),
                     downloadUri,
-                    attrs
+                    attrs,
+                    identity = document.id().toString()
                 )
             }
 

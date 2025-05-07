@@ -226,7 +226,7 @@ class DefaultProcessorManager(
         val expressionFactory = options.expression.factory
         val sourceItemFilter = mutableListOf<SourceItemFilter>()
         if (options.saveProcessingContent) {
-            sourceItemFilter.add(SourceHashingItemFilter(config.name, processingStorage))
+            sourceItemFilter.add(SourceItemIdentityFilter(config.name, processingStorage))
         }
         if (options.itemExpressionExclusions.isNotEmpty() || options.itemExpressionInclusions.isNotEmpty()) {
             sourceItemFilter.add(
@@ -248,6 +248,11 @@ class DefaultProcessorManager(
         )
 
         val itemContentFilters = mutableListOf<ItemContentFilter>()
+        if (options.preferIdentityFilter) {
+            itemContentFilters.add(
+                SourceItemIdentityFilter(config.name, processingStorage)
+            )
+        }
         if (options.itemContentExpressionExclusions.isNotEmpty() || options.itemContentExpressionInclusions.isNotEmpty()) {
             itemContentFilters.add(
                 ExpressionItemContentFilter(
@@ -544,8 +549,8 @@ class DefaultProcessorManager(
                     itemOption.filenamePattern?.let { CorePathPattern(it, expressionFactory) },
                     buildList {
                         // 内置
-                        add(SourceHashingItemFilter(config.name, processingStorage))
-                        addAll(expressionFilters ?: emptyList());
+                        add(SourceItemIdentityFilter(config.name, processingStorage))
+                        addAll(expressionFilters ?: emptyList())
                         addAll(sourceItemFilters ?: emptyList())
                     },
                     providers

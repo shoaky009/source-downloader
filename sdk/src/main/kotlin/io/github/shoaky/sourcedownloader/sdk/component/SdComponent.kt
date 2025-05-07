@@ -263,7 +263,10 @@ interface ProcessListener : SdComponent {
 /**
  * @return true if the item should be processed
  */
-interface SourceItemFilter : SdComponent, Predicate<SourceItem>
+interface SourceItemFilter : SdComponent {
+
+    fun test(item: SourceItem): Boolean
+}
 
 /**
  * @return true if the file should be processed
@@ -273,7 +276,10 @@ interface SourceFileFilter : SdComponent, Predicate<SourceFile>
 /**
  * @return true if the item should be processed
  */
-interface ItemContentFilter : SdComponent, Predicate<ItemContent>
+interface ItemContentFilter : SdComponent {
+
+    fun test(content: ItemContent): Boolean
+}
 
 /**
  * @return true if the file should be processed

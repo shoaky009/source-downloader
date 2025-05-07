@@ -19,6 +19,10 @@ data class SourceItem @JvmOverloads constructor(
     val downloadUri: URI,
     val attrs: Map<String, Any> = emptyMap(),
     val tags: Set<String> = emptySet(),
+    /**
+     * identity of the source item from source
+     */
+    val identity: String? = null
 ) {
 
     constructor(

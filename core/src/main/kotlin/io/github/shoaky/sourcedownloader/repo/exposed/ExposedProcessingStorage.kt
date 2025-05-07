@@ -106,6 +106,7 @@ class ExposedProcessingStorage : ProcessingStorage {
                     id = it.id.value,
                     processorName = it.processorName,
                     itemHash = it.itemHash,
+                    itemIdentity = it.itemIdentity,
                     itemContent = it.itemContent,
                     renameTimes = it.renameTimes,
                     status = it.status,
@@ -132,6 +133,7 @@ class ExposedProcessingStorage : ProcessingStorage {
                     id = it.id.value,
                     processorName = it.processorName,
                     itemHash = it.itemHash,
+                    itemIdentity = it.itemIdentity,
                     itemContent = it.itemContent,
                     renameTimes = it.renameTimes,
                     status = it.status,
@@ -155,6 +157,7 @@ class ExposedProcessingStorage : ProcessingStorage {
                     id = it.id.value,
                     processorName = it.processorName,
                     itemHash = it.itemHash,
+                    itemIdentity = it.itemIdentity,
                     itemContent = it.itemContent,
                     renameTimes = it.renameTimes,
                     status = it.status,
@@ -198,6 +201,7 @@ class ExposedProcessingStorage : ProcessingStorage {
                     id = it.id.value,
                     processorName = it.processorName,
                     itemHash = it.itemHash,
+                    itemIdentity = it.itemIdentity,
                     itemContent = it.itemContent,
                     renameTimes = it.renameTimes,
                     status = it.status,
@@ -288,6 +292,7 @@ class ExposedProcessingStorage : ProcessingStorage {
                         id = it[Processings.id].value,
                         processorName = it[Processings.processorName],
                         itemHash = it[Processings.itemHash],
+                        itemIdentity = it[Processings.itemIdentity],
                         itemContent = it[Processings.itemContent],
                         renameTimes = it[Processings.renameTimes],
                         status = it[Processings.status],
@@ -311,6 +316,7 @@ class ExposedProcessingStorage : ProcessingStorage {
                         id = it[Processings.id].value,
                         processorName = it[Processings.processorName],
                         itemHash = it[Processings.itemHash],
+                        itemIdentity = it[Processings.itemIdentity],
                         itemContent = it[Processings.itemContent],
                         renameTimes = it[Processings.renameTimes],
                         status = it[Processings.status],
@@ -331,6 +337,22 @@ class ExposedProcessingStorage : ProcessingStorage {
     override fun deleteTargetPathByProcessorName(processorName: String): Int {
         return transaction {
             TargetPaths.deleteWhere { TargetPaths.processorName eq processorName }
+        }
+    }
+
+    override fun existsByNameAndIdentify(processorName: String, identity: String): Boolean {
+        return transaction {
+            Processing.count(Op.build {
+                Processings.processorName eq processorName and (Processings.itemIdentity eq identity)
+            }) > 0L
+        }
+    }
+
+    override fun existsByNameAndHash(processorName: String, itemHashing: String): Boolean {
+        return transaction {
+            Processing.count(Op.build {
+                Processings.processorName eq processorName and (Processings.itemHash eq itemHashing)
+            }) > 0L
         }
     }
 

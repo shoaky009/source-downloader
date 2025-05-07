@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.node.NullNode
 import com.github.michaelbull.retry.policy.*
 import com.github.michaelbull.retry.retry
 import io.github.shoaky.sourcedownloader.component.NeverReplace
+import io.github.shoaky.sourcedownloader.component.SourceItemIdentityFilter
 import io.github.shoaky.sourcedownloader.component.downloader.NoneDownloader
 import io.github.shoaky.sourcedownloader.component.source.SystemFileSource
 import io.github.shoaky.sourcedownloader.core.PersistentPointer
@@ -12,7 +13,6 @@ import io.github.shoaky.sourcedownloader.core.ProcessingContent
 import io.github.shoaky.sourcedownloader.core.ProcessingContent.Status.*
 import io.github.shoaky.sourcedownloader.core.ProcessingStorage
 import io.github.shoaky.sourcedownloader.core.ProcessorSourceState
-import io.github.shoaky.sourcedownloader.core.component.SourceHashingItemFilter
 import io.github.shoaky.sourcedownloader.core.file.*
 import io.github.shoaky.sourcedownloader.sdk.*
 import io.github.shoaky.sourcedownloader.sdk.component.*
@@ -1171,7 +1171,7 @@ class SourceProcessor(
             if (filterProcessed) {
                 return super.selectItemFilters()
             }
-            return super.selectItemFilters().filter { it !is SourceHashingItemFilter }
+            return super.selectItemFilters().filter { it !is SourceItemIdentityFilter }
         }
 
         override fun onItemCompleted(processingContent: ProcessingContent) {
@@ -1239,7 +1239,7 @@ class SourceProcessor(
         }
 
         override fun selectItemFilters(): List<SourceItemFilter> {
-            return super.selectItemFilters().filter { it !is SourceHashingItemFilter }
+            return super.selectItemFilters().filter { it !is SourceItemIdentityFilter }
         }
 
         override fun selectUpdateStatusMover(): FileMover {

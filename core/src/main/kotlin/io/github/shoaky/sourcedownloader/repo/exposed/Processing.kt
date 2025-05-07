@@ -12,6 +12,7 @@ object Processings : LongIdTable("processing_record") {
 
     val processorName = varchar("processor_name", 64)
     val itemHash = varchar("item_hash", 64)
+    val itemIdentity = varchar("item_identity", 256).nullable()
     val itemContent = json<CoreItemContent>("item_content")
     val renameTimes = integer("rename_times").default(0)
     val status = enum<Status, Int>("status")
@@ -29,6 +30,7 @@ class Processing(id: EntityID<Long>) : LongEntity(id) {
 
     var processorName by Processings.processorName
     var itemHash by Processings.itemHash
+    var itemIdentity by Processings.itemIdentity
     var itemContent by Processings.itemContent
     var renameTimes by Processings.renameTimes
     var status by Processings.status

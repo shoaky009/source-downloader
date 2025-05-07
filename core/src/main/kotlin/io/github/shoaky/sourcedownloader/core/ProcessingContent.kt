@@ -10,6 +10,7 @@ data class ProcessingContent(
     var id: Long? = null,
     val processorName: String,
     val itemHash: String,
+    val itemIdentity: String?,
     val itemContent: CoreItemContent,
     val renameTimes: Int = 0,
     val status: Status = Status.WAITING_TO_RENAME,
@@ -21,6 +22,7 @@ data class ProcessingContent(
     constructor(processorName: String, itemContent: CoreItemContent) : this(
         processorName = processorName,
         itemHash = itemContent.sourceItem.hashing(),
+        itemIdentity = itemContent.sourceItem.identity,
         itemContent = itemContent
     )
 
@@ -53,7 +55,6 @@ data class ProcessingContent(
          * 已重命名
          */
         RENAMED(5),
-
 
         /**
          * [SourceItem]无文件

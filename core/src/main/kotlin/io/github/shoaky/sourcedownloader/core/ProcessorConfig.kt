@@ -60,6 +60,7 @@ data class ProcessorConfig(
         val renameTaskInterval: Duration = Duration.ofMinutes(5),
         val renameTimesThreshold: Int = 3,
         val saveProcessingContent: Boolean = true,
+        val preferIdentityFilter: Boolean = false,
         val fetchLimit: Int = 50,
         /**
          * 从Source获取Items后，更新pointer的模式，true:处理完这一批更新一次，false:处理完一个更新一次

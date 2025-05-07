@@ -42,4 +42,6 @@ interface ProcessingStorage {
     fun deleteProcessingContentByProcessorName(processorName: String): Int
 
     fun deleteTargetPathByProcessorName(processorName: String): Int
+    fun existsByNameAndIdentify(processorName: String, identity: String): Boolean
+    fun existsByNameAndHash(processorName: String, itemHashing: String): Boolean
 }

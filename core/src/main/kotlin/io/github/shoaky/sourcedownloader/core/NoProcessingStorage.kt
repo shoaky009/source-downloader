@@ -70,4 +70,12 @@ object NoProcessingStorage : ProcessingStorage {
     override fun deleteTargetPathByProcessorName(processorName: String): Int {
         return 0
     }
+
+    override fun existsByNameAndIdentify(processorName: String, identity: String): Boolean {
+        return false
+    }
+
+    override fun existsByNameAndHash(processorName: String, itemHashing: String): Boolean {
+        return false
+    }
 }
