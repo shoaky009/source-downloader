@@ -736,6 +736,9 @@ class SourceProcessor(
         private fun releasePaths(processingContent: ProcessingContent) {
             val sourceItem = processingContent.itemContent.sourceItem
             context.removeItemPaths(sourceItem)
+            if (processingContent.status == FILTERED) {
+                return
+            }
             if (processingContent.status == FAILURE) {
                 secondaryFileMover.release(sourceItem)
                 return
@@ -1233,8 +1236,12 @@ class SourceProcessor(
         }
 
         override fun onItemCompleted(processingContent: ProcessingContent) {
+            var contentToSave = processingContent
             if (options.saveProcessingContent) {
-                processingStorage.save(processingContent)
+                if (processingContent.id == null) {
+                    contentToSave = processingContent.copy(id = content.id)
+                }
+                processingStorage.save(contentToSave)
             }
         }
 
