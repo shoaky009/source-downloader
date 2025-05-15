@@ -100,7 +100,7 @@ class KeywordIntegration(
         parent.register(watchService, StandardWatchEventKinds.ENTRY_MODIFY)
 
         val fileName = keywordFile.fileName
-        Thread.ofVirtual().start {
+        Thread.ofPlatform().start {
             log.info("Start watch {}", keywordFile)
             while (!stop) {
                 try {
@@ -141,8 +141,8 @@ class KeywordIntegration(
         log.info("Stop watch {}", keywordFile)
     }
 
-    override fun test(t: SourceItem): Boolean {
-        val title = t.title
+    override fun test(item: SourceItem): Boolean {
+        val title = item.title
         val matchedWord = matchWord(title)
         return matchedWord != null
     }
