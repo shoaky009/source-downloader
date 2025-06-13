@@ -335,10 +335,10 @@ interface Trimmer : SdComponent {
 
     /**
      * Trim the filename if it exceeds the maximum length
-     * @param expectLength The expect length of the value
+     * @param expectSize The expect bytearray size of the value
      * @return The trimmed filename, length can be great than to the expect length
      */
-    fun trim(value: String, expectLength: Int): String
+    fun trim(value: String, expectSize: Int): String
 }
 
 interface ManualSource : SdComponent {
