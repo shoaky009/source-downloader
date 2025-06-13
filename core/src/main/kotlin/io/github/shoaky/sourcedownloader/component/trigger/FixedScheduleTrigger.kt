@@ -1,11 +1,10 @@
 package io.github.shoaky.sourcedownloader.component.trigger
 
-import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.consumeEach
-import kotlinx.coroutines.channels.ticker
-import org.slf4j.LoggerFactory
+import io.github.shoaky.sourcedownloader.core.processor.SourceProcessor
 import java.time.Duration
-import java.util.concurrent.ForkJoinPool
+import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledFuture
+import java.util.concurrent.TimeUnit
 
 /**
  * 固定时间间隔触发器
@@ -15,40 +14,31 @@ class FixedScheduleTrigger(
     private val onStartRunTasks: Boolean = false,
 ) : HoldingTaskTrigger() {
 
-    @OptIn(ObsoleteCoroutinesApi::class)
-    private val tickerChannel = ticker(interval.toMillis(), interval.toMillis())
-    private var job: Job? = null
+    private var f: ScheduledFuture<*>? = null
 
     override fun stop() {
-        tickerChannel.cancel()
-        job?.cancel()
+        f?.cancel(false)
     }
 
     override fun start() {
-        job = CoroutineScope(ForkJoinPool.commonPool().asCoroutineDispatcher()).launch {
-            tickerChannel.consumeEach {
-                getSourceGroupingTasks().forEach { task ->
-                    Thread.ofVirtual().name("fixed-schedule-$interval")
-                        .start(task)
-                        .setUncaughtExceptionHandler { _, e ->
-                            log.error("任务处理发生异常:{}", task, e)
-                        }
-                }
+        val intervalMilli = interval.toMillis()
+        f = executor.scheduleAtFixedRate({
+            getSourceGroupingTasks().forEach { task ->
+                SourceProcessor.processExecutor.execute(task)
             }
-        }
+        }, intervalMilli, intervalMilli, TimeUnit.MILLISECONDS)
+
         if (onStartRunTasks) {
             getSourceGroupingTasks().forEach {
-                Thread.ofVirtual().name("onstart-up-$interval")
-                    .start {
-                        it.run()
-                    }
+                SourceProcessor.processExecutor.execute(it)
             }
         }
     }
 
     companion object {
 
-        private val log = LoggerFactory.getLogger(FixedScheduleTrigger::class.java)
+        private val executor =
+            Executors.newSingleThreadScheduledExecutor(Thread.ofVirtual().name("fixed-tick", 1).factory())
     }
 
 }

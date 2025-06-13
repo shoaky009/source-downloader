@@ -9,7 +9,7 @@ class ProcessorSafeRunner(
     private val running = AtomicBoolean(false)
     override fun run() {
         val name = processor.name
-        log.info("Processor:'$name' 触发获取源信息")
+        log.info("Processor:'$name' 开始处理任务")
         if (running.compareAndSet(false, true).not()) {
             log.info("Processor:'$name' 上一次任务还未完成，跳过本次任务")
             return

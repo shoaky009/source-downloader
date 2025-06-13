@@ -1,5 +1,8 @@
 package io.github.shoaky.sourcedownloader.application.spring.config
 
+import de.codecentric.boot.admin.client.config.ClientProperties
+import de.codecentric.boot.admin.client.registration.ApplicationRegistrator
+import de.codecentric.boot.admin.client.registration.RegistrationApplicationListener
 import io.github.shoaky.sourcedownloader.CoreApplication
 import io.github.shoaky.sourcedownloader.application.spring.SpringSourceDownloaderProperties
 import io.github.shoaky.sourcedownloader.application.spring.component.SpringWebFrameworkAdapter
@@ -17,9 +20,13 @@ import io.github.shoaky.sourcedownloader.service.ComponentService
 import io.github.shoaky.sourcedownloader.service.ProcessingContentService
 import io.github.shoaky.sourcedownloader.service.ProcessorService
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.boot.http.client.ClientHttpRequestFactoryBuilder
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.core.env.Environment
+import org.springframework.http.client.JdkClientHttpRequestFactory
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping
+import java.util.concurrent.Executors
 
 @Configuration
 class ApplicationConfiguration {
@@ -28,6 +35,7 @@ class ApplicationConfiguration {
     fun props(props: SpringSourceDownloaderProperties): SourceDownloaderProperties {
         return SourceDownloaderProperties(props.dataLocation)
     }
+
     @Bean
     fun coreApplication(
         sourceDownloaderProperties: SourceDownloaderProperties,
@@ -137,5 +145,25 @@ class ApplicationConfiguration {
         requestMapping: RequestMappingHandlerMapping
     ): WebhookTriggerSupplier {
         return WebhookTriggerSupplier(SpringWebFrameworkAdapter(requestMapping))
+    }
+
+    // 减少线程的创建，目前内置的没有根据spring.threads.virtual.enabled来判断是否使用虚拟线程
+    @Bean
+    fun clientHttpRequestFactoryBuilder(): ClientHttpRequestFactoryBuilder<JdkClientHttpRequestFactory> {
+        return ClientHttpRequestFactoryBuilder.jdk().withHttpClientCustomizer {
+            it.executor(Executors.newVirtualThreadPerTaskExecutor())
+        }
+    }
+
+    @Bean
+    fun registrationListener(
+        client: ClientProperties,
+        registrator: ApplicationRegistrator, environment: Environment
+    ): RegistrationApplicationListener {
+        val listener = RegistrationApplicationListener(registrator)
+        listener.setAutoRegister(client.isAutoRegistration)
+        listener.setAutoDeregister(client.isAutoDeregistration(environment))
+        listener.setRegisterPeriod(client.period)
+        return listener
     }
 }

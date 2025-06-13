@@ -23,6 +23,7 @@ import io.github.shoaky.sourcedownloader.util.lock
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.IOException
@@ -30,10 +31,7 @@ import java.nio.file.Path
 import java.time.Instant
 import java.time.LocalDateTime
 import java.util.*
-import java.util.concurrent.Executors
-import java.util.concurrent.ScheduledFuture
-import java.util.concurrent.Semaphore
-import java.util.concurrent.TimeUnit
+import java.util.concurrent.*
 import java.util.concurrent.locks.Lock
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.reflect.jvm.jvmName
@@ -93,11 +91,8 @@ class SourceProcessor(
     private val safeRunner by lazy {
         ProcessorSafeRunner(this)
     }
-    private val renameScheduledExecutor by lazy {
-        val factory = Thread.ofVirtual().name("rename-task", 1).factory()
-        Executors.newScheduledThreadPool(1, factory)
-    }
-    private val itemChannel = Channel<Process>(options.channelBufferSize)
+
+    // private val itemChannel = Channel<Process>(options.channelBufferSize)
     private val processorCoroutineScope = CoroutineScope(processDispatcher)
     private val runtime: ProcessorRuntime = ProcessorRuntime(Instant.now())
     private var currentProcessScope: CoroutineScope? = null
@@ -113,16 +108,16 @@ class SourceProcessor(
             log.warn("Processor:'$name' parallelism:${options.parallelism} > 1, but source is not AlwaysLatestSource, recommend to set parallelism to 1")
         }
         log.debug("Processor:'{}' listeners{}", name, processListeners)
-        listenChannel()
+        // listenChannel()
     }
 
     private fun listenChannel() {
         // 希望和Process使用同一个，但ProcessScope的Job取消后要恢复成原来的
-        processorCoroutineScope.launch {
-            for (process in itemChannel) {
-                process.run()
-            }
-        }
+        // processorCoroutineScope.launch {
+        //     for (process in itemChannel) {
+        //         process.run()
+        //     }
+        // }
     }
 
     override fun run() {
@@ -159,8 +154,9 @@ class SourceProcessor(
         return process.getResult()
     }
 
-    suspend fun run(sourceItems: List<SourceItem>) {
-        itemChannel.send(ManualItemProcess(sourceItems))
+    fun run(sourceItems: List<SourceItem>) {
+        // itemChannel.send(ManualItemProcess(sourceItems))
+        ManualItemProcess(sourceItems).run()
     }
 
     private fun scheduleRenameTask() {
@@ -169,23 +165,25 @@ class SourceProcessor(
         }
         renameTaskFuture?.cancel(false)
         renameTaskFuture = renameScheduledExecutor.scheduleAtFixedRate({
-            log.debug("Processor:'$name' 开始重命名任务...")
-            var modified = false
-            val measureTime = measureTime {
-                try {
-                    modified = runRename() > 0
-                } catch (e: Exception) {
-                    log.error("Processor:'$name' 重命名任务出错", e)
+            renameWorker.execute {
+                log.debug("Processor:'$name' 开始重命名任务...")
+                var modified = false
+                val measureTime = measureTime {
+                    try {
+                        modified = runRename() > 0
+                    } catch (e: Exception) {
+                        log.error("Processor:'$name' 重命名任务出错", e)
+                    }
+                    System.currentTimeMillis()
                 }
-                System.currentTimeMillis()
-            }
 
-            if (modified) {
-                log.info("Processor:'$name' 重命名任务完成 took:${measureTime.inWholeMilliseconds}ms")
-            }
-            val renameCostTimeThreshold = 150L
-            if (modified.not() && measureTime.inWholeMilliseconds > renameCostTimeThreshold) {
-                log.warn("Processor:'$name' 重命名任务没有修改 took:${measureTime.inWholeMilliseconds}ms")
+                if (modified) {
+                    log.info("Processor:'$name' 重命名任务完成 took:${measureTime.inWholeMilliseconds}ms")
+                }
+                val renameCostTimeThreshold = 150L
+                if (modified.not() && measureTime.inWholeMilliseconds > renameCostTimeThreshold) {
+                    log.warn("Processor:'$name' 重命名任务没有修改 took:${measureTime.inWholeMilliseconds}ms")
+                }
             }
         }, 30L, options.renameTaskInterval.seconds, TimeUnit.SECONDS)
     }
@@ -521,7 +519,7 @@ class SourceProcessor(
         renameScheduledExecutor.shutdown()
         processorCoroutineScope.cancel("Processor:$name closed")
         currentProcessScope?.cancel("Processor:$name closed")
-        itemChannel.close()
+        // itemChannel.close()
     }
 
     fun currentSourceState(): ProcessorSourceState {
@@ -533,18 +531,40 @@ class SourceProcessor(
             )
     }
 
-    suspend fun reprocess(content: ProcessingContent) {
+    fun reprocess(content: ProcessingContent) {
         if (content.processorName != name) {
             throw IllegalArgumentException("content:${content.id} not belong to processor:$name")
         }
-        itemChannel.send(Reprocess(content))
+        Reprocess(content).run()
+        // itemChannel.send(Reprocess(content))
     }
 
     companion object {
 
-        private val processDispatcher = Executors.newThreadPerTaskExecutor(
-            Thread.ofVirtual().name("process-task", 1).factory()
-        ).asCoroutineDispatcher()
+        // val processExecutor: Executor = Executors.newFixedThreadPool(
+        //     Runtime.getRuntime().availableProcessors() * 2,
+        //     Thread.ofPlatform().name("process-task", 1).uncaughtExceptionHandler { _, e ->
+        //         log.error("任务处理发生未知异常", e)
+        //     }.factory()
+        // )
+
+        val processExecutor: Executor = ThreadPoolExecutor(
+            4, Runtime.getRuntime().availableProcessors() * 2, 60, TimeUnit.SECONDS,
+            LinkedBlockingQueue(), Thread.ofPlatform().name("process-worker", 1)
+                .uncaughtExceptionHandler { _, e ->
+                    log.error("任务处理发生未知异常", e)
+                }
+                .factory()
+        )
+
+        val processDispatcher = processExecutor.asCoroutineDispatcher()
+        private val renameScheduledExecutor =
+            Executors.newSingleThreadScheduledExecutor(Thread.ofVirtual().name("rename-tick", 1).factory())
+        private val renameWorker = ThreadPoolExecutor(
+            1, Runtime.getRuntime().availableProcessors() * 2, 60, TimeUnit.SECONDS,
+            LinkedBlockingQueue(), Thread.ofPlatform().name("rename-worker", 1).factory()
+        )
+
         private val filteredStatuses = setOf(FILTERED, TARGET_ALREADY_EXISTS)
     }
 

@@ -9,12 +9,12 @@ import io.github.shoaky.sourcedownloader.core.component.ComponentReloadEvent
 import io.github.shoaky.sourcedownloader.core.component.ConfigOperator
 import io.github.shoaky.sourcedownloader.core.processor.DryRunOptions
 import io.github.shoaky.sourcedownloader.core.processor.ProcessorManager
+import io.github.shoaky.sourcedownloader.core.processor.SourceProcessor
 import io.github.shoaky.sourcedownloader.core.processor.log
 import io.github.shoaky.sourcedownloader.sdk.SourceItem
 import io.github.shoaky.sourcedownloader.throwComponentException
 import io.github.shoaky.sourcedownloader.util.InternalEventBus
 import kotlinx.coroutines.flow.Flow
-import java.util.concurrent.Executors
 
 class ProcessorService(
     private val processorManager: ProcessorManager,
@@ -27,10 +27,6 @@ class ProcessorService(
             handleReload(it)
         }
     }
-
-    private val manualTriggerExecutor = Executors.newThreadPerTaskExecutor(
-        Thread.ofVirtual().name("manual-trigger", 0).factory()
-    )
 
     /**
      * 获取所有Processor的信息
@@ -151,8 +147,8 @@ class ProcessorService(
      * @param processorName Processor名称
      */
     fun trigger(processorName: String) {
-        val sourceProcessor = processorManager.getProcessor(processorName)
-        manualTriggerExecutor.submit(sourceProcessor.get().safeTask())
+        val processor = processorManager.getProcessor(processorName).get()
+        Thread.ofVirtual().name("manual-trigger", 0).start(processor.safeTask())
     }
 
     /**
@@ -167,7 +163,7 @@ class ProcessorService(
     /**
      * 手动提交Items到Processor(experimental)
      */
-    suspend fun postItems(processorName: String, items: List<SourceItem>) {
+    fun postItems(processorName: String, items: List<SourceItem>) {
         val processor = processorManager.getProcessor(processorName).get()
         processor.run(items)
     }

@@ -1,6 +1,6 @@
 package io.github.shoaky.sourcedownloader.component.trigger
 
-import java.util.concurrent.Executors
+import io.github.shoaky.sourcedownloader.core.processor.SourceProcessor
 
 /**
  * Webhook触发器
@@ -20,18 +20,12 @@ class WebhookTrigger(
     @Suppress("UNUSED")
     fun endpoint() {
         for (task in tasks) {
-            executor.submit(task)
+            SourceProcessor.processExecutor.execute(task)
         }
     }
 
     override fun stop() {
         adapter.unregisterEndpoint("/webhook/$path", method)
-    }
-
-    companion object {
-        private val executor = Executors.newThreadPerTaskExecutor(
-            Thread.ofVirtual().name("webhook-trigger", 0).factory()
-        )
     }
 
     interface Adapter {

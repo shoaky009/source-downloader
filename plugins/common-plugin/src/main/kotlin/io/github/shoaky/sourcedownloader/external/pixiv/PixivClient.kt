@@ -4,13 +4,12 @@ import com.google.common.net.HttpHeaders
 import io.github.shoaky.sourcedownloader.sdk.http.BaseRequest
 import io.github.shoaky.sourcedownloader.sdk.http.HookedApiClient
 import java.net.URI
-import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 
 class PixivClient(
     private val sessionId: String? = null
-) : HookedApiClient(HttpClient.newHttpClient()) {
+) : HookedApiClient() {
 
     private val server: URI = URI("https://www.pixiv.net")
     val basicHeaders =

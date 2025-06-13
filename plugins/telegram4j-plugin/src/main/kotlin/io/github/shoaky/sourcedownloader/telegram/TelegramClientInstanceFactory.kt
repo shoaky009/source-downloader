@@ -23,6 +23,7 @@ import java.net.InetSocketAddress
 import java.net.URI
 import java.nio.file.Path
 import java.time.Duration
+import java.util.concurrent.Executors
 import java.util.concurrent.locks.ReentrantLock
 import java.util.function.Function
 import kotlin.concurrent.withLock
@@ -52,6 +53,7 @@ object TelegramClientInstanceFactory : InstanceFactory<TelegramClientWrapper> {
             config.apiHash,
             QRAuthorizationHandler(QRCallback)
         )
+        bootstrap.setResultPublisher(Executors.newVirtualThreadPerTaskExecutor())
 
         val proxyResource = config.proxy?.let {
             val address = InetSocketAddress(it.host, it.port)

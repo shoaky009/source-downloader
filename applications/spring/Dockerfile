@@ -3,7 +3,7 @@ FROM azul/zulu-openjdk-alpine:24-jre AS builder
 COPY applications/spring/build/libs/source-downloader-spring-*.jar application.jar
 RUN java -Djarmode=layertools -jar application.jar extract
 
-FROM azul/zulu-openjdk-alpine:24-jre
+FROM azul/zulu-openjdk-alpine:24
 VOLUME /tmp
 
 ENV JAVA_OPTS="-Xmx512m -Xms64m -XX:+UnlockExperimentalVMOptions -XX:+UseCompactObjectHeaders"

@@ -18,7 +18,6 @@ import java.nio.ByteBuffer
 import java.nio.file.Path
 import java.time.Instant
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.Executors
 import kotlin.io.path.createDirectories
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.notExists
@@ -34,12 +33,10 @@ class HttpDownloader(
 
     private val progresses: MutableMap<Path, Downloading> = ConcurrentHashMap()
 
-    private val dispatchers = Executors
-        .newFixedThreadPool(parallelism, Thread.ofVirtual().name("HTTP-Download", 1).factory())
-        .asCoroutineDispatcher()
+    private val dispatcher: CoroutineDispatcher = Dispatchers.IO.limitedParallelism(parallelism)
 
     override fun submit(task: DownloadTask): Boolean {
-        runBlocking(dispatchers) {
+        runBlocking(dispatcher) {
             task.downloadFiles.forEach {
                 launch {
                     downloadSourceFile(it, task.options.headers)
@@ -69,7 +66,7 @@ class HttpDownloader(
             }
             .build()
 
-        withContext(dispatchers) {
+        withContext(dispatcher) {
             val job = launch {
                 val response = client.send(request, bodyHandler)
                 val statusCode = response.statusCode()

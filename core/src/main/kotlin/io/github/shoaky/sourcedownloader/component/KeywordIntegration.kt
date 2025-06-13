@@ -100,7 +100,7 @@ class KeywordIntegration(
         parent.register(watchService, StandardWatchEventKinds.ENTRY_MODIFY)
 
         val fileName = keywordFile.fileName
-        Thread.ofPlatform().start {
+        Thread.ofVirtual().start {
             log.info("Start watch {}", keywordFile)
             while (!stop) {
                 try {
