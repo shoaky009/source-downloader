@@ -10,6 +10,7 @@ import io.github.shoaky.sourcedownloader.sdk.http.StatusCodes
 import io.github.shoaky.sourcedownloader.sdk.util.http.httpClient
 import io.github.shoaky.sourcedownloader.sdk.util.readableRate
 import kotlinx.coroutines.*
+import kotlinx.coroutines.future.asDeferred
 import org.slf4j.LoggerFactory
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
@@ -66,27 +67,24 @@ class HttpDownloader(
             }
             .build()
 
-        withContext(dispatcher) {
-            val job = launch {
-                val response = client.send(request, bodyHandler)
-                val statusCode = response.statusCode()
-                if (statusCode == StatusCodes.NOT_FOUND) {
-                    throw ProcessingException.skip("Failed to download status code: ${response.statusCode()} $path, uri:${file.downloadUri}")
-                }
-                if (statusCode >= 400) {
-                    throw IllegalStateException("Failed to download status code: ${response.statusCode()} $path")
-                }
+        val responseDef = client.sendAsync(request, bodyHandler).asDeferred()
+        responseDef.invokeOnCompletion {
+            progresses.remove(path)
+            if (it != null) {
+                log.error("Download failed: $path", it)
+                path.deleteIfExists()
+            } else {
+                log.info("Download completed: $path")
             }
-            progresses[path] = Downloading(file, bodyHandler, job)
-            job.invokeOnCompletion {
-                progresses.remove(path)
-                if (it != null) {
-                    log.error("Download failed: $path", it)
-                    path.deleteIfExists()
-                } else {
-                    log.info("Download completed: $path")
-                }
-            }
+        }
+        progresses[path] = Downloading(file, bodyHandler, responseDef.job)
+        val response = responseDef.await()
+        val statusCode = response.statusCode()
+        if (statusCode == StatusCodes.NOT_FOUND) {
+            throw ProcessingException.skip("Failed to download status code: ${response.statusCode()} $path, uri:${file.downloadUri}")
+        }
+        if (statusCode >= 400) {
+            throw IllegalStateException("Failed to download status code: ${response.statusCode()} $path")
         }
     }
 
