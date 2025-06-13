@@ -358,6 +358,9 @@ class SourceProcessor(
         downloadedContents.forEach { pc ->
             kotlin.runCatching {
                 processRenameTask(pc)
+                // 实验性
+                val paths = pc.itemContent.fileContents.map { it.targetPath().toString() }
+                processingStorage.deleteTargetPaths(paths)
             }.onFailure {
                 log.error("Processing重命名任务出错, id:{} item:{}", pc.id, pc.itemContent.sourceItem, it)
             }
@@ -712,7 +715,8 @@ class SourceProcessor(
                 .map { processItem(it, itemOptions) }
                 .retryWhen { cause, attempt ->
                     secondaryFileMover.release(sourceItem)
-                    val retry = cause is IOException && attempt < 3
+                    val retry =
+                        cause is IOException && attempt < 3 && (cause.message?.endsWith("Filename too long") == false)
                     if (retry) {
                         delay(options.retryBackoffMills)
                     }
