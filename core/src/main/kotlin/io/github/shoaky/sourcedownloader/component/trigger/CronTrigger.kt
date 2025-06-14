@@ -30,7 +30,10 @@ class CronTrigger(
 
     class Scheduler {
 
-        private val executor: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
+        private val executor: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor {
+            // Thread.ofVirtual().name("cron-trigger-scheduler").start(it)
+            Thread(it, "cron-trigger-scheduler")
+        }
 
         fun schedule(executionTime: ExecutionTime, runnable: Runnable): ScheduledFuture<*>? {
             return ReschedulingRunnable(runnable, executionTime, Clock.systemDefaultZone(), executor).schedule()

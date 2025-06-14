@@ -34,16 +34,23 @@ class HttpDownloader(
 
     private val progresses: MutableMap<Path, Downloading> = ConcurrentHashMap()
 
-    private val dispatcher: CoroutineDispatcher = Dispatchers.IO.limitedParallelism(parallelism)
+    // private val dispatcher: CoroutineDispatcher = Dispatchers.IO.limitedParallelism(parallelism)
 
     override fun submit(task: DownloadTask): Boolean {
-        runBlocking(dispatcher) {
+        runBlocking {
             task.downloadFiles.forEach {
-                launch {
-                    downloadSourceFile(it, task.options.headers)
-                }
+                downloadSourceFile(it, task.options.headers)
             }
         }
+
+        
+        // runBlocking(dispatcher) {
+        //     task.downloadFiles.forEach {
+        //         launch {
+        //             downloadSourceFile(it, task.options.headers)
+        //         }
+        //     }
+        // }
         return true
     }
 

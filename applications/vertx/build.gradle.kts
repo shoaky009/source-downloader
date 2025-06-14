@@ -36,7 +36,7 @@ kotlin {
 tasks.jib.get().dependsOn("setupContainerDirs")
 jib {
     from {
-        image = "azul/zulu-openjdk-alpine:21-jre"
+        image = "azul/zulu-openjdk-alpine:24"
         platforms {
             platform {
                 os = "linux"

@@ -22,8 +22,9 @@ import io.github.shoaky.sourcedownloader.util.NoLock
 import io.github.shoaky.sourcedownloader.util.lock
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.consumeAsFlow
+import kotlinx.coroutines.flow.onCompletion
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.IOException
@@ -31,7 +32,10 @@ import java.nio.file.Path
 import java.time.Instant
 import java.time.LocalDateTime
 import java.util.*
-import java.util.concurrent.*
+import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledFuture
+import java.util.concurrent.Semaphore
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.locks.Lock
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.reflect.jvm.jvmName
@@ -93,7 +97,7 @@ class SourceProcessor(
     }
 
     // private val itemChannel = Channel<Process>(options.channelBufferSize)
-    private val processorCoroutineScope = CoroutineScope(processDispatcher)
+    // private val processorCoroutineScope = CoroutineScope(processDispatcher)
     private val runtime: ProcessorRuntime = ProcessorRuntime(Instant.now())
     private var currentProcessScope: CoroutineScope? = null
 
@@ -517,7 +521,7 @@ class SourceProcessor(
     override fun close() {
         renameTaskFuture?.cancel(false)
         renameScheduledExecutor.shutdown()
-        processorCoroutineScope.cancel("Processor:$name closed")
+        // processorCoroutineScope.cancel("Processor:$name closed")
         currentProcessScope?.cancel("Processor:$name closed")
         // itemChannel.close()
     }
@@ -541,28 +545,17 @@ class SourceProcessor(
 
     companion object {
 
-        // val processExecutor: Executor = Executors.newFixedThreadPool(
-        //     Runtime.getRuntime().availableProcessors() * 2,
-        //     Thread.ofPlatform().name("process-task", 1).uncaughtExceptionHandler { _, e ->
-        //         log.error("任务处理发生未知异常", e)
-        //     }.factory()
-        // )
+        private val processDispatcher = Executors.newThreadPerTaskExecutor(
+            Thread.ofVirtual().name("process-task", 1).factory()
+        ).asCoroutineDispatcher()
 
-        val processExecutor: Executor = ThreadPoolExecutor(
-            4, Runtime.getRuntime().availableProcessors() * 2, 60, TimeUnit.SECONDS,
-            LinkedBlockingQueue(), Thread.ofPlatform().name("process-worker", 1)
-                .uncaughtExceptionHandler { _, e ->
-                    log.error("任务处理发生未知异常", e)
-                }
-                .factory()
+        // private val renameScheduledExecutor = 
+        //     Executors.newSingleThreadScheduledExecutor(Thread.ofPlatform().name("rename-tick", 1).factory())
+        private val renameScheduledExecutor = Executors.newSingleThreadScheduledExecutor(
+            Thread.ofVirtual().name("rename-tick").factory()
         )
-
-        val processDispatcher = processExecutor.asCoroutineDispatcher()
-        private val renameScheduledExecutor =
-            Executors.newSingleThreadScheduledExecutor(Thread.ofVirtual().name("rename-tick", 1).factory())
-        private val renameWorker = ThreadPoolExecutor(
-            1, Runtime.getRuntime().availableProcessors() * 2, 60, TimeUnit.SECONDS,
-            LinkedBlockingQueue(), Thread.ofPlatform().name("rename-worker", 1).factory()
+        private val renameWorker = Executors.newThreadPerTaskExecutor(
+            Thread.ofVirtual().name("rename-task", 1).factory()
         )
 
         private val filteredStatuses = setOf(FILTERED, TARGET_ALREADY_EXISTS)
@@ -579,12 +572,13 @@ class SourceProcessor(
         val savePathPattern: CorePathPattern?,
     )
 
-    private fun getRetryPolicy(stage: String): RetryPolicy<Throwable> {
+    private fun buildRetryPolicy(stage: String, whenFailure: () -> Unit): RetryPolicy<Throwable> {
         val ioExceptionPredicate = continueIf<Throwable> {
+            whenFailure.invoke()
             val failure = it.failure
-            val isContinue = failure is IOException
+            val isContinue = failure is IOException && failure.message?.endsWith("Filename too long") == false
             if (isContinue && it.number > 0) {
-                log.warn(
+                log.info(
                     "第{}次重试失败, {}, message:{}",
                     it.number,
                     stage,
@@ -615,7 +609,7 @@ class SourceProcessor(
             val stat = context.stat
             stat.stopWatch.start("fetch-items")
 
-            val itemIterable = customIterable ?: retry(getRetryPolicy("fetch-source-items")) {
+            val itemIterable = customIterable ?: retry(buildRetryPolicy("fetch-source-items", {})) {
                 source.fetch(sourcePointer, options.fetchLimit)
             }
             stat.stopWatch.stop()
@@ -731,17 +725,9 @@ class SourceProcessor(
             pointed: PointedItem<ItemPointer>, itemOptions: ItemSelectedOptions,
         ): ProcessingContent {
             val sourceItem = pointed.sourceItem
-            return flowOf(sourceItem)
-                .map { processItem(it, itemOptions) }
-                .retryWhen { cause, attempt ->
-                    secondaryFileMover.release(sourceItem)
-                    val retry =
-                        cause is IOException && attempt < 3 && (cause.message?.endsWith("Filename too long") == false)
-                    if (retry) {
-                        delay(options.retryBackoffMills)
-                    }
-                    retry
-                }.first()
+            return retry(buildRetryPolicy("process-item") { secondaryFileMover.release(sourceItem) }) {
+                processItem(sourceItem, itemOptions)
+            }
         }
 
         private fun filterItem(
@@ -1072,8 +1058,7 @@ class SourceProcessor(
         val values = options.pointer ?: currentSourceState.lastPointer.values
         val pointer = ProcessorSourceState.resolvePointer(source::class, values)
         val process = DryRunStreamProcess(currentSourceState, pointer, options.filterProcessed)
-
-        processorCoroutineScope.launch {
+        CoroutineScope(processDispatcher).launch {
             process.runAsync()
         }
         return process.getStream()

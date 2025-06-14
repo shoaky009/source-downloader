@@ -1,6 +1,5 @@
 package io.github.shoaky.sourcedownloader.component.trigger
 
-import io.github.shoaky.sourcedownloader.core.processor.SourceProcessor
 
 /**
  * Webhook触发器
@@ -20,7 +19,7 @@ class WebhookTrigger(
     @Suppress("UNUSED")
     fun endpoint() {
         for (task in tasks) {
-            SourceProcessor.processExecutor.execute(task)
+            Thread.ofVirtual().name("webhook-trigger-$path").start(task)
         }
     }
 

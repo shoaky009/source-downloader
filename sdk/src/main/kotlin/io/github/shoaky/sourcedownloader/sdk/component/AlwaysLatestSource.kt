@@ -1,6 +1,5 @@
 package io.github.shoaky.sourcedownloader.sdk.component
 
-import com.google.common.collect.Iterables
 import io.github.shoaky.sourcedownloader.sdk.ItemPointer
 import io.github.shoaky.sourcedownloader.sdk.NullPointer
 import io.github.shoaky.sourcedownloader.sdk.PointedItem
@@ -15,7 +14,7 @@ abstract class AlwaysLatestSource : Source<NullPointer> {
         pointer: NullPointer,
         limit: Int
     ): Iterable<PointedItem<ItemPointer>> {
-        return Iterables.transform(fetch()) {
+        return fetch().map {
             PointedItem(it, NullPointer)
         }
     }

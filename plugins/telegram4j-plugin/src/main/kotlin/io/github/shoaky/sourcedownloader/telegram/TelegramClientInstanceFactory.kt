@@ -31,6 +31,11 @@ import kotlin.io.path.createDirectories
 
 object TelegramClientInstanceFactory : InstanceFactory<TelegramClientWrapper> {
 
+    //
+    // private val executor = Executors.newSingleThreadScheduledExecutor(
+    //     Thread.ofPlatform().name("telegram-publisher", 1).factory()
+    // )
+
     override fun create(props: Properties): TelegramClientWrapper {
         val config = props.parse<ClientConfig>()
         config.metadataPath.createDirectories()
@@ -147,7 +152,7 @@ class TelegramClientWrapper(
     override fun use(source: String) {
         val inUse = inUse()
         if (inUse.not()) {
-            log.info("Not in use starting to connect")
+            log.debug("Not in use starting to connect")
             wakeUp()
         }
         sources.add(source)
@@ -156,7 +161,7 @@ class TelegramClientWrapper(
     override fun release(source: String) {
         sources.remove(source)
         if (sources.isEmpty()) {
-            log.info("No source in use, closing Telegram client")
+            log.debug("No source in use, closing Telegram client")
             client?.disconnect()?.block(Duration.ofSeconds(3L))
             client = null
         }

@@ -1,6 +1,5 @@
 package io.github.shoaky.sourcedownloader.component.trigger
 
-import io.github.shoaky.sourcedownloader.core.processor.SourceProcessor
 import java.time.Duration
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
@@ -24,13 +23,13 @@ class FixedScheduleTrigger(
         val intervalMilli = interval.toMillis()
         f = executor.scheduleAtFixedRate({
             getSourceGroupingTasks().forEach { task ->
-                SourceProcessor.processExecutor.execute(task)
+                Thread.ofVirtual().name("fixed-trigger-${interval}").start(task)
             }
         }, intervalMilli, intervalMilli, TimeUnit.MILLISECONDS)
 
         if (onStartRunTasks) {
             getSourceGroupingTasks().forEach {
-                SourceProcessor.processExecutor.execute(it)
+                Thread.ofVirtual().name("on-start-up").start(it)
             }
         }
     }
