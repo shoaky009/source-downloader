@@ -26,7 +26,7 @@ object EpisodeVariableProvider : VariableProvider {
         RegexValueParser("SP(\\d+)".toRegex()),
         WordEpisodeValueParser,
         // 连续数字只出现过一次的
-        RegexValueParser("^\\D*?(\\d{1,3})\\D*?\$".toRegex()),
+        RegexValueParser("^\\D*?(\\d{1,3})\\D*?$".toRegex()),
         RegexValueParser("#(\\d+)".toRegex()),
         RangeEpisodeValueParser,
         CommonEpisodeValueParser,
@@ -149,8 +149,8 @@ private data object CommonEpisodeValueParser : ValueParser {
 
     private val replaces = mapOf(
         Regex("[！？]") to " ",
-        Regex("[【(]") to "[",
-        Regex("[】)]") to "]",
+        Regex("[【(（]") to "[",
+        Regex("[】)）]") to "]",
         Regex("(?<=\\d)集") to "",
         // 匹配[12 xxx]提取[12]
         Regex("\\[(\\d+)\\s(.*?)]") to "[$1]",
