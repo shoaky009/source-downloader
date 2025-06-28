@@ -7,8 +7,8 @@ import java.net.URI
 
 class CreatorPostsRequest(
     val creatorId: String,
-    val maxPublishedDatetime: String? = null,
-    val maxId: Long? = null,
+    val firstPublishedDatetime: String? = null,
+    val firstId: Long? = null,
     val limit: Int = 25
 ) : FanboxRequest<List<Post>>() {
 
@@ -21,8 +21,8 @@ class CreatorPostsRequest(
             val queryMap = uri.queryMap()
             return CreatorPostsRequest(
                 queryMap["creatorId"] ?: error("creatorId is required"),
-                queryMap["maxPublishedDatetime"],
-                queryMap["maxId"]?.toLong(),
+                queryMap["firstPublishedDatetime"],
+                queryMap["firstId"]?.toLong(),
                 queryMap["limit"]?.toInt() ?: 50
             )
         }
