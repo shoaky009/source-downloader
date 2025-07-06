@@ -1,18 +1,20 @@
 package io.github.shoaky.sourcedownloader.repo.exposed
 
 import io.github.shoaky.sourcedownloader.core.PersistentPointer
+import io.github.shoaky.sourcedownloader.sdk.util.Jackson
 import org.jetbrains.exposed.dao.LongEntity
 import org.jetbrains.exposed.dao.LongEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.LongIdTable
 import org.jetbrains.exposed.sql.javatime.datetime
+import org.jetbrains.exposed.sql.json.json
 import java.time.LocalDateTime
 
 object ProcessorSourceStates : LongIdTable("processor_source_state_record") {
 
     val processorName = text("processor_name")
     val sourceId = text("source_id")
-    val lastPointer = json<PersistentPointer>("last_pointer")
+    val lastPointer = json("last_pointer", { Jackson.toJsonString(it) }, { Jackson.fromJson(it, PersistentPointer::class) })
     val retryTimes = integer("retry_times").default(0)
     val lastActiveTime = datetime("last_active_time").default(LocalDateTime.now())
 
