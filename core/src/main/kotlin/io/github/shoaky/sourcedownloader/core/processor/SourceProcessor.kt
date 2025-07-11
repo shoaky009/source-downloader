@@ -167,7 +167,6 @@ class SourceProcessor(
         if (downloader !is AsyncDownloader) {
             return
         }
-        renameTaskFuture?.cancel(false)
         renameTaskFuture = renameScheduledExecutor.scheduleAtFixedRate({
             renameWorker.execute {
                 log.debug("Processor:'$name' 开始重命名任务...")
@@ -520,7 +519,6 @@ class SourceProcessor(
 
     override fun close() {
         renameTaskFuture?.cancel(false)
-        renameScheduledExecutor.shutdown()
         // processorCoroutineScope.cancel("Processor:$name closed")
         currentProcessScope?.cancel("Processor:$name closed")
         // itemChannel.close()
@@ -548,9 +546,6 @@ class SourceProcessor(
         private val processDispatcher = Executors.newThreadPerTaskExecutor(
             Thread.ofVirtual().name("process-task", 1).factory()
         ).asCoroutineDispatcher()
-
-        // private val renameScheduledExecutor = 
-        //     Executors.newSingleThreadScheduledExecutor(Thread.ofPlatform().name("rename-tick", 1).factory())
         private val renameScheduledExecutor = Executors.newSingleThreadScheduledExecutor(
             Thread.ofVirtual().name("rename-tick").factory()
         )

@@ -24,7 +24,7 @@ class HttpServerVerticle(
 
     override suspend fun start() {
         val router = Router.router(vertx)
-            // handle unhandled exception
+            // TODO 调整status code
             .errorHandler(StatusCodes.INTERNAL_SERVER_ERROR, ProblemDetailFailureHandler)
         router
             .route().subRouter(context.webhookRouter)
