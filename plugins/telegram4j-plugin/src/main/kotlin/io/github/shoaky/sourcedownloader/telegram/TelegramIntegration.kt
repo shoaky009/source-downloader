@@ -24,6 +24,7 @@ import java.nio.file.Path
 import java.nio.file.StandardOpenOption
 import java.time.Duration
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.io.path.*
 import kotlin.jvm.optionals.getOrDefault
@@ -133,6 +134,7 @@ class TelegramIntegration(
 
         log.info("Start downloading file: $fileDownloadPath")
         val stream = createFilePartStream(fileReferenceId, monitoredChannel, fileDownloadPath)
+            .publishOn(scheduler)
             .collect({ monitoredChannel }, { fc, filePart ->
                 if (closed) {
                     throw IllegalStateException("Downloader closed")
@@ -177,6 +179,7 @@ class TelegramIntegration(
         log.debug("Create file part stream for file: {}, offset:{}", fileDownloadPath, offset)
         return wrapper.getClient()
             .downloadFile(fileReferenceId, monitoredChannel.getDownloadedBytes(), MAX_FILE_PART_SIZE, true)
+            .publishOn(scheduler)
             .timeout(Duration.ofMinutes(1), Schedulers.single())
             .onErrorResume(RpcException::class.java) {
                 val error = it.error
@@ -284,6 +287,7 @@ class TelegramIntegration(
             TIMEOUT_CODE,
             FLOOD_WAIT_CODE
         )
+        private val scheduler = Schedulers.fromExecutor(Executors.newVirtualThreadPerTaskExecutor())
     }
 
     override fun inUse(): Boolean {
