@@ -20,6 +20,7 @@ import io.github.shoaky.sourcedownloader.service.ComponentService
 import io.github.shoaky.sourcedownloader.service.ProcessingContentService
 import io.github.shoaky.sourcedownloader.service.ProcessorService
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.boot.http.client.ClientHttpRequestFactoryBuilder
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -156,6 +157,7 @@ class ApplicationConfiguration {
     }
 
     @Bean
+    @ConditionalOnBean(ClientProperties::class)
     fun registrationListener(
         client: ClientProperties,
         registrator: ApplicationRegistrator, environment: Environment

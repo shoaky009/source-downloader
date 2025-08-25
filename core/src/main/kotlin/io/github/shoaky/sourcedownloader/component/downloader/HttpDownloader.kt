@@ -9,8 +9,11 @@ import io.github.shoaky.sourcedownloader.sdk.component.Downloader
 import io.github.shoaky.sourcedownloader.sdk.http.StatusCodes
 import io.github.shoaky.sourcedownloader.sdk.util.http.httpClient
 import io.github.shoaky.sourcedownloader.sdk.util.readableRate
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.future.asDeferred
+import kotlinx.coroutines.job
+import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
@@ -43,7 +46,6 @@ class HttpDownloader(
             }
         }
 
-        
         // runBlocking(dispatcher) {
         //     task.downloadFiles.forEach {
         //         launch {
@@ -88,9 +90,11 @@ class HttpDownloader(
         val response = responseDef.await()
         val statusCode = response.statusCode()
         if (statusCode == StatusCodes.NOT_FOUND) {
+            path.deleteIfExists()
             throw ProcessingException.skip("Failed to download status code: ${response.statusCode()} $path, uri:${file.downloadUri}")
         }
         if (statusCode >= 400) {
+            path.deleteIfExists()
             throw IllegalStateException("Failed to download status code: ${response.statusCode()} $path")
         }
     }
