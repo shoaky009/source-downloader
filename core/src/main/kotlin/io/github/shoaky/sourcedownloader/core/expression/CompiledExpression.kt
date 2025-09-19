@@ -10,7 +10,7 @@ interface CompiledExpression<T> {
         return runCatching {
             execute(variables)
         }.getOrElse {
-            log.debug("Execute expression '${raw()}' failed:{}", it.message)
+            log.debug("Execute expression '{}' failed:{}", raw(), it.message)
             null
         }
     }

@@ -93,7 +93,7 @@ class SendHttpRequest(
         context: ProcessContext, content: ItemContent, headers: MutableMap<String, String>
     ): HttpRequest.BodyPublisher {
         return if (config.body.isNullOrBlank().not()) {
-            val body = config.body?.replace("{summary}", content.summaryContent())
+            val body = config.body.replace("{summary}", content.summaryContent())
             BodyPublishers.ofString(body)
         } else if (config.withContentBody) {
             headers[HttpHeaders.CONTENT_TYPE] = MediaType.JSON_UTF_8.toString()
@@ -135,11 +135,11 @@ class SendHttpRequest(
 
     data class HttpRequestConfig(
         val url: String,
-        @JsonSerialize(using = ToStringSerializer::class)
+        @field:JsonSerialize(using = ToStringSerializer::class)
         val method: HttpMethod = HttpMethod.POST,
         val headers: Map<String, String> = emptyMap(),
         val body: String? = null,
-        @JsonAlias("with-content-body") val withContentBody: Boolean = false
+        @field:JsonAlias("with-content-body") val withContentBody: Boolean = false
     )
 
 }

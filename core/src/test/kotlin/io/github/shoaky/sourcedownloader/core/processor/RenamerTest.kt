@@ -501,7 +501,7 @@ class RenamerTest {
                         excludeKeys = setOf("filter1"),
                     ),
                     condition = CelCompiledExpressionFactory.create(
-                        "file.name == 1",
+                        "file.name == '1'",
                         Boolean::class.java,
                         sourceFileDefs()
                     )

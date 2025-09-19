@@ -5,6 +5,7 @@ spring-boot-admin = "3.5.2"
 guava = "33.4.8-jre"
 commons-lang3 = "3.18.0"
 cel = "0.5.3"
+cel2 = "0.11.1"
 kotlinx-coroutines = "1.10.2"
 kotlin = "2.2.20"
 graalvm-plugin = "0.11.0"
@@ -66,6 +67,7 @@ commons-text = { module = "org.apache.commons:commons-text", version.ref = "comm
 cel-bom = { module = "org.projectnessie.cel:cel-bom", version.ref = "cel" }
 cel-tools = { module = "org.projectnessie.cel:cel-tools", version.ref = "cel" }
 cel-jackson = { module = "org.projectnessie.cel:cel-jackson", version.ref = "cel" }
+cel = { module = "dev.cel:cel", version.ref = "cel2" }
 
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-core-jvm = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm", version.ref = "kotlinx-coroutines" }

@@ -3,7 +3,12 @@ package io.github.shoaky.sourcedownloader.core.file
 import com.fasterxml.jackson.annotation.JsonValue
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.google.api.expr.v1alpha1.Expr
-import io.github.shoaky.sourcedownloader.core.expression.*
+import io.github.shoaky.sourcedownloader.core.expression.CelCompiledExpressionFactory
+import io.github.shoaky.sourcedownloader.core.expression.CompiledExpression
+import io.github.shoaky.sourcedownloader.core.expression.CompiledExpressionFactory
+import io.github.shoaky.sourcedownloader.core.expression.VariableType
+import io.github.shoaky.sourcedownloader.core.expression.cel.CelCompiledExpression
+import io.github.shoaky.sourcedownloader.core.expression.cel2.Cel2CompiledExpression
 import io.github.shoaky.sourcedownloader.sdk.PathPattern
 import io.github.shoaky.sourcedownloader.util.jackson.PathPatternDeserializer
 import org.projectnessie.cel.Env
@@ -30,6 +35,9 @@ data class CorePathPattern(
             }
             val expression = expressionFactory.create(parsed, String::class.java, defs)
             if (expression is CelCompiledExpression) {
+                expression.optional = isOptional(raw)
+            }
+            if (expression is Cel2CompiledExpression) {
                 expression.optional = isOptional(raw)
             }
             expressions.add(expression)

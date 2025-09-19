@@ -12,16 +12,16 @@ import java.nio.file.Path
 import kotlin.io.path.Path
 
 data class CoreFileContent(
-    @JsonSerialize(using = ToStringSerializer::class)
+    @field:JsonSerialize(using = ToStringSerializer::class)
     override val fileDownloadPath: Path,
-    @JsonSerialize(using = ToStringSerializer::class)
+    @field:JsonSerialize(using = ToStringSerializer::class)
     val sourceSavePath: Path,
-    @JsonSerialize(using = ToStringSerializer::class)
+    @field:JsonSerialize(using = ToStringSerializer::class)
     override val downloadPath: Path,
     override val patternVariables: MapPatternVariables,
     val fileSavePathPattern: CorePathPattern,
     val filenamePattern: CorePathPattern,
-    @JsonSerialize(using = ToStringSerializer::class)
+    @field:JsonSerialize(using = ToStringSerializer::class)
     val targetSavePath: Path,
     val targetFilename: String,
     override val attrs: Map<String, Any> = emptyMap(),
@@ -34,7 +34,7 @@ data class CoreFileContent(
     /**
      * 只有在process中当[status] == [FileContentStatus.TARGET_EXISTS]时此值不为null
      */
-    @JsonSerialize(using = ToStringSerializer::class)
+    @field:JsonSerialize(using = ToStringSerializer::class)
     override var existTargetPath: Path? = null,
     // 只为了展示用
     val processedVariables: MapPatternVariables? = null

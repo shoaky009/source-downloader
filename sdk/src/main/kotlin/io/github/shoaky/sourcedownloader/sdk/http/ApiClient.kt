@@ -55,7 +55,7 @@ abstract class HookedApiClient(
         request.httpHeaders().forEach { (name, value) -> requestBuilder.header(name, value) }
 
         val httpRequest = requestBuilder.build()
-
+        
         val httpResponse = try {
             client.send(httpRequest, request.bodyHandler())
         } catch (e: BodyMappingException) {

@@ -1,4 +1,4 @@
-package io.github.shoaky.sourcedownloader.core.expression
+package io.github.shoaky.sourcedownloader.core.expression.cel
 
 import org.projectnessie.cel.EnvOption
 import org.projectnessie.cel.Library
@@ -69,7 +69,7 @@ class CelLibrary : Library {
                 { l, r ->
                     val source = l.convertToNative(List::class.java).map { it.toString() }
                     val target = r.convertToNative(List::class.java).map { it.toString() }
-                    val contains = containsAny(source, target)
+                    val contains = containsAny(source, target, false)
                     if (contains) BoolT.True else BoolT.False
                 },
                 { vals ->
@@ -117,12 +117,12 @@ class CelLibrary : Library {
      */
     companion object {
 
-        private const val CONTAINS_ANY = "containsAny"
-        private const val JOIN_IGNORE_NULL = "joinIgnoreNull"
-        private const val TO_EPOCH_SECOND = "epochSecond"
+        const val CONTAINS_ANY = "containsAny"
+        const val JOIN_IGNORE_NULL = "joinIgnoreNull"
+        const val TO_EPOCH_SECOND = "epochSecond"
 
         @JvmStatic
-        fun containsAny(source: Collection<String>, target: Collection<String>, ignoreCase: Boolean = false): Boolean {
+        fun containsAny(source: Collection<String>, target: Collection<String>, ignoreCase: Boolean): Boolean {
             if (ignoreCase) {
                 val set = target.map { it.lowercase() }.toSet()
                 return source.any { it.lowercase() in set }

@@ -19,6 +19,7 @@ dependencies {
     implementation(libs.commons.collections4)
     implementation(libs.jackson.dataformat.yaml)
     implementation(libs.bundles.cel)
+    implementation(libs.cel)
     api(libs.bundles.exposed)
     implementation(libs.json.path)
     implementation(libs.cron.utils)

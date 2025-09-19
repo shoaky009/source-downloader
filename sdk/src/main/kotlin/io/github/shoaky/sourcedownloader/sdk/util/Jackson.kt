@@ -62,6 +62,10 @@ object Jackson {
         return objectMapper.convertValue(data, type.java)
     }
 
+    fun <T> convert(data: Any, type: Class<T>): T {
+        return objectMapper.convertValue(data, type)
+    }
+
     fun <T> convert(data: Any, type: TypeReference<T>): T {
         return objectMapper.convertValue(data, type)
     }

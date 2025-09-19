@@ -1,5 +1,6 @@
-package io.github.shoaky.sourcedownloader.core.expression
+package io.github.shoaky.sourcedownloader.core.expression.cel
 
+import io.github.shoaky.sourcedownloader.core.expression.CompiledExpression
 import org.projectnessie.cel.tools.Script
 
 class CelCompiledExpression<T>(
