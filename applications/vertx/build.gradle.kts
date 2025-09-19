@@ -29,9 +29,6 @@ dependencies {
 tasks.test {
     useJUnitPlatform()
 }
-kotlin {
-    jvmToolchain(21)
-}
 
 tasks.jib.get().dependsOn("setupContainerDirs")
 jib {
