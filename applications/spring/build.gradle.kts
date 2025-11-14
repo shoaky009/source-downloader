@@ -21,8 +21,10 @@ dependencies {
     api(platform(libs.spring.boot.dependencies))
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.data:spring-data-commons")
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation(libs.exposed.spring.boot.stater)
     implementation(libs.spring.boot.admin.client)
+    implementation(libs.micrometer.registry.prometheus)
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     runtimeOnly(libs.kotlinx.coroutines.reactor)
 }

@@ -1,4 +1,4 @@
-FROM azul/zulu-openjdk-alpine:25-jre AS builder
+FROM azul/zulu-openjdk-alpine:25 AS builder
 
 COPY applications/spring/build/libs/source-downloader-spring-*.jar application.jar
 RUN java -Djarmode=layertools -jar application.jar extract

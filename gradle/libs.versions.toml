@@ -33,7 +33,7 @@ vertx = "4.5.13"
 junit = "5.13.4"
 mockito = "5.19.0"
 hikaricp = "7.0.2"
-micrometer = "1.15.3"
+micrometer = "1.16.0"
 jackson = "2.19.2"
 logback = "1.5.18"
 slf4j = "2.0.17"
@@ -85,6 +85,7 @@ vertx-micrometer-metrics = { module = "io.vertx:vertx-micrometer-metrics", versi
 
 micrometer-core = { module = "io.micrometer:micrometer-core", version.ref = "micrometer" }
 micrometer-registry-jmx = { module = "io.micrometer:micrometer-registry-jmx", version.ref = "micrometer" }
+micrometer-registry-prometheus = { module = "io.micrometer:micrometer-registry-prometheus", version.ref = "micrometer" }
 
 exposed-java-time = { module = "org.jetbrains.exposed:exposed-java-time", version.ref = "exposed" }
 exposed-json = { module = "org.jetbrains.exposed:exposed-json", version.ref = "exposed" }
