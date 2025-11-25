@@ -9,7 +9,7 @@ import io.github.shoaky.sourcedownloader.sdk.component.FileReplacementDecider
  */
 object NeverReplace : FileReplacementDecider {
 
-    override fun isReplace(current: ItemContent, before: ItemContent?, existingFile: SourceFile): Boolean = false
+    override fun shouldReplace(current: ItemContent, before: ItemContent?, existingFile: SourceFile): Boolean = false
 
     override fun equals(other: Any?): Boolean {
         return other is NeverReplace
@@ -21,7 +21,7 @@ object NeverReplace : FileReplacementDecider {
  */
 object AlwaysReplace : FileReplacementDecider {
 
-    override fun isReplace(current: ItemContent, before: ItemContent?, existingFile: SourceFile): Boolean = true
+    override fun shouldReplace(current: ItemContent, before: ItemContent?, existingFile: SourceFile): Boolean = true
 
     override fun equals(other: Any?): Boolean {
         return other is AlwaysReplace

@@ -345,7 +345,7 @@ private class CustomProvider(
         return fileVariables
     }
 
-    override fun primary(): String? {
+    override fun primaryVariableName(): String? {
         return null
     }
 

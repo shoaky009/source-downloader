@@ -70,7 +70,7 @@ data class VariableProcessChain(
         val tempVars = mutableMapOf<String, String>()
         val processedVar = chain.fold(value) { acc: String?, provider ->
             if (acc == null) return@fold null
-            val primary = provider.primary() ?: return@fold null
+            val primary = provider.primaryVariableName() ?: return@fold null
             val vars = provider.extractFrom(sourceItem, acc)?.variables() ?: return@fold null
             tempVars.putAll(vars)
             return@fold vars[primary] ?: acc

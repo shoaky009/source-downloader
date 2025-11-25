@@ -45,7 +45,7 @@ class LanguageVariableProvider(
         }
     }
 
-    override fun primary(): String {
+    override fun primaryVariableName(): String {
         return "language"
     }
 
@@ -67,9 +67,11 @@ class LanguageVariableProvider(
             "ass" -> {
                 collectAssFormatText(lines)
             }
+
             "srt" -> {
                 collectSrtFormatText(lines)
             }
+
             else -> emptyList()
         }
         val result = languageDetector.detect(

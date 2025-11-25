@@ -9,7 +9,7 @@ class ForeignFileReplacementDecider(
     private val client: ForeignStateClient,
 ) : FileReplacementDecider {
 
-    override fun isReplace(current: ItemContent, before: ItemContent?, existingFile: SourceFile): Boolean {
+    override fun shouldReplace(current: ItemContent, before: ItemContent?, existingFile: SourceFile): Boolean {
         TODO("Not yet implemented")
     }
 }

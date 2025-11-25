@@ -59,7 +59,7 @@ object SeasonVariableProvider : VariableProvider {
         return season?.let { Season(it) }
     }
 
-    override fun primary(): String {
+    override fun primaryVariableName(): String {
         return "season"
     }
 

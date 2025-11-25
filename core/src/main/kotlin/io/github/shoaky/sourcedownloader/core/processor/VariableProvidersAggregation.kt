@@ -43,7 +43,7 @@ class VariableProvidersAggregation(
         return strategyGroup.fileVariables(sourceItem, itemVariables, sourceFiles)
     }
 
-    override fun primary(): String? {
+    override fun primaryVariableName(): String? {
         return null
     }
 
@@ -117,7 +117,7 @@ private class AnyItemGroup(
         return MapPatternVariables(result)
     }
 
-    override fun primary(): String? {
+    override fun primaryVariableName(): String? {
         return null
     }
 
@@ -183,7 +183,7 @@ private class VoteItemGroup(
         }
     }
 
-    override fun primary(): String? {
+    override fun primaryVariableName(): String? {
         return null
     }
 }
@@ -215,7 +215,7 @@ private class AccuracyItemGroup(
         }
     }
 
-    override fun primary(): String? {
+    override fun primaryVariableName(): String? {
         return null
     }
 }
@@ -274,7 +274,7 @@ private class SmartItemGroup(
         }
     }
 
-    override fun primary(): String? {
+    override fun primaryVariableName(): String? {
         return null
     }
 

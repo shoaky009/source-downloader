@@ -87,7 +87,7 @@ object AnimeTitleVariableProvider : VariableProvider {
         return null
     }
 
-    override fun primary(): String {
+    override fun primaryVariableName(): String {
         return "title"
     }
 

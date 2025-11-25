@@ -17,7 +17,7 @@ class AnimeFileReplacerTest {
                 emptyList()
             )
         assertEquals(
-            false, AnimeReplacementDecider.isReplace(
+            false, AnimeReplacementDecider.shouldReplace(
                 content1, null, SourceFile(Path(""))
             )
         )
@@ -28,7 +28,7 @@ class AnimeFileReplacerTest {
                 emptyList()
             )
         assertEquals(
-            true, AnimeReplacementDecider.isReplace(
+            true, AnimeReplacementDecider.shouldReplace(
                 content2, null, SourceFile(Path(""))
             )
         )
@@ -42,7 +42,7 @@ class AnimeFileReplacerTest {
                 emptyList()
             )
         assertEquals(
-            true, AnimeReplacementDecider.isReplace(
+            true, AnimeReplacementDecider.shouldReplace(
                 current, null, SourceFile(Path(""))
             )
         )
@@ -52,7 +52,7 @@ class AnimeFileReplacerTest {
             emptyList()
         )
         assertEquals(
-            false, AnimeReplacementDecider.isReplace(
+            false, AnimeReplacementDecider.shouldReplace(
                 current, notBillibili, SourceFile(Path(""))
             )
         )
@@ -72,12 +72,12 @@ class AnimeFileReplacerTest {
             )
         assertEquals(
             false,
-            AnimeReplacementDecider.isReplace(current, before, SourceFile(Path("")))
+            AnimeReplacementDecider.shouldReplace(current, before, SourceFile(Path("")))
         )
 
         assertEquals(
             true,
-            AnimeReplacementDecider.isReplace(before, current, SourceFile(Path("")))
+            AnimeReplacementDecider.shouldReplace(before, current, SourceFile(Path("")))
         )
     }
 }

@@ -20,7 +20,7 @@ class FileSizeReplacementDeciderTest {
             )
         )
 
-        assertEquals(false, decider.isReplace(content1, null, SourceFile(Path(""), attrs = mapOf("size" to 1024))))
-        assertEquals(true, decider.isReplace(content1, null, SourceFile(Path(""), attrs = mapOf("size" to 1023))))
+        assertEquals(false, decider.shouldReplace(content1, null, SourceFile(Path(""), attrs = mapOf("size" to 1024))))
+        assertEquals(true, decider.shouldReplace(content1, null, SourceFile(Path(""), attrs = mapOf("size" to 1023))))
     }
 }

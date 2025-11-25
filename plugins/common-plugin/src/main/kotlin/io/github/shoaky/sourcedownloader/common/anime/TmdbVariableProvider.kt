@@ -32,7 +32,7 @@ class TmdbVariableProvider(
         return result.resultToVars()
     }
 
-    override fun primary(): String {
+    override fun primaryVariableName(): String {
         return "originalName"
     }
 

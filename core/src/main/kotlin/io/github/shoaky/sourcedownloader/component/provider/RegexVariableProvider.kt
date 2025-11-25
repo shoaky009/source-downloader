@@ -41,7 +41,7 @@ class RegexVariableProvider(
         return MapPatternVariables(variables)
     }
 
-    override fun primary(): String? {
+    override fun primaryVariableName(): String? {
         return primary
     }
 }

@@ -121,7 +121,7 @@ class MikanVariableProvider(
         }
     }
 
-    override fun primary(): String {
+    override fun primaryVariableName(): String {
         return "name"
     }
 

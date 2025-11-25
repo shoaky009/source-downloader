@@ -875,7 +875,7 @@ class SourceProcessor(
                     }
 
                     val physicalBeforeItem = support.getBeforeContent(existingFile.path)
-                    val replace = fileReplacementDecider.isReplace(
+                    val replace = fileReplacementDecider.shouldReplace(
                         currentItem.copy(
                             fileContents = listOf(fileContent)
                         ),

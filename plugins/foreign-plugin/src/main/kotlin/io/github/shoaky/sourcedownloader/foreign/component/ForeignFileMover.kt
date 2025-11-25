@@ -28,8 +28,8 @@ class ForeignFileMover(
         super.createDirectories(path)
     }
 
-    override fun listPath(path: Path): List<Path> {
-        return super.listPath(path)
+    override fun listFiles(path: Path): List<Path> {
+        return super.listFiles(path)
     }
 
     override fun pathMetadata(path: Path): SourceFile {

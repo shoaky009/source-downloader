@@ -40,7 +40,7 @@ class GetchuVariableProvider(
         return item
     }
 
-    override fun primary(): String {
+    override fun primaryVariableName(): String {
         return "title"
     }
 

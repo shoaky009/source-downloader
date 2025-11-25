@@ -23,7 +23,7 @@ class MediaTypeExistsDetectorTest {
             )
         )
         val fileMover = Mockito.mock(FileMover::class.java)
-        Mockito.`when`(fileMover.listPath(Path("test", "test1.mp4"))).thenAnswer {
+        Mockito.`when`(fileMover.listFiles(Path("test", "test1.mp4"))).thenAnswer {
             listOf(Path("test", "test1.mkv"))
         }
         val exists = MediaTypeExistsDetector.exists(
@@ -44,7 +44,7 @@ class MediaTypeExistsDetectorTest {
             )
         )
         val fileMover = Mockito.mock(FileMover::class.java)
-        Mockito.`when`(fileMover.listPath(Path("test", "test2.mp4"))).thenAnswer {
+        Mockito.`when`(fileMover.listFiles(Path("test", "test2.mp4"))).thenAnswer {
             listOf(
                 Path("test", "test1.mkv"),
                 Path("test", "test1.mp4")

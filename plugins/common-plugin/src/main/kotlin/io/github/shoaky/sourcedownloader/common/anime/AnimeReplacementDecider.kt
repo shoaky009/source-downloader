@@ -11,7 +11,7 @@ object AnimeReplacementDecider : FileReplacementDecider {
 
     private val versionRegex = Regex("\\[\\d{0,4}(?i)v(\\d+)]")
 
-    override fun isReplace(current: ItemContent, before: ItemContent?, existingFile: SourceFile): Boolean {
+    override fun shouldReplace(current: ItemContent, before: ItemContent?, existingFile: SourceFile): Boolean {
         val title = current.sourceItem.title
         val currentItemRating = Rating.from(title)
         if (before == null) {

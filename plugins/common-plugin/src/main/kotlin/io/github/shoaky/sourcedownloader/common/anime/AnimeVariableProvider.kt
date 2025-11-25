@@ -192,7 +192,7 @@ class AnimeVariableProvider(
         return searchCache.get(text)
     }
 
-    override fun primary(): String {
+    override fun primaryVariableName(): String {
         return "nativeName"
     }
 

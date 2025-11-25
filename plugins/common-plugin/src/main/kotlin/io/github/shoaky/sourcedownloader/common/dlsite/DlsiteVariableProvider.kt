@@ -113,7 +113,7 @@ class DlsiteVariableProvider(
         return cache.get(WorkRequest(keyword = text)).getOrNull()
     }
 
-    override fun primary(): String {
+    override fun primaryVariableName(): String {
         return "title"
     }
 

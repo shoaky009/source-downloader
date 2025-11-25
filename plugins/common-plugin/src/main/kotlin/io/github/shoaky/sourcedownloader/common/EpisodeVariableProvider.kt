@@ -108,7 +108,7 @@ object EpisodeVariableProvider : VariableProvider {
         }
     }
 
-    override fun primary(): String {
+    override fun primaryVariableName(): String {
         return "episode"
     }
 }

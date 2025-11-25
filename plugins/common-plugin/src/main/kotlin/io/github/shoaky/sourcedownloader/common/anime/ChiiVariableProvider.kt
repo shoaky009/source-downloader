@@ -31,7 +31,7 @@ class ChiiVariableProvider(
         return request(text)
     }
 
-    override fun primary(): String {
+    override fun primaryVariableName(): String {
         return "subjectName"
     }
 }

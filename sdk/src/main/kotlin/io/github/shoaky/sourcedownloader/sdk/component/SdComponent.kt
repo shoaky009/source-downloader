@@ -161,7 +161,7 @@ interface VariableProvider : SdComponent {
      *
      * @experimental not sure is it good?
      */
-    fun primary(): String?
+    fun primaryVariableName(): String?
 }
 
 /**
@@ -217,7 +217,7 @@ interface FileMover : SdComponent {
      * @param path the path to be listed
      * @return The absolute paths in the directory
      */
-    fun listPath(path: Path): List<Path> {
+    fun listFiles(path: Path): List<Path> {
         if (path.notExists()) {
             return emptyList()
         }
@@ -309,7 +309,7 @@ interface FileReplacementDecider : SdComponent {
      * [SourceFile.attrs] contains the file metadata 'size' 'lastModifiedTime' 'creationTime'.
      * @return true if the current [ItemContent] should replace
      */
-    fun isReplace(current: ItemContent, before: ItemContent?, existingFile: SourceFile): Boolean
+    fun shouldReplace(current: ItemContent, before: ItemContent?, existingFile: SourceFile): Boolean
 
 }
 

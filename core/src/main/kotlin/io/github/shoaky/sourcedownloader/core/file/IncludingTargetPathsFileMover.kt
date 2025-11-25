@@ -34,9 +34,9 @@ class IncludingTargetPathsFileMover(
         }
     }
 
-    override fun listPath(path: Path): List<Path> {
+    override fun listFiles(path: Path): List<Path> {
         val paths = preoccupiedTargetPaths.prefixMap(path.parent.toString()).values.map { it.path }
-        val listPath = fileMover.listPath(path)
+        val listPath = fileMover.listFiles(path)
         return (listPath + storage.findSubPaths(path).map { it.targetPath } + paths).distinct()
     }
 
