@@ -9,11 +9,8 @@ import io.github.shoaky.sourcedownloader.sdk.component.Downloader
 import io.github.shoaky.sourcedownloader.sdk.http.StatusCodes
 import io.github.shoaky.sourcedownloader.sdk.util.http.httpClient
 import io.github.shoaky.sourcedownloader.sdk.util.readableRate
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.*
 import kotlinx.coroutines.future.asDeferred
-import kotlinx.coroutines.job
-import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
@@ -36,23 +33,16 @@ class HttpDownloader(
 ) : Downloader, ComponentStateful {
 
     private val progresses: MutableMap<Path, Downloading> = ConcurrentHashMap()
-
-    // private val dispatcher: CoroutineDispatcher = Dispatchers.IO.limitedParallelism(parallelism)
+    private val dispatcher: CoroutineDispatcher = Dispatchers.IO.limitedParallelism(parallelism)
 
     override fun submit(task: DownloadTask): Boolean {
-        runBlocking {
+        runBlocking(dispatcher) {
             task.downloadFiles.forEach {
-                downloadSourceFile(it, task.options.headers)
+                launch {
+                    downloadSourceFile(it, task.options.headers)
+                }
             }
         }
-
-        // runBlocking(dispatcher) {
-        //     task.downloadFiles.forEach {
-        //         launch {
-        //             downloadSourceFile(it, task.options.headers)
-        //         }
-        //     }
-        // }
         return true
     }
 
