@@ -1071,9 +1071,7 @@ class SourceProcessor(
                     this.onProcessCompleted(processContext)
                 }
             }
-            if (options.pointerBatchMode) {
-                saveSourceState()
-            } else if (processContext.processedItems().isEmpty()) {
+            if (options.pointerBatchMode || processContext.processedItems().isEmpty()) {
                 saveSourceState()
             }
         }

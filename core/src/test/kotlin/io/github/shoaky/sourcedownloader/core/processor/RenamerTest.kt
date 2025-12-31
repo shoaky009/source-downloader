@@ -32,6 +32,7 @@ class RenamerTest {
         val raw = createRawFileContent()
         val content = defaultRenamer.createFileContent(sourceItem(), raw, RenameVariables.EMPTY)
         assertEquals("1.txt", content.targetFilename)
+        assertEquals(sourceSavePath.resolve("1.txt"), content.targetPath())
     }
 
     @Test
@@ -40,8 +41,7 @@ class RenamerTest {
             filenamePattern = CorePathPattern("2")
         )
         val content = defaultRenamer.createFileContent(sourceItem(), raw, RenameVariables.EMPTY)
-        val targetFilename = content.targetFilename()
-        assertEquals("2.txt", targetFilename)
+        assertEquals(sourceSavePath.resolve(Path("2", "3.txt")), content.targetPath())
     }
 
     @Test
@@ -53,25 +53,6 @@ class RenamerTest {
         val content = defaultRenamer.createFileContent(sourceItem(), raw, RenameVariables.EMPTY)
         val targetFilename = content.targetFilename()
         assertEquals("2022-01-01 - 2.txt", targetFilename)
-    }
-
-    @Test
-    fun given_empty_should_target_expected() {
-        val raw = createRawFileContent()
-        val content = defaultRenamer.createFileContent(sourceItem(), raw, RenameVariables.EMPTY)
-        val targetFilePath = content.targetPath()
-        assertEquals(sourceSavePath.resolve("1.txt"), targetFilePath)
-    }
-
-    @Test
-    fun given_constant_should_target_expected() {
-        val raw = createRawFileContent(
-            savePathPattern = CorePathPattern("2"),
-            filenamePattern = CorePathPattern("3")
-        )
-        val content = defaultRenamer.createFileContent(sourceItem(), raw, RenameVariables.EMPTY)
-        val targetFilePath = content.targetPath()
-        assertEquals(sourceSavePath.resolve(Path("2", "3.txt")), targetFilePath)
     }
 
     @Test
