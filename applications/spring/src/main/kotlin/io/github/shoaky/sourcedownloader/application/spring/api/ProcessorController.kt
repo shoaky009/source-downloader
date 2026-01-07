@@ -79,7 +79,7 @@ private class ProcessorController(
      * @param processorName Processor名称
      */
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @GetMapping("/{processorName}/reload")
+    @PostMapping("/{processorName}/reload")
     fun reload(@PathVariable processorName: String) {
         processorService.reload(processorName)
     }

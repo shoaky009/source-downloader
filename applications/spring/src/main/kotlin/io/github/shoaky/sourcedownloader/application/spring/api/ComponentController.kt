@@ -66,7 +66,7 @@ private class ComponentController(
      * @param typeName Component类型名称
      * @param name Component名称
      */
-    @GetMapping("/{type}/{typeName}/{name}/reload")
+    @PostMapping("/{type}/{typeName}/{name}/reload")
     fun reload(
         @PathVariable type: ComponentRootType,
         @PathVariable typeName: String,
