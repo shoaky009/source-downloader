@@ -7,7 +7,7 @@ import io.github.shoaky.sourcedownloader.sdk.util.JoinStringSerializer
 
 class PostRequest(
     postId: Long,
-    @JsonSerialize(using = JoinStringSerializer::class)
+    @param:JsonSerialize(using = JoinStringSerializer::class)
     val include: List<String> = mediaInclude,
 ) : PatreonRequest<PostResponse>() {
 

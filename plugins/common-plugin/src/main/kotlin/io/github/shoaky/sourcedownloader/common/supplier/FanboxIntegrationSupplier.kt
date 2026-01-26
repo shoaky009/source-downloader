@@ -13,11 +13,11 @@ object FanboxIntegrationSupplier : ComponentSupplier<FanboxIntegration> {
 
     override fun apply(context: CoreContext, props: Properties): FanboxIntegration {
         val headers = props.getOrNull<Map<String, String>>("headers")
-        // cf_clearance=xxx
+        // FANBOXSESSID=xxx;
         val cookie: String = props.get("cookie")
         val client = headers?.let {
-            FanboxClient(props.get("session-id"), headers = it, cookie = cookie)
-        } ?: FanboxClient(props.get("session-id"), cookie = cookie)
+            FanboxClient(headers = it, cookie = cookie)
+        } ?: FanboxClient(cookie = cookie)
 
         return FanboxIntegration(client, props.getOrNull("mode"))
     }
@@ -34,12 +34,8 @@ object FanboxIntegrationSupplier : ComponentSupplier<FanboxIntegration> {
             "Fanbox",
             JsonSchema(
                 type = "object",
-                required = listOf("cookie", "session-id"),
+                required = listOf("cookie"),
                 properties = mapOf(
-                    "session-id" to JsonSchema(
-                        type = "string",
-                        description = "Session ID for Fanbox API"
-                    ),
                     "headers" to JsonSchema(
                         type = "object",
                         description = "Headers for Fanbox API",
@@ -49,7 +45,7 @@ object FanboxIntegrationSupplier : ComponentSupplier<FanboxIntegration> {
                     ),
                     "cookie" to JsonSchema(
                         type = "string",
-                        description = "cf_clearance cookie"
+                        description = "FANBOXSESSID cookie"
                     ),
                     "mode" to JsonSchema(
                         type = "string",

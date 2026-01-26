@@ -41,7 +41,7 @@ class ListenerConfigDeserializer : StdDeserializer<ListenerConfig>(ListenerConfi
             throw IllegalArgumentException("不支持的格式 $node")
         }
 
-        val firstNode = node.fields().next()
+        val firstNode = node.properties().first()
         return ListenerConfig(
             ComponentId(firstNode.key),
             ListenerMode.valueOf(firstNode.value.asText())

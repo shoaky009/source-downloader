@@ -11,7 +11,7 @@ data class SearchTvShow(
     val query: String,
     val language: String = "ja-jp",
     val page: Int = 1,
-    @JsonProperty("include_adult")
+    @param:JsonProperty("include_adult")
     val includeAdult: Boolean = true
 ) : BaseRequest<PageResult<SearchResult>>() {
 

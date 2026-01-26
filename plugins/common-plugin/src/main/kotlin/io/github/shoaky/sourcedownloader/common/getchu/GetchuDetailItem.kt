@@ -10,6 +10,6 @@ data class GetchuDetailItem(
     val title: String? = null,
     val isbn: String? = null,
     val brand: String? = null,
-    @JsonSerialize(using = ToStringSerializer::class)
+    @param:JsonSerialize(using = ToStringSerializer::class)
     val releaseDate: LocalDate? = null
 ) : PatternVariables

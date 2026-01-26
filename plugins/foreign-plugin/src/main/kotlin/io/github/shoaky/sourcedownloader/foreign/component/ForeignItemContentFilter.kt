@@ -8,7 +8,7 @@ class ForeignItemContentFilter(
     private val client: ForeignStateClient,
 ) : ItemContentFilter {
 
-    override fun test(t: ItemContent): Boolean {
+    override fun test(content: ItemContent): Boolean {
         TODO("Not yet implemented")
     }
 }

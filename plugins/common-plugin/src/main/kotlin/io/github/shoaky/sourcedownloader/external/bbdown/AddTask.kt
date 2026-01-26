@@ -8,21 +8,21 @@ import io.github.shoaky.sourcedownloader.common.bilibili.BbDownOptions
 import io.github.shoaky.sourcedownloader.sdk.http.BaseRequest
 
 data class AddTask(
-    @JsonProperty("Url")
+    @param:JsonProperty("Url")
     val url: String,
-    @JsonProperty("Cookie")
+    @param:JsonProperty("Cookie")
     val cookie: String? = null,
-    @JsonProperty("FilePattern")
+    @param:JsonProperty("FilePattern")
     val filePattern: String? = null,
-    @JsonProperty("WorkDir")
+    @param:JsonProperty("WorkDir")
     val workDir: String? = null,
-    @JsonProperty("SelectPage")
+    @param:JsonProperty("SelectPage")
     val selectPage: String? = null,
-    @JsonProperty("MultiFilePattern")
+    @param:JsonProperty("MultiFilePattern")
     val multiFilePattern: String? = null,
-    @JsonProperty("DfnPriority")
+    @param:JsonProperty("DfnPriority")
     val dfnPriority: String? = null,
-    @JsonProperty("DownloadDanmaku ")
+    @param:JsonProperty("DownloadDanmaku ")
     val downloadDanmaku: Boolean? = null,
 ) : BaseRequest<String>() {
 

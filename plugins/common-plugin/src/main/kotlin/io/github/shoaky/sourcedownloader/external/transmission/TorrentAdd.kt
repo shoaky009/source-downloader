@@ -13,6 +13,7 @@ class TorrentAdd(
     private val filesUnwanted: List<Int> = emptyList(),
     private val filesWanted: List<Int> = emptyList(),
 ) : TransmissionRequest<TorrentAddResponse>() {
+
     override val method: String = "torrent-add"
     override val arguments: Map<String, Any> = buildMap {
         put("filename", filename)
@@ -26,11 +27,12 @@ class TorrentAdd(
 }
 
 data class TorrentAddResponse(
-    @JsonProperty("torrent-added")
+    @param:JsonProperty("torrent-added")
     val torrentAdded: TorrentIdInfo? = null,
-    @JsonProperty("torrent-duplicate")
+    @param:JsonProperty("torrent-duplicate")
     val torrentDuplicate: TorrentIdInfo? = null,
 ) {
+
     fun getHash(): String {
         return torrentAdded?.hashString
             ?: torrentDuplicate?.hashString

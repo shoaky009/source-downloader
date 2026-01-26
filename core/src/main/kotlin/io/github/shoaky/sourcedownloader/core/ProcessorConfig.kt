@@ -56,7 +56,7 @@ data class ProcessorConfig(
         val fileContentExpressionExclusions: List<String> = emptyList(),
         val fileContentExpressionInclusions: List<String> = emptyList(),
         val processListeners: List<ListenerConfig> = emptyList(),
-        @JsonFormat(shape = JsonFormat.Shape.STRING)
+        @param:JsonFormat(shape = JsonFormat.Shape.STRING)
         val renameTaskInterval: Duration = Duration.ofMinutes(5),
         val renameTimesThreshold: Int = 3,
         val saveProcessingContent: Boolean = true,

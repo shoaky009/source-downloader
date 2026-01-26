@@ -26,7 +26,7 @@ data class GetSeasonDetail(
 data class SeasonDetail(
     val id: Long,
     val name: String,
-    @JsonProperty("season_number")
+    @param:JsonProperty("season_number")
     val seasonNumber: Int,
     val episodes: List<Episode>
 )
@@ -34,6 +34,6 @@ data class SeasonDetail(
 data class Episode(
     val id: Long,
     val name: String,
-    @JsonProperty("episode_number")
+    @param:JsonProperty("episode_number")
     val episodeNumber: Int
 )

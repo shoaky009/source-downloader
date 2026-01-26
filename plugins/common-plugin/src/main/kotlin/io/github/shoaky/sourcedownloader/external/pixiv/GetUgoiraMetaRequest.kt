@@ -20,6 +20,6 @@ class GetUgoiraMetaRequest(
 data class Ugoira(
     val src: URI,
     val originalSrc: URI,
-    @JsonProperty("mime_type")
+    @param:JsonProperty("mime_type")
     val mimeType: String,
 )

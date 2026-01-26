@@ -26,9 +26,9 @@ data class PostsResponse(
 }
 
 data class User(
-    @JsonProperty("full_name")
+    @param:JsonProperty("full_name")
     val fullName: String,
-    @JsonProperty("first_name")
+    @param:JsonProperty("first_name")
     val firstName: String
 )
 
@@ -41,6 +41,7 @@ data class Media(
     val size: Long? = null,
     val metadata: JsonNode? = null,
 ) {
+
     fun resolveFilename(): String {
         if (!filename.startsWith("http")) {
             return filename

@@ -9,13 +9,13 @@ object DoujinTitleTrimmer : Trimmer {
 
     private val after = listOf("。")
 
-    override fun trim(value: String, expectLength: Int): String {
+    override fun trim(value: String, expectSize: Int): String {
         val br1Regex = Regex("""【[^【】]*】""")
         var result = value
         val matches = br1Regex.findAll(value).map { it.value }
         for (match in matches) {
             result = result.replace(match, "")
-            if (result.length <= expectLength) {
+            if (result.length <= expectSize) {
                 return result
             }
         }
@@ -24,7 +24,7 @@ object DoujinTitleTrimmer : Trimmer {
             val index = result.indexOf(a)
             if (index != -1) {
                 result = result.substring(0, index)
-                if (result.length <= expectLength) {
+                if (result.length <= expectSize) {
                     return result
                 }
             }

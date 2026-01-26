@@ -7,6 +7,6 @@ data class DownloadInfo(
     val url: String,
     val title: String,
     val type: String,
-    @JsonProperty("percent_complete")
+    @param:JsonProperty("percent_complete")
     val percentComplete: Double
 )

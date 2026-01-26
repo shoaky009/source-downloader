@@ -7,7 +7,7 @@ import com.google.common.net.MediaType
 import io.github.shoaky.sourcedownloader.sdk.http.BaseRequest
 
 class GetFavorites(
-    @JsonProperty("media_id")
+    @param:JsonProperty("media_id")
     val mediaId: Long,
     val pn: Int = 1,
     val ps: Int = 20,
@@ -24,6 +24,6 @@ class GetFavorites(
 
 data class FavoritesResponse(
     val medias: List<Media>,
-    @JsonProperty("has_more")
+    @param:JsonProperty("has_more")
     val hasMore: Boolean
 )

@@ -35,8 +35,8 @@ class ProcessingContentHandlers(
             }.takeIf { it.isNotEmpty() }
             val id = ctx.request().params().getAll("id").map { it.toLong() }.takeIf { it.isNotEmpty() }
             val itemHash = ctx.request().getParam("itemHash")
-            val createTimeBegin = ctx.request().getParam("createTime.begin")
-            val createTimeEnd = ctx.request().getParam("createTime.end")
+            val createTimeBegin = ctx.request().getParam("createTime.begin", "")
+            val createTimeEnd = ctx.request().getParam("createTime.end", "")
             val itemTitle = ctx.request().getParam("item.title")
             // val itemAttrs = ctx.request().getParam("item.attrs")
             // val itemVariables = ctx.request().getParam("item.variables")
@@ -50,8 +50,8 @@ class ProcessingContentHandlers(
                     id,
                     itemHash,
                     RangeCondition(
-                        createTimeBegin?.let { LocalDateTime.parse(it) },
-                        createTimeEnd?.let { LocalDateTime.parse(it) }
+                        createTimeBegin.takeIf { it.isNotEmpty() }?.let { LocalDateTime.parse(it) },
+                        createTimeEnd.takeIf { it.isNotEmpty() }?.let { LocalDateTime.parse(it) }
                     ),
                     ItemCondition(
                         title = itemTitle,

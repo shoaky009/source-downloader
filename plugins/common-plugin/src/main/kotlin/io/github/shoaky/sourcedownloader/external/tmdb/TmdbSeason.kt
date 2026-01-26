@@ -4,6 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty
 
 data class TmdbSeason(
     val name: String,
-    @JsonProperty("season_number")
+    @param:JsonProperty("season_number")
     val seasonNumber: Int,
 )

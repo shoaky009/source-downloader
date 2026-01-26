@@ -10,7 +10,7 @@ import java.net.URL
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 class TorrentsAddRequest(
     urlList: List<URL>,
-    @JsonProperty("savepath")
+    @param:JsonProperty("savepath")
     val savePath: String? = null,
     val category: String? = null,
     val paused: Boolean = false,

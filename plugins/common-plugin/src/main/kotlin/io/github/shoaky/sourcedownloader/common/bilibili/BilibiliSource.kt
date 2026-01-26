@@ -19,7 +19,6 @@ import java.time.ZoneId
 class BilibiliSource(
     private val client: BilibiliClient = BilibiliClient(),
     private val favorites: List<Long> = emptyList(),
-    // private val uppers: List<Long> = emptyList()
 ) : Source<BilibiliPointer> {
 
     override fun fetch(pointer: BilibiliPointer, limit: Int): Iterable<PointedItem<ItemPointer>> {

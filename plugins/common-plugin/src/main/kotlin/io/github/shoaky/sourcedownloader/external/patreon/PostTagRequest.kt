@@ -14,7 +14,7 @@ class PostTagRequest(
 }
 
 data class PostTag(
-    @JsonProperty("tag_type")
+    @param:JsonProperty("tag_type")
     val tagType: String,
     val value: String
 )

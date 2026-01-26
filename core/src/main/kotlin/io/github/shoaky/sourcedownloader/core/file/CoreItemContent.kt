@@ -13,9 +13,9 @@ import kotlin.io.path.name
 
 data class CoreItemContent(
     override val sourceItem: SourceItem,
-    @JsonAlias("sourceFiles")
+    @param:JsonAlias("sourceFiles")
     override val fileContents: List<CoreFileContent>,
-    @JsonAlias("sharedPatternVariables")
+    @param:JsonAlias("sharedPatternVariables")
     override val itemVariables: MapPatternVariables
 ) : ItemContent {
 

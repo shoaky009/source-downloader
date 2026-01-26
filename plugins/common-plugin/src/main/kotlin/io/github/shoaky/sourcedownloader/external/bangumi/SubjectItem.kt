@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 data class SubjectItem(
     val id: Long,
     val name: String,
-    @JsonProperty("name_cn")
+    @param:JsonProperty("name_cn")
     val nameCn: String,
     val url: String,
 )

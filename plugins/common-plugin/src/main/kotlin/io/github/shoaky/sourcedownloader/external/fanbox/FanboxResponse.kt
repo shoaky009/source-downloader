@@ -39,7 +39,7 @@ data class Post(
     val isLiked: Boolean,
     val user: User,
     val feeRequired: Int,
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX", timezone = "Asia/Tokyo")
+    @param:JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX", timezone = "Asia/Tokyo")
     val publishedDatetime: LocalDateTime,
     val hasAdultContent: Boolean,
     val tags: List<String> = emptyList(),
@@ -56,7 +56,7 @@ data class PostDetail(
     val isLiked: Boolean,
     val user: User,
     val feeRequired: Int,
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX", timezone = "Asia/Tokyo")
+    @param:JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX", timezone = "Asia/Tokyo")
     val publishedDatetime: LocalDateTime,
     val hasAdultContent: Boolean,
     val tags: List<String> = emptyList(),

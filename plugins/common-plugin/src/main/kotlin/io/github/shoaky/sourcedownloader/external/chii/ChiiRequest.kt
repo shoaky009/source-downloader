@@ -50,9 +50,9 @@ data class QuerySubjectSearch(
 
 data class SubjectResultItem(
     val id: String,
-    @JsonDeserialize(using = UnescapeHtmlDeserializer::class)
+    @param:JsonDeserialize(using = UnescapeHtmlDeserializer::class)
     val name: String,
-    @JsonProperty("nameCN")
-    @JsonDeserialize(using = UnescapeHtmlDeserializer::class)
+    @param:JsonProperty("nameCN")
+    @param:JsonDeserialize(using = UnescapeHtmlDeserializer::class)
     val nameCn: String,
 )

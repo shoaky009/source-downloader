@@ -13,12 +13,12 @@ data class Title(
 )
 
 data class Page(
-    @JsonProperty("media")
+    @param:JsonProperty("media")
     val medias: List<Media> = emptyList()
 )
 
 data class PageResponse(
-    @JsonProperty("Page")
+    @param:JsonProperty("Page")
     val page: Page,
 )
 

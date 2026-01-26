@@ -7,13 +7,13 @@ import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import io.github.shoaky.sourcedownloader.sdk.util.JoinStringSerializer
 
 class PledgeRequest(
-    @JsonSerialize(using = JoinStringSerializer::class)
+    @param:JsonSerialize(using = JoinStringSerializer::class)
     val include: List<String> = listOf("campaign"),
-    @JsonProperty("fields[campaign]")
-    @JsonSerialize(using = JoinStringSerializer::class)
+    @param:JsonProperty("fields[campaign]")
+    @param:JsonSerialize(using = JoinStringSerializer::class)
     val campaignFields: List<String> = listOf("name"),
-    @JsonProperty("fields[reward]")
-    @JsonSerialize(using = JoinStringSerializer::class)
+    @param:JsonProperty("fields[reward]")
+    @param:JsonSerialize(using = JoinStringSerializer::class)
     val rewardFields: List<String> = listOf("id"),
 ) : PatreonRequest<PledgeResponse>() {
 
@@ -39,7 +39,7 @@ data class Pledge(
 )
 
 data class PledgeAttrs(
-    @JsonProperty("amount_cents")
+    @param:JsonProperty("amount_cents")
     val amountCents: Int,
     val currency: String,
 )

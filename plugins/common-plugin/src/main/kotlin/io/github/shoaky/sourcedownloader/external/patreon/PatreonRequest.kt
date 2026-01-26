@@ -8,7 +8,7 @@ import io.github.shoaky.sourcedownloader.sdk.util.http.CommonBodyMapper
 import io.github.shoaky.sourcedownloader.sdk.util.http.JsonBodyMapper
 
 abstract class PatreonRequest<T : Any>(
-    @JsonProperty("json-api-version")
+    @param:JsonProperty("json-api-version")
     val jsonApiVersion: String = "1.0"
 ) : BaseRequest<T>() {
 

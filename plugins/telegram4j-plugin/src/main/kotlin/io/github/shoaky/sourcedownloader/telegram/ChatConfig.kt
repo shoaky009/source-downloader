@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonAlias
 import java.time.LocalDate
 
 data class ChatConfig(
-    @JsonAlias("chat-id")
+    @param:JsonAlias("chat-id")
     val chatId: Long,
-    @JsonAlias("begin-date")
+    @param:JsonAlias("begin-date")
     val beginDate: LocalDate? = null
 )

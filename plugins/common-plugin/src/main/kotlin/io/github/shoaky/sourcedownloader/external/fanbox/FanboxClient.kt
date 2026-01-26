@@ -8,13 +8,12 @@ import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 
 class FanboxClient(
-    private val sessionId: String,
-    private val cookie: String? = null,
+    private val cookie: String,
     private val userAgent: String = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
     val server: URI = URI("https://api.fanbox.cc"),
     val headers: Map<String, String> = mapOf(
         // cf_clearance=xxxxxxxxx
-        HttpHeaders.COOKIE to "FANBOXSESSID=$sessionId; $cookie",
+        HttpHeaders.COOKIE to cookie,
         HttpHeaders.ORIGIN to "https://www.fanbox.cc",
         HttpHeaders.REFERER to "https://www.fanbox.cc/",
         // "sec-ch-ua" to """Not/A)Brand";v="8", "Chromium";v="126", "Google Chrome";v="126"""",

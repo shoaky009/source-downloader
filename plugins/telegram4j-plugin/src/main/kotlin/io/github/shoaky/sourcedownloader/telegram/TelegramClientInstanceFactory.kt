@@ -181,17 +181,17 @@ class TelegramClientWrapper(
 internal val log = LoggerFactory.getLogger("Telegram4j")
 
 data class ClientConfig(
-    @JsonAlias("api-id")
+    @param:JsonAlias("api-id")
     val apiId: Int,
-    @JsonAlias("api-hash")
+    @param:JsonAlias("api-hash")
     val apiHash: String,
-    @JsonAlias("metadata-path")
+    @param:JsonAlias("metadata-path")
     val metadataPath: Path,
     val proxy: URI?,
     val debug: Boolean = false,
-    @JsonAlias("ping-interval")
+    @param:JsonAlias("ping-interval")
     val pingInterval: Long = 30L,
-    @JsonAlias("reconnection-interval")
+    @param:JsonAlias("reconnection-interval")
     val reconnectionInterval: Long = 15L,
     val timeout: Long = 5L,
 )

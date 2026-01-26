@@ -31,7 +31,7 @@ class DlsiteClient(
             ?: (document.select("link[rel=canonical]").attr("href").find(*idRegexes)
                 ?: throw IllegalArgumentException("Can't find dlsiteId in document element 'link[rel=canonical]'"))
 
-        val locale = document.root().children().attr("lang") ?: JA_JP
+        val locale = document.root().children().attr("lang").takeIf { it.isNotEmpty() } ?: JA_JP
         val workOutline = document.getElementById("work_outline")?.select("tbody tr")
             ?.associateBy(
                 { it.firstElementChild()?.text()?.trim() },
@@ -130,12 +130,12 @@ data class SuggestResponse(
 )
 
 data class SuggestWork(
-    @JsonProperty("work_name")
+    @param:JsonProperty("work_name")
     val workName: String,
-    @JsonProperty("workno")
+    @param:JsonProperty("workno")
     val workNo: String,
-    @JsonProperty("maker_name")
+    @param:JsonProperty("maker_name")
     val markerName: String? = null,
-    @JsonProperty("work_type")
+    @param:JsonProperty("work_type")
     val workType: String? = null
 )

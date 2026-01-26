@@ -12,14 +12,14 @@ data class Media(
     val duration: Long,
     val upper: Upper,
     val attr: Int,
-    @JsonProperty("cnt_info")
+    @param:JsonProperty("cnt_info")
     val cntInfo: CntInfo,
     val link: URI,
     val ctime: Long,
     val pubtime: Long,
-    @JsonProperty("fav_time")
+    @param:JsonProperty("fav_time")
     val favTime: Long,
-    @JsonProperty("bv_id")
+    @param:JsonProperty("bv_id")
     val bvId: String
 )
 

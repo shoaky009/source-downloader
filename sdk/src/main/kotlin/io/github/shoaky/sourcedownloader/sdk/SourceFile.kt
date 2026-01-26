@@ -15,7 +15,7 @@ data class SourceFile @JvmOverloads constructor(
      * From [ItemFileResolver], it's a relative path.
      * In the context of submitting a task, it's an absolute path.
      */
-    @JsonSerialize(using = ToStringSerializer::class)
+    @param:JsonSerialize(using = ToStringSerializer::class)
     val path: Path,
     /**
      * The attributes of the file.
@@ -24,7 +24,7 @@ data class SourceFile @JvmOverloads constructor(
     /**
      * The URI of the file, provided for use by a downloader, but the specifics depend on the implementation of the downloader.
      */
-    @JsonAlias("fileUri")
+    @param:JsonAlias("fileUri")
     val downloadUri: URI? = null,
     /**
      * The tags of the file.

@@ -668,7 +668,7 @@ class SourceProcessor(
                         }
 
                         try {
-                            onItemCompleted(processingContent)
+                            onProcessItemCompleted(processingContent)
                             log.trace("Processor:'{}' finished process item:{}", name, pointed)
                             releasePaths(processingContent)
                         } finally {
@@ -969,7 +969,7 @@ class SourceProcessor(
 
         open fun onProcessCompleted(processContext: ProcessContext) {}
 
-        open fun onItemCompleted(processingContent: ProcessingContent) {}
+        open fun onProcessItemCompleted(processingContent: ProcessingContent) {}
 
         open fun onItemSuccess(item: PointedItem<ItemPointer>, processingContent: ProcessingContent) {}
 
@@ -1076,7 +1076,7 @@ class SourceProcessor(
             }
         }
 
-        override fun onItemCompleted(processingContent: ProcessingContent) {
+        override fun onProcessItemCompleted(processingContent: ProcessingContent) {
             if (options.saveProcessingContent) {
                 // 后面优化
                 if (processingContent.status == FILTERED) {
@@ -1179,7 +1179,7 @@ class SourceProcessor(
             return super.selectItemFilters().filter { it !is SourceItemIdentityFilter }
         }
 
-        override fun onItemCompleted(processingContent: ProcessingContent) {
+        override fun onProcessItemCompleted(processingContent: ProcessingContent) {
             result.add(processingContent)
         }
 
@@ -1198,7 +1198,7 @@ class SourceProcessor(
 
         private val resultStream: Channel<ProcessingContent> = Channel()
 
-        override fun onItemCompleted(processingContent: ProcessingContent) {
+        override fun onProcessItemCompleted(processingContent: ProcessingContent) {
             runBlocking {
                 resultStream.send(processingContent)
             }
@@ -1220,7 +1220,7 @@ class SourceProcessor(
             PointedItem(it, NullPointer)
         }) {
 
-        override fun onItemCompleted(processingContent: ProcessingContent) {
+        override fun onProcessItemCompleted(processingContent: ProcessingContent) {
             if (options.saveProcessingContent) {
                 processingStorage.save(processingContent)
             }
@@ -1237,7 +1237,7 @@ class SourceProcessor(
             return processingContent.copy(id = content.id, processorName = name, renameTimes = 0)
         }
 
-        override fun onItemCompleted(processingContent: ProcessingContent) {
+        override fun onProcessItemCompleted(processingContent: ProcessingContent) {
             var contentToSave = processingContent
             if (options.saveProcessingContent) {
                 if (processingContent.id == null) {

@@ -6,7 +6,7 @@ class RegexTrimmer(
     val regex: Regex
 ) : Trimmer {
 
-    override fun trim(value: String, expectLength: Int): String {
+    override fun trim(value: String, expectSize: Int): String {
         return value.replace(regex, "")
     }
 }

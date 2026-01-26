@@ -12,8 +12,8 @@ import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.RoutingContext
 import kotlinx.coroutines.cancelChildren
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.onStart
-import kotlin.coroutines.coroutineContext
 
 class ComponentEndpointHandlers(
     private val componentService: ComponentService
@@ -22,7 +22,7 @@ class ComponentEndpointHandlers(
     fun queryComponents(): Handler<RoutingContext> {
         return createRouteHandler { ctx ->
             val request = ctx.request()
-            val type = request.getParam("type")?.let { ComponentRootType.valueOf(it.uppercase()) }
+            val type = request.getParam("type").rootType()
             val typeName = request.getParam("typeName")
             val name = request.getParam("name")
             val data = componentService.queryComponents(type, typeName, name)
@@ -71,7 +71,7 @@ class ComponentEndpointHandlers(
 
     fun stateDetailStream(): suspend (RoutingContext) -> Unit {
         return createRouteCoHandler { ctx ->
-            val coroutineContext = coroutineContext
+            val coroutineContext = currentCoroutineContext()
             val id = ctx.request().params().getAll("id").toSet()
             val response = ctx.response()
                 .closeHandler {
@@ -101,7 +101,7 @@ class ComponentEndpointHandlers(
 
     fun getTypes(): Handler<RoutingContext> {
         return createRouteHandler { ctx ->
-            val type = ctx.request().getParam("type")?.let { ComponentRootType.valueOf(it.uppercase()) }
+            val type = ctx.request().getParam("type").rootType()
             componentService.getTypes(type)
             ctx.response().end()
         }
@@ -109,7 +109,8 @@ class ComponentEndpointHandlers(
 
     fun getSchema(): Handler<RoutingContext> {
         return createRouteHandler { ctx ->
-            val type = ctx.request().getParam("type").let { ComponentRootType.valueOf(it.uppercase()) }
+            val type = ctx.request().getParam("type").rootType()
+                ?: throw IllegalArgumentException("")
             val typeName = ctx.request().getParam("typeName")
             val data = componentService.getSchema(type, typeName)
             ctx.response().end(
@@ -118,4 +119,13 @@ class ComponentEndpointHandlers(
         }
     }
 
+    companion object {
+
+        fun String?.rootType(): ComponentRootType? {
+            if (this.isNullOrEmpty()) {
+                return null
+            }
+            return ComponentRootType.valueOf(this.uppercase())
+        }
+    }
 }

@@ -14,9 +14,9 @@ data class ChatCompletion(
     val model: String = "gpt-3.5-turbo",
     val temperature: Double = 0.85,
     val stream: Boolean = false,
-    @JsonProperty("max_tokens")
+    @param:JsonProperty("max_tokens")
     val maxTokens: Int? = null,
-    @JsonProperty("response_format")
+    @param:JsonProperty("response_format")
     val responseFormat: Map<String, Any> = mapOf("type" to "json_object")
 ) : BaseRequest<ChatResponse>() {
 
@@ -58,7 +58,7 @@ data class ChatResponse(
 
 data class Choice(
     val message: ChatMessage,
-    @JsonProperty("finish_reason")
+    @param:JsonProperty("finish_reason")
     val finishReason: String,
     val index: Int
 )

@@ -26,27 +26,27 @@ data class Post(
 
 data class PostAttrs(
     val content: String? = null,
-    @JsonProperty("current_user_can_view")
+    @param:JsonProperty("current_user_can_view")
     val currentUserCanView: Boolean,
     val embed: Any? = null,
     val image: Any? = null,
-    @JsonProperty("is_paid")
+    @param:JsonProperty("is_paid")
     val isPaid: Boolean,
-    @JsonProperty("meta_image_url")
+    @param:JsonProperty("meta_image_url")
     val metaImageUrl: URI? = null,
-    @JsonProperty("patreon_url")
+    @param:JsonProperty("patreon_url")
     val patreonUrl: URI,
-    @JsonProperty("post_file")
+    @param:JsonProperty("post_file")
     val postFile: Any? = null,
-    @JsonProperty("post_type")
+    @param:JsonProperty("post_type")
     val postType: String,
-    @JsonProperty("published_at")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "GMT")
+    @param:JsonProperty("published_at")
+    @param:JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "GMT")
     val publishedAt: OffsetDateTime,
     val thumbnail: Any? = null,
     val title: String,
     val url: URI,
-    @JsonProperty("post_metadata")
+    @param:JsonProperty("post_metadata")
     val postMetadata: JsonNode? = null
 ) {
 

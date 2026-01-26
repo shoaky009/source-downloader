@@ -6,7 +6,7 @@ import com.google.common.net.MediaType
 import io.github.shoaky.sourcedownloader.sdk.http.BaseRequest
 
 class CancelDownload(
-    @JsonProperty("download_uid")
+    @param:JsonProperty("download_uid")
     val downloadUid: String,
 ) : BaseRequest<Any>() {
 
