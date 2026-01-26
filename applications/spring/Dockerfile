@@ -6,7 +6,7 @@ RUN java -Djarmode=layertools -jar application.jar extract
 FROM azul/zulu-openjdk-alpine:25
 VOLUME /tmp
 
-ENV JAVA_OPTS="-Xmx512m -Xms64m -XX:+UnlockExperimentalVMOptions -XX:+UseCompactObjectHeaders"
+ENV JAVA_OPTS="-Xmx512m -Xms64m --enable-native-access=ALL-UNNAMED"
 ENV SPRINGBOOT_OPTS="--spring.profiles.active=production"
 ENV TZ=Asia/Shanghai
 ENV SOURCE_DOWNLOADER_DATA_LOCATION=/app/data/
@@ -24,4 +24,4 @@ COPY --from=builder source-downloader-core/BOOT-INF /app
 COPY --from=builder application/BOOT-INF/classes /app
 COPY --from=builder application/META-INF /app/META-INF
 
-ENTRYPOINT java -cp ".:/app/lib/*:/app/plugins/*:/app/plugins/lib/*" $JAVA_OPTS io.github.shoaky.sourcedownloader.application.spring.SourceDownloaderSpringApplication $SPRINGBOOT_OPTS
+ENTRYPOINT exec java -cp ".:/app/lib/*:/app/plugins/*:/app/plugins/lib/*" $JAVA_OPTS io.github.shoaky.sourcedownloader.application.spring.SourceDownloaderSpringApplication $SPRINGBOOT_OPTS

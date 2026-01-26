@@ -2,16 +2,15 @@ package io.github.shoaky.sourcedownloader.repo.exposed
 
 import io.github.shoaky.sourcedownloader.util.EnumValue
 import io.github.shoaky.sourcedownloader.util.fromValue
-import org.jetbrains.exposed.sql.Column
-import org.jetbrains.exposed.sql.ColumnType
-import org.jetbrains.exposed.sql.Table
-import org.jetbrains.exposed.sql.vendors.currentDialect
+import org.jetbrains.exposed.v1.core.Column
+import org.jetbrains.exposed.v1.core.ColumnType
+import org.jetbrains.exposed.v1.core.Table
+import org.jetbrains.exposed.v1.core.vendors.currentDialect
 import kotlin.reflect.KClass
 
 class EnumColumnType<R, T>(
     private val enumClass: KClass<R>
 ) : ColumnType<R>(true) where R : Enum<R>, R : EnumValue<T> {
-
 
     override fun sqlType(): String {
         val value = enumClass.java.enumConstants.first()

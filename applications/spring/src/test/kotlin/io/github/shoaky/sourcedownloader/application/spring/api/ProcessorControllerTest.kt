@@ -9,8 +9,8 @@ import io.github.shoaky.sourcedownloader.core.ProcessingStorage
 import io.github.shoaky.sourcedownloader.repo.ProcessingQuery
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
@@ -63,7 +63,8 @@ class ProcessorControllerTest {
                     .jsonProvider(JacksonJsonProvider())
                     .mappingProvider(JacksonMappingProvider())
                     .build()
-                val read = JsonPath.parse(mockRes.response.contentAsString, config).read("$.*.fileResults[*].from", object : TypeRef<List<Path>>() {})
+                val read = JsonPath.parse(mockRes.response.contentAsString, config)
+                    .read("$.*.fileResults[*].from", object : TypeRef<List<Path>>() {})
                 assert(read.all { it.notExists() })
             }
         runCatching {

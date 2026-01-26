@@ -19,9 +19,9 @@ spring:
     password: ${spring.datasource.password}
   exposed:
     generate-ddl: false
-  autoconfigure:
-    exclude:
-      - org.springframework.boot.autoconfigure.jdbc.JdbcTemplateAutoConfiguration
+  # autoconfigure:
+  #   exclude:
+  #     - org.springframework.boot.autoconfigure.jdbc.JdbcTemplateAutoConfiguration
   jackson:
     default-property-inclusion: non_null
   threads:

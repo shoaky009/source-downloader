@@ -5,11 +5,10 @@ import io.github.shoaky.sourcedownloader.core.ProcessingStorage
 import io.github.shoaky.sourcedownloader.core.ProcessorSourceState
 import io.github.shoaky.sourcedownloader.core.processor.ProcessingTargetPath
 import io.github.shoaky.sourcedownloader.repo.ProcessingQuery
-import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
-import org.jetbrains.exposed.sql.json.extract
-import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.v1.core.*
+import org.jetbrains.exposed.v1.jdbc.*
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
+import org.jetbrains.exposed.v1.json.extract
 import java.nio.file.Path
 import java.time.LocalDateTime
 import kotlin.io.path.Path
@@ -342,17 +341,13 @@ class ExposedProcessingStorage : ProcessingStorage {
 
     override fun existsByNameAndIdentify(processorName: String, identity: String): Boolean {
         return transaction {
-            Processing.count(Op.build {
-                Processings.processorName eq processorName and (Processings.itemIdentity eq identity)
-            }) > 0L
+            Processing.count(Processings.processorName eq processorName and (Processings.itemIdentity eq identity)) > 0L
         }
     }
 
     override fun existsByNameAndHash(processorName: String, itemHashing: String): Boolean {
         return transaction {
-            Processing.count(Op.build {
-                Processings.processorName eq processorName and (Processings.itemHash eq itemHashing)
-            }) > 0L
+            Processing.count(Processings.processorName eq processorName and (Processings.itemHash eq itemHashing)) > 0L
         }
     }
 
@@ -396,8 +391,8 @@ infix fun <S1> Expression<in S1>.glob(pattern: String): Op<Boolean> {
     return GlobOp(this, pattern)
 }
 
-fun Query.andWhere(andPart: SqlExpressionBuilder.() -> Op<Boolean>) = adjustWhere {
-    val expr = Op.build { andPart() }
-    if (this == null) expr
-    else this and expr
-}
+// fun Query.andWhere(andPart: SqlExpressionBuilder.() -> Op<Boolean>) = adjustWhere {
+//     val expr = Op.build { andPart() }
+//     if (this == null) expr
+//     else this and expr
+// }

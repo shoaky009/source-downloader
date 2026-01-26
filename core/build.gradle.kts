@@ -18,6 +18,7 @@ dependencies {
     // others
     implementation(libs.commons.collections4)
     implementation(libs.jackson.dataformat.yaml)
+    implementation(libs.jackson.kotlin.module)
     implementation(libs.bundles.cel)
     api(libs.bundles.exposed)
     implementation(libs.json.path)

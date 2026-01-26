@@ -20,7 +20,7 @@ import io.github.shoaky.sourcedownloader.sdk.component.ComponentRootType
 import io.github.shoaky.sourcedownloader.testResourcePath
 import io.github.shoaky.sourcedownloader.util.RestorableConfigOperator
 import org.flywaydb.core.Flyway
-import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.v1.jdbc.Database
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Test
 import org.springframework.jdbc.datasource.SingleConnectionDataSource

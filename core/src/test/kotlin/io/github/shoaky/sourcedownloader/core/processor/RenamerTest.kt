@@ -41,7 +41,9 @@ class RenamerTest {
             filenamePattern = CorePathPattern("2")
         )
         val content = defaultRenamer.createFileContent(sourceItem(), raw, RenameVariables.EMPTY)
-        assertEquals(sourceSavePath.resolve(Path("2", "3.txt")), content.targetPath())
+        val resolve = sourceSavePath.resolve(Path("2.txt"))
+        val targetPath = content.targetPath()
+        assertEquals(resolve, targetPath)
     }
 
     @Test

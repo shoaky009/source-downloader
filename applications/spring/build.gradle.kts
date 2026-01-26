@@ -22,10 +22,14 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.data:spring-data-commons")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
-    implementation(libs.exposed.spring.boot.stater)
+    implementation(libs.exposed.spring.boot4.stater)
     implementation(libs.spring.boot.admin.client)
     implementation(libs.micrometer.registry.prometheus)
+    implementation("tools.jackson.module:jackson-module-kotlin")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.boot:spring-boot-webmvc-test")
+    testImplementation("org.springframework.boot:spring-boot-jdbc-test")
+    testImplementation("org.springframework.boot:spring-boot-flyway")
     runtimeOnly(libs.kotlinx.coroutines.reactor)
 }
 

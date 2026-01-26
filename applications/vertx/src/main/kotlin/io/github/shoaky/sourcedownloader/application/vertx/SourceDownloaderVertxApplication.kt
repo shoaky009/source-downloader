@@ -26,6 +26,7 @@ import io.github.shoaky.sourcedownloader.service.ProcessingContentService
 import io.github.shoaky.sourcedownloader.service.ProcessorService
 import io.github.shoaky.sourcedownloader.util.StopWatch
 import io.vertx.core.Handler
+import io.vertx.core.ThreadingModel
 import io.vertx.core.Vertx
 import io.vertx.core.json.jackson.DatabindCodec
 import io.vertx.ext.web.Router
@@ -34,7 +35,7 @@ import io.vertx.kotlin.core.deploymentOptionsOf
 import io.vertx.kotlin.core.vertxOptionsOf
 import io.vertx.kotlin.micrometer.micrometerMetricsOptionsOf
 import io.vertx.kotlin.micrometer.vertxJmxMetricsOptionsOf
-import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.v1.jdbc.Database
 
 class SourceDownloaderVertxApplication {
 
@@ -59,7 +60,7 @@ class SourceDownloaderVertxApplication {
             vertx
                 .deployVerticle(
                     HttpServerVerticle(applicationConfig, context), deploymentOptionsOf(
-                        worker = true
+                        threadingModel = ThreadingModel.WORKER
                     )
                 )
                 .onComplete {

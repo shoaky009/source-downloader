@@ -28,7 +28,7 @@ scmVersion {
 version = scmVersion.version
 val isSnapshot = version.toString().endsWith("-SNAPSHOT", true)
 val javaVersion = 25
-val kotlinJvmToolchainVersion = 24
+val kotlinJvmToolchainVersion = 25
 
 subprojects {
     version = rootProject.version
