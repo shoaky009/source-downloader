@@ -9,16 +9,17 @@ import io.github.shoaky.sourcedownloader.sdk.component.Downloader
 import io.github.shoaky.sourcedownloader.sdk.http.StatusCodes
 import io.github.shoaky.sourcedownloader.sdk.util.http.httpClient
 import io.github.shoaky.sourcedownloader.sdk.util.readableRate
-import kotlinx.coroutines.*
-import kotlinx.coroutines.future.asDeferred
 import org.slf4j.LoggerFactory
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
+import java.net.http.HttpResponse
 import java.net.http.HttpResponse.*
 import java.nio.ByteBuffer
 import java.nio.file.Path
 import java.time.Instant
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.Executors
 import kotlin.io.path.createDirectories
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.notExists
@@ -33,20 +34,22 @@ class HttpDownloader(
 ) : Downloader, ComponentStateful {
 
     private val progresses: MutableMap<Path, Downloading> = ConcurrentHashMap()
-    private val dispatcher: CoroutineDispatcher = Dispatchers.IO.limitedParallelism(parallelism)
+    private val executor = Executors.newFixedThreadPool(
+        parallelism,
+        Thread.ofVirtual().factory()
+    )
 
     override fun submit(task: DownloadTask): Boolean {
-        runBlocking(dispatcher) {
-            task.downloadFiles.forEach {
-                launch {
-                    downloadSourceFile(it, task.options.headers)
-                }
+        val futures = task.downloadFiles.map { file ->
+            executor.submit<Unit> {
+                downloadSourceFile(file, task.options.headers)
             }
         }
+        futures.forEach { it.get() }
         return true
     }
 
-    private suspend fun downloadSourceFile(file: SourceFile, headers: Map<String, String>) {
+    private fun downloadSourceFile(file: SourceFile, headers: Map<String, String>) {
         val path = file.path
         if (progresses.containsKey(path)) {
             throw IllegalStateException("File already downloading: $path")
@@ -66,18 +69,18 @@ class HttpDownloader(
             }
             .build()
 
-        val responseDef = client.sendAsync(request, bodyHandler).asDeferred()
-        responseDef.invokeOnCompletion {
+        val future = client.sendAsync(request, bodyHandler)
+        future.whenComplete { _, err ->
             progresses.remove(path)
-            if (it != null) {
-                log.error("Download failed: $path", it)
+            if (err != null) {
+                log.error("Download failed: $path", err)
                 path.deleteIfExists()
             } else {
                 log.info("Download completed: $path")
             }
         }
-        progresses[path] = Downloading(file, bodyHandler, responseDef.job)
-        val response = responseDef.await()
+        progresses[path] = Downloading(file, bodyHandler, future)
+        val response = future.join()
         val statusCode = response.statusCode()
         if (statusCode == StatusCodes.NOT_FOUND) {
             path.deleteIfExists()
@@ -96,7 +99,7 @@ class HttpDownloader(
     override fun cancel(sourceItem: SourceItem, files: List<SourceFile>) {
         files.forEach {
             runCatching {
-                progresses[it.path]?.job?.cancel("Cancel by item: $sourceItem")
+                progresses[it.path]?.future?.cancel(true)
             }
             progresses.remove(it.path)
         }
@@ -121,7 +124,7 @@ class HttpDownloader(
 private data class Downloading(
     val file: SourceFile,
     val bodyHandler: MonitorableBodyHandler<*>,
-    val job: Job
+    val future: CompletableFuture<HttpResponse<Path>>
 )
 
 class MonitorableBodyHandler<T>(
