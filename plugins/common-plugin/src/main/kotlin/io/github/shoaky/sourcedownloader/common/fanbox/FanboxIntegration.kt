@@ -74,9 +74,16 @@ class FanboxIntegration(
         }
         sourceFiles.addAll(images)
 
-        val fanboxFiles = media.filesOrdering().mapIndexed { _, file ->
+        val files = media.filesOrdering()
+        val nameCount: Map<String, Int> = files.groupingBy { it.name }.eachCount()
+        val fanboxFiles = files.mapIndexed { idx, file ->
+            val baseName = if ((nameCount[file.name] ?: 0) > 1) {
+                "${file.name}_$idx"
+            } else {
+                file.name
+            }
             SourceFile(
-                Path("${file.name}.${file.extension}"),
+                Path("$baseName.${file.extension}"),
                 mapOf(
                     "size" to file.size,
                     "type" to "file"
