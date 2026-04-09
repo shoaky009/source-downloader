@@ -10,7 +10,7 @@ spring:
   datasource:
     username: sd
     password: sd
-    url: jdbc:sqlite:${source-downloader.data-location}source-downloader.db
+    url: jdbc:sqlite:${source-downloader.data-location}source-downloader.db?journal_mode=WAL&synchronous=NORMAL
     driver-class-name: org.sqlite.JDBC
   flyway:
     locations:
