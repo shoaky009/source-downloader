@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.axion.release)
     alias(libs.plugins.gradle.git.properties) apply false
     alias(libs.plugins.spring.boot) apply false
+    id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
 }
 
 allprojects {
@@ -94,4 +95,17 @@ tasks.register<DefaultTask>("versionTags") {
         tags.add(version.toString())
     }
     print(tags.joinToString(","))
+}
+
+nexusPublishing {
+    repositories {
+        sonatype {
+            nexusUrl.set(uri("https://ossrh-staging-api.central.sonatype.com/service/local/"))
+            snapshotRepositoryUrl.set(uri("https://central.sonatype.com/repository/maven-snapshots/"))
+            val sonatypeUsername: String? by project
+            val sonatypePassword: String? by project
+            username.set(sonatypeUsername ?: System.getenv("SONATYPE_USERNAME"))
+            password.set(sonatypePassword ?: System.getenv("SONATYPE_PASSWORD"))
+        }
+    }
 }

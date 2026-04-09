@@ -32,25 +32,6 @@ val isSnapshot = version.toString().endsWith("-SNAPSHOT", true)
 
 publishing {
     publications {
-        repositories {
-            maven {
-                name = "sonatype"
-                url = if (isSnapshot) {
-                    uri("https://s01.oss.sonatype.org/content/repositories/snapshots")
-                } else {
-                    uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
-                }
-
-                val sonatypeUsername: String? by project
-                val sonatypePassword: String? by project
-
-                credentials {
-                    username = sonatypeUsername ?: System.getenv("SONATYPE_USERNAME")
-                    password = sonatypePassword ?: System.getenv("SONATYPE_PASSWORD")
-                }
-            }
-        }
-
         create<MavenPublication>("library") {
             from(components["java"])
             groupId = "io.github.shoaky009"
