@@ -32,10 +32,7 @@ import java.nio.file.Path
 import java.time.Instant
 import java.time.LocalDateTime
 import java.util.*
-import java.util.concurrent.Executors
-import java.util.concurrent.ScheduledFuture
-import java.util.concurrent.Semaphore
-import java.util.concurrent.TimeUnit
+import java.util.concurrent.*
 import java.util.concurrent.locks.Lock
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.reflect.jvm.jvmName
@@ -646,7 +643,11 @@ class SourceProcessor(
                             ct
                         }.onFailure {
                             onItemError(pointed.sourceItem, it)
-                            if (it is ProcessingException && it.skip) {
+                            val exception = when (it) {
+                                is ExecutionException, is CompletionException -> it.cause ?: it
+                                else -> it
+                            }
+                            if (exception is ProcessingException && exception.skip) {
                                 log.error("Processor:'$name'处理失败, item:$pointed, 被组件定义为可跳过的异常")
                                 return@onFailure
                             }

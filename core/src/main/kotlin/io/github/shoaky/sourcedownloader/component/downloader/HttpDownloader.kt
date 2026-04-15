@@ -19,6 +19,7 @@ import java.nio.file.Path
 import java.time.Instant
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ExecutionException
 import java.util.concurrent.Executors
 import kotlin.io.path.createDirectories
 import kotlin.io.path.deleteIfExists
@@ -45,7 +46,11 @@ class HttpDownloader(
                 downloadSourceFile(file, task.options.headers)
             }
         }
-        futures.forEach { it.get() }
+        try {
+            futures.forEach { it.get() }
+        } catch (e: ExecutionException) {
+            throw e.cause ?: e
+        }
         return true
     }
 
