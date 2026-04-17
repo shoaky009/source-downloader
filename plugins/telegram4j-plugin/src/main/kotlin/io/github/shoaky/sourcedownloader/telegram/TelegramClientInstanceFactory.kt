@@ -31,23 +31,19 @@ import kotlin.io.path.createDirectories
 
 object TelegramClientInstanceFactory : InstanceFactory<TelegramClientWrapper> {
 
-    //
-    // private val executor = Executors.newSingleThreadScheduledExecutor(
-    //     Thread.ofPlatform().name("telegram-publisher", 1).factory()
-    // )
-
     override fun create(props: Properties): TelegramClientWrapper {
         val config = props.parse<ClientConfig>()
         config.metadataPath.createDirectories()
 
+        val timeout = Duration.ofSeconds(config.timeout)
         val bootstrap = newBootstrap(config)
         // just check bootstrap
         val client = bootstrap.connect()
             .doOnError {
                 log.error("Error while connecting to Telegram", it)
             }
-            .blockOptional(Duration.ofSeconds(config.timeout)).get()
-        client.disconnect().subscribe()
+            .blockOptional(timeout).get()
+        client.disconnect().blockOptional(timeout)
         return TelegramClientWrapper(config)
     }
 
