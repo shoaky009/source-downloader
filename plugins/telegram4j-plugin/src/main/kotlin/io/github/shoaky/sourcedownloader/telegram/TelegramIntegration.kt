@@ -299,7 +299,7 @@ class TelegramIntegration(
     }
 
     override fun release(source: String) {
-        wrapper.use(source)
+        wrapper.release(source)
     }
 
 }
