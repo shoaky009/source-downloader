@@ -3,8 +3,10 @@ package io.github.shoaky.sourcedownloader.component.supplier
 import io.github.shoaky.sourcedownloader.component.downloader.NoneDownloader
 import io.github.shoaky.sourcedownloader.sdk.CoreContext
 import io.github.shoaky.sourcedownloader.sdk.Properties
+import io.github.shoaky.sourcedownloader.sdk.component.ComponentMetadata
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
+import io.github.shoaky.sourcedownloader.sdk.component.JsonSchema
 import kotlin.io.path.Path
 
 object NoneDownloaderSupplier : ComponentSupplier<NoneDownloader> {
@@ -22,5 +24,19 @@ object NoneDownloaderSupplier : ComponentSupplier<NoneDownloader> {
 
     override fun supportNoArgs(): Boolean {
         return true
+    }
+
+    override fun metadata(): ComponentMetadata {
+        return ComponentMetadata(
+            propertySchema = JsonSchema(
+                type = "object",
+                properties = mapOf(
+                    "downloadPath" to JsonSchema(
+                        type = "string",
+                        description = "下载目录，默认当前工作目录"
+                    )
+                )
+            )
+        )
     }
 }

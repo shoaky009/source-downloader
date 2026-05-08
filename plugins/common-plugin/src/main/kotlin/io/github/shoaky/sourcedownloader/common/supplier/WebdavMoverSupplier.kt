@@ -4,8 +4,10 @@ import io.github.shoaky.sourcedownloader.common.WebdavFileMover
 import io.github.shoaky.sourcedownloader.external.webdav.WebdavClient
 import io.github.shoaky.sourcedownloader.sdk.CoreContext
 import io.github.shoaky.sourcedownloader.sdk.Properties
+import io.github.shoaky.sourcedownloader.sdk.component.ComponentMetadata
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
+import io.github.shoaky.sourcedownloader.sdk.component.JsonSchema
 import java.net.URI
 
 object WebdavMoverSupplier : ComponentSupplier<WebdavFileMover> {
@@ -23,6 +25,21 @@ object WebdavMoverSupplier : ComponentSupplier<WebdavFileMover> {
     override fun supplyTypes(): List<ComponentType> {
         return listOf(
             ComponentType.fileMover("webdav"),
+        )
+    }
+
+    override fun metadata(): ComponentMetadata {
+        return ComponentMetadata(
+            propertySchema = JsonSchema(
+                type = "object",
+                required = listOf("server"),
+                properties = mapOf(
+                    "server" to JsonSchema(type = "string", format = "uri"),
+                    "username" to JsonSchema(type = "string"),
+                    "password" to JsonSchema(type = "string"),
+                    "delete-source" to JsonSchema(type = "boolean", default = true)
+                )
+            )
         )
     }
 

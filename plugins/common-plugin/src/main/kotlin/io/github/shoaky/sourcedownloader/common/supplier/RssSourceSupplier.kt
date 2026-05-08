@@ -36,6 +36,7 @@ object RssSourceSupplier : ComponentSupplier<RssSource> {
             "rss",
             JsonSchema(
                 type = "object",
+                required = listOf("url"),
                 properties = mapOf(
                     "url" to JsonSchema(
                         title = "url",

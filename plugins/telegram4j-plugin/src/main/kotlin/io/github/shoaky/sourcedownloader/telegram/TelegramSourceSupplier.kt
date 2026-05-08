@@ -42,16 +42,17 @@ class TelegramSourceSupplier(
                         type = "array",
                         items = JsonSchema(
                             type = "object",
-                            required = listOf("chatId"),
+                            required = listOf("chat-id"),
                             properties = mapOf(
-                                "chatId" to JsonSchema(
+                                "chat-id" to JsonSchema(
                                     title = "频道ID",
-                                    type = "string",
+                                    type = "integer",
                                     description = "私聊不需要-号频道需要-号,不需要添加100前缀",
                                 ),
-                                "beginDate" to JsonSchema(
+                                "begin-date" to JsonSchema(
                                     title = "消息起始日期",
                                     type = "string",
+                                    format = "date",
                                 )
                             ),
                         ),

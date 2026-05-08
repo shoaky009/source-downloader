@@ -3,8 +3,10 @@ package io.github.shoaky.sourcedownloader.component.supplier
 import io.github.shoaky.sourcedownloader.component.downloader.HttpDownloader
 import io.github.shoaky.sourcedownloader.sdk.CoreContext
 import io.github.shoaky.sourcedownloader.sdk.Properties
+import io.github.shoaky.sourcedownloader.sdk.component.ComponentMetadata
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
+import io.github.shoaky.sourcedownloader.sdk.component.JsonSchema
 import io.github.shoaky.sourcedownloader.sdk.util.http.httpClient
 import java.net.http.HttpClient
 import java.nio.file.Path
@@ -37,6 +39,33 @@ object HttpDownloaderSupplier : ComponentSupplier<HttpDownloader> {
     override fun supplyTypes(): List<ComponentType> {
         return listOf(
             ComponentType.downloader("http")
+        )
+    }
+
+    override fun metadata(): ComponentMetadata {
+        return ComponentMetadata(
+            propertySchema = JsonSchema(
+                type = "object",
+                required = listOf("download-path"),
+                properties = mapOf(
+                    "download-path" to JsonSchema(
+                        type = "string",
+                        description = "文件下载目录"
+                    ),
+                    "parallelism" to JsonSchema(
+                        type = "integer",
+                        description = "并行下载数",
+                        default = 5
+                    ),
+                    "cert-validation-bypass-hosts" to JsonSchema(
+                        type = "array",
+                        description = "跳过证书校验的主机名或证书主题关键字",
+                        items = JsonSchema(type = "string"),
+                        default = emptyList<String>(),
+                        uniqueItems = true,
+                    )
+                )
+            )
         )
     }
 }

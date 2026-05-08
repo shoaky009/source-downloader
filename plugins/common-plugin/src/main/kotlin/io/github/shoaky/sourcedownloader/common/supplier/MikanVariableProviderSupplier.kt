@@ -6,9 +6,11 @@ import io.github.shoaky.sourcedownloader.external.bangumi.BgmTvApiClient
 import io.github.shoaky.sourcedownloader.external.tmdb.TmdbClient
 import io.github.shoaky.sourcedownloader.sdk.CoreContext
 import io.github.shoaky.sourcedownloader.sdk.Properties
+import io.github.shoaky.sourcedownloader.sdk.component.ComponentMetadata
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentRule
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
+import io.github.shoaky.sourcedownloader.sdk.component.JsonSchema
 import io.github.shoaky.sourcedownloader.sdk.component.TorrentDownloader
 import io.github.shoaky.sourcedownloader.sdk.plugin.PluginContext
 
@@ -44,5 +46,18 @@ class MikanVariableProviderSupplier(
 
     override fun rules(): List<ComponentRule> {
         return listOf(ComponentRule.allowDownloader(TorrentDownloader::class))
+    }
+
+    override fun metadata(): ComponentMetadata {
+        return ComponentMetadata(
+            propertySchema = JsonSchema(
+                type = "object",
+                properties = mapOf(
+                    "bgmtv-client" to JsonSchema(type = "string"),
+                    "mikan-client" to JsonSchema(type = "string"),
+                    "tmdb-client" to JsonSchema(type = "string")
+                )
+            )
+        )
     }
 }

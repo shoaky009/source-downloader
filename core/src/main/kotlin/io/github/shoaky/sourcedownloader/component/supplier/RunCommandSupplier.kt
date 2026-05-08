@@ -4,8 +4,10 @@ import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import io.github.shoaky.sourcedownloader.component.RunCommand
 import io.github.shoaky.sourcedownloader.sdk.CoreContext
 import io.github.shoaky.sourcedownloader.sdk.Properties
+import io.github.shoaky.sourcedownloader.sdk.component.ComponentMetadata
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
+import io.github.shoaky.sourcedownloader.sdk.component.JsonSchema
 import io.github.shoaky.sourcedownloader.sdk.util.Jackson
 
 object RunCommandSupplier : ComponentSupplier<RunCommand> {
@@ -23,6 +25,34 @@ object RunCommandSupplier : ComponentSupplier<RunCommand> {
     override fun supplyTypes(): List<ComponentType> {
         return listOf(
             ComponentType.listener("command")
+        )
+    }
+
+    override fun metadata(): ComponentMetadata {
+        return ComponentMetadata(
+            propertySchema = JsonSchema(
+                type = "object",
+                required = listOf("command"),
+                properties = mapOf(
+                    "command" to JsonSchema(
+                        description = "命令参数列表或有序对象值列表",
+                        oneOf = listOf(
+                            JsonSchema(
+                                type = "array",
+                                items = JsonSchema(type = "string")
+                            ),
+                            JsonSchema(
+                                type = "object",
+                                additionalProperties = JsonSchema(type = "string")
+                            )
+                        )
+                    ),
+                    "withSubjectSummary" to JsonSchema(
+                        type = "boolean",
+                        default = false
+                    )
+                )
+            )
         )
     }
 

@@ -5,8 +5,10 @@ import io.github.shoaky.sourcedownloader.core.expression.CompiledExpressionFacto
 import io.github.shoaky.sourcedownloader.core.expression.ExpressionType
 import io.github.shoaky.sourcedownloader.sdk.CoreContext
 import io.github.shoaky.sourcedownloader.sdk.Properties
+import io.github.shoaky.sourcedownloader.sdk.component.ComponentMetadata
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
+import io.github.shoaky.sourcedownloader.sdk.component.JsonSchema
 
 object ExpressionItemFilterSupplier : ComponentSupplier<ExpressionItemFilter> {
 
@@ -27,6 +29,31 @@ object ExpressionItemFilterSupplier : ComponentSupplier<ExpressionItemFilter> {
 
     override fun supplyTypes(): List<ComponentType> {
         return listOf(ComponentType.itemFilter("expression"))
+    }
+
+    override fun metadata(): ComponentMetadata {
+        return ComponentMetadata(
+            propertySchema = JsonSchema(
+                type = "object",
+                properties = mapOf(
+                    "exclusions" to JsonSchema(
+                        type = "array",
+                        items = JsonSchema(type = "string"),
+                        default = emptyList<String>(),
+                    ),
+                    "inclusions" to JsonSchema(
+                        type = "array",
+                        items = JsonSchema(type = "string"),
+                        default = emptyList<String>(),
+                    ),
+                    "type" to JsonSchema(
+                        type = "string",
+                        enum = listOf("CEL"),
+                        default = "CEL"
+                    )
+                )
+            )
+        )
     }
 
 }

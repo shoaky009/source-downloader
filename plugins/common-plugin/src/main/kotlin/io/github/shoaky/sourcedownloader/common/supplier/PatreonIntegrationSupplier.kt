@@ -4,9 +4,11 @@ import io.github.shoaky.sourcedownloader.common.patreon.PatreonIntegration
 import io.github.shoaky.sourcedownloader.external.patreon.PatreonClient
 import io.github.shoaky.sourcedownloader.sdk.CoreContext
 import io.github.shoaky.sourcedownloader.sdk.Properties
+import io.github.shoaky.sourcedownloader.sdk.component.ComponentMetadata
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentRule
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentType
+import io.github.shoaky.sourcedownloader.sdk.component.JsonSchema
 
 object PatreonIntegrationSupplier : ComponentSupplier<PatreonIntegration> {
 
@@ -29,6 +31,22 @@ object PatreonIntegrationSupplier : ComponentSupplier<PatreonIntegration> {
     override fun rules(): List<ComponentRule> {
         return listOf(
             ComponentRule.allowSource(PatreonIntegration::class)
+        )
+    }
+
+    override fun metadata(): ComponentMetadata {
+        return ComponentMetadata(
+            propertySchema = JsonSchema(
+                type = "object",
+                required = listOf("session-id"),
+                properties = mapOf(
+                    "session-id" to JsonSchema(type = "string"),
+                    "headers" to JsonSchema(
+                        type = "object",
+                        additionalProperties = JsonSchema(type = "string")
+                    )
+                )
+            )
         )
     }
 }

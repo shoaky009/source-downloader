@@ -40,7 +40,7 @@ class QbittorrentDownloaderSupplier(
             propertySchema = JsonSchema(
                 type = "object",
                 description = "Qbittorrent Downloader",
-                required = listOf("host"),
+                required = listOf("endpoint"),
                 properties = mapOf(
                     "username" to JsonSchema(
                         type = "string",

@@ -30,6 +30,10 @@ object CompositeItemFileResolverSupplier : ComponentSupplier<CompositeItemFileRe
         )
     }
 
+    override fun metadata(): ComponentMetadata {
+        return ComponentMetadata(propertySchema = compositePropertySchema())
+    }
+
 }
 
 object CompositeDownloaderSupplier : ComponentSupplier<CompositeDownloader> {
@@ -49,6 +53,40 @@ object CompositeDownloaderSupplier : ComponentSupplier<CompositeDownloader> {
         )
     }
 
+    override fun metadata(): ComponentMetadata {
+        return ComponentMetadata(propertySchema = compositePropertySchema())
+    }
+
+}
+
+private fun compositePropertySchema(): JsonSchema {
+    return JsonSchema(
+        type = "object",
+        required = listOf("default", "rules"),
+        properties = mapOf(
+            "default" to JsonSchema(
+                type = "string",
+                description = "默认组件名称"
+            ),
+            "rules" to JsonSchema(
+                type = "array",
+                items = JsonSchema(
+                    type = "object",
+                    required = listOf("expression", "component"),
+                    properties = mapOf(
+                        "expression" to JsonSchema(
+                            type = "string",
+                            description = "命中该表达式时使用指定组件"
+                        ),
+                        "component" to JsonSchema(
+                            type = "string",
+                            description = "组件名称"
+                        )
+                    )
+                )
+            )
+        )
+    )
 }
 
 private fun <T : SdComponent> createSelector(
