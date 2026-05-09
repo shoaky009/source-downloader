@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonAlias
 import io.github.shoaky.sourcedownloader.sdk.InstanceFactory
 import io.github.shoaky.sourcedownloader.sdk.Properties
 import io.github.shoaky.sourcedownloader.sdk.Sleepable
+import io.github.shoaky.sourcedownloader.sdk.component.ComponentMetadata
+import io.github.shoaky.sourcedownloader.sdk.component.JsonSchema
 import io.github.shoaky.sourcedownloader.telegram.auth.QRCallback
 import io.netty.util.ResourceLeakDetector
 import org.slf4j.LoggerFactory
@@ -108,6 +110,29 @@ object TelegramClientInstanceFactory : InstanceFactory<TelegramClientWrapper> {
         return TelegramClientWrapper::class.java
     }
 
+    override fun metadata(): ComponentMetadata {
+        return ComponentMetadata(
+            description = "Telegram 客户端实例",
+            propertySchema = JsonSchema(
+                type = "object",
+                required = listOf("api-id", "api-hash", "metadata-path"),
+                properties = mapOf(
+                    "api-id" to JsonSchema(type = "integer", title = "Api ID"),
+                    "api-hash" to JsonSchema(type = "string", title = "Api Hash"),
+                    "metadata-path" to JsonSchema(type = "string", title = "Metadata Path"),
+                    "proxy" to JsonSchema(type = "string", title = "Proxy", format = "uri"),
+                    "debug" to JsonSchema(type = "boolean", title = "Debug", default = false),
+                    "ping-interval" to JsonSchema(type = "integer", title = "Ping Interval", default = 30),
+                    "reconnection-interval" to JsonSchema(
+                        type = "integer",
+                        title = "Reconnection Interval",
+                        default = 15
+                    ),
+                    "timeout" to JsonSchema(type = "integer", title = "Timeout", default = 5),
+                ),
+            )
+        )
+    }
 }
 
 class TelegramClientWrapper(

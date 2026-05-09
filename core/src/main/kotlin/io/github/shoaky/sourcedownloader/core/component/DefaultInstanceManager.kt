@@ -48,6 +48,10 @@ class DefaultInstanceManager(
         }
     }
 
+    fun getInstanceFactories(): List<InstanceFactory<*>> {
+        return instanceFactories.values.toList().sortedBy { it.type().name }
+    }
+
     override fun destroyInstance(name: String) {
         instances.remove(name)?.run {
             if (this is AutoCloseable) {

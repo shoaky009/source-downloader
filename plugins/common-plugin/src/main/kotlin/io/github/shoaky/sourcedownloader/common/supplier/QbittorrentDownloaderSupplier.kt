@@ -77,4 +77,24 @@ object QbittorrentClientInstanceFactory : InstanceFactory<QbittorrentClient> {
         return QbittorrentClient::class.java
     }
 
+    override fun metadata(): ComponentMetadata {
+        return ComponentMetadata(
+            description = "qBittorrent 客户端实例",
+            propertySchema = JsonSchema(
+                type = "object",
+                required = listOf("endpoint"),
+                properties = mapOf(
+                    "username" to JsonSchema(type = "string", title = "Username"),
+                    "password" to JsonSchema(type = "string", title = "Password"),
+                    "endpoint" to JsonSchema(
+                        type = "string",
+                        title = "Endpoint",
+                        format = "uri",
+                        examples = listOf("http://localhost:8080"),
+                    ),
+                ),
+            )
+        )
+    }
+
 }

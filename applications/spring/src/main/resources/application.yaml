@@ -4,6 +4,22 @@ server:
 spring:
   application:
     name: source-downloader
+  ai:
+    openai:
+      base-url: "https://api.deepseek.com"
+      api-key: ${SOURCE_DOWNLOADER_OPENAI_API_KEY}
+      chat:
+        model: ${OPENAI_MODEL:deepseek-v4-pro}
+    mcp:
+      server:
+        protocol: SSE
+        type: SYNC
+        annotation-scanner:
+          enabled: true
+    chat:
+      observations:
+        log-prompt: true
+        log-completion: true
   main:
     banner-mode: off
     allow-bean-definition-overriding: true
@@ -32,6 +48,8 @@ spring:
       enabled: always
 source-downloader:
   data-location: ${SOURCE_DOWNLOADER_DATA_LOCATION:./}
+  ai:
+    enabled: ${SOURCE_DOWNLOADER_AI_ENABLED:true}
 
 management:
   endpoints:
@@ -63,6 +81,7 @@ logging:
     io.github.shoaky: trace
     org.springframework.web: debug
     Exposed: debug
+    org.springframework.ai: DEBUG
 management:
   endpoint:
     configprops:

@@ -9,6 +9,7 @@ data class JsonSchema(
     val title: String? = null,
     val description: String? = null,
     val type: String? = null,
+    val instanceType: String? = null,
     val properties: Map<String, JsonSchema>? = null,
     val required: List<String>? = null,
     val enum: List<Any>? = null,

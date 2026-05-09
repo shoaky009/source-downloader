@@ -35,7 +35,8 @@ class TelegramSourceSupplier(
                     "client" to JsonSchema(
                         title = "客户端",
                         type = "string",
-                        description = "客户端名称引用"
+                        description = "客户端名称引用",
+                        instanceType = TelegramClientWrapper::class.java.name,
                     ),
                     "chats" to JsonSchema(
                         title = "频道",

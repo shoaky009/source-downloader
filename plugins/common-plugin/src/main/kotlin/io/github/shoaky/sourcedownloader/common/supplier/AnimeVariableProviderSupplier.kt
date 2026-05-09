@@ -41,7 +41,10 @@ class AnimeVariableProviderSupplier(
             propertySchema = JsonSchema(
                 type = "object",
                 properties = mapOf(
-                    "bgmtv-client" to JsonSchema(type = "string"),
+                    "bgmtv-client" to JsonSchema(
+                        type = "string",
+                        instanceType = BgmTvApiClient::class.java.name,
+                    ),
                     "prefer-bgm-tv" to JsonSchema(
                         type = "boolean",
                         default = false

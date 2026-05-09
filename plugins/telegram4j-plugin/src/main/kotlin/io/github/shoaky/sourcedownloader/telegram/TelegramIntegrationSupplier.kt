@@ -44,7 +44,8 @@ class TelegramIntegrationSupplier(
                 properties = mapOf(
                     "client" to JsonSchema(
                         type = "string",
-                        description = "Telegram 客户端实例名称"
+                        description = "Telegram 客户端实例名称",
+                        instanceType = TelegramClientWrapper::class.java.name,
                     ),
                     "download-path" to JsonSchema(
                         type = "string",

@@ -1,0 +1,214 @@
+{
+  "version": 1,
+  "rootType": "processor",
+  "fields": [
+    {
+      "path": "name",
+      "title": "任务名称",
+      "description": "处理器唯一名称",
+      "type": "string",
+      "required": true,
+      "askMode": "always",
+      "level": "basic"
+    },
+    {
+      "path": "enabled",
+      "title": "启用状态",
+      "description": "创建后是否立即启用该处理器",
+      "type": "boolean",
+      "required": false,
+      "defaultValue": true,
+      "askMode": "auto",
+      "level": "basic"
+    },
+    {
+      "path": "category",
+      "title": "分类",
+      "description": "用于在列表中分组展示的业务分类",
+      "type": "string",
+      "required": false,
+      "askMode": "auto",
+      "level": "basic"
+    },
+    {
+      "path": "tags",
+      "title": "标签",
+      "description": "用于标识该处理器用途的标签集合",
+      "type": "string-array",
+      "required": false,
+      "askMode": "auto",
+      "level": "basic"
+    },
+    {
+      "path": "triggers",
+      "title": "触发器",
+      "description": "引用一个或多个 trigger 组件，留空表示手动触发",
+      "type": "component-ref-array",
+      "required": false,
+      "refRootType": "trigger",
+      "componentTypes": ["cron", "fixed", "webhook"],
+      "askMode": "always",
+      "level": "basic"
+    },
+    {
+      "path": "source",
+      "title": "数据源",
+      "description": "引用一个 source 组件，例如 telegram:news",
+      "type": "component-ref",
+      "required": true,
+      "refRootType": "source",
+      "componentTypes": ["telegram", "rss", "system-file", "fixed"],
+      "askMode": "always",
+      "level": "basic"
+    },
+    {
+      "path": "itemFileResolver",
+      "title": "文件解析器",
+      "description": "把 source item 展开成可处理文件列表的组件",
+      "type": "component-ref",
+      "required": true,
+      "refRootType": "item-file-resolver",
+      "componentTypes": ["telegram", "torrent", "html", "system-file", "fixed", "composite"],
+      "askMode": "always",
+      "level": "basic"
+    },
+    {
+      "path": "downloader",
+      "title": "下载器",
+      "description": "负责实际下载或导入文件的组件",
+      "type": "component-ref",
+      "required": true,
+      "refRootType": "downloader",
+      "componentTypes": ["telegram", "url", "http", "system-file", "qbittorrent", "none", "mock"],
+      "askMode": "always",
+      "level": "basic"
+    },
+    {
+      "path": "fileMover",
+      "title": "文件移动器",
+      "description": "负责把下载结果落到 savePath 的组件，通常使用 general",
+      "type": "component-ref",
+      "required": false,
+      "refRootType": "file-mover",
+      "componentTypes": ["general", "webdav", "qbittorrent"],
+      "defaultValue": "mover:general",
+      "askMode": "auto",
+      "level": "basic"
+    },
+    {
+      "path": "savePath",
+      "title": "保存根目录",
+      "description": "处理完成后的最终保存目录，不是下载器自身的临时下载目录",
+      "type": "path",
+      "required": true,
+      "askMode": "always",
+      "level": "basic"
+    },
+    {
+      "path": "options.savePathPattern",
+      "title": "子目录模板",
+      "description": "相对于 savePath 的子目录模式",
+      "type": "string",
+      "required": false,
+      "defaultValue": "{item.title}",
+      "patternKind": "save-path",
+      "askMode": "auto",
+      "level": "basic"
+    },
+    {
+      "path": "options.filenamePattern",
+      "title": "文件名模板",
+      "description": "单个文件的输出文件名模板",
+      "type": "string",
+      "required": false,
+      "defaultValue": "{file.name}",
+      "patternKind": "filename",
+      "askMode": "auto",
+      "level": "basic"
+    },
+    {
+      "path": "options.variableProviders",
+      "title": "变量提供器",
+      "description": "引用一组 variable-provider 组件补充命名变量",
+      "type": "component-ref-array",
+      "required": false,
+      "refRootType": "variable-provider",
+      "componentTypes": ["anime", "keyword", "openai", "season", "episode", "language", "tmdb", "bgm-tv"],
+      "askMode": "auto",
+      "level": "basic"
+    },
+    {
+      "path": "options.fetchLimit",
+      "title": "单次抓取数量",
+      "description": "每次从 source 拉取的 item 数量上限",
+      "type": "integer",
+      "required": false,
+      "defaultValue": 50,
+      "valueType": "int",
+      "askMode": "never",
+      "level": "advanced"
+    },
+    {
+      "path": "options.pointerBatchMode",
+      "title": "批量更新指针",
+      "description": "true 表示处理完一批后再更新 source pointer，false 表示每个 item 处理后立刻更新",
+      "type": "boolean",
+      "required": false,
+      "defaultValue": true,
+      "valueType": "boolean",
+      "askMode": "never",
+      "level": "advanced"
+    },
+    {
+      "path": "options.parallelism",
+      "title": "并发处理数",
+      "description": "同时处理 item 的并发数，普通场景保持默认值 1 即可",
+      "type": "integer",
+      "required": false,
+      "defaultValue": 1,
+      "valueType": "int",
+      "askMode": "never",
+      "level": "advanced"
+    },
+    {
+      "path": "options.renameTaskInterval",
+      "title": "重命名补偿间隔",
+      "description": "后台重试重命名任务的执行间隔，格式为 ISO-8601 Duration",
+      "type": "duration",
+      "required": false,
+      "defaultValue": "PT5M",
+      "valueType": "duration",
+      "askMode": "never",
+      "level": "advanced"
+    },
+    {
+      "path": "options.renameTimesThreshold",
+      "title": "重命名重试次数",
+      "description": "单个文件允许的最大重命名重试次数",
+      "type": "integer",
+      "required": false,
+      "defaultValue": 3,
+      "valueType": "int",
+      "askMode": "never",
+      "level": "advanced"
+    },
+    {
+      "path": "options.fileGrouping",
+      "title": "文件分组规则",
+      "description": "按文件标签或表达式命中后覆盖默认命名、过滤或替换策略的高级规则",
+      "type": "object-array",
+      "required": false,
+      "askMode": "never",
+      "level": "advanced"
+    },
+    {
+      "path": "options.itemGrouping",
+      "title": "条目分组规则",
+      "description": "按 item 条件命中后覆盖变量提供器或命名模板的高级规则",
+      "type": "object-array",
+      "required": false,
+      "askMode": "never",
+      "level": "advanced"
+    }
+  ]
+}

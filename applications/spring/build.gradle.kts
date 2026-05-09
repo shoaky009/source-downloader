@@ -19,9 +19,12 @@ version = "0.1.0-SNAPSHOT"
 
 dependencies {
     api(platform(libs.spring.boot.dependencies))
+    implementation(platform(libs.spring.ai.bom))
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.data:spring-data-commons")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation(libs.spring.ai.starter.model.openai)
+    implementation(libs.spring.ai.starter.mcp.server.webmvc)
     implementation(libs.exposed.spring.boot4.stater)
     implementation(libs.spring.boot.admin.client)
     implementation(libs.micrometer.registry.prometheus)

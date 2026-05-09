@@ -5,6 +5,9 @@ import de.codecentric.boot.admin.client.registration.ApplicationRegistrator
 import de.codecentric.boot.admin.client.registration.RegistrationApplicationListener
 import io.github.shoaky.sourcedownloader.CoreApplication
 import io.github.shoaky.sourcedownloader.application.spring.SpringSourceDownloaderProperties
+import io.github.shoaky.sourcedownloader.application.spring.ai.AiAssistantProperties
+import io.github.shoaky.sourcedownloader.application.spring.ai.AiAssistantService
+import io.github.shoaky.sourcedownloader.application.spring.ai.MetadataMcpTools
 import io.github.shoaky.sourcedownloader.application.spring.component.SpringWebFrameworkAdapter
 import io.github.shoaky.sourcedownloader.application.spring.converter.ComponentsConverter
 import io.github.shoaky.sourcedownloader.component.supplier.WebhookTriggerSupplier
@@ -16,17 +19,18 @@ import io.github.shoaky.sourcedownloader.core.processor.ProcessorManager
 import io.github.shoaky.sourcedownloader.repo.exposed.ExposedProcessingStorage
 import io.github.shoaky.sourcedownloader.sdk.InstanceManager
 import io.github.shoaky.sourcedownloader.sdk.component.ComponentSupplier
-import io.github.shoaky.sourcedownloader.service.ComponentService
-import io.github.shoaky.sourcedownloader.service.ProcessingContentService
-import io.github.shoaky.sourcedownloader.service.ProcessorService
+import io.github.shoaky.sourcedownloader.service.*
+import org.springframework.ai.chat.client.ChatClient
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
+import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.env.Environment
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping
 
 @Configuration
+@EnableConfigurationProperties(AiAssistantProperties::class)
 class ApplicationConfiguration {
 
     @Bean
@@ -106,6 +110,41 @@ class ApplicationConfiguration {
         configOperator: ConfigOperator,
     ): ComponentService {
         return ComponentService(componentManager, configOperator)
+    }
+
+    @Bean
+    fun metadataService(
+        componentManager: ComponentManager,
+        instanceManager: InstanceManager,
+    ): MetadataService {
+        return MetadataService(componentManager, instanceManager)
+    }
+
+    @Bean
+    fun configAssistantService(
+        metadataService: MetadataService,
+        componentService: ComponentService,
+        processorService: ProcessorService,
+        configOperator: ConfigOperator,
+        componentManager: ComponentManager,
+    ): ConfigAssistantService {
+        return ConfigAssistantService(
+            metadataService,
+            componentService,
+            processorService,
+            configOperator,
+            componentManager,
+        )
+    }
+
+    @Bean
+    fun aiAssistantService(
+        chatClientBuilder: ChatClient.Builder,
+        aiAssistantProperties: AiAssistantProperties,
+        configAssistantService: ConfigAssistantService,
+        metadataMcpTools: MetadataMcpTools,
+    ): AiAssistantService {
+        return AiAssistantService(chatClientBuilder, aiAssistantProperties, configAssistantService, metadataMcpTools)
     }
 
     @Bean
