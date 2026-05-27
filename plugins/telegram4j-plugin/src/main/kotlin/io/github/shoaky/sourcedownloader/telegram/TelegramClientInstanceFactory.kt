@@ -36,16 +36,6 @@ object TelegramClientInstanceFactory : InstanceFactory<TelegramClientWrapper> {
     override fun create(props: Properties): TelegramClientWrapper {
         val config = props.parse<ClientConfig>()
         config.metadataPath.createDirectories()
-
-        val timeout = Duration.ofSeconds(config.timeout)
-        val bootstrap = newBootstrap(config)
-        // just check bootstrap
-        val client = bootstrap.connect()
-            .doOnError {
-                log.error("Error while connecting to Telegram", it)
-            }
-            .blockOptional(timeout).get()
-        client.disconnect().blockOptional(timeout)
         return TelegramClientWrapper(config)
     }
 
@@ -56,7 +46,7 @@ object TelegramClientInstanceFactory : InstanceFactory<TelegramClientWrapper> {
             config.apiHash,
             QRAuthorizationHandler(QRCallback)
         )
-        bootstrap.setResultPublisher(Executors.newVirtualThreadPerTaskExecutor())
+        bootstrap.setResultPublisher(Executors.newVirtualThreadPerTaskExecutor(), true)
 
         val proxyResource = config.proxy?.let {
             val address = InetSocketAddress(it.host, it.port)
@@ -140,56 +130,74 @@ class TelegramClientWrapper(
 ) : AutoCloseable, Sleepable {
 
     private var client: MTProtoTelegramClient? = null
-
-    // 暂时不考虑多线程
-    private val sources: MutableSet<String> = mutableSetOf()
     private val lock = ReentrantLock()
+    private val sources: MutableMap<String, Int> = mutableMapOf()
+
     override fun close() {
-        sources.clear()
-        client?.disconnect()?.block(Duration.ofSeconds(3L))
-        log.info("Telegram client closed")
+        lock.withLock {
+            sources.clear()
+            disconnectLocked()
+            log.info("Telegram client closed")
+        }
     }
 
     private fun wakeUp() {
-        lock.withLock {
-            if (client != null) {
-                return@withLock
-            }
-            val bootstrap = TelegramClientInstanceFactory.newBootstrap(config)
-            client = bootstrap.connect()
-                .doOnError {
-                    log.error("Error while connecting to Telegram", it)
-                }
-                //
-                .blockOptional(Duration.ofSeconds(5L))
-                .get()
+        if (client != null) {
+            return
         }
+        val bootstrap = TelegramClientInstanceFactory.newBootstrap(config)
+        client = bootstrap.connect()
+            .doOnError {
+                log.error("Error while connecting to Telegram", it)
+            }
+            .blockOptional(Duration.ofSeconds(config.timeout))
+            .get()
     }
 
     override fun inUse(): Boolean {
-        return sources.isNotEmpty()
+        lock.withLock {
+            return sources.isNotEmpty()
+        }
     }
 
     override fun use(source: String) {
-        val inUse = inUse()
-        if (inUse.not()) {
-            log.debug("Not in use starting to connect")
-            wakeUp()
+        lock.withLock {
+            if (sources.isEmpty()) {
+                log.debug("Not in use starting to connect")
+                wakeUp()
+            }
+            sources.compute(source) { _, count ->
+                if (count == null) {
+                    1
+                } else {
+                    count + 1
+                }
+            }
         }
-        sources.add(source)
     }
 
     override fun release(source: String) {
-        sources.remove(source)
-        if (sources.isEmpty()) {
-            log.debug("No source in use, closing Telegram client")
-            client?.disconnect()?.block(Duration.ofSeconds(3L))
-            client = null
+        lock.withLock {
+            val count = sources[source] ?: return
+            if (count == 1) {
+                sources.remove(source)
+            } else {
+                sources[source] = count - 1
+            }
+            if (sources.isEmpty()) {
+                log.debug("No source in use, closing Telegram client")
+                disconnectLocked()
+            }
         }
     }
 
     fun getClient(): MTProtoTelegramClient {
         return client ?: throw IllegalStateException("Not in use, call use(source) first")
+    }
+
+    private fun disconnectLocked() {
+        client?.disconnect()?.block(Duration.ofSeconds(3L))
+        client = null
     }
 
     companion object {
