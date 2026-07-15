@@ -1,5 +1,7 @@
 package io.github.shoaky.sourcedownloader.common.pixiv
 
+import com.fasterxml.jackson.databind.node.ArrayNode
+import com.fasterxml.jackson.databind.node.ObjectNode
 import com.google.common.net.HttpHeaders
 import io.github.shoaky.sourcedownloader.common.anime.pathSegments
 import io.github.shoaky.sourcedownloader.external.pixiv.*
@@ -51,7 +53,10 @@ class PixivIntegration(
         }.asIterable()
     }
 
-    private fun getFollowingIllustration(following: PixivUser, pointer: PixivPointer): Pair<List<Illustration>, Boolean> {
+    private fun getFollowingIllustration(
+        following: PixivUser,
+        pointer: PixivPointer
+    ): Pair<List<Illustration>, Boolean> {
         val lastIllustrationId = pointer.lastIllustrationRecord[following.userId] ?: 0L
         val exists = following.illusts.firstOrNull { it.id == lastIllustrationId }
         if (exists != null) {
@@ -62,7 +67,21 @@ class PixivIntegration(
             .let { resp ->
                 val mangeIds =
                     resp.manga.fieldNames().asSequence().mapNotNull { it.toLongOrNull() }.toList()
-                resp.illusts.keys + mangeIds
+                val illustKeys: Collection<Long> = when (val illusts = resp.illusts) {
+                    is ObjectNode -> {
+                        illusts.fieldNames().asSequence().map { it.toLong() }.toList()
+                    }
+
+                    is ArrayNode -> {
+                        illusts.flatMap { f -> f.fieldNames().asSequence().mapNotNull { it.toLongOrNull() } }.toList()
+                    }
+
+                    else -> {
+                        log.warn("Missing illusts field names")
+                        emptyList()
+                    }
+                }
+                illustKeys + mangeIds
             }
             .sorted()
             .filter { it > lastIllustrationId }
