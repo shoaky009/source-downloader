@@ -22,7 +22,7 @@ class FanboxIntegration(
                 .body.items.filter { it.isRestricted.not() }
                 .map { PointedItem(toItem(client.server, it), NullPointer) }
         }
-        val supportings = client.execute(SupportingRequest()).body().body
+        val supportings = client.execute(SupportingRequest()).body().body.plans
         val results = mutableListOf<PointedItem<ItemPointer>>()
         for (supporting in supportings) {
             val creatorId = supporting.creatorId
